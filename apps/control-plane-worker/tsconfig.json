@@ -8,10 +8,7 @@
       "WebWorker"
     ],
     "strict": true,
-    "noEmit": true,
-    "types": [
-      "@cloudflare/workers-types"
-    ]
+    "noEmit": true
   },
   "include": [
     "src/**/*.ts"
