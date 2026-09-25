@@ -12,9 +12,9 @@ capabilities:
     product: Automation_Control_Plane
     capability: event_orchestration_and_desired_state
     grade: A
-    score: 94
-    access_mode: api_git_desired_state
-    status: implemented_pending_production_deploy
+    score: 97
+    access_mode: api_git_desired_state_plus_cloudflare_durable_execution
+    status: durable_edge_implemented_pending_production_deploy
     notes: "Provider-neutral event engine plus plan/apply desired-state reconciliation, dependencies, idempotency, audit history and destructive/high-risk gates."
     next_action: "Add provider-specific reconcilers and move runtime persistence to managed Postgres when production scale warrants it."
 
@@ -121,12 +121,12 @@ capabilities:
   - provider: zoho
     product: Creator
     capability: app_data_and_builder
-    grade: F
-    score: 15
-    access_mode: not_yet_authorized
-    status: missing_oauth
-    notes: "Creator v2.1 provides strong data/file/meta/custom APIs, but app-builder operations remain partly UI-driven."
-    next_action: "Add Creator OAuth scopes and provider gateway; use browser fallback for builder-only actions."
+    grade: D
+    score: 58
+    access_mode: api_plus_browser
+    status: creator_gateway_ready_pending_incremental_oauth
+    notes: "Creator v2.1 gateway and verified CRUD/meta/bulk/custom-API scopes are defined centrally; builder-only operations remain UI-driven."
+    next_action: "Authorize the Creator bundle, verify live API access, then add desired-state and deterministic browser builder adapters."
 
   - provider: google
     product: Google Ads
@@ -151,12 +151,12 @@ capabilities:
   - provider: google
     product: GA4
     capability: analytics
-    grade: E
-    score: 35
-    access_mode: analytics_read
-    status: connected_read
-    notes: "Analytics data is available; Admin/configuration API is not yet connected."
-    next_action: "Authorize GA4 Admin API for property/data-stream/key-event configuration."
+    grade: C
+    score: 68
+    access_mode: analytics_read_plus_admin_oauth_control_plane
+    status: admin_api_client_implemented_pending_live_authorization_verification
+    notes: "Analytics reporting is connected and the automation platform requests analytics.edit plus exposes GA4 Admin v1beta/v1alpha API actions."
+    next_action: "Verify the production Google OAuth grant, then add declarative key-event/custom-dimension/data-stream reconcilers."
 
   - provider: google
     product: Search Console
@@ -171,12 +171,12 @@ capabilities:
   - provider: google
     product: Tag Manager
     capability: tracking_configuration
-    grade: F
-    score: 5
-    access_mode: not_connected
-    status: missing_oauth
-    notes: "GTM API supports full workspace/tag/trigger/variable/version/publish management, but is not yet authorized."
-    next_action: "Add Google OAuth with GTM edit, container-version and publish scopes."
+    grade: C
+    score: 68
+    access_mode: oauth_control_plane_ready
+    status: oauth_and_api_client_implemented_pending_live_authorization_verification
+    notes: "The automation platform already requests GTM readonly/edit/delete/version/publish/account/user scopes and exposes a generic GTM API action."
+    next_action: "Verify the production Google OAuth connection and then add declarative GTM reconcilers for tags, triggers, variables and publish state."
 
   - provider: meta
     product: Facebook_Instagram_Ads
