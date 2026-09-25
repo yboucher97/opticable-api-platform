@@ -18,7 +18,14 @@ fail() {
 [[ "${EUID}" -eq 0 ]] || fail "Run with sudo/root."
 [[ -r "${ENV_FILE}" ]] || fail "Missing ${ENV_FILE}."
 [[ -x "${PYTHON}" ]] || fail "Missing workflow Python venv: ${PYTHON}."
-[[ -x "${APP_ROOT}/deploy/bootstrap-deploy-user.sh" ]] || fail "Missing deploy/bootstrap-deploy-user.sh."
+if [[ ! -x "${APP_ROOT}/deploy/bootstrap-deploy-user.sh" ]]; then
+  install -d -m 755 "${APP_ROOT}/deploy"
+  curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
+    "https://raw.githubusercontent.com/yboucher97/opticable-api-platform/main/deploy/bootstrap-deploy-user.sh" \
+    -o "${APP_ROOT}/deploy/bootstrap-deploy-user.sh"
+  chmod 755 "${APP_ROOT}/deploy/bootstrap-deploy-user.sh"
+fi
+[[ -x "${APP_ROOT}/deploy/bootstrap-deploy-user.sh" ]] || fail "Could not restore deploy/bootstrap-deploy-user.sh."
 
 set -a
 # shellcheck disable=SC1090
