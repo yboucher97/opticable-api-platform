@@ -95,6 +95,7 @@ class ZohoGatewaySettings:
     base_url: str
     api_key: str | None
     timeout_seconds: int
+    standby_enabled: bool
 
 
 @dataclass(frozen=True)
@@ -243,6 +244,7 @@ def load_settings() -> AppSettings:
             base_url=os.getenv("OPTICABLE_ZOHO_GATEWAY_URL", "https://connect.opticable.ca").rstrip("/"),
             api_key=os.getenv("OPTICABLE_ZOHO_GATEWAY_API_KEY"),
             timeout_seconds=_env_int("OPTICABLE_ZOHO_GATEWAY_TIMEOUT_SECONDS", 60),
+            standby_enabled=_env_bool("OPTICABLE_CONNECT_STANDBY_ENABLED", False),
         ),
         zoho_oauth=ZohoOAuthSettings(
             enabled=bool(zoho_client_id and zoho_client_secret and zoho_redirect_uri),
