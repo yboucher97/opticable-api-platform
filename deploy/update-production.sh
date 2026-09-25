@@ -91,6 +91,7 @@ main() {
   [[ -n "${TARGET_SHA}" ]] || fail "Target commit SHA is required."
   [[ -d "${INSTALL_DIR}/.git" ]] || fail "Expected Git checkout at ${INSTALL_DIR}."
   [[ -f "${WORKFLOW_APP_DIR}/requirements.txt" ]] || fail "Workflow API not found at ${WORKFLOW_APP_DIR}."
+  git config --global --add safe.directory "${INSTALL_DIR}"
 
   mkdir -p "$(dirname "${LOCK_FILE}")" "${STAGE_ROOT}"
   exec 9>"${LOCK_FILE}"
