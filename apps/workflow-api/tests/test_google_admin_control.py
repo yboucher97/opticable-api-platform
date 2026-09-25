@@ -10,6 +10,9 @@ from urllib.parse import parse_qs, urlparse
 from workflow.config import GoogleOAuthSettings
 from workflow.google_api import GoogleApiClient
 from workflow.google_oauth import GoogleOAuthManager
+from workflow.automation.engine import AutomationEngine
+from workflow.automation.providers.google import register_google_actions
+from workflow.automation.store import AutomationStore
 
 
 class GoogleAdminControlTests(unittest.TestCase):
@@ -89,6 +92,57 @@ class GoogleAdminControlTests(unittest.TestCase):
             client.request("unknown", "GET", "accounts")
         with self.assertRaises(ValueError):
             client.request("tagmanager", "TRACE", "accounts")
+
+    def test_google_actions_register_without_provider_coupling(self) -> None:
+        class FakeGoogleClient:
+            def request(self, service, method, path, *, params=None, body=None, headers=None):
+                return {
+                    "ok": True,
+                    "status": 200,
+                    "data": {
+                        "service": service,
+                        "method": method,
+                        "path": path,
+                        "params": params or {},
+                        "body": body,
+                    },
+                }
+
+        store = AutomationStore(self.root / "automation.db")
+        workflows_dir = self.root / "workflows"
+        workflows_dir.mkdir()
+        (workflows_dir / "google.yaml").write_text(
+            """
+id: test.google
+name: Google provider action
+version: 1
+enabled: true
+trigger:
+  event_types: [tracking.configure]
+steps:
+  - id: list_accounts
+    action: google.gtm.request
+    with:
+      method: GET
+      path: accounts
+""".strip()
+            + "\n",
+            encoding="utf-8",
+        )
+        engine = AutomationEngine(store, workflows_dir)
+        register_google_actions(engine, FakeGoogleClient(), store)
+        self.assertIn("google.gtm.request", engine.action_names())
+        self.assertIn("google.ga4_admin.request", engine.action_names())
+        engine.sync_definitions()
+
+        from workflow.automation.models import AutomationEvent
+
+        response = engine.ingest(
+            AutomationEvent(event_type="tracking.configure", source="unit-test")
+        )
+        run = store.get_run(response.run_ids[0])
+        self.assertEqual(run["status"], "completed")
+        self.assertEqual(run["steps"][0]["result"]["data"]["service"], "tagmanager")
 
 
 if __name__ == "__main__":
