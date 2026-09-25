@@ -120,6 +120,80 @@ steps:
         self.assertIn("Unknown automation action", run["error"])
         self.assertEqual(run["steps"][0]["status"], "failed")
 
+    def test_workflow_templates_resolve_event_and_prior_step_context(self) -> None:
+        (self.workflows / "templates.yaml").write_text(
+            """
+id: test.templates
+name: Template resolution
+version: 1
+enabled: true
+trigger:
+  event_types: [lead.created]
+steps:
+  - id: capture
+    action: core.noop
+    with:
+      email: "{{ event.payload.email }}"
+      greeting: "Lead {{ event.payload.name }}"
+      metadata: "{{ event.payload.metadata }}"
+  - id: reuse
+    action: core.noop
+    with:
+      prior_email: "{{ steps.capture.inputs.email }}"
+""".strip()
+            + "\n",
+            encoding="utf-8",
+        )
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        response = engine.ingest(
+            AutomationEvent(
+                event_type="lead.created",
+                source="unit-test",
+                payload={
+                    "email": "lead@example.com",
+                    "name": "Jane",
+                    "metadata": {"source": "website", "score": 7},
+                },
+            )
+        )
+        run = self.store.get_run(response.run_ids[0])
+        self.assertEqual(run["status"], "completed")
+        first = run["steps"][0]["result"]["inputs"]
+        second = run["steps"][1]["result"]["inputs"]
+        self.assertEqual(first["email"], "lead@example.com")
+        self.assertEqual(first["greeting"], "Lead Jane")
+        self.assertEqual(first["metadata"], {"source": "website", "score": 7})
+        self.assertEqual(second["prior_email"], "lead@example.com")
+
+    def test_missing_template_reference_fails_durably(self) -> None:
+        (self.workflows / "missing-template.yaml").write_text(
+            """
+id: test.missing-template
+name: Missing template
+version: 1
+enabled: true
+trigger:
+  event_types: [test.template.missing]
+steps:
+  - id: fail
+    action: core.noop
+    with:
+      value: "{{ event.payload.does_not_exist }}"
+""".strip()
+            + "\n",
+            encoding="utf-8",
+        )
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        response = engine.ingest(
+            AutomationEvent(event_type="test.template.missing", source="unit-test")
+        )
+        run = self.store.get_run(response.run_ids[0])
+        self.assertEqual(run["status"], "failed")
+        self.assertIn("Workflow template reference not found", run["error"])
+        self.assertEqual(run["steps"][0]["status"], "failed")
+
     def test_capability_grading_loads(self) -> None:
         path = self.root / "capabilities.yaml"
         path.write_text(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import time
 from pathlib import Path
 from typing import Any, Callable
@@ -10,6 +11,42 @@ from .models import AutomationEvent, EventIngestResponse, WorkflowDefinition, Wo
 from .store import AutomationStore
 
 ActionHandler = Callable[[dict[str, Any], WorkflowStep], Any]
+
+_TEMPLATE_RE = re.compile(r"{{[ \t\r\n]*([A-Za-z0-9_.-]+)[ \t\r\n]*}}")
+
+
+def _lookup_context(context: dict[str, Any], path: str) -> Any:
+    current: Any = context
+    for part in path.split("."):
+        if isinstance(current, dict) and part in current:
+            current = current[part]
+            continue
+        if isinstance(current, list) and part.isdigit():
+            index = int(part)
+            if 0 <= index < len(current):
+                current = current[index]
+                continue
+        raise KeyError(f"Workflow template reference not found: {path}")
+    return current
+
+
+def _resolve_templates(value: Any, context: dict[str, Any]) -> Any:
+    if isinstance(value, dict):
+        return {key: _resolve_templates(item, context) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_resolve_templates(item, context) for item in value]
+    if not isinstance(value, str):
+        return value
+
+    full = _TEMPLATE_RE.fullmatch(value)
+    if full:
+        return _lookup_context(context, full.group(1))
+
+    def replace(match: re.Match[str]) -> str:
+        resolved = _lookup_context(context, match.group(1))
+        return str(resolved)
+
+    return _TEMPLATE_RE.sub(replace, value)
 
 
 class AutomationEngine:
@@ -113,8 +150,10 @@ class AutomationEngine:
             for attempt in range(1, step.retry.max_attempts + 1):
                 started_at = utc_now_iso()
                 try:
-                    result = handler(context, step)
-                except Exception as exc:  # provider-specific runtime errors are captured durably
+                    resolved_inputs = _resolve_templates(step.inputs, context)
+                    effective_step = step.model_copy(update={"inputs": resolved_inputs})
+                    result = handler(context, effective_step)
+                except Exception as exc:  # provider/template runtime errors are captured durably
                     last_error = str(exc)
                     self.store.append_step(
                         run_id=run_id, step_id=step.id, action=step.action, attempt=attempt,
