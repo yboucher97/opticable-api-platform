@@ -40,13 +40,13 @@ capabilities:
 
   - provider: zoho
     product: Books
-    capability: finance_crud
-    grade: B
-    score: 86
-    access_mode: api
-    status: connected
-    notes: "Broad contacts/settings/estimates/invoices/payments/projects/expenses/orders/bills/banking scopes granted; live read verified."
-    next_action: "Verify controlled create/update/delete and add idempotent finance actions."
+    capability: finance_read
+    grade: C
+    score: 70
+    access_mode: api_read_only_policy
+    status: connected_read_only
+    notes: "Live read access is available. Opticable policy explicitly blocks all Books POST/PUT/PATCH/DELETE mutations in the canonical Zoho gateway."
+    next_action: "Use Books only for invoice/payment/finance observation and lifecycle reporting unless the owner explicitly changes the read-only policy."
 
   - provider: zoho
     product: WorkDrive
@@ -74,9 +74,9 @@ capabilities:
     grade: B
     score: 80
     access_mode: api
-    status: authorized_pending_verification
-    notes: "Full document/template scopes granted; live verification remains after token cooldown."
-    next_action: "Verify account/templates and implement send/status/download adapter."
+    status: connected_live_verified
+    notes: "Account and template listing are live-verified. Existing Opticable templates include general-terms and installation-contract templates; send/status/download adapter is the next lifecycle step."
+    next_action: "Implement explicit contract send/status/download actions with audit and CRM Service linkage."
 
   - provider: zoho
     product: Projects
@@ -84,9 +84,9 @@ capabilities:
     grade: B
     score: 78
     access_mode: api
-    status: authorized_pending_verification
-    notes: "Projects/tasks/timesheets full scopes granted."
-    next_action: "Verify portal/projects and add project/task adapters."
+    status: blocked_oauth_scope_mismatch
+    notes: "A live portal read returned HTTP 403 Invalid OAuth scope. Do not depend on Zoho Projects until the OAuth grant includes the current V3 portal/project scopes."
+    next_action: "Continue operations through CRM Services/Installations; repair Projects OAuth later without blocking the lifecycle rollout."
 
   - provider: zoho
     product: Desk
