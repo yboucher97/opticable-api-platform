@@ -93,6 +93,13 @@ class GoogleAdminControlTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             client.request("tagmanager", "TRACE", "accounts")
 
+    def test_workspace_service_catalog_is_available(self) -> None:
+        manager = GoogleOAuthManager(self.settings)
+        client = GoogleApiClient(manager)
+        for service in ["gmail", "drive", "calendar", "people", "sheets", "docs", "slides", "forms", "tasks", "youtube", "search_console", "admin_directory", "admin_reports"]:
+            with self.subTest(service=service), self.assertRaises(ValueError):
+                client.request(service, "GET", "../unsafe")
+
     def test_google_actions_register_without_provider_coupling(self) -> None:
         class FakeGoogleClient:
             def request(self, service, method, path, *, params=None, body=None, headers=None):
@@ -133,6 +140,7 @@ steps:
         register_google_actions(engine, FakeGoogleClient(), store)
         self.assertIn("google.gtm.request", engine.action_names())
         self.assertIn("google.ga4_admin.request", engine.action_names())
+        self.assertIn("google.request", engine.action_names())
         engine.sync_definitions()
 
         from workflow.automation.models import AutomationEvent

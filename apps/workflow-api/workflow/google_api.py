@@ -17,6 +17,19 @@ SERVICE_BASES = {
     "tagmanager": "https://tagmanager.googleapis.com/tagmanager/v2/",
     "analytics_admin_v1beta": "https://analyticsadmin.googleapis.com/v1beta/",
     "analytics_admin_v1alpha": "https://analyticsadmin.googleapis.com/v1alpha/",
+    "gmail": "https://gmail.googleapis.com/gmail/v1/",
+    "drive": "https://www.googleapis.com/drive/v3/",
+    "calendar": "https://www.googleapis.com/calendar/v3/",
+    "people": "https://people.googleapis.com/v1/",
+    "sheets": "https://sheets.googleapis.com/v4/",
+    "docs": "https://docs.googleapis.com/v1/",
+    "slides": "https://slides.googleapis.com/v1/",
+    "forms": "https://forms.googleapis.com/v1/",
+    "tasks": "https://tasks.googleapis.com/tasks/v1/",
+    "youtube": "https://www.googleapis.com/youtube/v3/",
+    "search_console": "https://searchconsole.googleapis.com/v1/",
+    "admin_directory": "https://admin.googleapis.com/admin/directory/v1/",
+    "admin_reports": "https://admin.googleapis.com/admin/reports/v1/",
 }
 
 

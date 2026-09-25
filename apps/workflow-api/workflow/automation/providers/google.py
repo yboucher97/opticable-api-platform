@@ -55,6 +55,14 @@ def register_google_actions(
         lambda context, step: run("tagmanager", context, step),
     )
 
+    def generic(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
+        service = str(step.inputs.get("service", "")).strip()
+        if not service:
+            raise ValueError("google.request requires with.service.")
+        return run(service, context, step)
+
+    engine.register_action("google.request", generic)
+
     def analytics_admin(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
         version = str(step.inputs.get("version", "v1beta")).strip().lower()
         if version not in {"v1beta", "v1alpha"}:
