@@ -111,6 +111,27 @@ class ZohoGatewaySettings:
 
 
 @dataclass(frozen=True)
+class CloudflareSettings:
+    api_token: str | None
+    account_id: str | None
+    timeout_seconds: int
+
+
+@dataclass(frozen=True)
+class GithubSettings:
+    api_token: str | None
+    owner: str
+    timeout_seconds: int
+
+
+@dataclass(frozen=True)
+class ApolloSettings:
+    api_key: str | None
+    timeout_seconds: int
+    allow_credit_consumption: bool
+
+
+@dataclass(frozen=True)
 class OvhSettings:
     endpoint: str
     application_key: str | None
@@ -153,6 +174,9 @@ class AppSettings:
     zoho_oauth: ZohoOAuthSettings
     windsor: WindsorSettings
     ovh: OvhSettings
+    cloudflare: CloudflareSettings
+    github: GithubSettings
+    apollo: ApolloSettings
 
 
 def load_settings() -> AppSettings:
@@ -290,6 +314,21 @@ def load_settings() -> AppSettings:
             api_key=os.getenv("OPTICABLE_ZOHO_GATEWAY_API_KEY"),
             timeout_seconds=_env_int("OPTICABLE_ZOHO_GATEWAY_TIMEOUT_SECONDS", 60),
             standby_enabled=_env_bool("OPTICABLE_CONNECT_STANDBY_ENABLED", False),
+        ),
+        cloudflare=CloudflareSettings(
+            api_token=os.getenv("CLOUDFLARE_API_TOKEN"),
+            account_id=os.getenv("CLOUDFLARE_ACCOUNT_ID"),
+            timeout_seconds=_env_int("CLOUDFLARE_TIMEOUT_SECONDS", 60),
+        ),
+        github=GithubSettings(
+            api_token=os.getenv("GITHUB_API_TOKEN"),
+            owner=os.getenv("GITHUB_OWNER", "yboucher97"),
+            timeout_seconds=_env_int("GITHUB_TIMEOUT_SECONDS", 60),
+        ),
+        apollo=ApolloSettings(
+            api_key=os.getenv("APOLLO_API_KEY"),
+            timeout_seconds=_env_int("APOLLO_TIMEOUT_SECONDS", 60),
+            allow_credit_consumption=_env_bool("OPTIBRAIN_ALLOW_APOLLO_CREDIT_CONSUMPTION", False),
         ),
         ovh=OvhSettings(
             endpoint=os.getenv("OVH_ENDPOINT", "ovh-ca"),
