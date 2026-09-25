@@ -40,15 +40,19 @@ providers:
 deployment:
   validation_ci: true
   api_deploy_workflow_present: true
-  api_deploy_blocker: "missing GitHub Actions VPS deployment secrets"
+  api_deploy_production_verified: true
+  api_deploy_last_verified_commit: "db119c627909b79ca6f58d3b7208100c9a032332"
   control_plane_workflow_present: true
-  control_plane_production_verified: false
-  missing_control_plane_github_secrets:
-    - "CLOUDFLARE_API_TOKEN"
-    - "CLOUDFLARE_ACCOUNT_ID"
-    - "OPTICABLE_CONTROL_PLANE_API_KEY"
-    - "OPTICABLE_CORE_API_KEY"
-  health_monitoring: "github_actions_every_15_minutes"
+  control_plane_production_verified: true
+  control_plane_worker_url: "https://opticable-control-plane.yboucher.workers.dev"
+  control_plane_version_id: "54029d59-e759-4234-9699-10a4370f4b1b"
+  control_plane_e2e_smoke_verified: true
+  control_plane_e2e_smoke_event: "control-plane-smoke-36185862240-1"
+  github_actions_secrets_bootstrapped: true
+  event_queues:
+    - "opticable-business-events"
+    - "opticable-business-events-dlq"
+  health_monitoring: "github_actions_every_15_minutes_including_control_plane"
   public_health_verified_2026_09_25: true
 
 security:
