@@ -9,7 +9,6 @@ trigger:
 steps:
   - id: resolve_party
     action: lifecycle.crm_resolve_email_party
-    on_error: continue
     with:
       email: "{{ event.payload.sender_email }}"
   - id: analyze
@@ -21,7 +20,6 @@ steps:
       email: "{{ event.payload }}"
   - id: draft_reply
     action: lifecycle.mail_save_draft
-    on_error: continue
     retry:
       max_attempts: 2
       backoff_seconds: 2
