@@ -6,6 +6,7 @@ on:
       - "apps/workflow-api/**"
       - "install.sh"
       - "deploy/update-production.sh"
+      - "deploy/bootstrap-deploy-user.sh"
       - ".github/workflows/deploy-api-platform.yml"
       - ".github/workflows/validate-api-platform.yml"
   push:
@@ -14,6 +15,7 @@ on:
       - "apps/workflow-api/**"
       - "install.sh"
       - "deploy/update-production.sh"
+      - "deploy/bootstrap-deploy-user.sh"
       - ".github/workflows/deploy-api-platform.yml"
       - ".github/workflows/validate-api-platform.yml"
   workflow_dispatch:
@@ -43,6 +45,7 @@ jobs:
         run: |
           bash -n ../../install.sh
           bash -n ../../deploy/update-production.sh
+          bash -n ../../deploy/bootstrap-deploy-user.sh
 
       - name: Compile Python
         run: python -m compileall -q workflow tests
