@@ -127,7 +127,7 @@ main() {
     exit 0
   fi
 
-  local stage_dir="${STAGE_ROOT}/${TARGET_SHA}"
+  stage_dir="${STAGE_ROOT}/${TARGET_SHA}"
   rm -rf "${stage_dir}"
   git -C "${INSTALL_DIR}" worktree prune
   git -C "${INSTALL_DIR}" worktree add --detach "${stage_dir}" "${TARGET_SHA}" >/dev/null
