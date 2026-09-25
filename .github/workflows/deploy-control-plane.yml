@@ -99,3 +99,51 @@ jobs:
         run: |
           printf '%s' "$CONTROL_PLANE_API_KEY" | npx wrangler secret put CONTROL_PLANE_API_KEY
           printf '%s' "$CORE_API_KEY" | npx wrangler secret put CORE_API_KEY
+
+
+      - name: Verify end-to-end event delivery
+        shell: bash
+        env:
+          CONTROL_PLANE_API_KEY: ${{ secrets.OPTICABLE_CONTROL_PLANE_API_KEY }}
+          CORE_API_KEY: ${{ secrets.OPTICABLE_CORE_API_KEY }}
+        run: |
+          set -euo pipefail
+          worker_url="https://opticable-control-plane.yboucher.workers.dev"
+          core_url="https://optibrain.opticable.ca"
+          event_id="control-plane-smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+          curl --fail --silent --show-error "$worker_url/health" \
+            | jq -e '.ok == true and .durable_workflows == true and .event_queue == true' >/dev/null
+
+          accepted="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer $CONTROL_PLANE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -X POST "$worker_url/v1/events" \
+            --data "$(jq -nc --arg event_id "$event_id" '{
+              event_id:$event_id,
+              event_type:"system.automation.smoke_test",
+              source:"internal",
+              idempotency_key:$event_id,
+              payload:{requested_via:"github-actions-control-plane"}
+            }')")"
+
+          echo "$accepted" | jq -e --arg event_id "$event_id"             '.accepted == true and .queued == true and .event_id == $event_id' >/dev/null
+
+          for attempt in $(seq 1 20); do
+            runs="$(curl --fail --silent --show-error \
+              -H "X-API-Key: $CORE_API_KEY" \
+              "$core_url/v1/automation/runs?limit=100")"
+            status="$(echo "$runs" | jq -r --arg event_id "$event_id"               '.runs[]? | select(.event_id == $event_id) | .status' | head -n1)"
+            if [[ "$status" == "completed" ]]; then
+              echo "End-to-end control-plane smoke test completed: $event_id"
+              exit 0
+            fi
+            if [[ "$status" == "failed" || "$status" == "partial" ]]; then
+              echo "Smoke workflow reached unexpected status: $status" >&2
+              exit 1
+            fi
+            sleep 3
+          done
+
+          echo "Timed out waiting for core automation run: $event_id" >&2
+          exit 1
