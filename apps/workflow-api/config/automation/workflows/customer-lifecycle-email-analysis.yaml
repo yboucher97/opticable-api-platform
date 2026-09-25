@@ -1,0 +1,40 @@
+id: customer.lifecycle.email-analysis
+name: Customer lifecycle - email analysis
+version: 1
+enabled: true
+description: Resolve inbound sender against CRM, analyze the message, and save a safe draft reply when appropriate. Never auto-sends.
+trigger:
+  event_types:
+    - customer.lifecycle.email.received
+steps:
+  - id: resolve_party
+    action: lifecycle.crm_resolve_email_party
+    with:
+      email: "{{ event.payload.sender_email }}"
+  - id: analyze
+    action: lifecycle.analyze_email
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
+    with:
+      email: "{{ event.payload }}"
+  - id: draft_reply
+    action: lifecycle.mail_save_draft
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
+    with:
+      email: "{{ event.payload }}"
+      analysis: "{{ steps.analyze }}"
+  - id: emit_analyzed
+    action: event.emit
+    with:
+      event_type: customer.lifecycle.email.analyzed
+      source: automation-engine
+      idempotency_key: "email-analyzed:{{ event.event_id }}"
+      payload:
+        message_id: "{{ event.payload.message_id }}"
+        sender_email: "{{ event.payload.sender_email }}"
+        crm_match: "{{ steps.resolve_party }}"
+        analysis: "{{ steps.analyze }}"
+        draft: "{{ steps.draft_reply }}"

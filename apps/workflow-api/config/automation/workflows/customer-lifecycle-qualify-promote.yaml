@@ -1,0 +1,35 @@
+id: customer.lifecycle.qualify-and-promote
+name: Customer lifecycle - qualify and promote
+version: 1
+enabled: true
+description: Qualify a CRM-synced lead and promote qualified commercial inquiries into Contact, optional Account, and Deal.
+trigger:
+  event_types:
+    - customer.lifecycle.lead.synced
+steps:
+  - id: qualify
+    action: lifecycle.qualify_lead
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
+    with:
+      lead: "{{ event.payload.lead }}"
+  - id: promote
+    action: lifecycle.crm_promote_lead
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
+    with:
+      lead: "{{ event.payload.lead }}"
+      qualification: "{{ steps.qualify }}"
+  - id: emit_qualified
+    action: event.emit
+    with:
+      event_type: customer.lifecycle.lead.qualified
+      source: automation-engine
+      idempotency_key: "lead-qualified:{{ event.event_id }}"
+      payload:
+        crm_lead_id: "{{ event.payload.crm_lead_id }}"
+        qualification: "{{ steps.qualify }}"
+        promotion: "{{ steps.promote }}"
+        lead: "{{ event.payload.lead }}"

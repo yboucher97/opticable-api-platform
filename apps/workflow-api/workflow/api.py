@@ -31,7 +31,7 @@ from .ai_router import AiRouter
 from .cloudflare_api import CloudflareApiClient
 from .github_api import GithubApiClient
 from .apollo_api import ApolloApiClient
-from .customer_lifecycle import LeadIntakeRequest, lead_event_idempotency_key
+from .customer_lifecycle import EmailIntakeRequest, LeadIntakeRequest, MeetingRequest, email_event_idempotency_key, lead_event_idempotency_key
 from .automation import (
     AutomationEngine,
     AutomationEvent,
@@ -50,6 +50,7 @@ from .automation.providers.ovh import register_ovh_actions
 from .automation.providers.ai import register_ai_actions
 from .automation.providers.core_external import register_core_external_actions
 from .automation.providers.lifecycle import register_lifecycle_actions
+from .automation.providers.lifecycle_extended import register_lifecycle_extended_actions
 from .automation.reconcilers.zoho_crm import ZohoCrmFieldReconciler
 
 
@@ -81,6 +82,7 @@ register_ovh_actions(automation_engine, ovh_api_client, automation_store)
 register_ai_actions(automation_engine, ai_router, automation_store)
 register_core_external_actions(automation_engine, cloudflare_api_client, github_api_client, apollo_api_client, automation_store)
 register_lifecycle_actions(automation_engine, zoho_gateway_client, automation_store)
+register_lifecycle_extended_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 API_VERSION = "1.7.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
@@ -909,6 +911,46 @@ async def lifecycle_ingest_lead(
         return automation_engine.ingest(event)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/v1/lifecycle/emails", response_model=EventIngestResponse, tags=["automation"])
+async def lifecycle_ingest_email(
+    payload: EmailIntakeRequest,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> EventIngestResponse:
+    _validate_api_key(x_api_key)
+    if not settings.automation.enabled:
+        raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
+    raw = payload.model_dump(exclude_none=True)
+    event = AutomationEvent(
+        event_type="customer.lifecycle.email.received",
+        source=payload.source,
+        occurred_at=payload.received_at or utc_timestamp(),
+        idempotency_key=email_event_idempotency_key(raw),
+        payload=raw,
+    )
+    return automation_engine.ingest(event)
+
+
+@app.post("/v1/lifecycle/meetings", response_model=EventIngestResponse, tags=["automation"])
+async def lifecycle_create_meeting(
+    payload: MeetingRequest,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> EventIngestResponse:
+    _validate_api_key(x_api_key)
+    if not settings.automation.enabled:
+        raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
+    raw = payload.model_dump(exclude_none=True)
+    event = AutomationEvent(
+        event_type="customer.lifecycle.meeting.requested",
+        source=payload.source,
+        idempotency_key=(
+            f"meeting:{payload.contact_id or 'none'}:{payload.deal_id or 'none'}:"
+            f"{payload.start_datetime}:{payload.end_datetime}:{payload.title}"
+        ),
+        payload=raw,
+    )
+    return automation_engine.ingest(event)
 
 
 @app.post("/v1/automation/smoke-test", response_model=EventIngestResponse, tags=["automation"])

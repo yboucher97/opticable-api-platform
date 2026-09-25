@@ -7,6 +7,16 @@ policy:
     notes: "Never create, update, or delete Zoho Books records from OptiBrain unless the owner explicitly changes this policy in a future approved change."
   destructive_crm_changes:
     allowed_automatically: false
+  email:
+    automatic_send: false
+    reply_mode: draft_only
+    approved_sender_domain: opticable.ca
+  qualification:
+    automatic_promotion_minimum_confidence: 0.70
+    require_email_or_phone: true
+  projects:
+    status: blocked_oauth_scope_mismatch
+    operational_fallback: CRM Services and Installations
 
 canonical_relationships:
   person:
@@ -33,6 +43,18 @@ canonical_relationships:
   finance:
     provider: Zoho Books
     access: read_only
+  contracts:
+    provider: Zoho Sign
+    status: live_verified
+    templates:
+      general_terms:
+        name: 01-conditions-generales
+        template_id: "325018000000115001"
+        signer_role: Signataire
+      installation:
+        name: 02-contrat-installation
+        template_id: "325018000000115116"
+        signer_role: Signataire
 
 lead_identity_priority:
   - Inquiry_ID
@@ -140,6 +162,7 @@ lifecycle_events:
   - customer.lifecycle.email.received
   - customer.lifecycle.email.analyzed
   - customer.lifecycle.meeting.requested
+  - customer.lifecycle.meeting.created
   - customer.lifecycle.quote.requested
   - customer.lifecycle.quote.sent
   - customer.lifecycle.quote.accepted
