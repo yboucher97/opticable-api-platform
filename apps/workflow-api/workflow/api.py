@@ -22,12 +22,21 @@ from .pipeline import SiteWorkflowPipeline
 from .utils import ensure_directory, sanitize_filename, utc_timestamp
 from .workdrive import WorkflowWorkDriveClient, WorkflowWorkDriveError
 from .zoho_oauth import ZohoOAuthManager
+from .automation import AutomationEngine, AutomationEvent, AutomationStore
+from .automation.capabilities import capability_summary, load_capabilities
+from .automation.models import EventIngestResponse
 
 
 settings = load_settings()
 logger = configure_logging(ensure_directory(settings.output.root_dir / "logs"))
 job_store = JobStore(settings.output.jobs_dir, logger)
-API_VERSION = "1.4.0"
+automation_store = AutomationStore(settings.automation.db_path)
+automation_engine = AutomationEngine(
+    automation_store,
+    settings.automation.workflows_dir,
+    max_event_depth=settings.automation.max_event_depth,
+)
+API_VERSION = "1.5.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
 PRIMARY_JOB_STATUS_PATH = "/v1/site-and-password/jobs/{job_id}"
@@ -258,6 +267,11 @@ def _service_catalog() -> list[ServiceRoute]:
             path_prefix="/v1/omada",
             description="Public Omada discovery and plan-submission API for sites, LANs, WLAN groups, SSIDs, and direct YAML/JSON job intake.",
         ),
+        ServiceRoute(
+            name="automation-kernel",
+            path_prefix="/v1/automation",
+            description="Provider-neutral event, workflow, capability, audit, and run-control APIs.",
+        ),
     ]
 
 
@@ -366,6 +380,15 @@ OMADA_WORKDRIVE_JOB_EXAMPLES = {
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Site workflow API starting")
+    if settings.automation.enabled:
+        try:
+            loaded_workflows = automation_engine.sync_definitions()
+            logger.info("Automation kernel loaded %d workflow definition(s): %s", len(loaded_workflows), loaded_workflows)
+        except Exception:
+            logger.exception("Automation kernel failed to load workflow definitions")
+            raise
+    else:
+        logger.warning("Automation kernel is disabled by OPTICABLE_AUTOMATION_ENABLED")
     yield
     logger.info("Site workflow API shutting down")
 
@@ -384,6 +407,7 @@ app = FastAPI(
         {"name": "site-and-password", "description": "Primary workflow endpoints for webhook intake and job tracking."},
         {"name": "omada", "description": "Read-first Omada discovery endpoints for sites and network objects."},
         {"name": "integrations", "description": "External integration setup and status endpoints."},
+        {"name": "automation", "description": "Provider-neutral autonomous event, workflow, capability and audit endpoints."},
         {"name": "compatibility", "description": "Legacy endpoints preserved for older webhook clients."},
     ],
 )
@@ -579,6 +603,113 @@ async def platform_catalog() -> PlatformIndexResponse:
 @app.get("/v1/site-and-password/health", response_model=HealthResponse, tags=["site-and-password"])
 async def workflow_health() -> HealthResponse:
     return _health_payload()
+
+
+@app.get("/v1/automation/capabilities", tags=["automation"])
+async def automation_capabilities(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    records = load_capabilities(settings.automation.capabilities_path)
+    return {
+        "enabled": settings.automation.enabled,
+        "summary": capability_summary(records),
+        "capabilities": [record.model_dump() for record in records],
+    }
+
+
+@app.get("/v1/automation/actions", tags=["automation"])
+async def automation_actions(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    return {"actions": automation_engine.action_names()}
+
+
+@app.get("/v1/automation/workflows", tags=["automation"])
+async def automation_workflows(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    return {"workflows": automation_store.list_workflows()}
+
+
+@app.post("/v1/automation/workflows/reload", tags=["automation"])
+async def automation_reload_workflows(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    if not settings.automation.enabled:
+        raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
+    loaded = automation_engine.sync_definitions()
+    automation_store.audit(
+        category="configuration",
+        action="workflows_reloaded",
+        actor="api",
+        success=True,
+        metadata={"workflow_ids": loaded},
+    )
+    return {"loaded": loaded, "count": len(loaded)}
+
+
+@app.post("/v1/automation/events", response_model=EventIngestResponse, tags=["automation"])
+async def automation_ingest_event(
+    event: AutomationEvent,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> EventIngestResponse:
+    _validate_api_key(x_api_key)
+    if not settings.automation.enabled:
+        raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
+    try:
+        return automation_engine.ingest(event)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/v1/automation/smoke-test", response_model=EventIngestResponse, tags=["automation"])
+async def automation_smoke_test(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> EventIngestResponse:
+    _validate_api_key(x_api_key)
+    if not settings.automation.enabled:
+        raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
+    event = AutomationEvent(
+        event_type="system.automation.smoke_test",
+        source="internal",
+        idempotency_key=f"manual-smoke:{utc_timestamp()}",
+        payload={"requested_via": "api"},
+    )
+    return automation_engine.ingest(event)
+
+
+@app.get("/v1/automation/runs", tags=["automation"])
+async def automation_runs(
+    limit: int = Query(default=50, ge=1, le=200),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    return {"runs": automation_store.recent_runs(limit)}
+
+
+@app.get("/v1/automation/runs/{run_id}", tags=["automation"])
+async def automation_run(
+    run_id: str,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    run = automation_store.get_run(run_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail="Automation run not found.")
+    return run
+
+
+@app.get("/v1/automation/audit", tags=["automation"])
+async def automation_audit(
+    limit: int = Query(default=100, ge=1, le=500),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    return {"audit": automation_store.recent_audit(limit)}
 
 
 @app.get("/v1/omada/sites", response_model=OmadaSitesResponse, tags=["omada"])
