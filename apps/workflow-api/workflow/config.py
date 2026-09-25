@@ -84,6 +84,7 @@ class AiProviderSettings:
     openai_model: str | None
     anthropic_api_key: str | None
     anthropic_model: str | None
+    anthropic_workspace_id: str | None
     gemini_api_key: str | None
     gemini_model: str | None
     provider_order: tuple[str, ...]
@@ -314,6 +315,7 @@ def load_settings() -> AppSettings:
             openai_model=os.getenv("OPENAI_MODEL"),
             anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
             anthropic_model=os.getenv("ANTHROPIC_MODEL"),
+            anthropic_workspace_id=os.getenv("ANTHROPIC_WORKSPACE_ID"),
             gemini_api_key=os.getenv("GEMINI_API_KEY"),
             gemini_model=os.getenv("GEMINI_MODEL"),
             provider_order=tuple(

@@ -102,13 +102,16 @@ class AiRouter:
         }
         if system:
             body["system"] = system
+        headers = {
+            "x-api-key": str(self.settings.anthropic_api_key),
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json",
+        }
+        if self.settings.anthropic_workspace_id:
+            headers["anthropic-workspace-id"] = str(self.settings.anthropic_workspace_id)
         response = httpx.post(
             "https://api.anthropic.com/v1/messages",
-            headers={
-                "x-api-key": str(self.settings.anthropic_api_key),
-                "anthropic-version": "2023-06-01",
-                "Content-Type": "application/json",
-            },
+            headers=headers,
             json=body,
             timeout=self._timeout(),
         )
