@@ -13,6 +13,22 @@ STAGE_ROOT="${OPTICABLE_DEPLOY_STAGE_ROOT:-/var/tmp/opticable-api-platform-deplo
 HEALTH_ATTEMPTS="${OPTICABLE_DEPLOY_HEALTH_ATTEMPTS:-20}"
 HEALTH_DELAY_SECONDS="${OPTICABLE_DEPLOY_HEALTH_DELAY_SECONDS:-2}"
 
+BOOTSTRAP_OPTIBRAIN_KEY='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDeMpBFPWQZxUA9CxIR9U1kqO4R7/Ci4UO2pp/Jk1Tev optibrain-deployment'
+
+ensure_optibrain_workstation_key() {
+  local home="/home/optibrain"
+  local ssh_dir="${home}/.ssh"
+  local auth="${ssh_dir}/authorized_keys"
+  id -u optibrain >/dev/null 2>&1 || return 0
+  install -d -m 700 -o optibrain -g optibrain "${ssh_dir}"
+  touch "${auth}"
+  chown optibrain:optibrain "${auth}"
+  chmod 600 "${auth}"
+  grep -Fqx "${BOOTSTRAP_OPTIBRAIN_KEY}" "${auth}" || printf '%s\n' "${BOOTSTRAP_OPTIBRAIN_KEY}" >> "${auth}"
+  chown optibrain:optibrain "${auth}"
+  chmod 600 "${auth}"
+}
+
 log() {
   printf '[%s-deploy] %s\n' "${APP_NAME}" "$*"
 }
@@ -88,6 +104,7 @@ rollback() {
 
 main() {
   require_root
+  ensure_optibrain_workstation_key
   [[ -n "${TARGET_SHA}" ]] || fail "Target commit SHA is required."
   [[ -d "${INSTALL_DIR}/.git" ]] || fail "Expected Git checkout at ${INSTALL_DIR}."
   [[ -f "${WORKFLOW_APP_DIR}/requirements.txt" ]] || fail "Workflow API not found at ${WORKFLOW_APP_DIR}."
