@@ -79,6 +79,18 @@ class AutomationSettings:
 
 
 @dataclass(frozen=True)
+class AiProviderSettings:
+    openai_api_key: str | None
+    openai_model: str | None
+    anthropic_api_key: str | None
+    anthropic_model: str | None
+    gemini_api_key: str | None
+    gemini_model: str | None
+    provider_order: tuple[str, ...]
+    timeout_seconds: int
+
+
+@dataclass(frozen=True)
 class GoogleOAuthSettings:
     enabled: bool
     client_id: str | None
@@ -135,6 +147,7 @@ class AppSettings:
     omada: DownstreamOmadaSettings
     naming: NamingSettings
     automation: AutomationSettings
+    ai: AiProviderSettings
     google_oauth: GoogleOAuthSettings
     zoho_gateway: ZohoGatewaySettings
     zoho_oauth: ZohoOAuthSettings
@@ -247,6 +260,20 @@ def load_settings() -> AppSettings:
             workflows_dir=automation_workflows_dir,
             capabilities_path=automation_capabilities_path,
             max_event_depth=_env_int("OPTICABLE_AUTOMATION_MAX_EVENT_DEPTH", 8),
+        ),
+        ai=AiProviderSettings(
+            openai_api_key=os.getenv("OPENAI_API_KEY"),
+            openai_model=os.getenv("OPENAI_MODEL"),
+            anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
+            anthropic_model=os.getenv("ANTHROPIC_MODEL"),
+            gemini_api_key=os.getenv("GEMINI_API_KEY"),
+            gemini_model=os.getenv("GEMINI_MODEL"),
+            provider_order=tuple(
+                x.strip().lower()
+                for x in os.getenv("OPTIBRAIN_AI_PROVIDER_ORDER", "openai,anthropic,gemini").split(",")
+                if x.strip()
+            ),
+            timeout_seconds=_env_int("OPTIBRAIN_AI_TIMEOUT_SECONDS", 120),
         ),
         google_oauth=GoogleOAuthSettings(
             enabled=bool(google_client_id and google_client_secret and google_redirect_uri),
