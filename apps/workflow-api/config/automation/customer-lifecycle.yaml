@@ -1,0 +1,154 @@
+version: 1
+updated_at: "2026-09-25"
+policy:
+  books:
+    access: read_only
+    mutation_policy: blocked_in_zoho_gateway
+    notes: "Never create, update, or delete Zoho Books records from OptiBrain unless the owner explicitly changes this policy in a future approved change."
+  destructive_crm_changes:
+    allowed_automatically: false
+
+canonical_relationships:
+  person:
+    crm_module: Contacts
+  organization:
+    crm_module: Accounts
+  inbound_lead:
+    crm_module: Leads
+  opportunity:
+    crm_module: Deals
+  service_location:
+    crm_module: Service_Locations
+  service:
+    crm_module: Services
+  installation:
+    crm_module: Installations
+  meeting:
+    crm_module: Events
+  task:
+    crm_module: Tasks
+  quote:
+    crm_module: Quotes
+    status: capability_check_required
+  finance:
+    provider: Zoho Books
+    access: read_only
+
+lead_identity_priority:
+  - Inquiry_ID
+  - Ingestion_Source + Source_Record_ID
+  - Email
+  - Phone/Mobile
+
+lead_fields:
+  normalized_email: Normalized_Email
+  normalized_phone: Normalized_Phone
+  ingestion_source: Ingestion_Source
+  source_record_id: Source_Record_ID
+  inquiry_id: Inquiry_ID
+  first_source: First_Source
+  first_medium: First_Medium
+  first_campaign: First_Campaign
+  first_campaign_id: First_Campaign_ID
+  first_term: First_Term
+  first_content: First_Content
+  first_landing_url: First_Landing_URL
+  first_referrer: First_Referrer
+  first_site: First_Site
+  first_touch_time: First_Touch_Time
+  last_source: Last_Source
+  last_medium: Last_Medium
+  last_campaign: Last_Campaign
+  last_campaign_id: Last_Campaign_ID
+  last_term: Last_Term
+  last_content: Last_Content
+  last_landing_url: Last_Landing_URL
+  last_referrer: Last_Referrer
+  last_site: Last_Site
+  last_touch_time: Last_Touch_Time
+
+contact_fields:
+  account_lookup: Account_Name
+  normalized_email: Normalized_Email
+  normalized_phone: Normalized_Phone
+  ingestion_source: Ingestion_Source
+  source_record_id: Source_Record_ID
+  inquiry_id: Inquiry_ID
+
+account_fields:
+  name: Account_Name
+  main_workdrive_folder_id: Main_Workdrive_Folder_ID
+  main_workdrive_folder_url: Main_Workdrive_Folder_URL
+  general_terms_signed_at: General_Terms_Signed
+  general_terms_signer: General_Terms_Signer
+
+deal_fields:
+  name: Deal_Name
+  account_lookup: Account_Name
+  contact_lookup: Contact_Name
+  stage: Stage
+  amount: Amount
+  closing_date: Closing_Date
+  service_types: Service_Types
+  ingestion_source: Ingestion_Source
+  source_record_id: Source_Record_ID
+  inquiry_id: Inquiry_ID
+
+service_location_fields:
+  name: Name
+  account_lookup: Linked_Account
+  primary_contact: Primary_Contact
+  workdrive_folder_id: Service_Location_Workdrive_Folder_ID
+  workdrive_folder_url: Service_Location_Workdrive_Folder_URL
+  city: Service_Location_Address_City
+  province: Service_Location_Address_State_Province
+  postal_code: Service_Location_Address_Zip_Postal_Code
+  country: Service_Location_Address_Country_Region
+  street: Service_Location_Address_Street_Address
+
+service_fields:
+  name: Name
+  service_location: Linked_Service_Location
+  deal: Linked_Deal
+  service_type: Service_Type
+  stage: Service_Stage
+  contract_type: Contract_Type
+  sign_request_id: Sign_Request_ID
+  sign_document_link: Sign_Document_Link
+  signed_at: Service_Contract_Signed_Date
+  workflow_job_id: Workflow_API_Job_ID
+  workflow_last_error: Workflow_API_Last_Error
+
+installation_fields:
+  name: Name
+  service: Linked_Service
+  scheduled_at: Scheduled_Date
+  status: Installation_Status
+  type: Installation_Type
+  assigned_to: Assigned_To
+  onsite_name: On_Site_Contact_Name
+  onsite_phone: On_Site_Contact_Phone
+  onsite_email: Email
+  instructions: Instructions_Notes
+  completion_notes: Completion_Notes
+  completion_proof: Completion_Proof_Link
+
+lifecycle_events:
+  - customer.lifecycle.lead.received
+  - customer.lifecycle.lead.synced
+  - customer.lifecycle.lead.qualified
+  - customer.lifecycle.email.received
+  - customer.lifecycle.email.analyzed
+  - customer.lifecycle.meeting.requested
+  - customer.lifecycle.quote.requested
+  - customer.lifecycle.quote.sent
+  - customer.lifecycle.quote.accepted
+  - customer.lifecycle.contract.requested
+  - customer.lifecycle.contract.sent
+  - customer.lifecycle.contract.signed
+  - customer.lifecycle.service.created
+  - customer.lifecycle.installation.scheduled
+  - customer.lifecycle.installation.completed
+  - customer.lifecycle.invoice.observed
+  - customer.lifecycle.payment.observed
+  - customer.lifecycle.review.requested
