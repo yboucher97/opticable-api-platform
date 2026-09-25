@@ -1,0 +1,32 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "opticable-control-plane",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-25",
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "CORE_API_URL": "https://api01.opticable.ca"
+  },
+  "queues": {
+    "producers": [
+      { "binding": "EVENTS", "queue": "opticable-business-events" }
+    ],
+    "consumers": [
+      {
+        "queue": "opticable-business-events",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 5,
+        "dead_letter_queue": "opticable-business-events-dlq"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "name": "opticable-business-workflow",
+      "binding": "BUSINESS_WORKFLOW",
+      "class_name": "BusinessWorkflow"
+    }
+  ]
+}
