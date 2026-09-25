@@ -77,3 +77,8 @@ The Cloudflare token must be allowed to deploy Workers/Workflows and manage Queu
 This component is production-targeted through `.github/workflows/deploy-control-plane.yml`.
 A documentation-only change may be used to exercise the existing deployment workflow without changing runtime behavior.
 Production is considered verified only after the GitHub Actions deployment succeeds and the Worker endpoint is subsequently health-checked.
+
+
+## CI bootstrap status
+
+Production deployment credentials are provisioned through the OptiBrain VPS bootstrap. This documentation change intentionally exercises the durable control-plane deployment workflow after bootstrap.

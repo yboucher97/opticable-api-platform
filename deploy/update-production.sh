@@ -97,7 +97,11 @@ main() {
   exec 9>"${LOCK_FILE}"
   flock -n 9 || fail "Another deployment is already running."
 
-  if [[ -n "$(git -C "${INSTALL_DIR}" status --porcelain --untracked-files=no)" ]]; then
+  local tracked_changes
+  tracked_changes="$(git -C "${INSTALL_DIR}" status --porcelain --untracked-files=no)"
+  if [[ -n "${tracked_changes}" ]]; then
+    log "Modified tracked files detected:"
+    printf '%s\n' "${tracked_changes}" >&2
     fail "Production checkout has modified tracked files. Refusing to overwrite local changes."
   fi
 
