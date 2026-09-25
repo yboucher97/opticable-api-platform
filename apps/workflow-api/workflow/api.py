@@ -24,10 +24,20 @@ from .workdrive import WorkflowWorkDriveClient, WorkflowWorkDriveError
 from .zoho_oauth import ZohoOAuthManager
 from .google_oauth import GoogleOAuthManager
 from .google_api import GoogleApiClient, GoogleApiError, SERVICE_BASES as GOOGLE_SERVICE_BASES
-from .automation import AutomationEngine, AutomationEvent, AutomationStore
+from .zoho_gateway import ZohoGatewayClient, ZohoGatewayError
+from .automation import (
+    AutomationEngine,
+    AutomationEvent,
+    AutomationStore,
+    DesiredPlan,
+    DesiredStateController,
+    DesiredStateDocument,
+    DesiredStateRegistry,
+)
 from .automation.capabilities import capability_summary, load_capabilities
 from .automation.models import EventIngestResponse
 from .automation.providers.google import register_google_actions
+from .automation.providers.zoho import register_zoho_actions
 
 
 settings = load_settings()
@@ -39,10 +49,14 @@ automation_engine = AutomationEngine(
     settings.automation.workflows_dir,
     max_event_depth=settings.automation.max_event_depth,
 )
+desired_state_registry = DesiredStateRegistry()
+desired_state_controller = DesiredStateController(desired_state_registry)
 google_oauth_manager = GoogleOAuthManager(settings.google_oauth)
 google_api_client = GoogleApiClient(google_oauth_manager)
+zoho_gateway_client = ZohoGatewayClient(settings.zoho_gateway)
 register_google_actions(automation_engine, google_api_client, automation_store)
-API_VERSION = "1.6.0"
+register_zoho_actions(automation_engine, zoho_gateway_client, automation_store)
+API_VERSION = "1.7.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
 PRIMARY_JOB_STATUS_PATH = "/v1/site-and-password/jobs/{job_id}"
@@ -745,6 +759,93 @@ async def automation_smoke_test(
     return automation_engine.ingest(event)
 
 
+class DesiredStateApplyRequest(BaseModel):
+    document: DesiredStateDocument
+    allow_high_risk: bool = False
+    allow_destructive: bool = False
+    reason: str = Field(min_length=3, max_length=500)
+
+
+@app.get("/v1/automation/desired-state/adapters", tags=["automation"])
+async def automation_desired_state_adapters(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    return {"adapters": desired_state_registry.list_adapters()}
+
+
+@app.post("/v1/automation/desired-state/plan", response_model=DesiredPlan, tags=["automation"])
+async def automation_desired_state_plan(
+    document: DesiredStateDocument,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> DesiredPlan:
+    _validate_api_key(x_api_key)
+    try:
+        plan = desired_state_controller.plan(document)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    automation_store.audit(
+        category="desired_state",
+        action="plan",
+        actor="api",
+        success=True,
+        target=document.name,
+        metadata={
+            "version": document.version,
+            "resource_count": len(document.resources),
+            "summary": plan.summary,
+        },
+    )
+    return plan
+
+
+@app.post("/v1/automation/desired-state/apply", tags=["automation"])
+async def automation_desired_state_apply(
+    payload: DesiredStateApplyRequest,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+
+    try:
+        plan = desired_state_controller.plan(payload.document)
+        results = desired_state_controller.apply(
+            payload.document,
+            plan,
+            allow_high_risk=payload.allow_high_risk,
+            allow_destructive=payload.allow_destructive,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    failed = [item for item in results if item.status in {"failed", "blocked"}]
+    changed = [item for item in results if item.changed]
+    automation_store.audit(
+        category="desired_state",
+        action="apply",
+        actor="api",
+        success=not failed,
+        target=payload.document.name,
+        metadata={
+            "reason": payload.reason,
+            "version": payload.document.version,
+            "plan_summary": plan.summary,
+            "changed": len(changed),
+            "failed_or_blocked": len(failed),
+            "allow_high_risk": payload.allow_high_risk,
+            "allow_destructive": payload.allow_destructive,
+        },
+    )
+    return {
+        "document": payload.document.name,
+        "version": payload.document.version,
+        "plan": plan.model_dump(),
+        "results": [item.model_dump() for item in results],
+        "changed": len(changed),
+        "failed_or_blocked": len(failed),
+    }
+
+
 @app.get("/v1/automation/runs", tags=["automation"])
 async def automation_runs(
     limit: int = Query(default=50, ge=1, le=200),
@@ -1119,6 +1220,33 @@ async def google_admin_api(
             },
         )
     return result
+
+
+@app.get("/v1/integrations/zoho-gateway/status", tags=["integrations"])
+async def zoho_gateway_status(
+    verify: bool = Query(default=False),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    payload: dict[str, Any] = {
+        "configured": zoho_gateway_client.configured,
+        "base_url": settings.zoho_gateway.base_url,
+        "uses_centralized_oauth": True,
+    }
+    if not verify or not zoho_gateway_client.configured:
+        return payload
+    try:
+        result = zoho_gateway_client.request(
+            "zohoapis",
+            "GET",
+            "/crm/v8/org",
+        )
+        payload["verified"] = bool(result.get("ok"))
+        payload["provider_status"] = result.get("status")
+    except Exception as exc:
+        payload["verified"] = False
+        payload["error"] = str(exc)
+    return payload
 
 
 @app.get(ZOHO_OAUTH_STATUS_PATH, response_model=ZohoOAuthStatusResponse, tags=["integrations"])

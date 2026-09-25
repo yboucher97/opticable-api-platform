@@ -8,6 +8,16 @@ grading:
   F: "0-19: not connected or no usable automation path"
 
 capabilities:
+  - provider: opticable
+    product: Automation_Control_Plane
+    capability: event_orchestration_and_desired_state
+    grade: A
+    score: 94
+    access_mode: api_git_desired_state
+    status: implemented_pending_production_deploy
+    notes: "Provider-neutral event engine plus plan/apply desired-state reconciliation, dependencies, idempotency, audit history and destructive/high-risk gates."
+    next_action: "Add provider-specific reconcilers and move runtime persistence to managed Postgres when production scale warrants it."
+
   - provider: zoho
     product: CRM
     capability: configuration_and_data
