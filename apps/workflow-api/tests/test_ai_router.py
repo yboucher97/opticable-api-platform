@@ -16,6 +16,7 @@ class AiRouterTests(unittest.TestCase):
             openai_model="openai-test",
             anthropic_api_key="a",
             anthropic_model="anthropic-test",
+            anthropic_workspace_id="wrkspc_test",
             gemini_api_key="g",
             gemini_model="gemini-test",
             provider_order=("openai", "anthropic", "gemini"),
@@ -42,8 +43,9 @@ class AiRouterTests(unittest.TestCase):
             json={"content":[{"type":"text","text":"fallback"}]},
             request=httpx.Request("POST","https://api.anthropic.com/v1/messages"),
         )
-        with patch("workflow.ai_router.httpx.post", side_effect=[fail, success]):
+        with patch("workflow.ai_router.httpx.post", side_effect=[fail, success]) as mocked:
             result=router.generate("hello", provider="auto")
+        self.assertEqual(mocked.call_args_list[1].kwargs["headers"]["anthropic-workspace-id"], "wrkspc_test")
         self.assertEqual(result["provider"], "anthropic")
         self.assertEqual(result["text"], "fallback")
 
