@@ -1,0 +1,25 @@
+id: customer.lifecycle.meeting-create
+name: Customer lifecycle - create meeting
+version: 1
+enabled: true
+description: Create a CRM Meeting only from an explicit authenticated meeting request event.
+trigger:
+  event_types:
+    - customer.lifecycle.meeting.requested
+steps:
+  - id: create
+    action: lifecycle.crm_create_meeting
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
+    with:
+      meeting: "{{ event.payload }}"
+  - id: emit_created
+    action: event.emit
+    with:
+      event_type: customer.lifecycle.meeting.created
+      source: automation-engine
+      idempotency_key: "meeting-created:{{ steps.create.meeting_id }}"
+      payload:
+        meeting_id: "{{ steps.create.meeting_id }}"
+        meeting: "{{ event.payload }}"
