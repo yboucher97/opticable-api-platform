@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import time
 from pathlib import Path
 from typing import Any, Callable
@@ -10,6 +11,42 @@ from .models import AutomationEvent, EventIngestResponse, WorkflowDefinition, Wo
 from .store import AutomationStore
 
 ActionHandler = Callable[[dict[str, Any], WorkflowStep], Any]
+
+_TEMPLATE_RE = re.compile(r"{{\\s*([A-Za-z0-9_.-]+)\\s*}}")
+
+
+def _lookup_context(context: dict[str, Any], path: str) -> Any:
+    current: Any = context
+    for part in path.split("."):
+        if isinstance(current, dict) and part in current:
+            current = current[part]
+            continue
+        if isinstance(current, list) and part.isdigit():
+            index = int(part)
+            if 0 <= index < len(current):
+                current = current[index]
+                continue
+        raise KeyError(f"Workflow template reference not found: {path}")
+    return current
+
+
+def _resolve_templates(value: Any, context: dict[str, Any]) -> Any:
+    if isinstance(value, dict):
+        return {key: _resolve_templates(item, context) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_resolve_templates(item, context) for item in value]
+    if not isinstance(value, str):
+        return value
+
+    full = _TEMPLATE_RE.fullmatch(value)
+    if full:
+        return _lookup_context(context, full.group(1))
+
+    def replace(match: re.Match[str]) -> str:
+        resolved = _lookup_context(context, match.group(1))
+        return str(resolved)
+
+    return _TEMPLATE_RE.sub(replace, value)
 
 
 class AutomationEngine:
@@ -94,14 +131,16 @@ class AutomationEngine:
         continued_error = False
 
         for step in definition.steps:
-            handler = self._actions.get(step.action)
+            resolved_inputs = _resolve_templates(step.inputs, context)
+            effective_step = step.model_copy(update={"inputs": resolved_inputs})
+            handler = self._actions.get(effective_step.action)
             if handler is None:
-                error = f"Unknown automation action: {step.action}"
+                error = f"Unknown automation action: {effective_step.action}"
                 self.store.append_step(
-                    run_id=run_id, step_id=step.id, action=step.action, attempt=1,
+                    run_id=run_id, step_id=effective_step.id, action=effective_step.action, attempt=1,
                     status="failed", started_at=utc_now_iso(), error=error,
                 )
-                if step.on_error == "continue":
+                if effective_step.on_error == "continue":
                     continued_error = True
                     continue
                 run_failed = True
@@ -110,33 +149,33 @@ class AutomationEngine:
 
             step_succeeded = False
             last_error: str | None = None
-            for attempt in range(1, step.retry.max_attempts + 1):
+            for attempt in range(1, effective_step.retry.max_attempts + 1):
                 started_at = utc_now_iso()
                 try:
-                    result = handler(context, step)
+                    result = handler(context, effective_step)
                 except Exception as exc:  # provider-specific runtime errors are captured durably
                     last_error = str(exc)
                     self.store.append_step(
-                        run_id=run_id, step_id=step.id, action=step.action, attempt=attempt,
+                        run_id=run_id, step_id=effective_step.id, action=effective_step.action, attempt=attempt,
                         status="failed", started_at=started_at, error=last_error,
                     )
-                    if attempt < step.retry.max_attempts and step.retry.backoff_seconds:
-                        time.sleep(step.retry.backoff_seconds)
+                    if attempt < effective_step.retry.max_attempts and effective_step.retry.backoff_seconds:
+                        time.sleep(effective_step.retry.backoff_seconds)
                     continue
                 self.store.append_step(
-                    run_id=run_id, step_id=step.id, action=step.action, attempt=attempt,
+                    run_id=run_id, step_id=effective_step.id, action=effective_step.action, attempt=attempt,
                     status="completed", started_at=started_at, result=result,
                 )
-                context["steps"][step.id] = result
+                context["steps"][effective_step.id] = result
                 step_succeeded = True
                 break
 
             if not step_succeeded:
-                if step.on_error == "continue":
+                if effective_step.on_error == "continue":
                     continued_error = True
                     continue
                 run_failed = True
-                failure_message = last_error or f"Step {step.id} failed."
+                failure_message = last_error or f"Step {effective_step.id} failed."
                 break
 
         if run_failed:
