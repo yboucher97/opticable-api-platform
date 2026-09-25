@@ -32,12 +32,10 @@ jobs:
         shell: bash
         env:
           DEPLOY_HOST: ${{ secrets.OPTICABLE_API_DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.OPTICABLE_API_DEPLOY_USER }}
           DEPLOY_SSH_KEY: ${{ secrets.OPTICABLE_API_DEPLOY_SSH_KEY }}
           DEPLOY_KNOWN_HOSTS: ${{ secrets.OPTICABLE_API_DEPLOY_KNOWN_HOSTS }}
         run: |
           test -n "$DEPLOY_HOST" || { echo "Missing secret: OPTICABLE_API_DEPLOY_HOST"; exit 1; }
-          test -n "$DEPLOY_USER" || { echo "Missing secret: OPTICABLE_API_DEPLOY_USER"; exit 1; }
           test -n "$DEPLOY_SSH_KEY" || { echo "Missing secret: OPTICABLE_API_DEPLOY_SSH_KEY"; exit 1; }
           test -n "$DEPLOY_KNOWN_HOSTS" || { echo "Missing secret: OPTICABLE_API_DEPLOY_KNOWN_HOSTS"; exit 1; }
 
@@ -57,24 +55,18 @@ jobs:
         shell: bash
         env:
           DEPLOY_HOST: ${{ secrets.OPTICABLE_API_DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.OPTICABLE_API_DEPLOY_USER }}
           DEPLOY_PORT: ${{ secrets.OPTICABLE_API_DEPLOY_PORT }}
           TARGET_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           PORT="${DEPLOY_PORT:-22}"
-          if [ "$DEPLOY_USER" = "root" ]; then
-            REMOTE_CMD="bash -s -- '$TARGET_SHA'"
-          else
-            REMOTE_CMD="sudo -n bash -s -- '$TARGET_SHA'"
-          fi
           ssh \
             -i ~/.ssh/opticable_api_deploy \
             -p "$PORT" \
             -o BatchMode=yes \
             -o IdentitiesOnly=yes \
             -o StrictHostKeyChecking=yes \
-            "$DEPLOY_USER@$DEPLOY_HOST" \
-            "$REMOTE_CMD" < deploy/update-production.sh
+            "opticable-deploy@$DEPLOY_HOST" \
+            "deploy $TARGET_SHA"
 
       - name: Verify public API health
         shell: bash
