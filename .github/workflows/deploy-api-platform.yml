@@ -1,0 +1,77 @@
+name: Deploy API Platform
+
+on:
+  workflow_run:
+    workflows:
+      - Validate API Platform
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: opticable-api-platform-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out validated commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Verify deployment secrets exist
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.OPTICABLE_API_DEPLOY_HOST }}
+          DEPLOY_SSH_KEY: ${{ secrets.OPTICABLE_API_DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.OPTICABLE_API_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          test -n "$DEPLOY_HOST" || { echo "Missing secret: OPTICABLE_API_DEPLOY_HOST"; exit 1; }
+          test -n "$DEPLOY_SSH_KEY" || { echo "Missing secret: OPTICABLE_API_DEPLOY_SSH_KEY"; exit 1; }
+          test -n "$DEPLOY_KNOWN_HOSTS" || { echo "Missing secret: OPTICABLE_API_DEPLOY_KNOWN_HOSTS"; exit 1; }
+
+      - name: Configure SSH
+        shell: bash
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.OPTICABLE_API_DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.OPTICABLE_API_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/opticable_api_deploy
+          chmod 600 ~/.ssh/opticable_api_deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy validated commit with rollback
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.OPTICABLE_API_DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.OPTICABLE_API_DEPLOY_PORT }}
+          TARGET_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          PORT="${DEPLOY_PORT:-22}"
+          ssh \
+            -i ~/.ssh/opticable_api_deploy \
+            -p "$PORT" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            "opticable-deploy@$DEPLOY_HOST" \
+            "deploy $TARGET_SHA"
+
+      - name: Verify public API health
+        shell: bash
+        env:
+          PUBLIC_BASE_URL: ${{ secrets.OPTICABLE_API_PUBLIC_BASE_URL }}
+        run: |
+          BASE="${PUBLIC_BASE_URL:-https://api01.opticable.ca}"
+          curl --fail --silent --show-error --max-time 15 "$BASE/v1/system/health" >/dev/null
