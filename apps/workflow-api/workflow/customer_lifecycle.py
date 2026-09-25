@@ -204,3 +204,47 @@ def lead_event_idempotency_key(payload: dict[str, Any]) -> str | None:
     if request.source_record_id:
         return f"lead:{request.source}:record:{request.source_record_id}"
     return None
+
+
+class EmailIntakeRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    source: str = "zoho_mail"
+    mailbox_account_id: str = Field(min_length=1, max_length=64)
+    mailbox_address: str = Field(min_length=3, max_length=320)
+    message_id: str = Field(min_length=1, max_length=255)
+    folder_id: str | None = Field(default=None, max_length=255)
+    thread_id: str | None = Field(default=None, max_length=255)
+    internet_message_id: str | None = Field(default=None, max_length=1000)
+    received_at: str | None = None
+    sender_name: str | None = None
+    sender_email: str = Field(min_length=3, max_length=320)
+    subject: str | None = Field(default=None, max_length=1000)
+    body: str = Field(min_length=1)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class MeetingRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    title: str = Field(min_length=1, max_length=255)
+    start_datetime: str
+    end_datetime: str
+    description: str | None = None
+    venue: str | None = Field(default=None, max_length=255)
+    contact_id: str | None = Field(default=None, max_length=64)
+    deal_id: str | None = Field(default=None, max_length=64)
+    source: str = Field(default="opticable", min_length=1, max_length=128)
+
+    @model_validator(mode="after")
+    def validate_window(self) -> "MeetingRequest":
+        start = datetime.fromisoformat(self.start_datetime.replace("Z", "+00:00"))
+        end = datetime.fromisoformat(self.end_datetime.replace("Z", "+00:00"))
+        if start >= end:
+            raise ValueError("end_datetime must be after start_datetime")
+        return self
+
+
+def email_event_idempotency_key(payload: dict[str, Any]) -> str:
+    request = EmailIntakeRequest.model_validate(payload)
+    return f"email:{request.mailbox_account_id}:{request.message_id}"
