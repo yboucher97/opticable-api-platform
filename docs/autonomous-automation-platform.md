@@ -120,6 +120,71 @@ steps:
 
 The engine does not hard-code provider behavior. Actions are registered by provider adapters.
 
+## Desired-state control plane
+
+The event engine handles **what happened**. The desired-state controller handles **what should exist**.
+
+Desired-state resources live under:
+
+`apps/workflow-api/config/automation/desired-state/`
+
+The controller provides:
+
+- provider/kind adapter registry
+- dependency ordering
+- idempotent plan/apply
+- explicit drift plans
+- high-risk/destructive gates
+- provider-independent resource contracts
+- audit entries for plan/apply operations
+
+API:
+
+- `GET /v1/automation/desired-state/adapters`
+- `POST /v1/automation/desired-state/plan`
+- `POST /v1/automation/desired-state/apply`
+
+The intended operating loop is:
+
+```
+Git desired state
+      ↓
+discover actual provider state
+      ↓
+plan
+      ↓
+review risk/drift
+      ↓
+apply
+      ↓
+verify with a new plan
+      ↓
+no-op = converged
+```
+
+This is how fields, tracking tags, automations, workflows and other configuration can be safely recreated or upgraded later without one-off setup knowledge.
+
+## Centralized Zoho credential plane
+
+`connect.opticable.ca` is the authoritative Zoho OAuth/token gateway.
+
+The automation kernel calls:
+
+`POST https://connect.opticable.ca/internal/v1/zoho/request`
+
+using the server-to-server `OPTICABLE_ZOHO_GATEWAY_API_KEY`.
+
+Benefits:
+
+- one Zoho refresh token
+- one scope inventory
+- one access-token cache
+- no duplicated OAuth drift between ChatGPT and the automation server
+- one audit trail for provider mutations
+- Creator and future Zoho products can be added without new OAuth stacks
+
+The legacy server-side Zoho OAuth path remains for compatibility with existing WorkDrive/PDF flows until they are safely migrated.
+
 ## Durable state
 
 The first implementation uses SQLite in WAL mode.
@@ -273,15 +338,17 @@ Every browser-driven action should eventually have:
 Priority order:
 
 1. Zoho CRM desired-state adapter
-2. Zoho Creator OAuth + data adapter
-3. Zoho Forms webhook + UI builder adapter
-4. Zoho Books adapter
+2. Zoho Creator desired-state/data adapter through centralized gateway
+3. Zoho Forms webhook + deterministic configuration-time browser adapter
+4. Zoho Books idempotent finance adapter
 5. WorkDrive + Writer + Sign document pipeline
-6. Google Tag Manager OAuth + configuration adapter
-7. GA4 Admin adapter
-8. Cloudflare infrastructure-as-code
+6. Google Tag Manager desired-state adapter
+7. GA4 Admin desired-state adapter
+8. Cloudflare infrastructure-as-code / desired-state adapter
 9. Google/Meta attribution feedback adapters
 10. Zoho Desk/Projects operational adapters
+
+Zoho Flow is deliberately **not** on the critical-path list. It may remain for simple edge integrations, but critical logic belongs in this kernel.
 
 ## Safety / regression strategy
 
