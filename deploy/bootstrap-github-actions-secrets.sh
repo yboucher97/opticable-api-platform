@@ -30,7 +30,7 @@ for name in GITHUB_APP_ID GITHUB_APP_INSTALLATION_ID GITHUB_APP_PRIVATE_KEY_PATH
 done
 [[ -r "${GITHUB_APP_PRIVATE_KEY_PATH}" ]] || fail "GitHub App private key is not readable: ${GITHUB_APP_PRIVATE_KEY_PATH}"
 
-install -d -m 700 /etc/optibrain
+install -d -m 750 -o root -g opticable-workflow-api /etc/optibrain
 
 # Verify that the GitHub App can manage repository Actions secrets before changing SSH state.
 "${PYTHON}" - <<'PY'
