@@ -70,3 +70,10 @@ The Cloudflare token must be allowed to deploy Workers/Workflows and manage Queu
 - provider-neutral event contracts
 - browser automation only for UI-only provider configuration
 - destructive provider changes remain gated by the desired-state controller
+
+
+## Production verification
+
+This component is production-targeted through `.github/workflows/deploy-control-plane.yml`.
+A documentation-only change may be used to exercise the existing deployment workflow without changing runtime behavior.
+Production is considered verified only after the GitHub Actions deployment succeeds and the Worker endpoint is subsequently health-checked.

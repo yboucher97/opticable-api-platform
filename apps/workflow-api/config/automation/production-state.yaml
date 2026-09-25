@@ -1,0 +1,49 @@
+version: 1
+updated_at: "2026-09-25"
+master: "optibrain.opticable.ca"
+standby:
+  host: "connect.opticable.ca"
+  mode: "manual"
+  enabled: false
+
+infrastructure:
+  production_vps:
+    hostname: "vps-214ba8cd.vps.ovh.ca"
+    ipv4: "148.113.249.7"
+    os: "Ubuntu 24.04"
+    install_root: "/opt/opticable-api-platform"
+  legacy_vps:
+    policy: "do_not_touch_until_new_platform_proven"
+
+ai:
+  openai:
+    configured: true
+    live_verified: true
+    model: "gpt-5.6-luna"
+  anthropic:
+    configured: true
+    live_verified: true
+    workspace_header_supported: true
+  gemini:
+    configured: false
+    live_verified: false
+
+providers:
+  zoho: {configured: true, connected: true, configured_scopes: 96, granted_scopes: 96}
+  google: {configured: true, connected: true, scopes: 30}
+  windsor: {configured: true, live_verified: true}
+  ovhcloud: {configured: true, live_verified: true, endpoint: "ovh-ca"}
+  github: {configured: true, live_verified: true, auth_mode: "github_app", app_id: "5077440", installation_id: "164914980"}
+  cloudflare: {configured: true, token_verified: true, zone_verified: "opticable.ca"}
+  apollo: {configured: true, live_verified: true, credit_consumption_enabled: false}
+
+deployment:
+  validation_ci: true
+  api_deploy_workflow_present: true
+  api_deploy_blocker: "missing GitHub Actions VPS deployment secrets"
+  control_plane_workflow_present: true
+  control_plane_production_verified: false
+
+security:
+  secrets_in_git: false
+  paid_or_destructive_actions_require_explicit_approval: true
