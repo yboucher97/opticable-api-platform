@@ -12,7 +12,7 @@ from .store import AutomationStore
 
 ActionHandler = Callable[[dict[str, Any], WorkflowStep], Any]
 
-_TEMPLATE_RE = re.compile(r"{{\\s*([A-Za-z0-9_.-]+)\\s*}}")
+_TEMPLATE_RE = re.compile(r"{{[ \t\r\n]*([A-Za-z0-9_.-]+)[ \t\r\n]*}}")
 
 
 def _lookup_context(context: dict[str, Any], path: str) -> Any:
