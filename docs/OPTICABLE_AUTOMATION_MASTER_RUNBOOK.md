@@ -48,15 +48,24 @@ Validation workflow: .github/workflows/validate-api-platform.yml
 API deployment workflow: .github/workflows/deploy-api-platform.yml
 Durable control plane deployment: .github/workflows/deploy-control-plane.yml
 
-Known issue as of 2026-09-25:
-Deploy API Platform workflow exists but its VPS deployment secrets are missing, causing the "Verify deployment secrets exist" step to fail before SSH configuration.
-Do not assume GitHub can deploy the VPS until those secrets are restored.
+Known issues as of 2026-09-25:
+- Deploy API Platform workflow exists but its VPS deployment secrets are missing, causing the "Verify deployment secrets exist" step to fail before SSH configuration.
+- Deploy Durable Control Plane validates successfully but its GitHub Actions secret check currently finds all four required values empty: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, OPTICABLE_CONTROL_PLANE_API_KEY, OPTICABLE_CORE_API_KEY.
+Do not assume GitHub can deploy either target until the relevant CI secrets are restored.
 
 ## Durable control plane
 Cloudflare Worker path: apps/control-plane-worker
 Responsibilities: authenticated event intake, queue buffering, dead-letter handling, idempotent workflow execution, correlation/causation propagation, delivery to the core automation API.
 Queues: opticable-business-events and opticable-business-events-dlq.
 Core event target: POST /v1/automation/events.
+
+## Automatic production health monitoring
+Workflow: .github/workflows/monitor-production-health.yml
+Cadence: every 15 minutes plus manual dispatch.
+Checks: workflow API, password PDF service, Omada service.
+Failure behavior: open one GitHub incident issue and add subsequent failure observations as comments.
+Recovery behavior: comment on and close the incident automatically.
+All three endpoints were independently verified HTTP 200 from OPX001 on 2026-09-25.
 
 ## Recovery rules
 1. Inspect current health before changing anything.
