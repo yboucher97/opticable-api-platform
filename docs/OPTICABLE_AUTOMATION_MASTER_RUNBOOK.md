@@ -83,6 +83,8 @@ All three endpoints were independently verified HTTP 200 from OPX001 on 2026-09-
 - Apollo cost risk: provider connected but credit-consuming endpoints remain disabled by default.
 - VPS remote automation from OPX001: dedicated public key authorized on VPS, but Windows OpenSSH inside Remote Desktop Commander currently exits 255 even for local config operations; do not interpret this as VPS key rejection.
 
+- Workflow context templating first CI attempt failed because the regular expression matched a literal "\\s" instead of whitespace; tests caught that templates stayed unresolved and missing references did not fail. Fixed by switching to an escape-safe whitespace character class. Second CI run passed all automation-kernel and control-plane checks. Dynamic templates now support event payloads and prior-step outputs, preserve native types for exact references, and fail durably when a reference is missing.
+
 ## Current autonomy priorities
 1. Confirm/deploy durable control plane in Cloudflare.
 2. Restore secure VPS CI deployment secrets or establish a direct Linux remote-execution connector.
