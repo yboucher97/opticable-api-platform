@@ -708,8 +708,18 @@ async def provider_inventory(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
     _validate_api_key(x_api_key)
-    zoho_status = _zoho_oauth_manager().status()
-    google_status = google_oauth_manager.status()
+    zoho_status_error: str | None = None
+    google_status_error: str | None = None
+    try:
+        zoho_status = _zoho_oauth_manager().status()
+    except Exception as exc:
+        zoho_status = None
+        zoho_status_error = type(exc).__name__
+    try:
+        google_status = google_oauth_manager.status()
+    except Exception as exc:
+        google_status = None
+        google_status_error = type(exc).__name__
     return {
         "master": "optibrain.opticable.ca",
         "standby": {
@@ -721,20 +731,22 @@ async def provider_inventory(
         "providers": {
             "zoho": {
                 "primary": "local_oauth",
-                "configured": zoho_status.configured,
-                "connected": zoho_status.connected,
-                "configured_scope_count": len(zoho_status.scopes),
+                "configured": zoho_status.configured if zoho_status is not None else settings.zoho_oauth.enabled,
+                "connected": zoho_status.connected if zoho_status is not None else False,
+                "configured_scope_count": len(zoho_status.scopes) if zoho_status is not None else len(settings.zoho_oauth.scopes),
                 "granted_scope_count": len(
                     [scope for scope in (zoho_status.scope or "").replace(" ", ",").split(",") if scope.strip()]
-                ),
+                ) if zoho_status is not None else 0,
                 "standby_enabled": settings.zoho_gateway.standby_enabled,
+                "status_error": zoho_status_error,
             },
             "google_admin": {
                 "primary": "local_oauth",
-                "configured": google_status.configured,
-                "connected": google_status.connected,
-                "scope_count": len(google_status.scopes),
+                "configured": google_status.configured if google_status is not None else settings.google_oauth.enabled,
+                "connected": google_status.connected if google_status is not None else False,
+                "scope_count": len(google_status.scopes) if google_status is not None else len(settings.google_oauth.scopes),
                 "services": sorted(GOOGLE_SERVICE_BASES),
+                "status_error": google_status_error,
             },
             "windsor": {
                 "primary": "direct_api",
