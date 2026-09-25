@@ -38,6 +38,7 @@ from .automation.capabilities import capability_summary, load_capabilities
 from .automation.models import EventIngestResponse
 from .automation.providers.google import register_google_actions
 from .automation.providers.zoho import register_zoho_actions
+from .automation.reconcilers.zoho_crm import ZohoCrmFieldReconciler
 
 
 settings = load_settings()
@@ -54,6 +55,7 @@ desired_state_controller = DesiredStateController(desired_state_registry)
 google_oauth_manager = GoogleOAuthManager(settings.google_oauth)
 google_api_client = GoogleApiClient(google_oauth_manager)
 zoho_gateway_client = ZohoGatewayClient(settings.zoho_gateway)
+desired_state_registry.register("zoho_crm", "field", ZohoCrmFieldReconciler(zoho_gateway_client))
 register_google_actions(automation_engine, google_api_client, automation_store)
 register_zoho_actions(automation_engine, zoho_gateway_client, automation_store)
 API_VERSION = "1.7.0"
