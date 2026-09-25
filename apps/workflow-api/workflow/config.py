@@ -99,6 +99,13 @@ class ZohoGatewaySettings:
 
 
 @dataclass(frozen=True)
+class WindsorSettings:
+    base_url: str
+    api_key: str | None
+    timeout_seconds: int
+
+
+@dataclass(frozen=True)
 class ZohoOAuthSettings:
     enabled: bool
     client_id: str | None
@@ -122,6 +129,7 @@ class AppSettings:
     google_oauth: GoogleOAuthSettings
     zoho_gateway: ZohoGatewaySettings
     zoho_oauth: ZohoOAuthSettings
+    windsor: WindsorSettings
 
 
 def load_settings() -> AppSettings:
@@ -245,6 +253,11 @@ def load_settings() -> AppSettings:
             api_key=os.getenv("OPTICABLE_ZOHO_GATEWAY_API_KEY"),
             timeout_seconds=_env_int("OPTICABLE_ZOHO_GATEWAY_TIMEOUT_SECONDS", 60),
             standby_enabled=_env_bool("OPTICABLE_CONNECT_STANDBY_ENABLED", False),
+        ),
+        windsor=WindsorSettings(
+            base_url=os.getenv("WINDSOR_CONNECTORS_BASE_URL", "https://connectors.windsor.ai").rstrip("/"),
+            api_key=os.getenv("WINDSOR_API_KEY"),
+            timeout_seconds=_env_int("WINDSOR_TIMEOUT_SECONDS", 60),
         ),
         zoho_oauth=ZohoOAuthSettings(
             enabled=bool(zoho_client_id and zoho_client_secret and zoho_redirect_uri),
