@@ -27,6 +27,7 @@ from .google_api import GoogleApiClient, GoogleApiError, SERVICE_BASES as GOOGLE
 from .automation import AutomationEngine, AutomationEvent, AutomationStore
 from .automation.capabilities import capability_summary, load_capabilities
 from .automation.models import EventIngestResponse
+from .automation.providers.google import register_google_actions
 
 
 settings = load_settings()
@@ -40,6 +41,7 @@ automation_engine = AutomationEngine(
 )
 google_oauth_manager = GoogleOAuthManager(settings.google_oauth)
 google_api_client = GoogleApiClient(google_oauth_manager)
+register_google_actions(automation_engine, google_api_client, automation_store)
 API_VERSION = "1.6.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
