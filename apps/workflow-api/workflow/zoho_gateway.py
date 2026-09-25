@@ -14,6 +14,10 @@ class ZohoGatewayError(RuntimeError):
     pass
 
 
+def is_books_api_path(service: str, path: str) -> bool:
+    return service == "zohoapis" and str(path or "").lower().startswith("/books/")
+
+
 ZOHO_API_SERVICES = {
     "zohoapis": ("https://www.zohoapis.com/", "", "Zoho-oauthtoken"),
     "mail": ("https://mail.zoho.com/", "", "Zoho-oauthtoken"),
@@ -62,6 +66,8 @@ class ZohoGatewayClient:
             raise ValueError("Zoho path contains unsafe characters.")
 
         mutation = normalized_method != "GET"
+        if mutation and is_books_api_path(service, path):
+            raise ZohoGatewayError("Zoho Books is configured read-only by Opticable policy.")
         if mutation and not (reason or "").strip():
             raise ValueError("Zoho mutations require a human-readable reason.")
         if mutation and confirm is not True:
