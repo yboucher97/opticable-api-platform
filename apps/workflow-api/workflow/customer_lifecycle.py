@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import re
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -248,3 +248,32 @@ class MeetingRequest(BaseModel):
 def email_event_idempotency_key(payload: dict[str, Any]) -> str:
     request = EmailIntakeRequest.model_validate(payload)
     return f"email:{request.mailbox_account_id}:{request.message_id}"
+
+
+class ContractRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    contract_type: Literal["general_terms", "installation"]
+    recipient_name: str = Field(min_length=1, max_length=255)
+    recipient_email: str = Field(min_length=3, max_length=320)
+    request_name: str | None = Field(default=None, max_length=255)
+    service_id: str | None = Field(default=None, max_length=64)
+    deal_id: str | None = Field(default=None, max_length=64)
+    account_id: str | None = Field(default=None, max_length=64)
+    contact_id: str | None = Field(default=None, max_length=64)
+    field_text_data: dict[str, str] = Field(default_factory=dict)
+    field_date_data: dict[str, str] = Field(default_factory=dict)
+    field_boolean_data: dict[str, bool] = Field(default_factory=dict)
+    source: str = Field(default="opticable", min_length=1, max_length=128)
+
+
+class ContractStatusRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    request_id: str = Field(min_length=1, max_length=128)
+    contract_type: Literal["general_terms", "installation"]
+    service_id: str | None = Field(default=None, max_length=64)
+    deal_id: str | None = Field(default=None, max_length=64)
+    account_id: str | None = Field(default=None, max_length=64)
+    contact_id: str | None = Field(default=None, max_length=64)
+    source: str = Field(default="opticable", min_length=1, max_length=128)
