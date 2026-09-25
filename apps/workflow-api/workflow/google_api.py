@@ -43,8 +43,16 @@ class GoogleApiClient:
             raise ValueError(f"Unsupported Google API method: {normalized_method}")
 
         clean_path = path.strip().lstrip("/")
-        if not clean_path or "\\" in clean_path or "\r" in clean_path or "\n" in clean_path or clean_path.startswith("http"):
-            raise ValueError("Google API path must be a relative API resource path.")
+        path_segments = [segment for segment in clean_path.split("/") if segment]
+        if (
+            not clean_path
+            or "\\" in clean_path
+            or "\r" in clean_path
+            or "\n" in clean_path
+            or clean_path.lower().startswith(("http:", "https:"))
+            or any(segment in {".", ".."} for segment in path_segments)
+        ):
+            raise ValueError("Google API path must be a safe relative API resource path.")
 
         url = urljoin(base, clean_path)
         allowed_origin = httpx.URL(base).host
