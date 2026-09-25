@@ -1,0 +1,40 @@
+id: customer.lifecycle.lead-intake
+name: Customer lifecycle - lead intake
+version: 1
+enabled: true
+description: Normalize, deduplicate and sync inbound leads to Zoho CRM, then create a next-action task.
+trigger:
+  event_types:
+    - customer.lifecycle.lead.received
+steps:
+  - id: normalize
+    action: lifecycle.normalize_lead
+    with:
+      lead: "{{ event.payload }}"
+  - id: crm_sync
+    action: lifecycle.crm_upsert_lead
+    retry:
+      max_attempts: 3
+      backoff_seconds: 2
+    with:
+      lead: "{{ steps.normalize.lead }}"
+  - id: next_action
+    action: lifecycle.crm_create_followup_task
+    on_error: continue
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
+    with:
+      lead_id: "{{ steps.crm_sync.lead_id }}"
+      lead: "{{ steps.normalize.lead }}"
+      due_days: 1
+  - id: emit_synced
+    action: event.emit
+    with:
+      event_type: customer.lifecycle.lead.synced
+      source: automation-engine
+      idempotency_key: "lead-synced:{{ steps.crm_sync.lead_id }}:{{ event.event_id }}"
+      payload:
+        crm_lead_id: "{{ steps.crm_sync.lead_id }}"
+        crm_action: "{{ steps.crm_sync.action }}"
+        lead: "{{ steps.normalize.lead }}"
