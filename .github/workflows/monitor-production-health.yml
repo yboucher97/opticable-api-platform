@@ -15,6 +15,7 @@ jobs:
     timeout-minutes: 5
     env:
       GH_TOKEN: ${{ github.token }}
+      CORE_API_KEY: ${{ secrets.OPTICABLE_CORE_API_KEY }}
       HEALTH_ISSUE_TITLE: "OptiBrain production health check failing"
     steps:
       - uses: actions/checkout@v6
@@ -37,6 +38,32 @@ jobs:
           check "password-pdf" "https://optibrain.opticable.ca/pdf/health"
           check "omada-site" "https://optibrain.opticable.ca/omada/api/health"
           check "control-plane" "https://opticable-control-plane.yboucher.workers.dev/health"
+
+          if [[ -z "$CORE_API_KEY" ]]; then
+            failed+=("provider-inventory: missing OPTICABLE_CORE_API_KEY GitHub secret")
+          else
+            providers="$(curl --fail --silent --show-error --max-time 15               -H "X-API-Key: $CORE_API_KEY"               "https://optibrain.opticable.ca/v1/system/providers" 2>/dev/null || true)"
+            if [[ -z "$providers" ]]; then
+              failed+=("provider-inventory: authenticated inventory request failed")
+            else
+              check_provider() {
+                local jq_filter="$1"
+                local label="$2"
+                if ! echo "$providers" | jq -e "$jq_filter" >/dev/null; then
+                  failed+=("provider-state: $label")
+                fi
+              }
+              check_provider '.providers.zoho.configured == true and .providers.zoho.connected == true' "Zoho disconnected or unconfigured"
+              check_provider '.providers.google_admin.configured == true and .providers.google_admin.connected == true' "Google disconnected or unconfigured"
+              check_provider '.providers.windsor.configured == true' "Windsor unconfigured"
+              check_provider '.providers.ovhcloud.configured == true' "OVHcloud unconfigured"
+              check_provider '.providers.github.configured == true and .providers.github.auth_mode == "github_app"' "GitHub App auth unavailable"
+              check_provider '.providers.cloudflare.configured == true' "Cloudflare unconfigured"
+              check_provider '.providers.apollo.configured == true and .providers.apollo.credit_consumption_enabled == false' "Apollo unavailable or credit guard changed"
+              check_provider '.providers.openai.configured == true and .providers.openai.model_configured == true' "OpenAI unconfigured"
+              check_provider '.providers.anthropic.configured == true and .providers.anthropic.model_configured == true' "Anthropic unconfigured"
+            fi
+          fi
 
           if (( ${#failed[@]} > 0 )); then
             printf '%s\n' "${failed[@]}" > /tmp/failed-health.txt
