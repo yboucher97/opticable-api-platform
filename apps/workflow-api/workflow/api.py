@@ -22,6 +22,8 @@ from .pipeline import SiteWorkflowPipeline
 from .utils import ensure_directory, sanitize_filename, utc_timestamp
 from .workdrive import WorkflowWorkDriveClient, WorkflowWorkDriveError
 from .zoho_oauth import ZohoOAuthManager
+from .google_oauth import GoogleOAuthManager
+from .google_api import GoogleApiClient, GoogleApiError, SERVICE_BASES as GOOGLE_SERVICE_BASES
 from .automation import AutomationEngine, AutomationEvent, AutomationStore
 from .automation.capabilities import capability_summary, load_capabilities
 from .automation.models import EventIngestResponse
@@ -36,7 +38,9 @@ automation_engine = AutomationEngine(
     settings.automation.workflows_dir,
     max_event_depth=settings.automation.max_event_depth,
 )
-API_VERSION = "1.5.0"
+google_oauth_manager = GoogleOAuthManager(settings.google_oauth)
+google_api_client = GoogleApiClient(google_oauth_manager)
+API_VERSION = "1.6.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
 PRIMARY_JOB_STATUS_PATH = "/v1/site-and-password/jobs/{job_id}"
@@ -45,6 +49,9 @@ WORKFLOW_CANONICAL_JOB_STATUS_PATH = "/v1/workflows/site-and-password/jobs/{job_
 ZOHO_OAUTH_START_PATH = "/v1/integrations/zoho/oauth/start"
 ZOHO_OAUTH_CALLBACK_PATH = "/v1/integrations/zoho/oauth/callback"
 ZOHO_OAUTH_STATUS_PATH = "/v1/integrations/zoho/oauth/status"
+GOOGLE_OAUTH_START_PATH = "/v1/integrations/google/oauth/start"
+GOOGLE_OAUTH_CALLBACK_PATH = "/v1/integrations/google/oauth/callback"
+GOOGLE_OAUTH_STATUS_PATH = "/v1/integrations/google/oauth/status"
 PLATFORM_DOCS_PATH = "/docs"
 PLATFORM_OPENAPI_PATH = "/openapi.json"
 
@@ -235,6 +242,37 @@ class ZohoOAuthCallbackResponse(BaseModel):
     api_domain: str | None = None
 
 
+class GoogleOAuthStatusResponse(BaseModel):
+    provider: str = "google"
+    configured: bool
+    connected: bool
+    redirect_uri: str | None
+    authorization_start_url: str
+    callback_url: str
+    credentials_path: str
+    connected_at: str | None = None
+    granted_scope: str | None = None
+    configured_scopes: list[str]
+    has_refresh_token: bool
+    client_id_suffix: str | None = None
+    services: list[str]
+
+
+class GoogleOAuthConnectResponse(BaseModel):
+    provider: str = "google"
+    status: str
+    authorization_url: str
+    callback_url: str
+
+
+class GoogleOAuthCallbackResponse(BaseModel):
+    provider: str = "google"
+    status: str
+    connected: bool
+    credentials_path: str
+    scope: str | None = None
+
+
 def _service_catalog() -> list[ServiceRoute]:
     return [
         ServiceRoute(
@@ -271,6 +309,11 @@ def _service_catalog() -> list[ServiceRoute]:
             name="automation-kernel",
             path_prefix="/v1/automation",
             description="Provider-neutral event, workflow, capability, audit, and run-control APIs.",
+        ),
+        ServiceRoute(
+            name="google-admin",
+            path_prefix="/v1/integrations/google",
+            description="OAuth and controlled API access for Google Tag Manager and Google Analytics Admin.",
         ),
     ]
 
@@ -428,6 +471,24 @@ def _validate_browser_or_header_api_key(
 
 def _zoho_oauth_manager() -> ZohoOAuthManager:
     return ZohoOAuthManager(settings.zoho_oauth)
+
+
+def _google_status_payload() -> GoogleOAuthStatusResponse:
+    status = google_oauth_manager.status()
+    return GoogleOAuthStatusResponse(
+        configured=status.configured,
+        connected=status.connected,
+        redirect_uri=status.redirect_uri,
+        authorization_start_url=GOOGLE_OAUTH_START_PATH,
+        callback_url=GOOGLE_OAUTH_CALLBACK_PATH,
+        credentials_path=str(status.credentials_path),
+        connected_at=status.connected_at,
+        granted_scope=status.granted_scope,
+        configured_scopes=list(status.scopes),
+        has_refresh_token=status.has_refresh_token,
+        client_id_suffix=status.client_id_suffix,
+        services=sorted(GOOGLE_SERVICE_BASES),
+    )
 
 
 def _zoho_status_payload() -> ZohoOAuthStatusResponse:
@@ -910,6 +971,152 @@ async def omada_create_job_from_workdrive(
         job_status_url=f"/v1/omada/jobs/{job_id}" if job_id else None,
         job=job,
     )
+
+
+@app.get(GOOGLE_OAUTH_STATUS_PATH, response_model=GoogleOAuthStatusResponse, tags=["integrations"])
+async def google_oauth_status(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    api_key: str | None = Query(default=None),
+) -> GoogleOAuthStatusResponse:
+    _validate_browser_or_header_api_key(x_api_key, api_key)
+    return _google_status_payload()
+
+
+@app.get(GOOGLE_OAUTH_START_PATH, response_model=GoogleOAuthConnectResponse, tags=["integrations"])
+async def google_oauth_start(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    api_key: str | None = Query(default=None),
+    response_mode: str = Query(default="redirect", pattern="^(redirect|json)$"),
+):
+    _validate_browser_or_header_api_key(x_api_key, api_key)
+    try:
+        authorization_url = google_oauth_manager.build_authorization_redirect()
+    except ValueError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    if response_mode == "json":
+        return GoogleOAuthConnectResponse(
+            status="ready",
+            authorization_url=authorization_url,
+            callback_url=GOOGLE_OAUTH_CALLBACK_PATH,
+        )
+    return RedirectResponse(authorization_url, status_code=307)
+
+
+@app.get(GOOGLE_OAUTH_CALLBACK_PATH, tags=["integrations"])
+async def google_oauth_callback(
+    code: str | None = Query(default=None),
+    state: str | None = Query(default=None),
+    error: str | None = Query(default=None),
+    error_description: str | None = Query(default=None),
+    response_mode: str = Query(default="html", pattern="^(html|json)$"),
+):
+    if error:
+        detail = error_description or error
+        raise HTTPException(status_code=400, detail=f"Google authorization failed: {detail}")
+    if not code or not state:
+        raise HTTPException(status_code=400, detail="Google callback is missing the authorization code or state.")
+    try:
+        google_oauth_manager.validate_state(state)
+        token_payload = google_oauth_manager.exchange_code(code)
+        credentials_path = google_oauth_manager.save_credentials(token_payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    status_payload = GoogleOAuthCallbackResponse(
+        status="connected",
+        connected=True,
+        credentials_path=str(credentials_path),
+        scope=str(token_payload.get("scope")) if token_payload.get("scope") else None,
+    )
+    automation_store.audit(
+        category="integration",
+        action="google_oauth_connected",
+        actor="oauth",
+        success=True,
+        target="google",
+        metadata={"scope": status_payload.scope},
+    )
+    if response_mode == "json":
+        return status_payload.model_dump()
+    return HTMLResponse(
+        content=(
+            "<html><body style='font-family:sans-serif;padding:2rem;line-height:1.5'>"
+            "<h1>Google Admin APIs connected</h1>"
+            "<p>Google Tag Manager and Google Analytics Admin authorization was stored successfully.</p>"
+            "<p>You can close this window and return to ChatGPT.</p>"
+            "</body></html>"
+        ),
+        status_code=200,
+    )
+
+
+@app.api_route(
+    "/v1/google/{service}/{resource_path:path}",
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    tags=["integrations"],
+)
+async def google_admin_api(
+    request: Request,
+    service: str,
+    resource_path: str,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    x_change_reason: str | None = Header(default=None, alias="X-Change-Reason"),
+):
+    _validate_api_key(x_api_key)
+    method = request.method.upper()
+    if service not in GOOGLE_SERVICE_BASES:
+        raise HTTPException(status_code=404, detail=f"Unsupported Google service: {service}")
+
+    body: Any = None
+    if method in {"POST", "PUT", "PATCH"}:
+        raw = await request.body()
+        if raw:
+            try:
+                body = await request.json()
+            except Exception as exc:
+                raise HTTPException(status_code=422, detail="Google API mutation body must be JSON.") from exc
+
+    if method != "GET" and not (x_change_reason or "").strip():
+        raise HTTPException(status_code=422, detail="X-Change-Reason is required for Google API mutations.")
+
+    params = dict(request.query_params)
+    correlation_id = request.headers.get("X-Correlation-ID")
+    try:
+        result = google_api_client.request(
+            service,
+            method,
+            resource_path,
+            params=params,
+            body=body,
+        )
+    except (ValueError, GoogleApiError) as exc:
+        if method != "GET":
+            automation_store.audit(
+                category="provider_mutation",
+                action=f"google.{service}.{method.lower()}",
+                actor="api",
+                success=False,
+                correlation_id=correlation_id,
+                target=resource_path,
+                metadata={"reason": x_change_reason, "error": str(exc)},
+            )
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    if method != "GET":
+        automation_store.audit(
+            category="provider_mutation",
+            action=f"google.{service}.{method.lower()}",
+            actor="api",
+            success=True,
+            correlation_id=correlation_id,
+            target=resource_path,
+            metadata={
+                "reason": x_change_reason,
+                "status": result.get("status"),
+                "body_keys": sorted(body.keys()) if isinstance(body, dict) else [],
+            },
+        )
+    return result
 
 
 @app.get(ZOHO_OAUTH_STATUS_PATH, response_model=ZohoOAuthStatusResponse, tags=["integrations"])
