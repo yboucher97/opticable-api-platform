@@ -79,6 +79,18 @@ class AutomationSettings:
 
 
 @dataclass(frozen=True)
+class GoogleOAuthSettings:
+    enabled: bool
+    client_id: str | None
+    client_secret: str | None
+    redirect_uri: str | None
+    scopes: tuple[str, ...]
+    credentials_path: Path
+    state_secret: str
+    state_ttl_seconds: int
+
+
+@dataclass(frozen=True)
 class ZohoOAuthSettings:
     enabled: bool
     client_id: str | None
@@ -99,6 +111,7 @@ class AppSettings:
     omada: DownstreamOmadaSettings
     naming: NamingSettings
     automation: AutomationSettings
+    google_oauth: GoogleOAuthSettings
     zoho_oauth: ZohoOAuthSettings
 
 
@@ -119,6 +132,32 @@ def load_settings() -> AppSettings:
     zoho_redirect_uri = os.getenv("ZOHO_OAUTH_REDIRECT_URI")
     zoho_accounts_base_url = os.getenv("ZOHO_OAUTH_ACCOUNTS_BASE_URL", "https://accounts.zoho.com").rstrip("/")
     zoho_state_secret = os.getenv("ZOHO_OAUTH_STATE_SECRET") or api_key_value or "workflow-api"
+
+    google_scopes_raw = os.getenv(
+        "GOOGLE_OAUTH_SCOPES",
+        ",".join(
+            [
+                "https://www.googleapis.com/auth/analytics.edit",
+                "https://www.googleapis.com/auth/analytics.readonly",
+                "https://www.googleapis.com/auth/tagmanager.readonly",
+                "https://www.googleapis.com/auth/tagmanager.edit.containers",
+                "https://www.googleapis.com/auth/tagmanager.delete.containers",
+                "https://www.googleapis.com/auth/tagmanager.edit.containerversions",
+                "https://www.googleapis.com/auth/tagmanager.publish",
+                "https://www.googleapis.com/auth/tagmanager.manage.accounts",
+                "https://www.googleapis.com/auth/tagmanager.manage.users",
+            ]
+        ),
+    )
+    google_scopes = tuple(scope.strip() for scope in google_scopes_raw.split(",") if scope.strip())
+    google_credentials_path = Path(
+        os.getenv("GOOGLE_OAUTH_CREDENTIALS_PATH", output_root / "integrations" / "google-oauth.json")
+    ).resolve()
+    google_client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
+    google_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")
+    google_redirect_uri = os.getenv("GOOGLE_OAUTH_REDIRECT_URI")
+    google_state_secret = os.getenv("GOOGLE_OAUTH_STATE_SECRET") or api_key_value or "workflow-api-google"
+
     automation_root = Path(
         os.getenv("OPTICABLE_AUTOMATION_ROOT", output_root / "automation")
     ).resolve()
@@ -181,6 +220,16 @@ def load_settings() -> AppSettings:
             workflows_dir=automation_workflows_dir,
             capabilities_path=automation_capabilities_path,
             max_event_depth=_env_int("OPTICABLE_AUTOMATION_MAX_EVENT_DEPTH", 8),
+        ),
+        google_oauth=GoogleOAuthSettings(
+            enabled=bool(google_client_id and google_client_secret and google_redirect_uri),
+            client_id=google_client_id,
+            client_secret=google_client_secret,
+            redirect_uri=google_redirect_uri,
+            scopes=google_scopes,
+            credentials_path=google_credentials_path,
+            state_secret=google_state_secret,
+            state_ttl_seconds=_env_int("GOOGLE_OAUTH_STATE_TTL_SECONDS", 900),
         ),
         zoho_oauth=ZohoOAuthSettings(
             enabled=bool(zoho_client_id and zoho_client_secret and zoho_redirect_uri),
