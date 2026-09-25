@@ -1,0 +1,33 @@
+name: Validate Autonomous Core
+
+on:
+  pull_request:
+    paths:
+      - "apps/autonomous-core/**"
+      - ".github/workflows/validate-autonomous-core.yml"
+      - ".github/workflows/deploy-autonomous-core.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/autonomous-core/**"
+      - ".github/workflows/validate-autonomous-core.yml"
+      - ".github/workflows/deploy-autonomous-core.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/autonomous-core
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install
+      - run: npm run check
