@@ -1,0 +1,26 @@
+id: customer.lifecycle.contract-send
+name: Customer lifecycle - send contract
+version: 1
+enabled: true
+description: Send an approved Zoho Sign template only from an explicit authenticated contract request.
+trigger:
+  event_types:
+    - customer.lifecycle.contract.requested
+steps:
+  - id: send
+    action: lifecycle.sign_send_contract
+    with:
+      contract: "{{ event.payload }}"
+  - id: emit_sent
+    action: event.emit
+    with:
+      event_type: customer.lifecycle.contract.sent
+      source: automation-engine
+      idempotency_key: "contract-sent:{{ steps.send.request_id }}"
+      payload:
+        request_id: "{{ steps.send.request_id }}"
+        contract_type: "{{ event.payload.contract_type }}"
+        service_id: "{{ event.payload.service_id }}"
+        deal_id: "{{ event.payload.deal_id }}"
+        account_id: "{{ event.payload.account_id }}"
+        contact_id: "{{ event.payload.contact_id }}"
