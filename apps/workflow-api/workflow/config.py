@@ -69,6 +69,16 @@ class NamingSettings:
 
 
 @dataclass(frozen=True)
+class AutomationSettings:
+    enabled: bool
+    root_dir: Path
+    db_path: Path
+    workflows_dir: Path
+    capabilities_path: Path
+    max_event_depth: int
+
+
+@dataclass(frozen=True)
 class ZohoOAuthSettings:
     enabled: bool
     client_id: str | None
@@ -88,6 +98,7 @@ class AppSettings:
     pdf: DownstreamPdfSettings
     omada: DownstreamOmadaSettings
     naming: NamingSettings
+    automation: AutomationSettings
     zoho_oauth: ZohoOAuthSettings
 
 
@@ -108,6 +119,21 @@ def load_settings() -> AppSettings:
     zoho_redirect_uri = os.getenv("ZOHO_OAUTH_REDIRECT_URI")
     zoho_accounts_base_url = os.getenv("ZOHO_OAUTH_ACCOUNTS_BASE_URL", "https://accounts.zoho.com").rstrip("/")
     zoho_state_secret = os.getenv("ZOHO_OAUTH_STATE_SECRET") or api_key_value or "workflow-api"
+    automation_root = Path(
+        os.getenv("OPTICABLE_AUTOMATION_ROOT", output_root / "automation")
+    ).resolve()
+    automation_workflows_dir = Path(
+        os.getenv(
+            "OPTICABLE_AUTOMATION_WORKFLOWS_DIR",
+            PROJECT_ROOT / "config" / "automation" / "workflows",
+        )
+    ).resolve()
+    automation_capabilities_path = Path(
+        os.getenv(
+            "OPTICABLE_AUTOMATION_CAPABILITIES_PATH",
+            PROJECT_ROOT / "config" / "automation" / "capabilities.yaml",
+        )
+    ).resolve()
 
     return AppSettings(
         api=ApiSettings(
@@ -145,6 +171,16 @@ def load_settings() -> AppSettings:
             ssid_template=os.getenv("SITE_WORKFLOW_SSID_TEMPLATE", "{prefix}{identifier}_{suffix}"),
             ssid_suffix_length=_env_int("SITE_WORKFLOW_SSID_SUFFIX_LENGTH", 2),
             password_specials=os.getenv("SITE_WORKFLOW_PASSWORD_SPECIALS", "*!$@#"),
+        ),
+        automation=AutomationSettings(
+            enabled=_env_bool("OPTICABLE_AUTOMATION_ENABLED", True),
+            root_dir=automation_root,
+            db_path=Path(
+                os.getenv("OPTICABLE_AUTOMATION_DB_PATH", automation_root / "automation.db")
+            ).resolve(),
+            workflows_dir=automation_workflows_dir,
+            capabilities_path=automation_capabilities_path,
+            max_event_depth=_env_int("OPTICABLE_AUTOMATION_MAX_EVENT_DEPTH", 8),
         ),
         zoho_oauth=ZohoOAuthSettings(
             enabled=bool(zoho_client_id and zoho_client_secret and zoho_redirect_uri),

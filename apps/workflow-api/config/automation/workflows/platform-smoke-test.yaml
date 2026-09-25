@@ -1,0 +1,24 @@
+id: platform.smoke-test
+name: Automation kernel smoke test
+version: 1
+enabled: true
+description: "Safe internal workflow proving event intake, idempotency, step execution and child-event emission."
+trigger:
+  event_types:
+    - system.automation.smoke_test
+  sources:
+    - internal
+steps:
+  - id: set_probe
+    action: core.set
+    with:
+      values:
+        kernel: healthy
+        version: 1
+  - id: emit_success
+    action: event.emit
+    with:
+      event_type: system.automation.smoke_test.completed
+      source: automation-engine
+      payload:
+        result: success

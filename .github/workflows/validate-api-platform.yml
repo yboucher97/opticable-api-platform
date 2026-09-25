@@ -1,0 +1,40 @@
+name: Validate API Platform
+
+on:
+  pull_request:
+    paths:
+      - "apps/workflow-api/**"
+      - ".github/workflows/validate-api-platform.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/workflow-api/**"
+      - ".github/workflows/validate-api-platform.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  workflow-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/workflow-api
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements.txt
+
+      - name: Compile Python
+        run: python -m compileall -q workflow tests
+
+      - name: Run automation kernel tests
+        run: python -m unittest discover -s tests -v
