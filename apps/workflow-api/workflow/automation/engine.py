@@ -131,16 +131,14 @@ class AutomationEngine:
         continued_error = False
 
         for step in definition.steps:
-            resolved_inputs = _resolve_templates(step.inputs, context)
-            effective_step = step.model_copy(update={"inputs": resolved_inputs})
-            handler = self._actions.get(effective_step.action)
+            handler = self._actions.get(step.action)
             if handler is None:
-                error = f"Unknown automation action: {effective_step.action}"
+                error = f"Unknown automation action: {step.action}"
                 self.store.append_step(
-                    run_id=run_id, step_id=effective_step.id, action=effective_step.action, attempt=1,
+                    run_id=run_id, step_id=step.id, action=step.action, attempt=1,
                     status="failed", started_at=utc_now_iso(), error=error,
                 )
-                if effective_step.on_error == "continue":
+                if step.on_error == "continue":
                     continued_error = True
                     continue
                 run_failed = True
@@ -149,33 +147,35 @@ class AutomationEngine:
 
             step_succeeded = False
             last_error: str | None = None
-            for attempt in range(1, effective_step.retry.max_attempts + 1):
+            for attempt in range(1, step.retry.max_attempts + 1):
                 started_at = utc_now_iso()
                 try:
+                    resolved_inputs = _resolve_templates(step.inputs, context)
+                    effective_step = step.model_copy(update={"inputs": resolved_inputs})
                     result = handler(context, effective_step)
-                except Exception as exc:  # provider-specific runtime errors are captured durably
+                except Exception as exc:  # provider/template runtime errors are captured durably
                     last_error = str(exc)
                     self.store.append_step(
-                        run_id=run_id, step_id=effective_step.id, action=effective_step.action, attempt=attempt,
+                        run_id=run_id, step_id=step.id, action=step.action, attempt=attempt,
                         status="failed", started_at=started_at, error=last_error,
                     )
-                    if attempt < effective_step.retry.max_attempts and effective_step.retry.backoff_seconds:
-                        time.sleep(effective_step.retry.backoff_seconds)
+                    if attempt < step.retry.max_attempts and step.retry.backoff_seconds:
+                        time.sleep(step.retry.backoff_seconds)
                     continue
                 self.store.append_step(
-                    run_id=run_id, step_id=effective_step.id, action=effective_step.action, attempt=attempt,
+                    run_id=run_id, step_id=step.id, action=step.action, attempt=attempt,
                     status="completed", started_at=started_at, result=result,
                 )
-                context["steps"][effective_step.id] = result
+                context["steps"][step.id] = result
                 step_succeeded = True
                 break
 
             if not step_succeeded:
-                if effective_step.on_error == "continue":
+                if step.on_error == "continue":
                     continued_error = True
                     continue
                 run_failed = True
-                failure_message = last_error or f"Step {effective_step.id} failed."
+                failure_message = last_error or f"Step {step.id} failed."
                 break
 
         if run_failed:
