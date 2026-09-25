@@ -708,18 +708,31 @@ async def provider_inventory(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
     _validate_api_key(x_api_key)
-    zoho_status_error: str | None = None
-    google_status_error: str | None = None
-    try:
-        zoho_status = _zoho_oauth_manager().status()
-    except Exception as exc:
-        zoho_status = None
-        zoho_status_error = type(exc).__name__
-    try:
-        google_status = google_oauth_manager.status()
-    except Exception as exc:
-        google_status = None
-        google_status_error = type(exc).__name__
+
+    errors: dict[str, str] = {}
+
+    def safe(provider: str, fn, fallback):
+        try:
+            return fn()
+        except Exception as exc:
+            errors[provider] = type(exc).__name__
+            return fallback
+
+    zoho_status = safe("zoho", lambda: _zoho_oauth_manager().status(), None)
+    google_status = safe("google_admin", lambda: google_oauth_manager.status(), None)
+
+    github_auth_mode = safe("github", lambda: github_api_client.auth_mode, "unconfigured")
+    github_configured = safe("github", lambda: github_api_client.configured, False)
+    cloudflare_configured = safe("cloudflare", lambda: cloudflare_api_client.configured, False)
+    apollo_configured = safe("apollo", lambda: apollo_api_client.configured, False)
+    windsor_configured = safe("windsor", lambda: windsor_api_client.configured, False)
+    ovh_configured = safe("ovhcloud", lambda: ovh_api_client.configured, False)
+    ai_configured = safe(
+        "ai",
+        lambda: ai_router.configured(),
+        {"openai": False, "anthropic": False, "gemini": False},
+    )
+
     return {
         "master": "optibrain.opticable.ca",
         "standby": {
@@ -738,7 +751,7 @@ async def provider_inventory(
                     [scope for scope in (zoho_status.scope or "").replace(" ", ",").split(",") if scope.strip()]
                 ) if zoho_status is not None else 0,
                 "standby_enabled": settings.zoho_gateway.standby_enabled,
-                "status_error": zoho_status_error,
+                "status_error": errors.get("zoho"),
             },
             "google_admin": {
                 "primary": "local_oauth",
@@ -746,53 +759,62 @@ async def provider_inventory(
                 "connected": google_status.connected if google_status is not None else False,
                 "scope_count": len(google_status.scopes) if google_status is not None else len(settings.google_oauth.scopes),
                 "services": sorted(GOOGLE_SERVICE_BASES),
-                "status_error": google_status_error,
+                "status_error": errors.get("google_admin"),
             },
             "windsor": {
                 "primary": "direct_api",
-                "configured": windsor_api_client.configured,
+                "configured": windsor_configured,
                 "purpose": "marketing_ads_organic_analytics_broker",
+                "status_error": errors.get("windsor"),
             },
             "ovhcloud": {
                 "primary": "direct_signed_api",
-                "configured": ovh_api_client.configured,
+                "configured": ovh_configured,
                 "endpoint": settings.ovh.endpoint,
+                "status_error": errors.get("ovhcloud"),
             },
             "github": {
-                "primary": "github_app" if github_api_client.auth_mode == "github_app" else "direct_api",
-                "configured": github_api_client.configured,
-                "auth_mode": github_api_client.auth_mode,
+                "primary": "github_app" if github_auth_mode == "github_app" else "direct_api",
+                "configured": github_configured,
+                "auth_mode": github_auth_mode,
                 "owner": settings.github.owner,
                 "app_id": settings.github.app_id,
                 "installation_id": settings.github.installation_id,
                 "note": "Read-only deploy key remains separate for code checkout.",
+                "status_error": errors.get("github"),
             },
             "cloudflare": {
                 "primary": "direct_api",
-                "configured": cloudflare_api_client.configured,
+                "configured": cloudflare_configured,
                 "account_id_suffix": settings.cloudflare.account_id[-6:] if settings.cloudflare.account_id else None,
+                "status_error": errors.get("cloudflare"),
             },
             "apollo": {
                 "primary": "direct_api",
-                "configured": apollo_api_client.configured,
+                "configured": apollo_configured,
                 "credit_consumption_enabled": settings.apollo.allow_credit_consumption,
+                "status_error": errors.get("apollo"),
             },
             "openai": {
                 "primary": "direct_api",
-                "configured": ai_router.configured()["openai"],
+                "configured": ai_configured.get("openai", False),
                 "model_configured": settings.ai.openai_model is not None,
+                "status_error": errors.get("ai"),
             },
             "anthropic": {
                 "primary": "direct_api",
-                "configured": ai_router.configured()["anthropic"],
+                "configured": ai_configured.get("anthropic", False),
                 "model_configured": settings.ai.anthropic_model is not None,
+                "status_error": errors.get("ai"),
             },
             "gemini": {
                 "primary": "direct_api",
-                "configured": ai_router.configured()["gemini"],
+                "configured": ai_configured.get("gemini", False),
                 "model_configured": settings.ai.gemini_model is not None,
+                "status_error": errors.get("ai"),
             },
         },
+        "inventory_errors": errors,
     }
 
 
