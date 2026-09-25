@@ -771,6 +771,10 @@ write_runtime_snapshot() {
   if [[ -z "${zoho_redirect_uri}" && -n "${PUBLIC_API_HOST}" ]]; then
     zoho_redirect_uri="https://${PUBLIC_API_HOST}/v1/integrations/zoho/oauth/callback"
   fi
+  local google_redirect_uri="${GOOGLE_OAUTH_REDIRECT_URI:-}"
+  if [[ -z "${google_redirect_uri}" && -n "${PUBLIC_API_HOST}" ]]; then
+    google_redirect_uri="https://${PUBLIC_API_HOST}/v1/integrations/google/oauth/callback"
+  fi
 
   cat >"${INSTALL_RUNTIME_SNAPSHOT}" <<EOF
 SITE_AND_PASSWORD_API_HOST=${PUBLIC_API_HOST}
@@ -783,7 +787,7 @@ ZOHO_OAUTH_REDIRECT_URI=${zoho_redirect_uri}
 ZOHO_OAUTH_SCOPES=${ZOHO_OAUTH_SCOPES}
 ZOHO_OAUTH_CREDENTIALS_PATH=${ZOHO_OAUTH_CREDENTIALS_PATH}
 GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
-GOOGLE_OAUTH_REDIRECT_URI=${GOOGLE_OAUTH_REDIRECT_URI}
+GOOGLE_OAUTH_REDIRECT_URI=${google_redirect_uri}
 GOOGLE_OAUTH_SCOPES=${GOOGLE_OAUTH_SCOPES}
 GOOGLE_OAUTH_CREDENTIALS_PATH=${GOOGLE_OAUTH_CREDENTIALS_PATH}
 WORKFLOW_ENV_FILE=${WORKFLOW_ENV_FILE}
