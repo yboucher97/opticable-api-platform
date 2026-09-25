@@ -49,7 +49,7 @@ class ZohoGatewayClient:
 
         if not isinstance(path, str) or not path.startswith("/") or path.startswith("//"):
             raise ValueError("Zoho path must be a relative API path beginning with '/'.")
-        if "\" in path or "\r" in path or "\n" in path:
+        if "\\\\" in path or "\\r" in path or "\\n" in path:
             raise ValueError("Zoho path contains unsafe characters.")
 
         mutation = normalized_method != "GET"
