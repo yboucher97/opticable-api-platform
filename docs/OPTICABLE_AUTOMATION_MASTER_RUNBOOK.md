@@ -96,6 +96,10 @@ The three VPS-backed endpoints were independently verified HTTP 200 from OPX001 
 - Manual recovery of deploy/bootstrap-deploy-user.sh made the production tree dirty; deployment now self-heals only that known bootstrap artifact while continuing to refuse all other tracked modifications.
 - Deployment cleanup referenced a function-local stage_dir after scope exit; stage_dir lifetime was corrected. API deployment then passed the full restricted-SSH deploy and public-health verification.
 
+- Provider inventory returned HTTP 500 under health monitoring. Inventory was made failure-isolated so one provider status/property failure cannot take down the endpoint.
+- The CI bootstrap had created /etc/optibrain as root-only (0700), making the GitHub App key invisible to the workflow service after restart. Fixed permanently by using root:opticable-workflow-api mode 0750 for the directory and root:opticable-workflow-api mode 0640 for github-app.pem; every deployment now repairs these permissions before service restart.
+- After deployment, the full production health monitor passed, skipped incident creation, and automatically executed the recovery/close path for the existing incident.
+
 ## Current autonomy priorities
 1. Build provider-specific declarative reconcilers and real event workflows.
 2. Add provider credential/token expiry monitoring, retry/DLQ monitoring, and drift reconciliation.
