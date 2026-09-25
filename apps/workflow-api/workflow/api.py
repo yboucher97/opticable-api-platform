@@ -24,7 +24,15 @@ from .workdrive import WorkflowWorkDriveClient, WorkflowWorkDriveError
 from .zoho_oauth import ZohoOAuthManager
 from .google_oauth import GoogleOAuthManager
 from .google_api import GoogleApiClient, GoogleApiError, SERVICE_BASES as GOOGLE_SERVICE_BASES
-from .automation import AutomationEngine, AutomationEvent, AutomationStore
+from .automation import (
+    AutomationEngine,
+    AutomationEvent,
+    AutomationStore,
+    DesiredPlan,
+    DesiredStateController,
+    DesiredStateDocument,
+    DesiredStateRegistry,
+)
 from .automation.capabilities import capability_summary, load_capabilities
 from .automation.models import EventIngestResponse
 from .automation.providers.google import register_google_actions
@@ -39,10 +47,12 @@ automation_engine = AutomationEngine(
     settings.automation.workflows_dir,
     max_event_depth=settings.automation.max_event_depth,
 )
+desired_state_registry = DesiredStateRegistry()
+desired_state_controller = DesiredStateController(desired_state_registry)
 google_oauth_manager = GoogleOAuthManager(settings.google_oauth)
 google_api_client = GoogleApiClient(google_oauth_manager)
 register_google_actions(automation_engine, google_api_client, automation_store)
-API_VERSION = "1.6.0"
+API_VERSION = "1.7.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
 PRIMARY_JOB_STATUS_PATH = "/v1/site-and-password/jobs/{job_id}"
@@ -743,6 +753,93 @@ async def automation_smoke_test(
         payload={"requested_via": "api"},
     )
     return automation_engine.ingest(event)
+
+
+class DesiredStateApplyRequest(BaseModel):
+    document: DesiredStateDocument
+    allow_high_risk: bool = False
+    allow_destructive: bool = False
+    reason: str = Field(min_length=3, max_length=500)
+
+
+@app.get("/v1/automation/desired-state/adapters", tags=["automation"])
+async def automation_desired_state_adapters(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    return {"adapters": desired_state_registry.list_adapters()}
+
+
+@app.post("/v1/automation/desired-state/plan", response_model=DesiredPlan, tags=["automation"])
+async def automation_desired_state_plan(
+    document: DesiredStateDocument,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> DesiredPlan:
+    _validate_api_key(x_api_key)
+    try:
+        plan = desired_state_controller.plan(document)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    automation_store.audit(
+        category="desired_state",
+        action="plan",
+        actor="api",
+        success=True,
+        target=document.name,
+        metadata={
+            "version": document.version,
+            "resource_count": len(document.resources),
+            "summary": plan.summary,
+        },
+    )
+    return plan
+
+
+@app.post("/v1/automation/desired-state/apply", tags=["automation"])
+async def automation_desired_state_apply(
+    payload: DesiredStateApplyRequest,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+
+    try:
+        plan = desired_state_controller.plan(payload.document)
+        results = desired_state_controller.apply(
+            payload.document,
+            plan,
+            allow_high_risk=payload.allow_high_risk,
+            allow_destructive=payload.allow_destructive,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    failed = [item for item in results if item.status in {"failed", "blocked"}]
+    changed = [item for item in results if item.changed]
+    automation_store.audit(
+        category="desired_state",
+        action="apply",
+        actor="api",
+        success=not failed,
+        target=payload.document.name,
+        metadata={
+            "reason": payload.reason,
+            "version": payload.document.version,
+            "plan_summary": plan.summary,
+            "changed": len(changed),
+            "failed_or_blocked": len(failed),
+            "allow_high_risk": payload.allow_high_risk,
+            "allow_destructive": payload.allow_destructive,
+        },
+    )
+    return {
+        "document": payload.document.name,
+        "version": payload.document.version,
+        "plan": plan.model_dump(),
+        "results": [item.model_dump() for item in results],
+        "changed": len(changed),
+        "failed_or_blocked": len(failed),
+    }
 
 
 @app.get("/v1/automation/runs", tags=["automation"])
