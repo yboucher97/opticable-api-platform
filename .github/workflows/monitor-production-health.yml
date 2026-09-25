@@ -1,0 +1,69 @@
+name: Monitor OptiBrain Production Health
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      HEALTH_ISSUE_TITLE: "OptiBrain production health check failing"
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check production endpoints
+        id: check
+        shell: bash
+        run: |
+          set +e
+          failed=()
+          check() {
+            local name="$1"
+            local url="$2"
+            if ! curl --fail --silent --show-error --max-time 15 "$url" >/dev/null; then
+              failed+=("$name: $url")
+            fi
+          }
+
+          check "workflow-api" "https://optibrain.opticable.ca/v1/system/health"
+          check "password-pdf" "https://optibrain.opticable.ca/pdf/health"
+          check "omada-site" "https://optibrain.opticable.ca/omada/api/health"
+
+          if (( ${#failed[@]} > 0 )); then
+            printf '%s\n' "${failed[@]}" > /tmp/failed-health.txt
+            echo "healthy=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "healthy=true" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update incident issue
+        if: steps.check.outputs.healthy == 'false'
+        shell: bash
+        run: |
+          existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$HEALTH_ISSUE_TITLE in:title" --json number --jq '.[0].number // empty')"
+          body="$(printf 'Automated OptiBrain health check failed at %s UTC.\n\nFailed endpoints:\n\n' "$(date -u +'%Y-%m-%d %H:%M:%S')"; sed 's/^/- /' /tmp/failed-health.txt)"
+          if [[ -n "$existing" ]]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$HEALTH_ISSUE_TITLE" --body "$body"
+          fi
+          exit 1
+
+      - name: Close recovered incident
+        if: steps.check.outputs.healthy == 'true'
+        shell: bash
+        run: |
+          existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$HEALTH_ISSUE_TITLE in:title" --json number --jq '.[0].number // empty')"
+          if [[ -n "$existing" ]]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "Automated health check recovered at $(date -u +'%Y-%m-%d %H:%M:%S') UTC. All monitored endpoints are healthy."
+            gh issue close "$existing" --repo "$GITHUB_REPOSITORY" --reason completed
+          fi

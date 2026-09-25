@@ -43,6 +43,13 @@ deployment:
   api_deploy_blocker: "missing GitHub Actions VPS deployment secrets"
   control_plane_workflow_present: true
   control_plane_production_verified: false
+  missing_control_plane_github_secrets:
+    - "CLOUDFLARE_API_TOKEN"
+    - "CLOUDFLARE_ACCOUNT_ID"
+    - "OPTICABLE_CONTROL_PLANE_API_KEY"
+    - "OPTICABLE_CORE_API_KEY"
+  health_monitoring: "github_actions_every_15_minutes"
+  public_health_verified_2026_09_25: true
 
 security:
   secrets_in_git: false
