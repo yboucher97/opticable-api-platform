@@ -6,7 +6,7 @@
   "workers_dev": true,
   "preview_urls": false,
   "vars": {
-    "CORE_API_URL": "https://api01.opticable.ca"
+    "CORE_API_URL": "https://optibrain.opticable.ca"
   },
   "queues": {
     "producers": [
