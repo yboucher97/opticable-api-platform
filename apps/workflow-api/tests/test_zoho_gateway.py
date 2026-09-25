@@ -15,14 +15,26 @@ from workflow.config import ZohoGatewaySettings
 from workflow.zoho_gateway import ZohoGatewayClient
 
 
+class FakeOAuth:
+    def status(self):
+        class Status:
+            configured = True
+            connected = True
+        return Status()
+
+    def access_token(self):
+        return "local-token"
+
+
 class ZohoGatewayTests(unittest.TestCase):
     def setUp(self) -> None:
         self.settings = ZohoGatewaySettings(
             base_url="https://connect.opticable.ca",
             api_key="test-key",
             timeout_seconds=60,
+            standby_enabled=False,
         )
-        self.client = ZohoGatewayClient(self.settings)
+        self.client = ZohoGatewayClient(self.settings, FakeOAuth())
 
     def test_rejects_mutation_without_reason_or_confirmation(self) -> None:
         with self.assertRaises(ValueError):
@@ -33,18 +45,20 @@ class ZohoGatewayTests(unittest.TestCase):
                 body={"data": []}, reason="Create test", confirm=False
             )
 
-    def test_strips_credential_headers(self) -> None:
+    def test_strips_credential_headers_and_uses_local_provider(self) -> None:
         captured = {}
 
-        def fake_post(url, **kwargs):
-            captured["payload"] = kwargs["json"]
+        def fake_request(method, url, **kwargs):
+            captured["method"] = method
+            captured["url"] = url
+            captured["headers"] = kwargs["headers"]
             return httpx.Response(
                 200,
-                json={"ok": True, "status": 200, "data": {"ok": True}},
-                request=httpx.Request("POST", url),
+                json={"ok": True},
+                request=httpx.Request(method, url),
             )
 
-        with patch("workflow.zoho_gateway.httpx.post", side_effect=fake_post):
+        with patch("workflow.zoho_gateway.httpx.request", side_effect=fake_request):
             result = self.client.request(
                 "creator",
                 "GET",
@@ -52,7 +66,21 @@ class ZohoGatewayTests(unittest.TestCase):
                 headers={"Authorization": "bad", "X-API-Key": "bad", "environment": "stage"},
             )
         self.assertTrue(result["ok"])
-        self.assertEqual(captured["payload"]["headers"], {"environment": "stage"})
+        self.assertEqual(result["provider_path"], "local")
+        self.assertEqual(captured["headers"]["environment"], "stage")
+        self.assertEqual(captured["headers"]["Authorization"], "Zoho-oauthtoken local-token")
+
+    def test_connect_standby_is_off_by_default(self) -> None:
+        class BrokenOAuth:
+            def status(self):
+                class Status:
+                    configured = False
+                    connected = False
+                return Status()
+
+        client = ZohoGatewayClient(self.settings, BrokenOAuth())
+        with self.assertRaises(Exception):
+            client.request("creator", "GET", "/meta/applications")
 
     def test_workflow_action_uses_gateway(self) -> None:
         class FakeGateway:
