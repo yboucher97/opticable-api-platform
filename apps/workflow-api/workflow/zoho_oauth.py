@@ -8,6 +8,8 @@ import hmac
 import json
 from pathlib import Path
 import secrets
+import threading
+import time
 from typing import Any
 from urllib.parse import urlencode
 
@@ -44,6 +46,9 @@ class ZohoConnectionStatus:
 class ZohoOAuthManager:
     def __init__(self, settings: ZohoOAuthSettings) -> None:
         self.settings = settings
+        self._access_token: str | None = None
+        self._access_token_expires_at = 0.0
+        self._token_lock = threading.Lock()
 
     @property
     def authorization_url(self) -> str:
@@ -130,6 +135,50 @@ class ZohoOAuthManager:
         if not refresh_token and not access_token:
             raise ValueError(f"Zoho token exchange did not return usable credentials: {payload}")
         return payload
+
+    def access_token(self) -> str:
+        now = time.time()
+        if self._access_token and self._access_token_expires_at > now + 60:
+            return self._access_token
+
+        with self._token_lock:
+            now = time.time()
+            if self._access_token and self._access_token_expires_at > now + 60:
+                return self._access_token
+
+            saved = self.load_saved_credentials()
+            if not saved:
+                raise ValueError("Zoho OAuth is not connected.")
+            refresh_token = str(saved.get("refresh_token") or "").strip()
+            if not refresh_token:
+                access_token = str(saved.get("access_token") or "").strip()
+                if access_token:
+                    return access_token
+                raise ValueError("Zoho OAuth credentials do not contain a refresh token.")
+
+            timeout = httpx.Timeout(60.0, connect=20.0)
+            with httpx.Client(timeout=timeout) as client:
+                response = client.post(
+                    self.token_url,
+                    data={
+                        "grant_type": "refresh_token",
+                        "refresh_token": refresh_token,
+                        "client_id": self.settings.client_id,
+                        "client_secret": self.settings.client_secret,
+                    },
+                )
+            if response.status_code >= 400:
+                raise ValueError(
+                    f"Zoho token refresh failed with status {response.status_code}: {response.text}"
+                )
+            payload = response.json()
+            token = str(payload.get("access_token") or "").strip()
+            if not token:
+                raise ValueError(f"Zoho token refresh did not return an access token: {payload}")
+            expires_in = int(payload.get("expires_in_sec") or payload.get("expires_in") or 3600)
+            self._access_token = token
+            self._access_token_expires_at = time.time() + max(300, expires_in)
+            return token
 
     def load_saved_credentials(self) -> dict[str, Any] | None:
         path = self.settings.credentials_path
