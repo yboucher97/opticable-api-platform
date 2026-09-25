@@ -1,0 +1,229 @@
+version: 1
+grading:
+  A: "90-100: full or near-full programmable configuration + CRUD + event/automation path"
+  B: "75-89: strong CRUD/write access with configuration or product-specific gaps"
+  C: "60-74: meaningful write actions, but substantial platform/admin gaps"
+  D: "40-59: partial API plus browser/UI fallback"
+  E: "20-39: read/analytics mainly"
+  F: "0-19: not connected or no usable automation path"
+
+capabilities:
+  - provider: zoho
+    product: CRM
+    capability: configuration_and_data
+    grade: A
+    score: 96
+    access_mode: api
+    status: connected
+    notes: "Fields, layouts, workflows, functions, modules, records and extensive developer/admin APIs are exposed."
+    next_action: "Build declarative CRM desired-state adapter and drift reconciliation."
+
+  - provider: zoho
+    product: Mail
+    capability: mailbox_and_admin
+    grade: A
+    score: 92
+    access_mode: api
+    status: connected
+    notes: "Broad account/message/folder/tag/task/note/org-admin OAuth scopes granted."
+    next_action: "Add dedicated send/move/tag/admin tools to the provider adapter."
+
+  - provider: zoho
+    product: Books
+    capability: finance_crud
+    grade: B
+    score: 86
+    access_mode: api
+    status: connected
+    notes: "Broad contacts/settings/estimates/invoices/payments/projects/expenses/orders/bills/banking scopes granted; live read verified."
+    next_action: "Verify controlled create/update/delete and add idempotent finance actions."
+
+  - provider: zoho
+    product: WorkDrive
+    capability: file_and_workspace
+    grade: B
+    score: 87
+    access_mode: api
+    status: connected
+    notes: "Broad file/team/library/workflow scopes granted; live read verified."
+    next_action: "Add multipart upload/download helpers and declarative folder templates."
+
+  - provider: zoho
+    product: Writer
+    capability: document_generation
+    grade: B
+    score: 84
+    access_mode: api
+    status: connected
+    notes: "Document editor and merge scopes granted; live document listing verified."
+    next_action: "Add create/merge/export/template adapter."
+
+  - provider: zoho
+    product: Sign
+    capability: document_signing
+    grade: B
+    score: 80
+    access_mode: api
+    status: authorized_pending_verification
+    notes: "Full document/template scopes granted; live verification remains after token cooldown."
+    next_action: "Verify account/templates and implement send/status/download adapter."
+
+  - provider: zoho
+    product: Projects
+    capability: project_operations
+    grade: B
+    score: 78
+    access_mode: api
+    status: authorized_pending_verification
+    notes: "Projects/tasks/timesheets full scopes granted."
+    next_action: "Verify portal/projects and add project/task adapters."
+
+  - provider: zoho
+    product: Desk
+    capability: support_operations
+    grade: B
+    score: 82
+    access_mode: api
+    status: authorized_pending_verification
+    notes: "Broad ticket/task/contact/settings/events/articles scopes granted."
+    next_action: "Verify orgId and add ticket/KB adapter."
+
+  - provider: zoho
+    product: Forms
+    capability: form_builder_and_submissions
+    grade: D
+    score: 52
+    access_mode: api_plus_browser
+    status: connected_read_plus_browser
+    notes: "Submission/list APIs exist, but form construction is primarily builder/UI-driven."
+    next_action: "Use browser automation for desired-state form building; route all submissions to the Opticable event API."
+
+  - provider: zoho
+    product: Flow
+    capability: workflow_builder
+    grade: D
+    score: 45
+    access_mode: browser_fallback
+    status: replace_for_core_logic
+    notes: "Keep only edge integrations in Zoho Flow. Core business logic belongs in the Opticable Automation Kernel."
+    next_action: "Migrate critical flows into declarative Git-versioned workflows."
+
+  - provider: zoho
+    product: Creator
+    capability: app_data_and_builder
+    grade: F
+    score: 15
+    access_mode: not_yet_authorized
+    status: missing_oauth
+    notes: "Creator v2.1 provides strong data/file/meta/custom APIs, but app-builder operations remain partly UI-driven."
+    next_action: "Add Creator OAuth scopes and provider gateway; use browser fallback for builder-only actions."
+
+  - provider: google
+    product: Google Ads
+    capability: campaign_operations
+    grade: B
+    score: 88
+    access_mode: windsor_api
+    status: connected
+    notes: "Campaign/ad group/ad/keyword/budget/bidding/targeting write actions available."
+    next_action: "Add guardrails, attribution feedback, and declarative campaign policies."
+
+  - provider: google
+    product: Business Profile
+    capability: local_presence
+    grade: B
+    score: 86
+    access_mode: windsor_api
+    status: connected
+    notes: "Posts, reviews, media, services, categories, area, hours and location edits available."
+    next_action: "Connect job-completed and review events to local SEO workflows."
+
+  - provider: google
+    product: GA4
+    capability: analytics
+    grade: E
+    score: 35
+    access_mode: analytics_read
+    status: connected_read
+    notes: "Analytics data is available; Admin/configuration API is not yet connected."
+    next_action: "Authorize GA4 Admin API for property/data-stream/key-event configuration."
+
+  - provider: google
+    product: Search Console
+    capability: search_performance
+    grade: E
+    score: 32
+    access_mode: analytics_read
+    status: connected_read
+    notes: "Search performance is readable; current connector has no configuration/write surface."
+    next_action: "Keep as measurement input; use site/GitHub changes for SEO execution."
+
+  - provider: google
+    product: Tag Manager
+    capability: tracking_configuration
+    grade: F
+    score: 5
+    access_mode: not_connected
+    status: missing_oauth
+    notes: "GTM API supports full workspace/tag/trigger/variable/version/publish management, but is not yet authorized."
+    next_action: "Add Google OAuth with GTM edit, container-version and publish scopes."
+
+  - provider: meta
+    product: Facebook_Instagram_Ads
+    capability: paid_media
+    grade: B
+    score: 86
+    access_mode: windsor_api
+    status: connected
+    notes: "Campaign, ad set, ad, creative and budget actions available."
+    next_action: "Add policy guardrails and CRM revenue feedback loop."
+
+  - provider: meta
+    product: Facebook_Instagram_Organic
+    capability: organic_publishing
+    grade: C
+    score: 72
+    access_mode: windsor_api
+    status: connected
+    notes: "Publishing and several Instagram comment actions are available; not full Business Manager admin."
+    next_action: "Standardize content publishing/review workflow."
+
+  - provider: linkedin
+    product: Company_and_Ads
+    capability: publishing_and_ads
+    grade: C
+    score: 70
+    access_mode: windsor_api
+    status: connected
+    notes: "Company posting and several ad-management actions are available; personal-account automation remains restricted."
+    next_action: "Add content calendar and CRM attribution."
+
+  - provider: cloudflare
+    product: Workers
+    capability: deployment
+    grade: B
+    score: 82
+    access_mode: github_ci
+    status: connected
+    notes: "Worker deployments are now automated through GitHub Actions."
+    next_action: "Move DNS/Queues/KV/cron configuration into infrastructure-as-code."
+
+  - provider: github
+    product: Repositories_Actions
+    capability: source_and_ci
+    grade: A
+    score: 96
+    access_mode: api
+    status: connected
+    notes: "Repository, PR and Actions control is available and already used for safe branch/PR/deploy workflows."
+    next_action: "Use Git as desired-state and audit source for automation configuration."
+
+  - provider: browser
+    product: TinyFish
+    capability: ui_fallback
+    grade: B
+    score: 80
+    access_mode: browser_automation
+    status: connected
+    notes: "Use only when a provider has no adequate API, especially Forms/Flow/Creator builder UI."
+    next_action: "Add deterministic browser runbooks with screenshots/state verification for UI-only changes."
