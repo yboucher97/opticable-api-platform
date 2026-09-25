@@ -1,0 +1,27 @@
+id: customer.lifecycle.contract-status
+name: Customer lifecycle - sync contract status
+version: 1
+enabled: true
+description: Read Zoho Sign request status and update linked CRM records when signature is completed.
+trigger:
+  event_types:
+    - customer.lifecycle.contract.status_check
+steps:
+  - id: sync
+    action: lifecycle.sign_sync_status
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
+    with:
+      status: "{{ event.payload }}"
+  - id: emit_status
+    action: event.emit
+    with:
+      event_type: customer.lifecycle.contract.status_synced
+      source: automation-engine
+      idempotency_key: "contract-status-synced:{{ event.event_id }}"
+      payload:
+        request_id: "{{ steps.sync.request_id }}"
+        request_status: "{{ steps.sync.request_status }}"
+        completed: "{{ steps.sync.completed }}"
+        signed_at: "{{ steps.sync.signed_at }}"
