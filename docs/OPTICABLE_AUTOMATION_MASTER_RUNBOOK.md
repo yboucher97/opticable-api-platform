@@ -48,10 +48,13 @@ Validation workflow: .github/workflows/validate-api-platform.yml
 API deployment workflow: .github/workflows/deploy-api-platform.yml
 Durable control plane deployment: .github/workflows/deploy-control-plane.yml
 
-Known issues as of 2026-09-25:
-- Deploy API Platform workflow exists but its VPS deployment secrets are missing, causing the "Verify deployment secrets exist" step to fail before SSH configuration.
-- Deploy Durable Control Plane validates successfully but its GitHub Actions secret check currently finds all four required values empty: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, OPTICABLE_CONTROL_PLANE_API_KEY, OPTICABLE_CORE_API_KEY.
-Do not assume GitHub can deploy either target until the relevant CI secrets are restored.
+Production deployment status as of 2026-09-25:
+- GitHub Actions deployment secrets are bootstrapped from the VPS using the GitHub App; secret values are never stored in Git or printed.
+- Deploy API Platform is production-verified through restricted SSH and public health verification.
+- Deploy Durable Control Plane is production-verified on Cloudflare.
+- Worker URL: https://opticable-control-plane.yboucher.workers.dev
+- Queues: opticable-business-events and opticable-business-events-dlq.
+- Every control-plane deployment now verifies Worker health, submits an authenticated smoke event, and confirms the matching OptiBrain automation run completes. Verified event: control-plane-smoke-36185862240-1.
 
 ## Durable control plane
 Cloudflare Worker path: apps/control-plane-worker
@@ -62,10 +65,10 @@ Core event target: POST /v1/automation/events.
 ## Automatic production health monitoring
 Workflow: .github/workflows/monitor-production-health.yml
 Cadence: every 15 minutes plus manual dispatch.
-Checks: workflow API, password PDF service, Omada service.
+Checks: workflow API, password PDF service, Omada service, durable Cloudflare control plane.
 Failure behavior: open one GitHub incident issue and add subsequent failure observations as comments.
 Recovery behavior: comment on and close the incident automatically.
-All three endpoints were independently verified HTTP 200 from OPX001 on 2026-09-25.
+The three VPS-backed endpoints were independently verified HTTP 200 from OPX001 on 2026-09-25; control-plane deployments also perform an authenticated end-to-end event smoke test.
 
 ## Recovery rules
 1. Inspect current health before changing anything.
@@ -85,10 +88,17 @@ All three endpoints were independently verified HTTP 200 from OPX001 on 2026-09-
 
 - Workflow context templating first CI attempt failed because the regular expression matched a literal "\\s" instead of whitespace; tests caught that templates stayed unresolved and missing references did not fail. Fixed by switching to an escape-safe whitespace character class. Second CI run passed all automation-kernel and control-plane checks. Dynamic templates now support event payloads and prior-step outputs, preserve native types for exact references, and fail durably when a reference is missing.
 
+## Additional resolved production failures
+- GitHub Actions originally lacked VPS and control-plane secrets. A one-command VPS bootstrap now uses the existing GitHub App and stored provider credentials to publish the required encrypted repository secrets and create a restricted deploy key.
+- Control-plane CORE_API_URL pointed to non-resolving api01.opticable.ca; corrected to https://optibrain.opticable.ca.
+- Wrangler 4.141 rejected `queues list --json`; queue reconciliation now uses the Cloudflare Queues REST API.
+- Root deployment hit Git dubious-ownership protection; the exact production checkout is explicitly registered as a safe directory after root/install-path validation.
+- Manual recovery of deploy/bootstrap-deploy-user.sh made the production tree dirty; deployment now self-heals only that known bootstrap artifact while continuing to refuse all other tracked modifications.
+- Deployment cleanup referenced a function-local stage_dir after scope exit; stage_dir lifetime was corrected. API deployment then passed the full restricted-SSH deploy and public-health verification.
+
 ## Current autonomy priorities
-1. Confirm/deploy durable control plane in Cloudflare.
-2. Restore secure VPS CI deployment secrets or establish a direct Linux remote-execution connector.
-3. Build provider-specific declarative reconcilers and event workflows.
-4. Add self-healing checks, token-expiry detection, retry/DLQ monitoring, and drift reconciliation.
-5. Add deterministic UI fallback only for functions that have no adequate API.
-6. Keep this runbook and config/automation/production-state.yaml current after material changes.
+1. Build provider-specific declarative reconcilers and real event workflows.
+2. Add provider credential/token expiry monitoring, retry/DLQ monitoring, and drift reconciliation.
+3. Add deterministic UI fallback only for functions that have no adequate API.
+4. Expand business-event sources (website/forms/email/CRM) into the durable control plane.
+5. Keep this runbook and config/automation/production-state.yaml current after material changes.

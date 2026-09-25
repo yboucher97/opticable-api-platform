@@ -36,6 +36,7 @@ jobs:
           check "workflow-api" "https://optibrain.opticable.ca/v1/system/health"
           check "password-pdf" "https://optibrain.opticable.ca/pdf/health"
           check "omada-site" "https://optibrain.opticable.ca/omada/api/health"
+          check "control-plane" "https://opticable-control-plane.yboucher.workers.dev/health"
 
           if (( ${#failed[@]} > 0 )); then
             printf '%s\n' "${failed[@]}" > /tmp/failed-health.txt
