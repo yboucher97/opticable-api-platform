@@ -723,7 +723,10 @@ async def provider_inventory(
                 "primary": "local_oauth",
                 "configured": zoho_status.configured,
                 "connected": zoho_status.connected,
-                "scope_count": len(zoho_status.scopes),
+                "configured_scope_count": len(zoho_status.scopes),
+                "granted_scope_count": len(
+                    [scope for scope in (zoho_status.scope or "").replace(" ", ",").split(",") if scope.strip()]
+                ),
                 "standby_enabled": settings.zoho_gateway.standby_enabled,
             },
             "google_admin": {
@@ -760,16 +763,19 @@ async def provider_inventory(
                 "credit_consumption_enabled": settings.apollo.allow_credit_consumption,
             },
             "openai": {
-                "primary": "pending_direct_api",
-                "configured": False,
+                "primary": "direct_api",
+                "configured": ai_router.configured()["openai"],
+                "model_configured": settings.ai.openai_model is not None,
             },
             "anthropic": {
-                "primary": "pending_direct_api",
-                "configured": False,
+                "primary": "direct_api",
+                "configured": ai_router.configured()["anthropic"],
+                "model_configured": settings.ai.anthropic_model is not None,
             },
             "gemini": {
-                "primary": "pending_direct_api",
-                "configured": False,
+                "primary": "direct_api",
+                "configured": ai_router.configured()["gemini"],
+                "model_configured": settings.ai.gemini_model is not None,
             },
         },
     }
