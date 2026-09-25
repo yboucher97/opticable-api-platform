@@ -1,0 +1,16 @@
+{
+  "name": "@opticable/autonomous-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "deploy": "wrangler deploy --config wrangler.jsonc",
+    "db:migrate": "wrangler d1 execute opticable-autonomous-core --remote --file=./schema.sql --yes"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260925.0",
+    "typescript": "^5.9.2",
+    "wrangler": "^4.0.0"
+  }
+}
