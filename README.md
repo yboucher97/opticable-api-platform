@@ -77,6 +77,33 @@ Optional installer variables:
 - `OMADA_SITE_CREATOR_DEVICE_USERNAME`
 - `OMADA_SITE_CREATOR_DEVICE_PASSWORD`
 
+## Autonomous Automation Kernel
+
+The workflow API now includes a provider-neutral automation kernel for future Zoho, Google, Meta, Cloudflare, and browser-driven workflows.
+
+Key properties:
+
+- durable event intake with idempotency
+- Git-versioned YAML workflows
+- step retries and failure capture
+- correlation/causation IDs
+- SQLite/WAL durable execution state
+- append-only audit history
+- provider action registry
+- capability grading so missing access is explicit
+
+Primary endpoints:
+
+- `GET /v1/automation/capabilities`
+- `GET /v1/automation/actions`
+- `GET /v1/automation/workflows`
+- `POST /v1/automation/events`
+- `POST /v1/automation/smoke-test`
+- `GET /v1/automation/runs`
+- `GET /v1/automation/audit`
+
+Architecture: [Autonomous Automation Platform](./docs/autonomous-automation-platform.md)
+
 ## Included Apps
 
 ### Password PDF Service
