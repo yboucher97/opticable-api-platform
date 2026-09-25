@@ -10,6 +10,7 @@ on:
       - "deploy/bootstrap-deploy-user.sh"
       - ".github/workflows/deploy-api-platform.yml"
       - ".github/workflows/deploy-control-plane.yml"
+      - ".github/workflows/monitor-production-health.yml"
       - ".github/workflows/validate-api-platform.yml"
   push:
     branches: [main]
@@ -21,6 +22,7 @@ on:
       - "deploy/bootstrap-deploy-user.sh"
       - ".github/workflows/deploy-api-platform.yml"
       - ".github/workflows/deploy-control-plane.yml"
+      - ".github/workflows/monitor-production-health.yml"
       - ".github/workflows/validate-api-platform.yml"
   workflow_dispatch:
 
