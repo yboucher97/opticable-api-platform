@@ -72,6 +72,19 @@ ensure_live_venv() {
   "${WORKFLOW_APP_DIR}/.venv/bin/python" -m pip install --disable-pip-version-check --no-cache-dir -r "${WORKFLOW_APP_DIR}/requirements.txt" >/dev/null
 }
 
+ensure_github_app_key_access() {
+  local dir="/etc/optibrain"
+  local key="${GITHUB_APP_PRIVATE_KEY_PATH:-/etc/optibrain/github-app.pem}"
+  if getent group opticable-workflow-api >/dev/null 2>&1 && [[ -d "$dir" ]]; then
+    chown root:opticable-workflow-api "$dir" || true
+    chmod 750 "$dir" || true
+  fi
+  if getent group opticable-workflow-api >/dev/null 2>&1 && [[ -f "$key" ]]; then
+    chown root:opticable-workflow-api "$key" || true
+    chmod 640 "$key" || true
+  fi
+}
+
 rollback() {
   local previous_sha="$1"
   log "Rolling back production code to ${previous_sha}"
@@ -150,6 +163,7 @@ main() {
     fail "Deployment failed while installing production dependencies."
   fi
 
+  ensure_github_app_key_access
   log "Restarting ${WORKFLOW_SERVICE_NAME}"
   if ! systemctl restart "${WORKFLOW_SERVICE_NAME}"; then
     rollback "${previous_sha}" || true
