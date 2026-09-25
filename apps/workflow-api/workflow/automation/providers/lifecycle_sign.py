@@ -6,7 +6,7 @@ from typing import Any
 
 from ...zoho_gateway import ZohoGatewayClient
 from ..engine import AutomationEngine
-from ..models import WorkflowStep
+from ..models import AutomationEvent, WorkflowStep
 from ..store import AutomationStore
 
 
@@ -291,6 +291,27 @@ def register_lifecycle_sign_actions(
                 "completed": completed,
             },
         )
+        if completed:
+            parent_event = context.get("event") or {}
+            signed_event = AutomationEvent(
+                event_type="customer.lifecycle.contract.signed",
+                source="automation-engine",
+                correlation_id=parent_event.get("correlation_id") or parent_event.get("event_id"),
+                causation_id=parent_event.get("event_id"),
+                idempotency_key=f"contract-signed:{request_id}",
+                depth=int(parent_event.get("depth") or 0) + 1,
+                payload={
+                    "request_id": request_id,
+                    "contract_type": contract_type,
+                    "service_id": service_id,
+                    "deal_id": deal_id,
+                    "account_id": account_id,
+                    "contact_id": contact_id,
+                    "signed_at": signed_at,
+                },
+            )
+            engine.ingest(signed_event)
+
         return {
             "request_id": request_id,
             "request_status": request_status,
