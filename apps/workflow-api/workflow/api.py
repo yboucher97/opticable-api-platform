@@ -28,6 +28,9 @@ from .zoho_gateway import ZohoGatewayClient, ZohoGatewayError
 from .windsor_api import WindsorApiClient
 from .ovh_api import OvhApiClient
 from .ai_router import AiRouter
+from .cloudflare_api import CloudflareApiClient
+from .github_api import GithubApiClient
+from .apollo_api import ApolloApiClient
 from .automation import (
     AutomationEngine,
     AutomationEvent,
@@ -44,6 +47,7 @@ from .automation.providers.zoho import register_zoho_actions
 from .automation.providers.windsor import register_windsor_actions
 from .automation.providers.ovh import register_ovh_actions
 from .automation.providers.ai import register_ai_actions
+from .automation.providers.core_external import register_core_external_actions
 from .automation.reconcilers.zoho_crm import ZohoCrmFieldReconciler
 
 
@@ -64,12 +68,16 @@ zoho_gateway_client = ZohoGatewayClient(settings.zoho_gateway, ZohoOAuthManager(
 windsor_api_client = WindsorApiClient(settings.windsor)
 ovh_api_client = OvhApiClient(settings.ovh)
 ai_router = AiRouter(settings.ai)
+cloudflare_api_client = CloudflareApiClient(settings.cloudflare)
+github_api_client = GithubApiClient(settings.github)
+apollo_api_client = ApolloApiClient(settings.apollo)
 desired_state_registry.register("zoho_crm", "field", ZohoCrmFieldReconciler(zoho_gateway_client))
 register_google_actions(automation_engine, google_api_client, automation_store)
 register_zoho_actions(automation_engine, zoho_gateway_client, automation_store)
 register_windsor_actions(automation_engine, windsor_api_client, automation_store)
 register_ovh_actions(automation_engine, ovh_api_client, automation_store)
 register_ai_actions(automation_engine, ai_router, automation_store)
+register_core_external_actions(automation_engine, cloudflare_api_client, github_api_client, apollo_api_client, automation_store)
 API_VERSION = "1.7.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
@@ -736,17 +744,20 @@ async def provider_inventory(
                 "endpoint": settings.ovh.endpoint,
             },
             "github": {
-                "primary": "deploy_key_read_only",
-                "configured": True,
-                "note": "Full GitHub mutation credentials for OptiBrain are not configured yet.",
+                "primary": "direct_api",
+                "configured": github_api_client.configured,
+                "owner": settings.github.owner,
+                "note": "Read-only deploy key remains separate for code checkout.",
             },
             "cloudflare": {
-                "primary": "pending_direct_api",
-                "configured": False,
+                "primary": "direct_api",
+                "configured": cloudflare_api_client.configured,
+                "account_id_suffix": settings.cloudflare.account_id[-6:] if settings.cloudflare.account_id else None,
             },
             "apollo": {
-                "primary": "pending_direct_api",
-                "configured": False,
+                "primary": "direct_api",
+                "configured": apollo_api_client.configured,
+                "credit_consumption_enabled": settings.apollo.allow_credit_consumption,
             },
             "openai": {
                 "primary": "pending_direct_api",
