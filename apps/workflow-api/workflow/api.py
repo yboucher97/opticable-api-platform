@@ -747,9 +747,12 @@ async def provider_inventory(
                 "endpoint": settings.ovh.endpoint,
             },
             "github": {
-                "primary": "direct_api",
+                "primary": "github_app" if github_api_client.auth_mode == "github_app" else "direct_api",
                 "configured": github_api_client.configured,
+                "auth_mode": github_api_client.auth_mode,
                 "owner": settings.github.owner,
+                "app_id": settings.github.app_id,
+                "installation_id": settings.github.installation_id,
                 "note": "Read-only deploy key remains separate for code checkout.",
             },
             "cloudflare": {
