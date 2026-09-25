@@ -120,6 +120,9 @@ class CloudflareSettings:
 @dataclass(frozen=True)
 class GithubSettings:
     api_token: str | None
+    app_id: str | None
+    installation_id: str | None
+    private_key_path: Path | None
     owner: str
     timeout_seconds: int
 
@@ -343,6 +346,11 @@ def load_settings() -> AppSettings:
         ),
         github=GithubSettings(
             api_token=os.getenv("GITHUB_API_TOKEN"),
+            app_id=os.getenv("GITHUB_APP_ID"),
+            installation_id=os.getenv("GITHUB_APP_INSTALLATION_ID"),
+            private_key_path=Path(os.getenv("GITHUB_APP_PRIVATE_KEY_PATH")).resolve()
+            if os.getenv("GITHUB_APP_PRIVATE_KEY_PATH")
+            else None,
             owner=os.getenv("GITHUB_OWNER", "yboucher97"),
             timeout_seconds=_env_int("GITHUB_TIMEOUT_SECONDS", 60),
         ),
