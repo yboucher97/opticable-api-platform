@@ -91,6 +91,13 @@ class GoogleOAuthSettings:
 
 
 @dataclass(frozen=True)
+class ZohoGatewaySettings:
+    base_url: str
+    api_key: str | None
+    timeout_seconds: int
+
+
+@dataclass(frozen=True)
 class ZohoOAuthSettings:
     enabled: bool
     client_id: str | None
@@ -112,6 +119,7 @@ class AppSettings:
     naming: NamingSettings
     automation: AutomationSettings
     google_oauth: GoogleOAuthSettings
+    zoho_gateway: ZohoGatewaySettings
     zoho_oauth: ZohoOAuthSettings
 
 
@@ -230,6 +238,11 @@ def load_settings() -> AppSettings:
             credentials_path=google_credentials_path,
             state_secret=google_state_secret,
             state_ttl_seconds=_env_int("GOOGLE_OAUTH_STATE_TTL_SECONDS", 900),
+        ),
+        zoho_gateway=ZohoGatewaySettings(
+            base_url=os.getenv("OPTICABLE_ZOHO_GATEWAY_URL", "https://connect.opticable.ca").rstrip("/"),
+            api_key=os.getenv("OPTICABLE_ZOHO_GATEWAY_API_KEY"),
+            timeout_seconds=_env_int("OPTICABLE_ZOHO_GATEWAY_TIMEOUT_SECONDS", 60),
         ),
         zoho_oauth=ZohoOAuthSettings(
             enabled=bool(zoho_client_id and zoho_client_secret and zoho_redirect_uri),
