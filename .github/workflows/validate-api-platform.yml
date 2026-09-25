@@ -48,6 +48,7 @@ jobs:
           bash -n ../../install.sh
           bash -n ../../deploy/update-production.sh
           bash -n ../../deploy/bootstrap-deploy-user.sh
+          bash -n ../../deploy/bootstrap-github-actions-secrets.sh
 
       - name: Compile Python
         run: python -m compileall -q workflow tests
