@@ -99,6 +99,15 @@ class ZohoGatewaySettings:
 
 
 @dataclass(frozen=True)
+class OvhSettings:
+    endpoint: str
+    application_key: str | None
+    application_secret: str | None
+    consumer_key: str | None
+    timeout_seconds: int
+
+
+@dataclass(frozen=True)
 class ZohoOAuthSettings:
     enabled: bool
     client_id: str | None
@@ -122,6 +131,7 @@ class AppSettings:
     google_oauth: GoogleOAuthSettings
     zoho_gateway: ZohoGatewaySettings
     zoho_oauth: ZohoOAuthSettings
+    ovh: OvhSettings
 
 
 def load_settings() -> AppSettings:
@@ -245,6 +255,13 @@ def load_settings() -> AppSettings:
             api_key=os.getenv("OPTICABLE_ZOHO_GATEWAY_API_KEY"),
             timeout_seconds=_env_int("OPTICABLE_ZOHO_GATEWAY_TIMEOUT_SECONDS", 60),
             standby_enabled=_env_bool("OPTICABLE_CONNECT_STANDBY_ENABLED", False),
+        ),
+        ovh=OvhSettings(
+            endpoint=os.getenv("OVH_ENDPOINT", "ovh-ca"),
+            application_key=os.getenv("OVH_APPLICATION_KEY"),
+            application_secret=os.getenv("OVH_APPLICATION_SECRET"),
+            consumer_key=os.getenv("OVH_CONSUMER_KEY"),
+            timeout_seconds=_env_int("OVH_TIMEOUT_SECONDS", 60),
         ),
         zoho_oauth=ZohoOAuthSettings(
             enabled=bool(zoho_client_id and zoho_client_secret and zoho_redirect_uri),
