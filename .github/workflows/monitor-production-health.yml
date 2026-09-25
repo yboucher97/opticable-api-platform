@@ -46,10 +46,15 @@ jobs:
           if [[ -z "$CORE_API_KEY" ]]; then
             failed+=("provider-inventory: missing OPTICABLE_CORE_API_KEY GitHub secret")
           else
-            providers="$(curl --fail --silent --show-error --max-time 15               -H "X-API-Key: $CORE_API_KEY"               "https://optibrain.opticable.ca/v1/system/providers" 2>/dev/null || true)"
-            if [[ -z "$providers" ]]; then
-              failed+=("provider-inventory: authenticated inventory request failed")
+            provider_body="$(mktemp)"
+            provider_code="$(curl --silent --show-error --max-time 15 \
+              -o "$provider_body" -w "%{http_code}" \
+              -H "X-API-Key: $CORE_API_KEY" \
+              "https://optibrain.opticable.ca/v1/system/providers" 2>/dev/null || printf 'curl-error')"
+            if [[ "$provider_code" != "200" ]]; then
+              failed+=("provider-inventory: authenticated inventory HTTP $provider_code")
             else
+              providers="$(cat "$provider_body")"
               check_provider() {
                 local jq_filter="$1"
                 local label="$2"
