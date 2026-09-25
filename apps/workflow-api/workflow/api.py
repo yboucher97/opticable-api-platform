@@ -1237,9 +1237,9 @@ async def zoho_gateway_status(
         return payload
     try:
         result = zoho_gateway_client.request(
-            "creator",
+            "zohoapis",
             "GET",
-            "/meta/applications",
+            "/crm/v8/org",
         )
         payload["verified"] = bool(result.get("ok"))
         payload["provider_status"] = result.get("status")
