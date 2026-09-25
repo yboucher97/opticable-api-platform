@@ -288,21 +288,33 @@ export default {
     return json({ error: "Not found" }, 404);
   },
 
-  async queue(batch: MessageBatch<AutomationEvent>, env: Env): Promise<void> {
+  async queue(batch: MessageBatch<unknown>, env: Env): Promise<void> {
     for (const message of batch.messages) {
+      const body = message.body as Partial<AutomationEvent> | null;
+      const eventId = typeof body?.event_id === "string" ? body.event_id : null;
+      if (!eventId) {
+        message.ack();
+        await audit(env, "queue.invalid_message", false, { reason: "missing event_id" }, {
+          category: "queue",
+          target: null,
+        });
+        continue;
+      }
+
       try {
+        const automationEvent = body as AutomationEvent;
         const instance = await env.AUTOMATION_WORKFLOW.create({
-          id: `event-${message.body.event_id}`,
-          params: message.body,
+          id: `event-${eventId}`,
+          params: automationEvent,
         });
         await env.DB.prepare(
           "UPDATE events SET status = 'queued', workflow_instance_id = ? WHERE event_id = ?",
-        ).bind(instance.id, message.body.event_id).run();
+        ).bind(instance.id, eventId).run();
         message.ack();
       } catch (error) {
         await env.DB.prepare(
           "UPDATE events SET status = 'queue_error', last_error = ? WHERE event_id = ?",
-        ).bind(String(error).slice(0, 2000), message.body.event_id).run();
+        ).bind(String(error).slice(0, 2000), eventId).run();
         message.retry();
       }
     }
