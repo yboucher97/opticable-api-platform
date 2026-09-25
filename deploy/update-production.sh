@@ -97,6 +97,11 @@ main() {
   exec 9>"${LOCK_FILE}"
   flock -n 9 || fail "Another deployment is already running."
 
+  if [[ -n "$(git -C "${INSTALL_DIR}" status --porcelain --untracked-files=no -- deploy/bootstrap-deploy-user.sh)" ]]; then
+    log "Restoring tracked deploy/bootstrap-deploy-user.sh to the checked-out version"
+    git -C "${INSTALL_DIR}" restore --source=HEAD --worktree -- deploy/bootstrap-deploy-user.sh
+  fi
+
   local tracked_changes
   tracked_changes="$(git -C "${INSTALL_DIR}" status --porcelain --untracked-files=no)"
   if [[ -n "${tracked_changes}" ]]; then
