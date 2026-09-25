@@ -1,0 +1,98 @@
+name: Deploy Autonomous Core
+
+on:
+  workflow_run:
+    workflows: ["Validate Autonomous Core"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: opticable-autonomous-core-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/autonomous-core
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CORE_API_KEY: ${{ secrets.OPTICABLE_AUTONOMOUS_CORE_API_KEY }}
+      D1_NAME: opticable-autonomous-core
+      QUEUE_NAME: opticable-autonomous-events
+      DLQ_NAME: opticable-autonomous-events-dlq
+
+    steps:
+      - name: Check out validated commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "Missing secret: CLOUDFLARE_API_TOKEN"; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "Missing secret: CLOUDFLARE_ACCOUNT_ID"; exit 1; }
+          test -n "$CORE_API_KEY" || { echo "Missing secret: OPTICABLE_AUTONOMOUS_CORE_API_KEY"; exit 1; }
+
+      - name: Validate TypeScript
+        run: npm run check
+
+      - name: Provision D1 if missing
+        shell: bash
+        run: |
+          DB_ID="$(npx wrangler d1 list --json | jq -r --arg name "$D1_NAME" '.[] | select(.name == $name) | (.uuid // .id)' | head -n1)"
+          if [ -z "$DB_ID" ] || [ "$DB_ID" = "null" ]; then
+            npx wrangler d1 create "$D1_NAME" --location enam
+            DB_ID="$(npx wrangler d1 list --json | jq -r --arg name "$D1_NAME" '.[] | select(.name == $name) | (.uuid // .id)' | head -n1)"
+          fi
+          test -n "$DB_ID" && test "$DB_ID" != "null" || { echo "Could not resolve D1 database id"; exit 1; }
+          echo "D1_DATABASE_ID=$DB_ID" >> "$GITHUB_ENV"
+
+      - name: Provision queues if missing
+        shell: bash
+        run: |
+          QUEUES="$(npx wrangler queues list)"
+          if ! printf '%s\n' "$QUEUES" | grep -Fq "$QUEUE_NAME"; then
+            npx wrangler queues create "$QUEUE_NAME" --message-retention-period-secs 86400
+          fi
+          QUEUES="$(npx wrangler queues list)"
+          if ! printf '%s\n' "$QUEUES" | grep -Fq "$DLQ_NAME"; then
+            npx wrangler queues create "$DLQ_NAME" --message-retention-period-secs 86400
+          fi
+
+      - name: Render production Wrangler config
+        shell: bash
+        run: |
+          node -e 'const fs=require("fs"); const id=process.env.D1_DATABASE_ID; const s=fs.readFileSync("wrangler.template.jsonc","utf8").replace("__D1_DATABASE_ID__",id); fs.writeFileSync("wrangler.jsonc",s);'
+          grep -F "$D1_DATABASE_ID" wrangler.jsonc >/dev/null
+
+      - name: Apply D1 schema
+        run: npx wrangler d1 execute "$D1_NAME" --remote --file=./schema.sql --yes
+
+      - name: Set autonomous core API secret
+        shell: bash
+        run: printf '%s' "$CORE_API_KEY" | npx wrangler secret put CORE_API_KEY --config wrangler.jsonc
+
+      - name: Deploy autonomous core
+        run: npx wrangler deploy --config wrangler.jsonc
+
+      - name: Verify deployed Worker metadata
+        run: npx wrangler versions list --name opticable-autonomous-core
