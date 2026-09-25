@@ -24,6 +24,7 @@ from .workdrive import WorkflowWorkDriveClient, WorkflowWorkDriveError
 from .zoho_oauth import ZohoOAuthManager
 from .google_oauth import GoogleOAuthManager
 from .google_api import GoogleApiClient, GoogleApiError, SERVICE_BASES as GOOGLE_SERVICE_BASES
+from .zoho_gateway import ZohoGatewayClient, ZohoGatewayError
 from .automation import (
     AutomationEngine,
     AutomationEvent,
@@ -36,6 +37,7 @@ from .automation import (
 from .automation.capabilities import capability_summary, load_capabilities
 from .automation.models import EventIngestResponse
 from .automation.providers.google import register_google_actions
+from .automation.providers.zoho import register_zoho_actions
 
 
 settings = load_settings()
@@ -51,7 +53,9 @@ desired_state_registry = DesiredStateRegistry()
 desired_state_controller = DesiredStateController(desired_state_registry)
 google_oauth_manager = GoogleOAuthManager(settings.google_oauth)
 google_api_client = GoogleApiClient(google_oauth_manager)
+zoho_gateway_client = ZohoGatewayClient(settings.zoho_gateway)
 register_google_actions(automation_engine, google_api_client, automation_store)
+register_zoho_actions(automation_engine, zoho_gateway_client, automation_store)
 API_VERSION = "1.7.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
@@ -1216,6 +1220,33 @@ async def google_admin_api(
             },
         )
     return result
+
+
+@app.get("/v1/integrations/zoho-gateway/status", tags=["integrations"])
+async def zoho_gateway_status(
+    verify: bool = Query(default=False),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    payload: dict[str, Any] = {
+        "configured": zoho_gateway_client.configured,
+        "base_url": settings.zoho_gateway.base_url,
+        "uses_centralized_oauth": True,
+    }
+    if not verify or not zoho_gateway_client.configured:
+        return payload
+    try:
+        result = zoho_gateway_client.request(
+            "creator",
+            "GET",
+            "/meta/applications",
+        )
+        payload["verified"] = bool(result.get("ok"))
+        payload["provider_status"] = result.get("status")
+    except Exception as exc:
+        payload["verified"] = False
+        payload["error"] = str(exc)
+    return payload
 
 
 @app.get(ZOHO_OAUTH_STATUS_PATH, response_model=ZohoOAuthStatusResponse, tags=["integrations"])
