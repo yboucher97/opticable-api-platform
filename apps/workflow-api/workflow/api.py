@@ -963,7 +963,7 @@ async def lifecycle_send_contract(
     _validate_api_key(x_api_key)
     if not settings.automation.enabled:
         raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
-    raw = payload.model_dump(exclude_none=True)
+    raw = payload.model_dump()
     linkage = payload.service_id or payload.account_id or payload.deal_id or payload.recipient_email.lower()
     event = AutomationEvent(
         event_type="customer.lifecycle.contract.requested",
@@ -982,7 +982,7 @@ async def lifecycle_sync_contract_status(
     _validate_api_key(x_api_key)
     if not settings.automation.enabled:
         raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
-    raw = payload.model_dump(exclude_none=True)
+    raw = payload.model_dump()
     event = AutomationEvent(
         event_type="customer.lifecycle.contract.status_check",
         source=payload.source,
