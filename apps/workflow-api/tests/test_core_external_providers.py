@@ -18,7 +18,7 @@ class CoreProviderTests(unittest.TestCase):
             client.request("/accounts/a/billing/profile")
 
     def test_github_restricts_owner(self):
-        client=GithubApiClient(GithubSettings(api_token="x", owner="yboucher97", timeout_seconds=30))
+        client=GithubApiClient(GithubSettings(api_token="x", app_id=None, installation_id=None, private_key_path=None, owner="yboucher97", timeout_seconds=30))
         with self.assertRaises(GithubApiError):
             client.request("/repos/someone-else/repo")
 
