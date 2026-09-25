@@ -49,6 +49,13 @@ ZOHO_OAUTH_CLIENT_SECRET="${ZOHO_OAUTH_CLIENT_SECRET:-}"
 ZOHO_OAUTH_ACCOUNTS_BASE_URL="${ZOHO_OAUTH_ACCOUNTS_BASE_URL:-}"
 ZOHO_OAUTH_REDIRECT_URI="${ZOHO_OAUTH_REDIRECT_URI:-}"
 ZOHO_OAUTH_SCOPES="${ZOHO_OAUTH_SCOPES:-WorkDrive.files.READ,WorkDrive.files.CREATE,WorkDrive.files.UPDATE}"
+
+GOOGLE_OAUTH_CLIENT_ID="${GOOGLE_OAUTH_CLIENT_ID:-}"
+GOOGLE_OAUTH_CLIENT_SECRET="${GOOGLE_OAUTH_CLIENT_SECRET:-}"
+GOOGLE_OAUTH_REDIRECT_URI="${GOOGLE_OAUTH_REDIRECT_URI:-}"
+GOOGLE_OAUTH_SCOPES="${GOOGLE_OAUTH_SCOPES:-https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/tagmanager.readonly,https://www.googleapis.com/auth/tagmanager.edit.containers,https://www.googleapis.com/auth/tagmanager.delete.containers,https://www.googleapis.com/auth/tagmanager.edit.containerversions,https://www.googleapis.com/auth/tagmanager.publish,https://www.googleapis.com/auth/tagmanager.manage.accounts,https://www.googleapis.com/auth/tagmanager.manage.users}"
+GOOGLE_OAUTH_CREDENTIALS_PATH="${GOOGLE_OAUTH_CREDENTIALS_PATH:-${WORKFLOW_DATA_DIR}/output/integrations/google-oauth.json}"
+
 AUTO_SWAP_ENABLED="${AUTO_SWAP_ENABLED:-true}"
 AUTO_SWAP_SIZE_GB="${AUTO_SWAP_SIZE_GB:-4}"
 AUTO_SWAP_PATH="${AUTO_SWAP_PATH:-/swapfile}"
@@ -401,6 +408,11 @@ write_pdf_env() {
   PASSWORD_PDF_API_KEY="${PASSWORD_PDF_API_KEY}" \
   ZOHO_WORKDRIVE_PARENT_FOLDER_ID="${ZOHO_WORKDRIVE_PARENT_FOLDER_ID:-}" \
   ZOHO_OAUTH_CREDENTIALS_PATH="${ZOHO_OAUTH_CREDENTIALS_PATH}" \
+  GOOGLE_OAUTH_CLIENT_ID="${GOOGLE_OAUTH_CLIENT_ID:-}" \
+  GOOGLE_OAUTH_CLIENT_SECRET="${GOOGLE_OAUTH_CLIENT_SECRET:-}" \
+  GOOGLE_OAUTH_REDIRECT_URI="${google_redirect_uri}" \
+  GOOGLE_OAUTH_SCOPES="${GOOGLE_OAUTH_SCOPES}" \
+  GOOGLE_OAUTH_CREDENTIALS_PATH="${GOOGLE_OAUTH_CREDENTIALS_PATH}" \
   python3 - <<'PY'
 import os
 from pathlib import Path
@@ -590,6 +602,10 @@ write_workflow_env() {
   if [[ -z "${zoho_redirect_uri}" && -n "${PUBLIC_API_HOST}" ]]; then
     zoho_redirect_uri="https://${PUBLIC_API_HOST}/v1/integrations/zoho/oauth/callback"
   fi
+  local google_redirect_uri="${GOOGLE_OAUTH_REDIRECT_URI:-}"
+  if [[ -z "${google_redirect_uri}" && -n "${PUBLIC_API_HOST}" ]]; then
+    google_redirect_uri="https://${PUBLIC_API_HOST}/v1/integrations/google/oauth/callback"
+  fi
 
   WORKFLOW_ENV_FILE="${WORKFLOW_ENV_FILE}" \
   WORKFLOW_PORT="${WORKFLOW_PORT}" \
@@ -646,6 +662,9 @@ defaults = {
     "ZOHO_OAUTH_REDIRECT_URI": os.environ["ZOHO_OAUTH_REDIRECT_URI"],
     "ZOHO_OAUTH_SCOPES": os.environ["ZOHO_OAUTH_SCOPES"],
     "ZOHO_OAUTH_CREDENTIALS_PATH": os.environ["ZOHO_OAUTH_CREDENTIALS_PATH"],
+    "GOOGLE_OAUTH_REDIRECT_URI": os.environ["GOOGLE_OAUTH_REDIRECT_URI"],
+    "GOOGLE_OAUTH_SCOPES": os.environ["GOOGLE_OAUTH_SCOPES"],
+    "GOOGLE_OAUTH_CREDENTIALS_PATH": os.environ["GOOGLE_OAUTH_CREDENTIALS_PATH"],
 }
 
 for key, value in defaults.items():
@@ -665,6 +684,8 @@ for key in [
     "OMADA_SITE_CREATOR_DEVICE_PASSWORD",
     "ZOHO_OAUTH_CLIENT_ID",
     "ZOHO_OAUTH_CLIENT_SECRET",
+    "GOOGLE_OAUTH_CLIENT_ID",
+    "GOOGLE_OAUTH_CLIENT_SECRET",
 ]:
     value = os.environ.get(key, "").strip()
     if value:
@@ -698,6 +719,11 @@ ordered = [
     "ZOHO_OAUTH_REDIRECT_URI",
     "ZOHO_OAUTH_SCOPES",
     "ZOHO_OAUTH_CREDENTIALS_PATH",
+    "GOOGLE_OAUTH_CLIENT_ID",
+    "GOOGLE_OAUTH_CLIENT_SECRET",
+    "GOOGLE_OAUTH_REDIRECT_URI",
+    "GOOGLE_OAUTH_SCOPES",
+    "GOOGLE_OAUTH_CREDENTIALS_PATH",
     "OMADA_SITE_CREATOR_CLOUD_EMAIL",
     "OMADA_SITE_CREATOR_CLOUD_PASSWORD",
     "OMADA_SITE_CREATOR_DEVICE_USERNAME",
@@ -756,6 +782,10 @@ ZOHO_OAUTH_ACCOUNTS_BASE_URL=${zoho_accounts_base}
 ZOHO_OAUTH_REDIRECT_URI=${zoho_redirect_uri}
 ZOHO_OAUTH_SCOPES=${ZOHO_OAUTH_SCOPES}
 ZOHO_OAUTH_CREDENTIALS_PATH=${ZOHO_OAUTH_CREDENTIALS_PATH}
+GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
+GOOGLE_OAUTH_REDIRECT_URI=${GOOGLE_OAUTH_REDIRECT_URI}
+GOOGLE_OAUTH_SCOPES=${GOOGLE_OAUTH_SCOPES}
+GOOGLE_OAUTH_CREDENTIALS_PATH=${GOOGLE_OAUTH_CREDENTIALS_PATH}
 WORKFLOW_ENV_FILE=${WORKFLOW_ENV_FILE}
 PDF_ENV_FILE=${PDF_ENV_FILE}
 OMADA_ENV_FILE=${OMADA_ENV_FILE}
@@ -888,6 +918,8 @@ print_summary() {
     echo "Workflow health:  https://${PUBLIC_API_HOST}/v1/system/health"
     echo "Zoho OAuth start: https://${PUBLIC_API_HOST}/v1/integrations/zoho/oauth/start"
     echo "Zoho OAuth status: https://${PUBLIC_API_HOST}/v1/integrations/zoho/oauth/status"
+    echo "Google OAuth start: https://${PUBLIC_API_HOST}/v1/integrations/google/oauth/start"
+    echo "Google OAuth status: https://${PUBLIC_API_HOST}/v1/integrations/google/oauth/status"
     echo "PDF health:       https://${PUBLIC_API_HOST}/pdf/health"
     echo "Omada health:     https://${PUBLIC_API_HOST}/omada/api/health"
     echo
