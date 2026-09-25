@@ -332,6 +332,11 @@ def _service_catalog() -> list[ServiceRoute]:
             description="Public Omada discovery and plan-submission API for sites, LANs, WLAN groups, SSIDs, and direct YAML/JSON job intake.",
         ),
         ServiceRoute(
+            name="provider-inventory",
+            path_prefix="/v1/system/providers",
+            description="Credential-safe inventory of canonical provider paths, connection state, and standby policy.",
+        ),
+        ServiceRoute(
             name="automation-kernel",
             path_prefix="/v1/automation",
             description="Provider-neutral event, workflow, capability, audit, and run-control APIs.",
@@ -685,6 +690,75 @@ async def health() -> HealthResponse:
 @app.get("/v1/system/catalog", response_model=PlatformIndexResponse, tags=["platform"])
 async def platform_catalog() -> PlatformIndexResponse:
     return await platform_index()
+
+@app.get("/v1/system/providers", tags=["platform"])
+async def provider_inventory(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    zoho_status = _zoho_oauth_manager().status()
+    google_status = google_oauth_manager.status()
+    return {
+        "master": "optibrain.opticable.ca",
+        "standby": {
+            "connect.opticable.ca": {
+                "mode": "manual",
+                "enabled": settings.zoho_gateway.standby_enabled,
+            }
+        },
+        "providers": {
+            "zoho": {
+                "primary": "local_oauth",
+                "configured": zoho_status.configured,
+                "connected": zoho_status.connected,
+                "scope_count": len(zoho_status.scopes),
+                "standby_enabled": settings.zoho_gateway.standby_enabled,
+            },
+            "google_admin": {
+                "primary": "local_oauth",
+                "configured": google_status.configured,
+                "connected": google_status.connected,
+                "scope_count": len(google_status.scopes),
+                "services": sorted(GOOGLE_SERVICE_BASES),
+            },
+            "windsor": {
+                "primary": "direct_api",
+                "configured": windsor_api_client.configured,
+                "purpose": "marketing_ads_organic_analytics_broker",
+            },
+            "ovhcloud": {
+                "primary": "direct_signed_api",
+                "configured": ovh_api_client.configured,
+                "endpoint": settings.ovh.endpoint,
+            },
+            "github": {
+                "primary": "deploy_key_read_only",
+                "configured": True,
+                "note": "Full GitHub mutation credentials for OptiBrain are not configured yet.",
+            },
+            "cloudflare": {
+                "primary": "pending_direct_api",
+                "configured": False,
+            },
+            "apollo": {
+                "primary": "pending_direct_api",
+                "configured": False,
+            },
+            "openai": {
+                "primary": "pending_direct_api",
+                "configured": False,
+            },
+            "anthropic": {
+                "primary": "pending_direct_api",
+                "configured": False,
+            },
+            "gemini": {
+                "primary": "pending_direct_api",
+                "configured": False,
+            },
+        },
+    }
+
 
 
 @app.get("/v1/site-and-password/health", response_model=HealthResponse, tags=["site-and-password"])
