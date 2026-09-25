@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "apps/workflow-api/**"
+      - "apps/control-plane-worker/**"
       - "install.sh"
       - "deploy/update-production.sh"
       - "deploy/bootstrap-deploy-user.sh"
@@ -13,6 +14,7 @@ on:
     branches: [main]
     paths:
       - "apps/workflow-api/**"
+      - "apps/control-plane-worker/**"
       - "install.sh"
       - "deploy/update-production.sh"
       - "deploy/bootstrap-deploy-user.sh"
@@ -52,3 +54,24 @@ jobs:
 
       - name: Run automation kernel tests
         run: python -m unittest discover -s tests -v
+
+
+  control-plane-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/control-plane-worker
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate durable control-plane Worker
+        run: npm run check
