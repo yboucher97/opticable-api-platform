@@ -108,6 +108,8 @@ main() {
   git -C "${INSTALL_DIR}" fetch --prune origin main
   git -C "${INSTALL_DIR}" cat-file -e "${TARGET_SHA}^{commit}" 2>/dev/null \
     || fail "Target SHA ${TARGET_SHA} is not available after fetch."
+  git -C "${INSTALL_DIR}" merge-base --is-ancestor "${TARGET_SHA}" origin/main \
+    || fail "Target SHA ${TARGET_SHA} is not an ancestor of origin/main."
 
   if [[ "${previous_sha}" == "${TARGET_SHA}" ]]; then
     log "Target is already deployed; verifying health only"
