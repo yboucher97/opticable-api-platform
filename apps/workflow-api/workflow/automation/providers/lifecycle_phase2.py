@@ -238,6 +238,70 @@ def register_lifecycle_phase2_actions(
             result["payments"] = _summarize_books_collection(payments, "customerpayments")
         return result
 
+    def observe_finance_attention(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
+        request = step.inputs.get("request") or {}
+        if not isinstance(request, dict):
+            raise ValueError("lifecycle.books_finance_attention requires with.request object.")
+        organization_id = str(request.get("organization_id") or "802337532")
+        per_page = max(1, min(int(request.get("per_page") or 100), 100))
+        statuses = ("overdue", "draft", "sent")
+        buckets: dict[str, Any] = {}
+        total_attention_balance = 0.0
+
+        for status in statuses:
+            response = _books_list(
+                client,
+                "/books/v3/invoices",
+                organization_id=organization_id,
+                status=status,
+                page=1,
+                per_page=per_page,
+            )
+            raw = _raw_provider_data(response)
+            invoices = raw.get("invoices")
+            if not isinstance(invoices, list):
+                invoices = []
+            records: list[dict[str, Any]] = []
+            balance = 0.0
+            for invoice in invoices:
+                if not isinstance(invoice, dict):
+                    continue
+                item_balance = _safe_float(invoice.get("balance"))
+                balance += item_balance
+                records.append({
+                    "invoice_id": str(invoice.get("invoice_id") or "") or None,
+                    "invoice_number": str(invoice.get("invoice_number") or "") or None,
+                    "customer_id": str(invoice.get("customer_id") or "") or None,
+                    "customer_name": str(invoice.get("customer_name") or invoice.get("company_name") or "") or None,
+                    "status": str(invoice.get("status") or status).lower(),
+                    "date": invoice.get("date"),
+                    "due_date": invoice.get("due_date"),
+                    "total": round(_safe_float(invoice.get("total")), 2),
+                    "balance": round(item_balance, 2),
+                    "is_emailed": bool(invoice.get("is_emailed")),
+                    "is_viewed_in_mail": bool(invoice.get("is_viewed_in_mail")),
+                    "reminders_sent": int(invoice.get("reminders_sent") or 0),
+                    "last_reminder_sent_date": invoice.get("last_reminder_sent_date") or None,
+                    "last_payment_date": invoice.get("last_payment_date") or None,
+                })
+            buckets[status] = {
+                "count": len(records),
+                "balance": round(balance, 2),
+                "records": records,
+            }
+            total_attention_balance += balance
+
+        return {
+            "organization_id": organization_id,
+            "access": "read_only",
+            "mutations_performed": 0,
+            "observed_statuses": list(statuses),
+            "attention_balance": round(total_attention_balance, 2),
+            "overdue_count": buckets["overdue"]["count"],
+            "overdue_balance": buckets["overdue"]["balance"],
+            "buckets": buckets,
+        }
+
     def send_contract(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
         request = step.inputs.get("contract")
         if not isinstance(request, dict):
@@ -500,6 +564,7 @@ def register_lifecycle_phase2_actions(
 
     engine.register_action("lifecycle.crm_create_quote_review_task", create_quote_review_task)
     engine.register_action("lifecycle.books_observe", observe_books)
+    engine.register_action("lifecycle.books_finance_attention", observe_finance_attention)
     engine.register_action("lifecycle.sign_send_contract", send_contract)
     engine.register_action("lifecycle.sign_observe_requests", observe_sign_requests)
     engine.register_action("lifecycle.build_digest", build_digest)

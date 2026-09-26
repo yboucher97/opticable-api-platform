@@ -33,7 +33,13 @@ class FakeZoho:
         if path.startswith("/books/") and method != "GET":
             raise AssertionError("Books mutation attempted")
         if method == "GET" and path == "/books/v3/invoices":
-            return {"data": {"invoices": [{"status": "overdue", "total": 500, "balance": 200}], "page_context": {"has_more_page": False}}}
+            status = str((kwargs.get("query") or {}).get("status") or "overdue")
+            fixtures = {
+                "overdue": [{"invoice_id": "i1", "invoice_number": "INV-1", "customer_id": "c1", "customer_name": "Client A", "status": "overdue", "total": 500, "balance": 200, "due_date": "2026-09-17", "is_emailed": True, "reminders_sent": 1}],
+                "draft": [{"invoice_id": "i2", "invoice_number": "INV-2", "customer_id": "c2", "customer_name": "Client B", "status": "draft", "total": 300, "balance": 300, "due_date": "2026-10-20", "is_emailed": False, "reminders_sent": 0}],
+                "sent": [{"invoice_id": "i3", "invoice_number": "INV-3", "customer_id": "c3", "customer_name": "Client C", "status": "sent", "total": 400, "balance": 400, "due_date": "2026-10-15", "is_emailed": True, "is_viewed_in_mail": True, "reminders_sent": 0}],
+            }
+            return {"data": {"invoices": fixtures.get(status, fixtures["overdue"]), "page_context": {"has_more_page": False}}}
         if method == "GET" and path == "/books/v3/estimates":
             return {"data": {"estimates": [{"status": "sent", "total": 1000}], "page_context": {"has_more_page": False}}}
         if method == "GET" and path == "/books/v3/customerpayments":
@@ -173,6 +179,38 @@ steps:
             self.assertEqual(run["status"], "completed")
             self.assertTrue(any(c["path"] == "/crm/v8/Tasks" and c["method"] == "POST" for c in zoho.calls))
             self.assertFalse(any(c["path"].startswith("/books/") and c["method"] != "GET" for c in zoho.calls))
+        finally:
+            tmp.cleanup()
+
+    def test_finance_attention_observer_is_books_read_only(self) -> None:
+        workflow = """
+id: test.finance.observe
+name: Finance observe
+version: 1
+enabled: true
+trigger:
+  event_types: [test.finance.observe]
+steps:
+  - id: observe
+    action: lifecycle.books_finance_attention
+    with:
+      request: "{{ event.payload }}"
+"""
+        tmp, run, zoho, _ = self._run(
+            workflow,
+            AutomationEvent(event_type="test.finance.observe", source="unit", payload={"organization_id": "802337532"}),
+        )
+        try:
+            self.assertEqual(run["status"], "completed")
+            result = run["steps"][0]["result"]
+            self.assertEqual(result["access"], "read_only")
+            self.assertEqual(result["mutations_performed"], 0)
+            self.assertEqual(result["overdue_count"], 1)
+            self.assertEqual(result["overdue_balance"], 200.0)
+            self.assertEqual(result["attention_balance"], 900.0)
+            books_calls = [c for c in zoho.calls if c["path"].startswith("/books/")]
+            self.assertEqual(len(books_calls), 3)
+            self.assertTrue(all(c["method"] == "GET" for c in books_calls))
         finally:
             tmp.cleanup()
 
