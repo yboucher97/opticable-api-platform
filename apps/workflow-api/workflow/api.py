@@ -52,6 +52,7 @@ from .automation.providers.core_external import register_core_external_actions
 from .automation.providers.lifecycle import register_lifecycle_actions
 from .automation.providers.lifecycle_extended import register_lifecycle_extended_actions
 from .automation.providers.lifecycle_phase2 import register_lifecycle_phase2_actions
+from .automation.providers.lifecycle_mailbox import register_lifecycle_mailbox_actions
 from .automation.reconcilers.zoho_crm import ZohoCrmFieldReconciler
 
 
@@ -85,6 +86,7 @@ register_core_external_actions(automation_engine, cloudflare_api_client, github_
 register_lifecycle_actions(automation_engine, zoho_gateway_client, automation_store)
 register_lifecycle_extended_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_phase2_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
+register_lifecycle_mailbox_actions(automation_engine, zoho_gateway_client, automation_store)
 API_VERSION = "1.7.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
