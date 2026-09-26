@@ -199,21 +199,16 @@ steps:
         self.assertFalse(is_books_api_path("zohoapis", "/crm/v8/Leads"))
         self.assertFalse(is_books_api_path("sign", "/books/v3/invoices"))
 
-    def test_books_mutation_requires_specific_human_approval(self) -> None:
+    def test_books_mutation_is_always_blocked(self) -> None:
         settings = SimpleNamespace(timeout_seconds=10, standby_enabled=False)
         oauth = SimpleNamespace()
         client = ZohoGatewayClient(settings, oauth)
-        with self.assertRaisesRegex(Exception, "read-only by default"):
+        with self.assertRaisesRegex(Exception, "read-only by Opticable policy"):
             client._validate(
                 "zohoapis", "POST", "/books/v3/invoices", None,
-                "generic confirmed mutation", True,
+                "even an explicitly confirmed mutation remains blocked", True,
             )
-        method, headers = client._validate(
-            "zohoapis", "POST", "/books/v3/invoices", None,
-            "owner approved this specific Books action", True, True,
-        )
-        self.assertEqual(method, "POST")
-        self.assertEqual(headers, {})
+
 
 
 if __name__ == "__main__":

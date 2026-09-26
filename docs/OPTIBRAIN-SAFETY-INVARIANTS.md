@@ -22,7 +22,7 @@ All scheduled or event-driven jobs must be idempotent, bounded by timeouts, use 
 Health monitoring must verify both HTTP availability and critical dependency/provider state. A failed health check must not automatically deploy new code.
 
 ## Destructive and financial guardrails
-Zoho Books and CRM-synced finance modules may have full OAuth scopes, but they are operationally read-only by default. Every Books/Books-synced POST, PUT, PATCH, or DELETE requires explicit human approval for that specific action (`books_human_approved=True`) in addition to a human-readable reason and `confirm=true`. Other Zoho applications retain the broader autonomous gateway policy. Irreversible deletes/purges remain audited.
+Zoho Books and CRM-synced finance modules may have full OAuth scopes, but they are operationally **strictly read-only**. All Books/Books-synced POST, PUT, PATCH, and DELETE operations are blocked in the canonical gateway with no approval bypass. Other Zoho applications retain the broader autonomous gateway policy. Irreversible deletes/purges elsewhere remain audited.
 
 Bulk deletes, destructive migrations, credential rotation, permission expansion, and irreversible external actions require an explicit safety gate and verified recovery point.
 

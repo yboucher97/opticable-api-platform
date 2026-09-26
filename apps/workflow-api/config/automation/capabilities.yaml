@@ -45,8 +45,8 @@ capabilities:
     score: 70
     access_mode: api_read_only_policy
     status: connected_read_only
-    notes: "Full Books OAuth scopes may be granted, but Opticable policy keeps Books operationally read-only by default. POST/PUT/PATCH/DELETE requires separate explicit human approval for the specific action."
-    next_action: "Continue automated Books reads. For any requested Books mutation, obtain explicit owner approval and pass books_human_approved=True in addition to the normal reason + confirmation gate."
+    notes: "Full Books OAuth scopes may be granted, but Opticable policy keeps Books strictly read-only. All Books and Books-synced finance POST/PUT/PATCH/DELETE mutations are blocked."
+    next_action: "Continue automated Books reads only. Do not create, update, patch, or delete Books or Books-synced finance records."
 
   - provider: zoho
     product: WorkDrive
