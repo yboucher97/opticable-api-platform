@@ -1,0 +1,25 @@
+id: customer.lifecycle.quote-review
+name: Customer lifecycle quote review
+version: 1
+enabled: true
+description: Creates a CRM review task for a quote request without mutating Zoho Books.
+trigger:
+  event_types:
+    - customer.lifecycle.quote.requested
+steps:
+  - id: create_review_task
+    action: lifecycle.crm_create_quote_review_task
+    with:
+      quote: "{{ event.payload }}"
+    retry:
+      max_attempts: 2
+      backoff_seconds: 1
+  - id: emit_ready
+    action: event.emit
+    with:
+      event_type: customer.lifecycle.quote.review_ready
+      source: optibrain
+      payload:
+        deal_id: "{{ event.payload.deal_id }}"
+        task_id: "{{ steps.create_review_task.task_id }}"
+        books_mutated: false
