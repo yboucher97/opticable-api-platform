@@ -1,0 +1,27 @@
+id: customer.lifecycle.contract-send
+name: Customer lifecycle approved contract send
+version: 1
+enabled: true
+description: Sends a Zoho Sign template only after an explicit approved_to_send event.
+trigger:
+  event_types:
+    - customer.lifecycle.contract.approved_to_send
+steps:
+  - id: send_contract
+    action: lifecycle.sign_send_contract
+    with:
+      contract: "{{ event.payload }}"
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
+  - id: emit_sent
+    action: event.emit
+    with:
+      event_type: customer.lifecycle.contract.sent
+      source: optibrain
+      payload:
+        request_id: "{{ steps.send_contract.request_id }}"
+        request_status: "{{ steps.send_contract.request_status }}"
+        template: "{{ steps.send_contract.template }}"
+        deal_id: "{{ event.payload.deal_id }}"
+        service_id: "{{ event.payload.service_id }}"
