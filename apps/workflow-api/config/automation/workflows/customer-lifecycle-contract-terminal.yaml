@@ -1,0 +1,19 @@
+id: customer.lifecycle.contract-terminal
+name: Customer lifecycle contract terminal handoff
+version: 1
+enabled: true
+description: Creates one CRM follow-up/handoff task for completed, declined, expired, or recalled Zoho Sign requests.
+trigger:
+  event_types:
+    - customer.lifecycle.contract.completed
+    - customer.lifecycle.contract.declined
+    - customer.lifecycle.contract.expired
+    - customer.lifecycle.contract.recalled
+steps:
+  - id: create_status_task
+    action: lifecycle.crm_contract_status_task
+    with:
+      contract: "{{ event.payload }}"
+    retry:
+      max_attempts: 2
+      backoff_seconds: 1
