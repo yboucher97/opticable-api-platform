@@ -171,6 +171,8 @@ lifecycle_events:
   - customer.lifecycle.contract.signed
   - customer.lifecycle.sign.poll.requested
   - customer.lifecycle.contract.status_observed
+  - customer.lifecycle.finance.poll.requested
+  - customer.lifecycle.finance.status_observed
   - customer.lifecycle.service.created
   - customer.lifecycle.installation.scheduled
   - customer.lifecycle.installation.completed

@@ -1,0 +1,29 @@
+﻿id: customer.lifecycle.finance-observer
+name: Customer lifecycle - finance observer
+version: 1
+enabled: true
+description: Observe Zoho Books invoice attention states. Strictly read-only; emits no finance mutations.
+trigger:
+  event_types:
+    - customer.lifecycle.finance.poll.requested
+steps:
+  - id: observe
+    action: lifecycle.books_finance_attention
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
+    with:
+      request: "{{ event.payload }}"
+  - id: emit_observed
+    action: event.emit
+    with:
+      event_type: customer.lifecycle.finance.status_observed
+      source: automation-engine
+      idempotency_key: "finance-observed:{{ event.event_id }}"
+      payload:
+        access: "{{ steps.observe.access }}"
+        mutations_performed: "{{ steps.observe.mutations_performed }}"
+        attention_balance: "{{ steps.observe.attention_balance }}"
+        overdue_count: "{{ steps.observe.overdue_count }}"
+        overdue_balance: "{{ steps.observe.overdue_balance }}"
+        buckets: "{{ steps.observe.buckets }}"
