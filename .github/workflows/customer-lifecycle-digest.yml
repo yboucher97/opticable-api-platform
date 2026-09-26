@@ -1,0 +1,42 @@
+name: Customer Lifecycle Owner Digest
+
+on:
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  request-digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CORE_API_KEY: ${{ secrets.OPTICABLE_CORE_API_KEY }}
+      CORE_API_URL: https://optibrain.opticable.ca
+    steps:
+      - name: Verify API secret
+        shell: bash
+        run: |
+          test -n "$CORE_API_KEY" || { echo "OPTICABLE_CORE_API_KEY is missing" >&2; exit 1; }
+
+      - name: Request daily or weekly digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          local_date="$(TZ=America/Toronto date +%F)"
+          local_dow="$(TZ=America/Toronto date +%u)"
+          period="daily"
+          if [[ "$local_dow" == "1" ]]; then
+            period="weekly"
+          fi
+          payload="$(jq -nc \
+            --arg period "$period" \
+            --arg key "owner-digest-${local_date}-${period}" \
+            '{event_type:"customer.lifecycle.digest.requested",source:"github-scheduler",idempotency_key:$key,payload:{period:$period,organization_id:"802337532",mailbox_account_id:"1083319000000008002",from_address:"yboucher@opticable.ca",recipient:"yboucher@opticable.ca",create_mail_draft:true}}')"
+          curl --fail --silent --show-error --max-time 30 \
+            -H "X-API-Key: $CORE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$CORE_API_URL/v1/automation/events"
