@@ -341,6 +341,72 @@ def register_lifecycle_phase2_actions(
             "template": template_key,
         }
 
+    def observe_sign_requests(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
+        request = step.inputs.get("request") or {}
+        if not isinstance(request, dict):
+            raise ValueError("lifecycle.sign_observe_requests requires with.request object.")
+        max_records = max(1, min(int(request.get("max_records") or 100), 100))
+        response = client.request("sign", "GET", "/requests")
+        raw = _raw_provider_data(response)
+        items = raw.get("requests")
+        if not isinstance(items, list):
+            items = []
+
+        approved = {config["template_id"]: key for key, config in _SIGN_TEMPLATES.items()}
+        observed: list[dict[str, Any]] = []
+        counts = {"completed": 0, "pending": 0, "attention": 0}
+        attention_statuses = {"correction", "expired", "recalled", "declined", "rejected"}
+
+        for item in items[:max_records]:
+            if not isinstance(item, dict):
+                continue
+            template_ids = {str(value) for value in (item.get("template_ids") or []) if value}
+            matched = [approved[value] for value in template_ids if value in approved]
+            if not matched:
+                continue
+            status = str(item.get("request_status") or "unknown").strip().lower()
+            try:
+                sign_percentage = float(item.get("sign_percentage") or 0)
+            except (TypeError, ValueError):
+                sign_percentage = 0.0
+            if status == "completed" or sign_percentage >= 100:
+                bucket = "completed"
+            elif status in attention_statuses:
+                bucket = "attention"
+            else:
+                bucket = "pending"
+            counts[bucket] += 1
+            signer_states = []
+            for action in item.get("actions") or []:
+                if not isinstance(action, dict) or str(action.get("action_type") or "").upper() != "SIGN":
+                    continue
+                signer_states.append({
+                    "recipient_email": str(action.get("recipient_email") or "").lower() or None,
+                    "recipient_name": str(action.get("recipient_name") or "") or None,
+                    "status": str(action.get("action_status") or "unknown").lower(),
+                })
+            observed.append({
+                "request_id": str(item.get("request_id") or "") or None,
+                "request_name": str(item.get("request_name") or "") or None,
+                "templates": matched,
+                "status": status,
+                "bucket": bucket,
+                "sign_percentage": sign_percentage,
+                "created_time": item.get("created_time"),
+                "modified_time": item.get("modified_time"),
+                "action_time": item.get("action_time"),
+                "signers": signer_states,
+            })
+
+        return {
+            "access": "read_only",
+            "mutations_performed": 0,
+            "approved_templates_only": True,
+            "count": len(observed),
+            "summary": counts,
+            "requests": observed,
+        }
+
     def build_digest(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
         request = step.inputs.get("request")
         if not isinstance(request, dict):
@@ -435,4 +501,5 @@ def register_lifecycle_phase2_actions(
     engine.register_action("lifecycle.crm_create_quote_review_task", create_quote_review_task)
     engine.register_action("lifecycle.books_observe", observe_books)
     engine.register_action("lifecycle.sign_send_contract", send_contract)
+    engine.register_action("lifecycle.sign_observe_requests", observe_sign_requests)
     engine.register_action("lifecycle.build_digest", build_digest)
