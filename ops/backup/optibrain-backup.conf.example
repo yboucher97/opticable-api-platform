@@ -1,0 +1,7 @@
+# Install as /etc/optibrain/backup.conf with mode 0640, root-owned.
+# Do not place secret values in this file.
+OPTIBRAIN_REPO_DIR=/opt/opticable-api-platform
+OPTIBRAIN_BACKUP_DIR=/var/backups/optibrain
+OPTIBRAIN_WORKFLOW_ENV_FILE=/etc/opticable-workflow-api.env
+OPTIBRAIN_BACKUP_RETENTION=7
+# Logging is emitted to stderr and journald by the systemd unit.

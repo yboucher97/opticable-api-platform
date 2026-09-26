@@ -1,0 +1,24 @@
+[Unit]
+Description=OptiBrain local backup
+Documentation=https://github.com/yboucher97/opticable-api-platform/blob/main/docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md
+After=local-fs.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/opt/opticable-api-platform/ops/backup/optibrain-backup.sh
+StandardOutput=journal
+StandardError=journal
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/backups/optibrain
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
