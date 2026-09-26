@@ -37,6 +37,22 @@ ZOHO_API_SERVICES = {
     "projects": ("https://projects.zoho.com/", "", "Bearer"),
     "desk": ("https://desk.zoho.com/", "", "Zoho-oauthtoken"),
     "creator": ("https://www.zohoapis.com/", "creator/v2.1/", "Zoho-oauthtoken"),
+    "calendar": ("https://calendar.zoho.com/", "api/v1/", "Zoho-oauthtoken"),
+    "cliq": ("https://cliq.zoho.com/", "api/v2/", "Zoho-oauthtoken"),
+    "meeting": ("https://meeting.zoho.com/", "api/v2/", "Zoho-oauthtoken"),
+    "people": ("https://people.zoho.com/", "people/api/", "Zoho-oauthtoken"),
+    "recruit": ("https://recruit.zoho.com/", "recruit/v2/", "Zoho-oauthtoken"),
+    "fsm": ("https://fsm.zoho.com/", "fsm/v1/", "Zoho-oauthtoken"),
+    "contracts": ("https://contracts.zoho.com/", "api/v1/", "Zoho-oauthtoken"),
+    "analytics": ("https://analyticsapi.zoho.com/", "restapi/v2/", "Zoho-oauthtoken"),
+    "salesiq": ("https://salesiq.zoho.com/", "api/v2/", "Zoho-oauthtoken"),
+    "campaigns": ("https://campaigns.zoho.com/", "api/v1.1/", "Zoho-oauthtoken"),
+    "marketingautomation": ("https://marketingautomation.zoho.com/", "api/v1/", "Zoho-oauthtoken"),
+    "commerce": ("https://commerce.zoho.com/", "", "Zoho-oauthtoken"),
+    "tables": ("https://tables.zoho.com/", "api/v1/", "Zoho-oauthtoken"),
+    "vault": ("https://vault.zoho.com/", "api/rest/json/v1/", "Zoho-oauthtoken"),
+    "connect": ("https://connect.zoho.com/", "pulse/api/", "Zoho-oauthtoken"),
+    "dataprep": ("https://www.zohoapis.com/", "dataprep/v1/", "Zoho-oauthtoken"),
 }
 
 
@@ -76,8 +92,6 @@ class ZohoGatewayClient:
             raise ValueError("Zoho path contains unsafe characters.")
 
         mutation = normalized_method != "GET"
-        if mutation and (is_books_api_path(service, path) or is_books_synced_crm_path(service, path)):
-            raise ZohoGatewayError("Zoho Books and its CRM-synced finance modules are configured read-only by Opticable policy.")
         if mutation and not (reason or "").strip():
             raise ValueError("Zoho mutations require a human-readable reason.")
         if mutation and confirm is not True:

@@ -10,7 +10,7 @@ from workflow.automation.models import AutomationEvent
 from workflow.automation.providers.lifecycle import register_lifecycle_actions
 from workflow.automation.store import AutomationStore
 from workflow.customer_lifecycle import lead_event_idempotency_key, normalize_lead
-from workflow.zoho_gateway import ZohoGatewayClient, ZohoGatewayError, is_books_api_path
+from workflow.zoho_gateway import ZohoGatewayClient, is_books_api_path
 
 
 class FakeZohoClient:
@@ -199,19 +199,20 @@ steps:
         self.assertFalse(is_books_api_path("zohoapis", "/crm/v8/Leads"))
         self.assertFalse(is_books_api_path("sign", "/books/v3/invoices"))
 
-    def test_books_mutation_is_blocked_before_network(self) -> None:
+    def test_books_mutation_is_allowed_with_confirmation(self) -> None:
         settings = SimpleNamespace(timeout_seconds=10, standby_enabled=False)
         oauth = SimpleNamespace()
         client = ZohoGatewayClient(settings, oauth)
-        with self.assertRaisesRegex(ZohoGatewayError, "read-only"):
-            client._validate(
-                "zohoapis",
-                "POST",
-                "/books/v3/invoices",
-                None,
-                "test",
-                True,
-            )
+        method, headers = client._validate(
+            "zohoapis",
+            "POST",
+            "/books/v3/invoices",
+            None,
+            "owner authorized full Zoho access",
+            True,
+        )
+        self.assertEqual(method, "POST")
+        self.assertEqual(headers, {})
 
 
 if __name__ == "__main__":
