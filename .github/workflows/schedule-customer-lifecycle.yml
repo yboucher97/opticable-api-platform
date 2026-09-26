@@ -1,6 +1,10 @@
 name: Schedule Customer Lifecycle
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/schedule-customer-lifecycle.yml"
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
