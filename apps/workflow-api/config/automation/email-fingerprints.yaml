@@ -1,0 +1,258 @@
+version: 1
+updated_at: "2026-09-26"
+mode: observe_then_automate
+
+confidence_policy:
+  auto_route_min: 0.95
+  auto_task_min: 0.97
+  propose_action_min: 0.80
+  below_propose_action: leave_in_place
+
+sender_fingerprints:
+  support@fieldnation.com:
+    category: partner_job_marketplace
+    route: opticable_partner_jobs
+    confidence: 0.99
+    subject_prefixes: ["New Work:", "Routed WO:"]
+    extract:
+      - work_order_id
+      - location
+      - postal_code
+      - schedule
+      - pay_model
+      - pay_amount
+      - work_type
+      - title
+      - scope
+      - required_tools
+      - required_materials
+      - status
+    task_rules:
+      - when: routed_work_order
+        create: review_partner_job
+        priority: high
+      - when: subject_or_body_contains_asap_or_hard_down
+        create: urgent_partner_job_review
+        priority: urgent
+      - when: new_work_available
+        create: review_partner_job
+        priority: normal
+
+  invoices@infinitecables.com:
+    category: supplier_invoice
+    route: supplier_invoices
+    confidence: 0.99
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: factures@opticable.ca
+    extract: [invoice_number, attachment_present, supplier]
+    books_write: false
+
+  do-not-reply@infinitecables.com:
+    category: supplier_shipping
+    route: opticable_purchasing
+    confidence: 0.99
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: admin@opticable.ca
+    extract: [order_number, shipment_number, tracking_number, carrier]
+
+  sales@phantomcables.com:
+    category: supplier_order
+    route: opticable_purchasing
+    confidence: 0.99
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: admin@opticable.ca
+    extract: [order_number, shipment_status]
+
+  support@services.ovhcloud.com:
+    category: provider_invoice
+    route: supplier_invoices
+    confidence: 0.99
+    extract: [invoice_number, amount, provider]
+    books_write: false
+
+  noreply@notify.cloudflare.com:
+    category: provider_invoice_or_system_notice
+    route: classify_cloudflare
+    confidence: 0.98
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: admin@opticable.ca
+
+  ar.zsc@zohocorp.com:
+    category: provider_invoice
+    route: supplier_invoices
+    confidence: 0.99
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: admin@opticable.ca
+    books_write: false
+
+  payable@duroequipement.com:
+    category: supplier_invoice
+    route: supplier_invoices
+    confidence: 0.99
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: factures@opticable.ca
+    books_write: false
+
+  noreply-customer_invoices@guillevin.com:
+    category: supplier_invoice
+    route: supplier_invoices
+    confidence: 0.99
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: factures@opticable.ca
+    books_write: false
+
+  no.reply@adiglobal.com:
+    category: supplier_account_admin
+    route: opticable_admin_providers
+    confidence: 0.99
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: admin@opticable.ca
+    action_patterns:
+      - account_at_risk
+      - account_deactivation
+      - credential_or_profile_change
+
+  account-noreply@ui.com:
+    category: security_authentication
+    route: systems_security
+    confidence: 0.99
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: admin@opticable.ca
+    task_rules:
+      - when: unexpected_authentication_event
+        create: security_review
+        priority: urgent
+      - when: expected_mfa_code
+        create: none
+
+  noreply@github.com:
+    category: provider_security
+    route: systems_security
+    confidence: 0.99
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: admin@opticable.ca
+
+  service@intl.paypal.com:
+    category: payment_receipt_or_authorization
+    route: business_records_bills_receipts
+    confidence: 0.98
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: admin@opticable.ca
+    books_write: false
+
+  notificationservice@purolator.com:
+    category: shipping_notification
+    route: opticable_purchasing
+    confidence: 0.99
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: admin@opticable.ca
+
+  notifications@qc.intelcom.ca:
+    category: shipping_notification
+    route: opticable_purchasing
+    confidence: 0.99
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: admin@opticable.ca
+
+  noreply@zohocalendar.com:
+    category: calendar_notification
+    route: systems_zoho_notifications
+    confidence: 0.99
+    legacy_recipient_seen: yboucher@opti-plex.ca
+    migration_target: yboucher@opticable.ca
+
+intent_rules:
+  customer_support:
+    signals:
+      - existing_customer_or_tenant
+      - trouble
+      - not_working
+      - reconnect
+      - access_problem
+      - wifi_problem
+      - intercom_problem
+      - camera_problem
+    route: opticable_support_service
+    object: support_case_or_service
+    required_actions: [identify_customer, identify_site, extract_problem, determine_next_action]
+
+  project_coordination:
+    signals:
+      - plans_attached
+      - installation_date
+      - wiring_date
+      - finish_date
+      - site_access
+      - schedule_change
+    route: opticable_clients_projects
+    object: installation_or_service
+    required_actions: [identify_project, extract_dates, extract_scope, determine_next_action]
+
+  quote_or_sales:
+    signals:
+      - quote_request
+      - soumission
+      - pricing_request
+      - project_inquiry
+    route: opticable_leads_quotes
+    object: lead_or_deal
+    required_actions: [deduplicate, preserve_source, classify_service, determine_next_action]
+
+  supplier_invoice:
+    signals:
+      - invoice_number
+      - facture
+      - tax_invoice
+      - receipt
+      - paid_invoice
+    route: supplier_invoices
+    object: supplier_invoice_observation
+    books_write: false
+    required_actions: [identify_supplier, extract_invoice_number, extract_amount_if_present, extract_due_date_if_present, detect_duplicate]
+
+  failed_outbound:
+    signals:
+      - mailer_daemon
+      - delivery_failure
+      - undelivered_mail
+      - permanent_failure
+    route: systems_monitoring
+    object: data_quality_exception
+    task_rules:
+      - create: verify_contact_email_and_retry_strategy
+        priority: high
+
+legacy_domain_policy:
+  domains: [opti-plex.ca]
+  never_disable_automatically: true
+  never_delete_alias_automatically: true
+  create_migration_candidate_when:
+    - provider_or_supplier_sender
+    - security_or_account_sender
+    - invoice_or_receipt_sender
+    - recurring_operational_sender
+  do_not_create_migration_candidate_when:
+    - human_project_correspondence_and_new_opticable_address_already_present
+    - newsletter_only
+    - spam_or_marketing_only
+  target_rules:
+    provider_account: admin@opticable.ca
+    supplier_invoice: factures@opticable.ca
+    personal_business_correspondence: yboucher@opticable.ca
+
+next_action_defaults:
+  urgent_operational_issue_hours: 1
+  partner_routed_job_hours: 2
+  partner_available_job_hours: 4
+  customer_support_hours: 4
+  quote_request_hours: 4
+  failed_outbound_hours: 2
+  supplier_invoice_without_due_date_days: 3
+  provider_account_warning_hours: 4
+
+safety:
+  delete_mail: false
+  move_historical_mail: false
+  books_write: false
+  books_delete: false
+  create_financial_transaction: false
