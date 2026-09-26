@@ -1,0 +1,116 @@
+version: 1
+updated_at: "2026-09-26"
+mode: additive_non_destructive
+
+safety:
+  delete_mail: false
+  delete_folders: false
+  remove_aliases: false
+  destructive_reorganization: false
+  books:
+    access: read_only
+    allowed_methods: [GET]
+    mutations: blocked
+
+canonical_addresses:
+  soumissions@opticable.ca:
+    language_hint: fr
+    purpose: direct_client_quote_intake
+    route: opticable_leads_quotes
+  quotes@opticable.ca:
+    language_hint: en
+    purpose: direct_client_quote_intake
+    route: opticable_leads_quotes
+  support@opticable.ca:
+    purpose: existing_client_support
+    route: opticable_support_service
+  installations@opticable.ca:
+    purpose: active_installation_coordination
+    route: opticable_clients_projects
+  admin@opticable.ca:
+    purpose: providers_saas_portals_admin
+    route: opticable_admin_providers
+  facturation@opticable.ca:
+    purpose: customer_billing_correspondence
+    route: business_records
+  yboucher@opticable.ca:
+    purpose: direct_human_business_mail
+    route: classify_by_intent
+  info@opticable.ca:
+    purpose: general_business_intake
+    route: classify_by_intent
+  ventes@opticable.ca:
+    purpose: compatibility_sales_intake
+    route: opticable_leads_quotes
+  noreply@opticable.ca:
+    purpose: automated_outbound
+    route: systems
+  logs@opticable.ca:
+    purpose: infrastructure_logging
+    route: systems_monitoring
+
+future_addresses:
+  partners@opticable.ca:
+    purpose: subcontract_partner_job_intake
+    route: opticable_partner_jobs
+    status: create_manually_in_zoho_admin
+  factures@opticable.ca:
+    purpose: supplier_invoice_intake
+    route: supplier_invoices
+    status: create_manually_in_zoho_admin
+
+compatibility:
+  quotes_and_soumissions_share_pipeline: true
+  preserve_recipient_language_attribution: true
+  detect_actual_message_language: true
+  actual_message_language_overrides_address_hint: true
+  legacy_domains:
+    - opti-plex.ca
+  legacy_behavior:
+    continue_delivery: true
+    flag_for_provider_migration: true
+    migration_target_for_provider_accounts: admin@opticable.ca
+
+routes:
+  opticable_leads_quotes:
+    folder: /Opticable/Leads and Quotes
+    business_object: lead_or_deal
+    actions: [identify_sender, deduplicate, classify_service, preserve_attribution, determine_next_action]
+  opticable_support_service:
+    folder: /Opticable/Support and Service
+    business_object: support_case_or_service
+    actions: [identify_customer, identify_service_location, classify_issue, determine_next_action]
+  opticable_clients_projects:
+    folder: /Opticable/Clients and Projects
+    business_object: service_or_installation
+    actions: [identify_customer, identify_project, extract_schedule_or_access_change, determine_next_action]
+  opticable_partner_jobs:
+    folder: /Opticable/Partners/Partner Jobs
+    business_object: partner_work_opportunity
+    actions: [identify_partner, extract_site, extract_scope, extract_requested_date, extract_rate_or_po, determine_next_action]
+  opticable_admin_providers:
+    folder: /Opticable/Admin and Providers
+    business_object: provider_account_or_admin_record
+    actions: [identify_provider, classify_account_event, detect_security_or_billing_action, determine_next_action]
+  supplier_invoices:
+    folder: /Business Records/Bills and Receipts/Supplier Invoices
+    business_object: supplier_invoice_observation
+    books_write: false
+    actions: [identify_supplier, extract_invoice_number, extract_amount, extract_due_date, detect_duplicate, determine_next_action]
+  legacy_migration:
+    folder: /Business Records/Legacy Opti-Plex Migration
+    business_object: provider_migration_candidate
+    actions: [identify_provider, record_legacy_recipient, propose_admin_email_migration, determine_next_action]
+
+next_action_contract:
+  required_for_actionable_items: true
+  fields:
+    - status
+    - owner
+    - next_action
+    - next_action_at
+    - waiting_on
+    - source_message_id
+    - related_crm_record
+  states: [needs_action, waiting_on_customer, waiting_on_partner, waiting_on_opticable, scheduled, automated, needs_approval, done]
+  never_create_duplicate_open_action_for_same_source: true
