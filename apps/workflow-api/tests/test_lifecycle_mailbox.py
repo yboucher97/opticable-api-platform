@@ -112,7 +112,6 @@ steps:
             self.assertEqual(second_result["duplicates"], 1)
             self.assertTrue(all(call["method"] == "GET" for call in zoho.calls))
         finally:
-            store.close()
             tmp.cleanup()
 
     def test_unapproved_reply_makes_zero_mail_calls(self) -> None:
@@ -150,7 +149,6 @@ steps:
             self.assertEqual(run["status"], "failed")
             self.assertEqual(zoho.calls, [])
         finally:
-            store.close()
             tmp.cleanup()
 
     def test_approved_reply_uses_reply_action(self) -> None:
@@ -193,7 +191,6 @@ steps:
             self.assertEqual(call["body"]["action"], "reply")
             self.assertEqual(call["body"]["fromAddress"], "soumissions@opticable.ca")
         finally:
-            store.close()
             tmp.cleanup()
 
 
