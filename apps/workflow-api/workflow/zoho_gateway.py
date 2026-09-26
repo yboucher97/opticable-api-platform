@@ -18,6 +18,16 @@ def is_books_api_path(service: str, path: str) -> bool:
     return service == "zohoapis" and str(path or "").lower().startswith("/books/")
 
 
+_BOOKS_SYNCED_CRM_MODULES = {"custommodule5001", "custommodule5002", "custommodule5003", "custommodule5004"}
+
+
+def is_books_synced_crm_path(service: str, path: str) -> bool:
+    if service != "zohoapis":
+        return False
+    parts = [part.casefold() for part in str(path or "").strip("/").split("/")]
+    return len(parts) >= 3 and parts[0] == "crm" and parts[1].startswith("v") and parts[2] in _BOOKS_SYNCED_CRM_MODULES
+
+
 ZOHO_API_SERVICES = {
     "zohoapis": ("https://www.zohoapis.com/", "", "Zoho-oauthtoken"),
     "mail": ("https://mail.zoho.com/", "", "Zoho-oauthtoken"),
@@ -66,8 +76,8 @@ class ZohoGatewayClient:
             raise ValueError("Zoho path contains unsafe characters.")
 
         mutation = normalized_method != "GET"
-        if mutation and is_books_api_path(service, path):
-            raise ZohoGatewayError("Zoho Books is configured read-only by Opticable policy.")
+        if mutation and (is_books_api_path(service, path) or is_books_synced_crm_path(service, path)):
+            raise ZohoGatewayError("Zoho Books and its CRM-synced finance modules are configured read-only by Opticable policy.")
         if mutation and not (reason or "").strip():
             raise ValueError("Zoho mutations require a human-readable reason.")
         if mutation and confirm is not True:
