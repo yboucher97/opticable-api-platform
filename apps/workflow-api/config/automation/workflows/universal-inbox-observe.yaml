@@ -1,0 +1,13 @@
+id: universal.inbox.observe
+name: Universal Inbox observe-only classification
+version: 1
+enabled: true
+description: Classifies inbound email events and persists deduplicated observe-only decisions. No mail, CRM, outbound email, or Books mutations.
+trigger:
+  event_types:
+    - customer.lifecycle.email.received
+steps:
+  - id: observe_classification
+    action: universal_inbox.observe
+    with:
+      message: "{{ event.payload }}"
