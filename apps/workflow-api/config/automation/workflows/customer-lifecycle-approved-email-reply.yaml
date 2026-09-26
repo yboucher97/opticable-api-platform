@@ -1,0 +1,25 @@
+id: customer.lifecycle.approved-email-reply
+name: Customer lifecycle approved email reply
+version: 1
+enabled: true
+description: Sends a reply only after an explicit approved_to_send event. Automatic email analysis remains draft-only.
+trigger:
+  event_types:
+    - customer.lifecycle.email.reply.approved_to_send
+steps:
+  - id: send_reply
+    action: lifecycle.mail_reply_approved
+    with:
+      reply: "{{ event.payload }}"
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
+  - id: emit_sent
+    action: event.emit
+    with:
+      event_type: customer.lifecycle.email.reply.sent
+      source: optibrain
+      payload:
+        message_id: "{{ steps.send_reply.message_id }}"
+        to_address: "{{ steps.send_reply.to_address }}"
+        sent: "{{ steps.send_reply.sent }}"

@@ -1,0 +1,19 @@
+id: customer.lifecycle.mailbox-poll
+name: Customer lifecycle mailbox poll
+version: 1
+enabled: true
+description: Reads recent inbound Zoho Mail and emits idempotent email.received events without moving, marking, deleting, or otherwise mutating mailbox messages.
+trigger:
+  event_types:
+    - customer.lifecycle.mailbox.poll.requested
+steps:
+  - id: poll_mailbox
+    action: lifecycle.mailbox_poll
+    with:
+      account_id: "{{ event.payload.account_id }}"
+      mailbox_address: "{{ event.payload.mailbox_address }}"
+      window_days: "{{ event.payload.window_days }}"
+      limit: "{{ event.payload.limit }}"
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
