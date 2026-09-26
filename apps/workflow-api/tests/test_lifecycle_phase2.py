@@ -86,12 +86,17 @@ class LifecyclePhase2Tests(unittest.TestCase):
         run = store.get_run(response.run_ids[0])
         return tmp, run, zoho, ai
 
-    def test_books_synced_crm_modules_are_recognized_and_writable_with_confirmation(self) -> None:
+    def test_books_synced_crm_modules_require_specific_human_approval(self) -> None:
         self.assertTrue(is_books_synced_crm_path("zohoapis", "/crm/v8/CustomModule5001/123"))
         self.assertTrue(is_books_synced_crm_path("zohoapis", "/crm/v8/CustomModule5002"))
         self.assertFalse(is_books_synced_crm_path("zohoapis", "/crm/v8/Quotes"))
         client = ZohoGatewayClient(SimpleNamespace(timeout_seconds=10, standby_enabled=False), SimpleNamespace())
-        method, _ = client._validate("zohoapis", "PUT", "/crm/v8/CustomModule5001/123", None, "owner authorized full Zoho access", True)
+        with self.assertRaisesRegex(Exception, "read-only by default"):
+            client._validate("zohoapis", "PUT", "/crm/v8/CustomModule5001/123", None, "generic confirmation", True)
+        method, _ = client._validate(
+            "zohoapis", "PUT", "/crm/v8/CustomModule5001/123", None,
+            "owner approved this specific Books-synced action", True, True,
+        )
         self.assertEqual(method, "PUT")
 
     def test_books_observation_uses_get_only(self) -> None:
