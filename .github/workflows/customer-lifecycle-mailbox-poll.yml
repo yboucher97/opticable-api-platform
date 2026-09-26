@@ -1,0 +1,36 @@
+name: Customer Lifecycle Mailbox Poll
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CORE_API_KEY: ${{ secrets.OPTICABLE_CORE_API_KEY }}
+      CORE_API_URL: https://optibrain.opticable.ca
+    steps:
+      - name: Verify API secret
+        shell: bash
+        run: |
+          test -n "$CORE_API_KEY" || { echo "OPTICABLE_CORE_API_KEY is missing" >&2; exit 1; }
+
+      - name: Request mailbox poll
+        shell: bash
+        run: |
+          set -euo pipefail
+          bucket="$(TZ=America/Toronto date +'%Y-%m-%dT%H:%M')"
+          payload="$(jq -nc \
+            --arg key "zoho-mail-poll-${bucket}" \
+            '{event_type:"customer.lifecycle.mailbox.poll.requested",source:"github-scheduler",idempotency_key:$key,payload:{account_id:"1083319000000008002",mailbox_address:"yboucher@opticable.ca",window_days:2,limit:100}}')"
+          curl --fail --silent --show-error --max-time 30 \
+            -H "X-API-Key: $CORE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$CORE_API_URL/v1/automation/events"
