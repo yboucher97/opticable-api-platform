@@ -40,6 +40,37 @@ class FakeZoho:
             return {"data": {"customerpayments": [{"status": "paid", "amount": 300}], "page_context": {"has_more_page": False}}}
         if method == "GET" and path.startswith("/crm/v8/"):
             return {"data": {"data": []}}
+        if method == "GET" and path == "/requests":
+            return {
+                "data": {
+                    "requests": [
+                        {
+                            "request_id": "sig-complete",
+                            "request_name": "01-conditions-generales",
+                            "request_status": "completed",
+                            "sign_percentage": 100,
+                            "template_ids": ["325018000000115001"],
+                            "actions": [{"action_type": "SIGN", "recipient_email": "client@example.com", "recipient_name": "Client", "action_status": "SIGNED"}],
+                        },
+                        {
+                            "request_id": "sig-attention",
+                            "request_name": "02-contrat-installation",
+                            "request_status": "correction",
+                            "sign_percentage": 50,
+                            "template_ids": ["325018000000115116"],
+                            "actions": [{"action_type": "SIGN", "recipient_email": "client2@example.com", "recipient_name": "Client 2", "action_status": "VIEWED"}],
+                        },
+                        {
+                            "request_id": "unrelated",
+                            "request_name": "Other agreement",
+                            "request_status": "completed",
+                            "sign_percentage": 100,
+                            "template_ids": ["other-template"],
+                            "actions": [],
+                        },
+                    ]
+                }
+            }
         if method == "GET" and path == "/templates/325018000000115116":
             return {
                 "data": {
@@ -187,6 +218,35 @@ steps:
             self.assertEqual(post["body"]["is_quicksend"], "true")
             decoded = json.loads(post["body"]["data"])
             self.assertEqual(decoded["templates"]["actions"][0]["recipient_email"], "jane@example.com")
+        finally:
+            tmp.cleanup()
+
+    def test_sign_observer_is_read_only_and_filters_templates(self) -> None:
+        workflow = """
+id: test.sign.observe
+name: Sign observe
+version: 1
+enabled: true
+trigger:
+  event_types: [test.sign.observe]
+steps:
+  - id: observe
+    action: lifecycle.sign_observe_requests
+    with:
+      request: "{{ event.payload }}"
+"""
+        tmp, run, zoho, _ = self._run(workflow, AutomationEvent(event_type="test.sign.observe", source="unit", payload={"max_records": 100}))
+        try:
+            self.assertEqual(run["status"], "completed")
+            result = run["steps"][0]["result"]
+            self.assertEqual(result["access"], "read_only")
+            self.assertEqual(result["mutations_performed"], 0)
+            self.assertEqual(result["count"], 2)
+            self.assertEqual(result["summary"], {"completed": 1, "pending": 0, "attention": 1})
+            self.assertNotIn("unrelated", [item["request_id"] for item in result["requests"]])
+            sign_calls = [c for c in zoho.calls if c["service"] == "sign"]
+            self.assertTrue(sign_calls)
+            self.assertTrue(all(c["method"] == "GET" for c in sign_calls))
         finally:
             tmp.cleanup()
 
