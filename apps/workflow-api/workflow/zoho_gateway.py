@@ -80,6 +80,7 @@ class ZohoGatewayClient:
         headers: dict[str, Any] | None,
         reason: str | None,
         confirm: bool | None,
+        books_human_approved: bool | None = None,
     ) -> tuple[str, dict[str, str]]:
         normalized_method = str(method or "GET").upper().strip()
         if normalized_method not in {"GET", "POST", "PUT", "PATCH", "DELETE"}:
@@ -92,6 +93,12 @@ class ZohoGatewayClient:
             raise ValueError("Zoho path contains unsafe characters.")
 
         mutation = normalized_method != "GET"
+        books_protected = is_books_api_path(service, path) or is_books_synced_crm_path(service, path)
+        if mutation and books_protected and books_human_approved is not True:
+            raise ZohoGatewayError(
+                "Zoho Books is read-only by default. This mutation requires explicit human approval "
+                "for the specific action (books_human_approved=True)."
+            )
         if mutation and not (reason or "").strip():
             raise ValueError("Zoho mutations require a human-readable reason.")
         if mutation and confirm is not True:
@@ -177,6 +184,7 @@ class ZohoGatewayClient:
         content_type: str,
         reason: str | None,
         confirm: bool | None,
+        books_human_approved: bool | None,
     ) -> dict[str, Any]:
         if not self.settings.standby_enabled:
             raise ZohoGatewayError("connect.opticable.ca standby is disabled.")
@@ -196,6 +204,8 @@ class ZohoGatewayClient:
         if method != "GET":
             payload["reason"] = str(reason or "").strip()
             payload["confirm"] = bool(confirm)
+            if is_books_api_path(service, path) or is_books_synced_crm_path(service, path):
+                payload["books_human_approved"] = books_human_approved is True
 
         response = httpx.post(
             f"{self.settings.base_url}/internal/v1/zoho/request",
@@ -231,9 +241,10 @@ class ZohoGatewayClient:
         content_type: str = "application/json",
         reason: str | None = None,
         confirm: bool | None = None,
+        books_human_approved: bool | None = None,
     ) -> dict[str, Any]:
         normalized_method, safe_headers = self._validate(
-            service, method, path, headers, reason, confirm
+            service, method, path, headers, reason, confirm, books_human_approved
         )
         try:
             if not self.configured:
@@ -260,4 +271,5 @@ class ZohoGatewayClient:
                 content_type=content_type,
                 reason=reason,
                 confirm=confirm,
+                books_human_approved=books_human_approved,
             )
