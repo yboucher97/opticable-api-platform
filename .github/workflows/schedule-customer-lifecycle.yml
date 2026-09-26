@@ -66,12 +66,21 @@ jobs:
 
           wait_for_core_run() {
             local event_id="$1"
-            for attempt in $(seq 1 20); do
-              runs="$(curl --fail --silent --show-error \
+            local runs status
+            for attempt in $(seq 1 30); do
+              if ! runs="$(curl --silent --show-error --max-time 10 \
                 -H "X-API-Key: $CORE_API_KEY" \
-                "$CORE_API_URL/v1/automation/runs?limit=100")"
-              status="$(echo "$runs" | jq -r --arg event_id "$event_id" \
-                '.runs[]? | select(.event_id == $event_id) | .status' | head -n1)"
+                "$CORE_API_URL/v1/automation/runs?limit=100")"; then
+                echo "Core API temporarily unavailable while checking $event_id (attempt $attempt/30); retrying"
+                sleep 3
+                continue
+              fi
+              if ! status="$(echo "$runs" | jq -r --arg event_id "$event_id" \
+                '.runs[]? | select(.event_id == $event_id) | .status' | head -n1)"; then
+                echo "Core run response temporarily unreadable for $event_id (attempt $attempt/30); retrying"
+                sleep 3
+                continue
+              fi
               if [[ "$status" == "completed" ]]; then
                 echo "Core run completed: $event_id"
                 return 0
