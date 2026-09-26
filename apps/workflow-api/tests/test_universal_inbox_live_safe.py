@@ -60,8 +60,11 @@ def test_hopla_is_observed_without_opticable_action(tmp_path):
         "summary": "Inflatable game reservation",
     })
     assert result["accepted"] is True
-    assert result["decision"]["category"] == "other_business"
+    assert result["decision"]["category"] == "other_business_hopla_jeux"
     assert result["decision"]["next_action"] is None
+    assert result["decision"]["mutate_mail"] is False
+    assert result["decision"]["mutate_crm"] is False
+    assert result["decision"]["books_write"] is False
 
 
 def test_requires_stable_identity(tmp_path):
