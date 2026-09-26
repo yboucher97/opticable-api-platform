@@ -22,7 +22,7 @@ All scheduled or event-driven jobs must be idempotent, bounded by timeouts, use 
 Health monitoring must verify both HTTP availability and critical dependency/provider state. A failed health check must not automatically deploy new code.
 
 ## Destructive and financial guardrails
-Zoho Books remains read-only. No automation may mutate Books unless this invariant is deliberately changed by the owner in a future reviewed change.
+Zoho Books and CRM-synced finance modules may be read or mutated through the audited Zoho gateway. The owner explicitly authorized unrestricted Zoho application/module access on 2026-09-26. Mutations still require a human-readable reason and confirm=true; irreversible deletes/purges remain audited.
 
 Bulk deletes, destructive migrations, credential rotation, permission expansion, and irreversible external actions require an explicit safety gate and verified recovery point.
 

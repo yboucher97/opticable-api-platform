@@ -46,7 +46,7 @@ capabilities:
     access_mode: api_read_only_policy
     status: connected_read_only
     notes: "Live read access is available. Opticable policy explicitly blocks all Books POST/PUT/PATCH/DELETE mutations in the canonical Zoho gateway."
-    next_action: "Use Books only for invoice/payment/finance observation and lifecycle reporting unless the owner explicitly changes the read-only policy."
+    next_action: "Books write access is owner-authorized. Prefer lifecycle-safe actions; use audited mutations with a reason and explicit confirmation when finance changes are requested."
 
   - provider: zoho
     product: WorkDrive
