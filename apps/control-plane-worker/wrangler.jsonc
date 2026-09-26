@@ -8,6 +8,9 @@
   "vars": {
     "CORE_API_URL": "https://optibrain.opticable.ca"
   },
+  "triggers": {
+    "crons": ["*/15 * * * *"]
+  },
   "queues": {
     "producers": [
       { "binding": "EVENTS", "queue": "opticable-business-events" }

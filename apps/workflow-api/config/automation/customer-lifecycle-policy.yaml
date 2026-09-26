@@ -1,0 +1,71 @@
+version: 1
+updated_at: "2026-09-26"
+owner: "Opticable"
+
+principles:
+  preserve_existing_schema: true
+  prefer_existing_modules_and_fields: true
+  deduplicate_before_create: true
+  audit_mutations: true
+  idempotent_events: true
+
+finance:
+  zoho_books:
+    access: read_only
+    allowed_methods: [GET]
+    forbidden_methods: [POST, PUT, PATCH, DELETE]
+    notes: "Owner policy: anything having to do with Zoho Books remains read-only."
+  books_synced_crm_modules:
+    access: read_only
+    modules:
+      - Zoho_Books
+      - CustomModule5001  # Books Invoices
+      - CustomModule5002  # Books Estimates
+      - CustomModule5003  # Books Purchase Orders
+      - CustomModule5004  # Books Sales Orders
+    allowed_methods: [GET]
+    forbidden_methods: [POST, PUT, PATCH, DELETE]
+  crm_quotes:
+    access: controlled
+    notes: "CRM Quotes are distinct from Books Estimates; prefer quote-review tasks until a specific write workflow is explicitly validated."
+
+crm:
+  writable_modules:
+    - Leads
+    - Contacts
+    - Accounts
+    - Deals
+    - Tasks
+    - Events
+    - Calls
+    - Buildings
+    - Service_Locations
+    - Installations
+    - Services
+    - Installation_X_Services
+    - Accounts_X_Buildings
+    - Contacts_X_Buildings
+  attribution_strategy: "reuse existing First_*, Last_*, click-id, normalized identity, ingestion and inquiry fields"
+
+mail:
+  inbound_analysis: automatic_read_only
+  routine_reply_generation: draft_or_event
+  sending: explicit_approval_required
+  destructive_mailbox_actions: disabled
+
+sign:
+  observation: automatic_read_only
+  send_contract: explicit_approval_required
+  destructive_actions: disabled
+
+calendar:
+  crm_events: controlled_write
+  notes: "Use existing CRM Events/Meetings integration; avoid creating a second calendar authority until required."
+
+scheduling:
+  timezone: America/Toronto
+  mailbox_poll: hourly
+  sign_observer: every_2_hours_business_day
+  finance_observer: daily_0715
+  daily_digest: daily_0730
+  weekly_digest: monday_0745
