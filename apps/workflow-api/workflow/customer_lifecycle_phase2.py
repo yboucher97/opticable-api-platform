@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+
+def _validate_email(value: str) -> str:
+    cleaned = str(value or "").strip().lower()
+    if not cleaned or "@" not in cleaned or cleaned.startswith("@") or cleaned.endswith("@"):
+        raise ValueError("A valid email address is required.")
+    return cleaned
 
 
 class QuoteReviewRequest(BaseModel):
@@ -22,7 +29,7 @@ class ContractSendRequest(BaseModel):
 
     template: Literal["general_terms", "installation"]
     recipient_name: str = Field(min_length=1, max_length=255)
-    recipient_email: EmailStr
+    recipient_email: str = Field(min_length=3, max_length=320)
     request_name: str = Field(min_length=1, max_length=255)
     notes: str | None = Field(default=None, max_length=4000)
     deal_id: str | None = Field(default=None, max_length=64)
@@ -30,6 +37,11 @@ class ContractSendRequest(BaseModel):
     field_text_data: dict[str, str] = Field(default_factory=dict)
     field_date_data: dict[str, str] = Field(default_factory=dict)
     approved_to_send: bool = False
+
+    @field_validator("recipient_email")
+    @classmethod
+    def validate_recipient_email(cls, value: str) -> str:
+        return _validate_email(value)
 
     @model_validator(mode="after")
     def require_explicit_approval(self) -> "ContractSendRequest":
@@ -57,7 +69,12 @@ class DigestRequest(BaseModel):
     period: Literal["daily", "weekly"] = "daily"
     organization_id: str = Field(default="802337532", min_length=1, max_length=64)
     mailbox_account_id: str = Field(default="1083319000000008002", min_length=1, max_length=64)
-    from_address: EmailStr = "yboucher@opticable.ca"
-    recipient: EmailStr = "yboucher@opticable.ca"
+    from_address: str = Field(default="yboucher@opticable.ca", min_length=3, max_length=320)
+    recipient: str = Field(default="yboucher@opticable.ca", min_length=3, max_length=320)
     create_mail_draft: bool = True
     extra_context: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("from_address", "recipient")
+    @classmethod
+    def validate_mail_addresses(cls, value: str) -> str:
+        return _validate_email(value)
