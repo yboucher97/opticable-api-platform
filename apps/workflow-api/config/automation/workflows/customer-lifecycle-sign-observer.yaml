@@ -1,0 +1,28 @@
+﻿id: customer.lifecycle.sign-observer
+name: Customer lifecycle - Sign observer
+version: 1
+enabled: true
+description: Read approved Opticable Zoho Sign requests and emit a status snapshot. Never mutates Sign, CRM, or Books.
+trigger:
+  event_types:
+    - customer.lifecycle.sign.poll.requested
+steps:
+  - id: observe
+    action: lifecycle.sign_observe_requests
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
+    with:
+      request: "{{ event.payload }}"
+  - id: emit_observed
+    action: event.emit
+    with:
+      event_type: customer.lifecycle.contract.status_observed
+      source: automation-engine
+      idempotency_key: "sign-observed:{{ event.event_id }}"
+      payload:
+        access: "{{ steps.observe.access }}"
+        mutations_performed: "{{ steps.observe.mutations_performed }}"
+        count: "{{ steps.observe.count }}"
+        summary: "{{ steps.observe.summary }}"
+        requests: "{{ steps.observe.requests }}"
