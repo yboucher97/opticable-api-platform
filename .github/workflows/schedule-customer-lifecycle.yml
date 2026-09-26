@@ -1,0 +1,111 @@
+name: Schedule Customer Lifecycle
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Lifecycle event to request"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - mailbox
+          - daily_digest
+          - weekly_digest
+
+permissions:
+  contents: read
+
+concurrency:
+  group: opticable-customer-lifecycle-scheduler
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CONTROL_PLANE_URL: https://opticable-control-plane.yboucher.workers.dev
+      CONTROL_PLANE_API_KEY: ${{ secrets.OPTICABLE_CONTROL_PLANE_API_KEY }}
+      MAILBOX_ACCOUNT_ID: "1083319000000008002"
+      MAILBOX_ADDRESS: yboucher@opticable.ca
+      BOOKS_ORGANIZATION_ID: "802337532"
+    steps:
+      - name: Verify scheduler secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CONTROL_PLANE_API_KEY" || { echo "Missing OPTICABLE_CONTROL_PLANE_API_KEY"; exit 1; }
+
+      - name: Dispatch due lifecycle events
+        shell: bash
+        env:
+          REQUESTED_MODE: ${{ github.event.inputs.mode || 'all' }}
+        run: |
+          set -euo pipefail
+
+          now_local="$(TZ=America/Toronto date +'%Y-%m-%dT%H:%M:%S%z')"
+          local_date="$(TZ=America/Toronto date +'%Y-%m-%d')"
+          local_hour="$(TZ=America/Toronto date +'%H')"
+          local_weekday="$(TZ=America/Toronto date +'%u')"
+          local_week="$(TZ=America/Toronto date +'%G-W%V')"
+          bucket="$(( $(date +%s) / 900 ))"
+
+          send_event() {
+            local event_id="$1"
+            local event_type="$2"
+            local payload="$3"
+            curl --fail --silent --show-error \
+              -H "Authorization: Bearer $CONTROL_PLANE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -X POST "$CONTROL_PLANE_URL/v1/events" \
+              --data "$(jq -nc \
+                --arg event_id "$event_id" \
+                --arg event_type "$event_type" \
+                --argjson payload "$payload" \
+                '{event_id:$event_id,event_type:$event_type,source:"github-scheduler",idempotency_key:$event_id,payload:$payload}')" \
+              | jq -e '.accepted == true and .queued == true' >/dev/null
+            echo "Dispatched $event_type ($event_id)"
+          }
+
+          if [[ "$REQUESTED_MODE" == "all" || "$REQUESTED_MODE" == "mailbox" ]]; then
+            payload="$(jq -nc \
+              --arg account_id "$MAILBOX_ACCOUNT_ID" \
+              --arg mailbox_address "$MAILBOX_ADDRESS" \
+              --arg requested_at "$now_local" \
+              '{account_id:$account_id,mailbox_address:$mailbox_address,window_days:2,limit:50,requested_at:$requested_at}')"
+            send_event "mailbox-poll-$bucket" "customer.lifecycle.mailbox.poll.requested" "$payload"
+          fi
+
+          daily_due=false
+          weekly_due=false
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            [[ "$REQUESTED_MODE" == "all" || "$REQUESTED_MODE" == "daily_digest" ]] && daily_due=true
+            [[ "$REQUESTED_MODE" == "all" || "$REQUESTED_MODE" == "weekly_digest" ]] && weekly_due=true
+          else
+            [[ "$local_hour" == "07" ]] && daily_due=true
+            [[ "$local_hour" == "07" && "$local_weekday" == "1" ]] && weekly_due=true
+          fi
+
+          if [[ "$daily_due" == "true" ]]; then
+            payload="$(jq -nc \
+              --arg account_id "$MAILBOX_ACCOUNT_ID" \
+              --arg from_address "$MAILBOX_ADDRESS" \
+              --arg recipient "$MAILBOX_ADDRESS" \
+              --arg organization_id "$BOOKS_ORGANIZATION_ID" \
+              '{period:"daily",mailbox_account_id:$account_id,from_address:$from_address,recipient:$recipient,organization_id:$organization_id,create_mail_draft:true}')"
+            send_event "digest-daily-$local_date" "customer.lifecycle.digest.requested" "$payload"
+          fi
+
+          if [[ "$weekly_due" == "true" ]]; then
+            payload="$(jq -nc \
+              --arg account_id "$MAILBOX_ACCOUNT_ID" \
+              --arg from_address "$MAILBOX_ADDRESS" \
+              --arg recipient "$MAILBOX_ADDRESS" \
+              --arg organization_id "$BOOKS_ORGANIZATION_ID" \
+              '{period:"weekly",mailbox_account_id:$account_id,from_address:$from_address,recipient:$recipient,organization_id:$organization_id,create_mail_draft:true}')"
+            send_event "digest-weekly-$local_week" "customer.lifecycle.digest.requested" "$payload"
+          fi
