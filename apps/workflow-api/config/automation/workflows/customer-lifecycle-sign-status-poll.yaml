@@ -1,0 +1,16 @@
+id: customer.lifecycle.sign-status-poll
+name: Customer lifecycle Zoho Sign status poll
+version: 1
+enabled: true
+description: Reads statuses for contracts sent by OptiBrain and emits idempotent terminal-state events. Zoho Sign is not mutated by this poll.
+trigger:
+  event_types:
+    - customer.lifecycle.contract.status_poll.requested
+steps:
+  - id: poll_status
+    action: lifecycle.sign_poll_status
+    with:
+      max_requests: 100
+    retry:
+      max_attempts: 2
+      backoff_seconds: 2
