@@ -19,6 +19,7 @@ on:
           - mailbox
           - daily_digest
           - weekly_digest
+          - sign
 
 permissions:
   contents: read
@@ -34,15 +35,18 @@ jobs:
     env:
       CONTROL_PLANE_URL: https://opticable-control-plane.yboucher.workers.dev
       CONTROL_PLANE_API_KEY: ${{ secrets.OPTICABLE_CONTROL_PLANE_API_KEY }}
+      CORE_API_URL: https://optibrain.opticable.ca
+      CORE_API_KEY: ${{ secrets.OPTICABLE_CORE_API_KEY }}
       MAILBOX_ACCOUNT_ID: "1083319000000008002"
       MAILBOX_ADDRESS: yboucher@opticable.ca
       BOOKS_ORGANIZATION_ID: "802337532"
     steps:
-      - name: Verify scheduler secret
+      - name: Verify scheduler secrets
         shell: bash
         run: |
           set -euo pipefail
           test -n "$CONTROL_PLANE_API_KEY" || { echo "Missing OPTICABLE_CONTROL_PLANE_API_KEY"; exit 1; }
+          test -n "$CORE_API_KEY" || { echo "Missing OPTICABLE_CORE_API_KEY"; exit 1; }
 
       - name: Dispatch due lifecycle events
         shell: bash
@@ -54,9 +58,32 @@ jobs:
           now_local="$(TZ=America/Toronto date +'%Y-%m-%dT%H:%M:%S%z')"
           local_date="$(TZ=America/Toronto date +'%Y-%m-%d')"
           local_hour="$(TZ=America/Toronto date +'%H')"
+          local_minute="$(TZ=America/Toronto date +'%M')"
           local_weekday="$(TZ=America/Toronto date +'%u')"
           local_week="$(TZ=America/Toronto date +'%G-W%V')"
           bucket="$(( $(date +%s) / 900 ))"
+
+          wait_for_core_run() {
+            local event_id="$1"
+            for attempt in $(seq 1 20); do
+              runs="$(curl --fail --silent --show-error \
+                -H "X-API-Key: $CORE_API_KEY" \
+                "$CORE_API_URL/v1/automation/runs?limit=100")"
+              status="$(echo "$runs" | jq -r --arg event_id "$event_id" \
+                '.runs[]? | select(.event_id == $event_id) | .status' | head -n1)"
+              if [[ "$status" == "completed" ]]; then
+                echo "Core run completed: $event_id"
+                return 0
+              fi
+              if [[ "$status" == "failed" ]]; then
+                echo "Core run failed: $event_id" >&2
+                return 1
+              fi
+              sleep 3
+            done
+            echo "Timed out waiting for core run: $event_id" >&2
+            return 1
+          }
 
           send_event() {
             local event_id="$1"
@@ -71,8 +98,9 @@ jobs:
                 --arg event_type "$event_type" \
                 --argjson payload "$payload" \
                 '{event_id:$event_id,event_type:$event_type,source:"github-scheduler",idempotency_key:$event_id,payload:$payload}')" \
-              | jq -e '.accepted == true and .queued == true' >/dev/null
-            echo "Dispatched $event_type ($event_id)"
+              | jq -e '.accepted == true' >/dev/null
+            echo "Accepted $event_type ($event_id)"
+            wait_for_core_run "$event_id"
           }
 
           if [[ "$REQUESTED_MODE" == "all" || "$REQUESTED_MODE" == "mailbox" ]]; then
@@ -82,6 +110,18 @@ jobs:
               --arg requested_at "$now_local" \
               '{account_id:$account_id,mailbox_address:$mailbox_address,window_days:2,limit:50,requested_at:$requested_at}')"
             send_event "mailbox-poll-$bucket" "customer.lifecycle.mailbox.poll.requested" "$payload"
+          fi
+
+          sign_due=false
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            [[ "$REQUESTED_MODE" == "all" || "$REQUESTED_MODE" == "sign" ]] && sign_due=true
+          else
+            [[ "$local_minute" == "00" ]] && sign_due=true
+          fi
+
+          if [[ "$sign_due" == "true" ]]; then
+            payload='{"max_records":100}'
+            send_event "sign-poll-$local_date-$local_hour" "customer.lifecycle.sign.poll.requested" "$payload"
           fi
 
           daily_due=false
