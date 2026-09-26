@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from ...universal_inbox_live_safe import observe_message
 from ...zoho_gateway import ZohoGatewayClient
 from ..engine import AutomationEngine
 from ..models import AutomationEvent, WorkflowStep
@@ -73,6 +74,20 @@ def _iso_from_epoch_millis(value: Any) -> str | None:
     except (TypeError, ValueError):
         return None
     return datetime.fromtimestamp(millis / 1000, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _normalized_observer_message(message: dict[str, Any]) -> dict[str, Any]:
+    metadata = message.get("metadata") if isinstance(message.get("metadata"), dict) else {}
+    return {
+        "messageId": message.get("message_id") or message.get("messageId"),
+        "threadId": message.get("thread_id") or message.get("threadId"),
+        "fromAddress": message.get("sender_email") or message.get("fromAddress"),
+        "toAddress": metadata.get("to_address") or message.get("toAddress"),
+        "ccAddress": metadata.get("cc_address") or message.get("ccAddress"),
+        "subject": message.get("subject"),
+        "summary": metadata.get("summary") or message.get("summary"),
+        "content": message.get("body") or message.get("content"),
+    }
 
 
 def register_lifecycle_mailbox_actions(
@@ -205,6 +220,14 @@ def register_lifecycle_mailbox_actions(
             "mailbox_mutations": 0,
         }
 
+    def observe_universal_inbox(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
+        message = step.inputs.get("message")
+        if not isinstance(message, dict):
+            raise ValueError("universal_inbox.observe requires with.message object.")
+        result = observe_message(store, _normalized_observer_message(message))
+        result.update({"mail_mutations": 0, "crm_mutations": 0, "books_mutations": 0, "outbound_sends": 0})
+        return result
+
     def send_approved_reply(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
         reply = step.inputs.get("reply")
         if not isinstance(reply, dict):
@@ -257,4 +280,5 @@ def register_lifecycle_mailbox_actions(
         }
 
     engine.register_action("lifecycle.mailbox_poll", poll_mailbox)
+    engine.register_action("universal_inbox.observe", observe_universal_inbox)
     engine.register_action("lifecycle.mail_reply_approved", send_approved_reply)
