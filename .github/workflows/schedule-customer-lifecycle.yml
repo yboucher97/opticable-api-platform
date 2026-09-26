@@ -20,6 +20,7 @@ on:
           - daily_digest
           - weekly_digest
           - sign
+          - finance
 
 permissions:
   contents: read
@@ -113,15 +114,26 @@ jobs:
           fi
 
           sign_due=false
+          finance_due=false
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             [[ "$REQUESTED_MODE" == "all" || "$REQUESTED_MODE" == "sign" ]] && sign_due=true
+            [[ "$REQUESTED_MODE" == "all" || "$REQUESTED_MODE" == "finance" ]] && finance_due=true
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            sign_due=true
+            finance_due=true
           else
             [[ "$local_minute" == "00" ]] && sign_due=true
+            [[ "$local_hour" == "07" ]] && finance_due=true
           fi
 
           if [[ "$sign_due" == "true" ]]; then
             payload='{"max_records":100}'
             send_event "sign-poll-$local_date-$local_hour" "customer.lifecycle.sign.poll.requested" "$payload"
+          fi
+
+          if [[ "$finance_due" == "true" ]]; then
+            payload="$(jq -nc --arg organization_id "$BOOKS_ORGANIZATION_ID" '{organization_id:$organization_id,per_page:100}')"
+            send_event "finance-poll-$local_date" "customer.lifecycle.finance.poll.requested" "$payload"
           fi
 
           daily_due=false
