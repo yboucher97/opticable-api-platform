@@ -761,3 +761,58 @@ Read-only live checks again showed workflow/PDF/Omada health HTTP 200, all three
 OptiBrain services active, and both backup timers active/enabled. No production
 state was changed. Resume at final review, commit the package and move
 `recovery/phase2b-consolidated-bootstrap-8996022` to the resulting checkpoint.
+
+### Phase 2B bootstrap digest-format failure and repair package — 2026-09-27
+
+The first production update attempt executed through the new exact NOPASSWD
+updater boundary and failed closed. Its root-only audit recorded
+`code=invalid_digest_artifact`. Production remained healthy; Phase 1 and Phase
+2A timers remained enabled/active; sudoers still validated; the previous helper
+remained installed and the reviewed candidate was not installed. No backup,
+provider, R2, timer, service or sudoers state changed during the failed update.
+
+The reviewed candidate and updater's compiled approval match exactly:
+`30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4`. The
+defect is that `ops/admin/optibrain-admin.sha256` was generated using
+`sha256sum` filename syntax, while `optibrain-admin-update.py::_parse_digest`
+correctly requires only 64 lowercase hexadecimal characters and an optional
+final newline. This is a format integration defect, not a code or cryptographic
+mismatch. `master-runbook.sha256` and updater source sidecar are already raw
+digest files. The bootstrap manifest and backup archive sidecars retain normal
+`sha256sum` format because their consumer is `sha256sum -c`.
+
+The corrected package makes those representations explicit, adds parser and
+compiled-approval regression cases, and documents the current partial-state
+repair. The installed updater does not need replacement: its code already has
+the desired strict parser. Repair replaces the helper transactionally and
+corrects its staged pin plus `/etc/optibrain/admin-helper.sha256`. Since this
+recovery is also recorded in the canonical master runbook, it stages the
+updated runbook and raw digest pin, replaces `/etc/optibrain/master-runbook.sha256`,
+then invokes the helper's fixed runbook sync, which preserves a verified prior
+copy. The updater, sudoers, restore verifier, timers, provider state, R2 and
+previous sudoers backup need no replacement. The exact production preflight and
+repair commands are in `docs/OPTIBRAIN_PHASE2B_ROOT_BOOTSTRAP.md`.
+
+The fix was prepared in an isolated Git worktree. No production mutation was
+performed while preparing it. Verification passed: complete ops/admin
+adversarial suite `31/31`; workflow API regression suite in the repository
+`.venv`, `75 passed, 18 subtests passed`; standard bootstrap manifest verification;
+raw helper/runbook pin equality; `visudo -cf`; Python compilation; and
+`git diff --check`. Regression cases accept raw digest with and without its
+final newline and reject sha256sum filename records, uppercase, extra space and
+extra lines; wrong valid digests fail authorization. They also assert the
+candidate equals the updater's compiled release digest, changed candidate
+bytes fail, and post-open substitution cannot alter the captured bytes that are
+installed. The runbook pin has matching raw-format coverage.
+
+Corrected artifact hashes: helper candidate
+`30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4`; raw
+helper pin file SHA-256 `a2e4929dddc0f0c946e0d04104dc5c5ae590ce2242db35d74997b6216c1b967c`;
+raw runbook pin file SHA-256 `59bfe676897922b63cd3497ddecadd4b6c0bf7ed76091b1585b1b6a52df45857`;
+standard bootstrap manifest SHA-256
+`4d3bc2c37260cba71a0a0f33506ae849e300967b057acd6690269b6eff047650`. The
+updater source and sudoers source hashes remain unchanged. No live health probe
+or root command was run during package preparation; the production health,
+timer and sudoers state above is the observed evidence supplied for this
+incident, not a new check from this preparation session. No production
+mutation occurred.

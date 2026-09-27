@@ -102,6 +102,29 @@ class TransactionTests(unittest.TestCase):
         self.assertEqual(len(backups), 1)
         self.assertEqual(backups[0].read_bytes(), OLD_HELPER)
 
+    def test_digest_pin_parser_accepts_only_lowercase_raw_digest(self):
+        digest = hashlib.sha256(CANDIDATE).hexdigest().encode("ascii")
+        self.assertEqual(update.AdminHelperUpdater._parse_digest(digest), digest.decode())
+        self.assertEqual(update.AdminHelperUpdater._parse_digest(digest + b"\n"), digest.decode())
+        rejected = (
+            digest + b"  optibrain-admin.py\n",
+            digest.upper(),
+            digest + b" ",
+            digest + b"\n\n",
+            digest + b"\nextra\n",
+        )
+        for value in rejected:
+            with self.subTest(value=value), self.assertRaisesRegex(
+                    update.UpdateError, "invalid_digest_artifact"):
+                update.AdminHelperUpdater._parse_digest(value)
+
+    def test_candidate_digest_must_equal_compiled_release_approval(self):
+        helper = pathlib.Path(__file__).parents[2] / "ops/admin/optibrain-admin.py"
+        candidate_digest = hashlib.sha256(helper.read_bytes()).hexdigest()
+        self.assertEqual(candidate_digest, update.APPROVED_HELPER_SHA256)
+        self.assertEqual(candidate_digest.encode("ascii") + b"\n", pathlib.Path(
+            __file__).parents[2].joinpath("ops/admin/optibrain-admin.sha256").read_bytes())
+
     def test_real_proposed_helper_passes_static_policy_validation(self):
         helper = pathlib.Path(__file__).parents[2] / "ops/admin/optibrain-admin.py"
         data = helper.read_bytes()

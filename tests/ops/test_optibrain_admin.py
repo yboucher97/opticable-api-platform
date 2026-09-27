@@ -1,6 +1,8 @@
 import importlib.util
+import hashlib
 import os
 import pathlib
+import re
 import shutil
 import stat
 import subprocess
@@ -16,6 +18,15 @@ spec.loader.exec_module(admin)
 
 
 class RequestValidationTests(unittest.TestCase):
+    def test_runbook_authorization_artifacts_are_raw_lowercase_digests(self):
+        root = pathlib.Path(__file__).parents[2]
+        raw_pattern = re.compile(rb"([0-9a-f]{64})\n?")
+        source = (root / "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md").read_bytes()
+        pin = (root / "ops/admin/master-runbook.sha256").read_bytes()
+        self.assertEqual(raw_pattern.fullmatch(pin).group(1).decode(),
+                         hashlib.sha256(source).hexdigest())
+        self.assertIsNone(raw_pattern.fullmatch(pin + b"  OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md\n"))
+
     def test_fixed_operations(self):
         self.assertEqual(admin.parse_request(["backup"]), ("backup",))
         self.assertEqual(admin.parse_request(["service-status", "opticable-workflow-api.service"]),

@@ -80,6 +80,19 @@ The three VPS-backed endpoints were independently verified HTTP 200 from OPX001 
 7. Never expose API keys, OAuth refresh tokens, private keys, passwords, or full secret files in chat or Git.
 
 ## Important resolved failures
+- Phase 2B bootstrap first updater attempt failed closed with audit code
+  `invalid_digest_artifact`. The candidate's actual SHA-256 matched the
+  updater's compiled approval exactly (`30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4`);
+  the defect was artifact encoding: `optibrain-admin.sha256` had been generated
+  as a `sha256sum` line (`<digest><two spaces><filename>`), while the updater
+  correctly accepts only a raw lowercase digest and optional final newline.
+  No helper replacement occurred; production stayed healthy, both backup
+  timers stayed enabled/active, sudoers validated, and the old helper remained
+  installed. Authorization pins consumed by Python must be raw 64-hex plus
+  newline. `ROOT_BOOTSTRAP_SHA256SUMS` and backup archive sidecars consumed by
+  `sha256sum -c` remain standard manifest lines. Repair details and preflight
+  checks are in `docs/OPTIBRAIN_PHASE2B_ROOT_BOOTSTRAP.md`; do not repeat the
+  first-install sudoers/updater/timer steps for this partial state.
 - OpenAI 401 invalid_api_key: replaced invalid key; next failure showed billing_not_active; billing was activated; live test then returned OPTIBRAIN_OPENAI_OK.
 - Anthropic 400 missing anthropic-workspace-id: added ANTHROPIC_WORKSPACE_ID support, header injection, installer preservation, regression test; live test then succeeded.
 - GitHub static token dependence: replaced with GitHub App installation-token authentication while preserving read-only deploy key for checkout.
