@@ -1,2 +1,4 @@
-# One fixed updater, root only, with no command-line arguments.
-optibrain ALL=(root:root) NOPASSWD: /usr/local/sbin/optibrain-admin-update ""
+# Only the fixed updater (without arguments) and fixed validating admin helper.
+# The helper accepts an argument vector, validates it internally, and has no
+# generic command-execution operation. NOSETENV blocks sudo environment injection.
+optibrain ALL=(root:root) NOSETENV: NOPASSWD: /usr/local/sbin/optibrain-admin-update "", /usr/local/sbin/optibrain-admin

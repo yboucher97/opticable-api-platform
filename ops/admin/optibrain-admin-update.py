@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -I
 """Digest-pinned, fixed-path transactional updater for the OptiBrain admin helper."""
 from __future__ import annotations
 
@@ -33,6 +33,10 @@ CANDIDATE_MODE = 0o440
 HELPER_MODE = 0o750
 SELF_TEST_TIMEOUT_SECONDS = 8
 SELF_TEST_LINE_RE = re.compile(rb"OPTIBRAIN_ADMIN_SELF_TEST_OK [A-Za-z0-9._-]{1,32}\n\Z")
+APPROVED_POLICY_ID = b'ADMIN_POLICY_ID = "opticable-admin-helper-v1"'
+# Exact helper source approved by this updater build. To change the helper, a
+# human must review and install a new updater build with a new literal digest.
+APPROVED_HELPER_SHA256 = "82db435576cf5e77c1910eb3330852cc172d83874fff5e60a0f6b28fbf0e6cde"
 
 
 class UpdateError(Exception):
@@ -63,10 +67,12 @@ class AdminHelperUpdater:
     """Updates one fixed helper path; injectable paths exist only for unit tests."""
 
     def __init__(self, paths: Paths = Paths(), identity: Identity = Identity(),
-                 selftest_runner: Callable[[Path], bytes] | None = None) -> None:
+                 selftest_runner: Callable[[Path], bytes] | None = None,
+                 approved_digest: str = APPROVED_HELPER_SHA256) -> None:
         self.paths = paths
         self.identity = identity
         self.selftest_runner = selftest_runner or self._run_selftest
+        self.approved_digest = approved_digest
 
     @staticmethod
     def _lstat(path: Path) -> os.stat_result:
@@ -147,18 +153,36 @@ class AdminHelperUpdater:
     def _validate_helper(candidate: bytes) -> None:
         if not candidate or len(candidate) > MAX_CANDIDATE_BYTES or b"\x00" in candidate:
             raise UpdateError("invalid_candidate_size")
-        if not candidate.startswith(b"#!/usr/bin/python3\n"):
+        if not candidate.startswith(b"#!/usr/bin/python3 -I\n"):
             raise UpdateError("invalid_candidate_interpreter")
         try:
             source = candidate.decode("utf-8")
             tree = ast.parse(source, filename="optibrain-admin candidate", mode="exec")
         except (UnicodeDecodeError, SyntaxError, ValueError) as exc:
             raise UpdateError("malformed_candidate") from exc
-        if "def parse_request(args):" not in source or "--self-test" not in source:
+        required_policy_markers = (
+            APPROVED_POLICY_ID.decode("ascii"), "def parse_request(args):",
+            "def _validate_command(argv):", "def sanitize_environment():", "--self-test",
+        )
+        if any(marker not in source for marker in required_policy_markers):
             raise UpdateError("candidate_policy_marker_missing")
         class PolicyVisitor(ast.NodeVisitor):
+            allowed_modules = {"datetime", "hashlib", "json", "os", "pwd", "re", "resource",
+                               "secrets", "signal", "shutil", "sqlite3", "stat", "subprocess",
+                               "sys", "tempfile", "urllib"}
+
             def __init__(self):
                 self.function = ""
+
+            def visit_Import(self, node):
+                if any(alias.name.split(".", 1)[0] not in self.allowed_modules for alias in node.names):
+                    raise UpdateError("candidate_policy_unapproved_import")
+                self.generic_visit(node)
+
+            def visit_ImportFrom(self, node):
+                if node.module is None or node.module.split(".", 1)[0] not in self.allowed_modules:
+                    raise UpdateError("candidate_policy_unapproved_import")
+                self.generic_visit(node)
 
             def visit_FunctionDef(self, node):
                 previous, self.function = self.function, node.name
@@ -172,7 +196,8 @@ class AdminHelperUpdater:
                     raise UpdateError("candidate_policy_forbidden_dynamic_execution")
                 if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name):
                     base, method = node.func.value.id, node.func.attr
-                    if base == "os" and method in {"system", "popen", "execv", "execve", "spawnl", "spawnv"}:
+                    if base == "os" and (method in {"system", "popen", "fork", "forkpty", "posix_spawn"}
+                                          or method.startswith(("exec", "spawn"))):
                         raise UpdateError("candidate_policy_forbidden_os_execution")
                     if base == "subprocess" and method != "run":
                         raise UpdateError("candidate_policy_unapproved_subprocess_api")
@@ -181,8 +206,9 @@ class AdminHelperUpdater:
                                 or not isinstance(node.args[0], ast.Name)
                                 or node.args[0].id != "argv"):
                             raise UpdateError("candidate_policy_unapproved_subprocess_target")
-                        if any(keyword.arg == "shell" and isinstance(keyword.value, ast.Constant)
-                               and keyword.value.value is True for keyword in node.keywords):
+                        if any(keyword.arg == "shell" and (not isinstance(keyword.value, ast.Constant)
+                                                            or keyword.value.value is not False)
+                               for keyword in node.keywords):
                             raise UpdateError("candidate_policy_shell_execution")
                 if isinstance(node.func, ast.Name) and node.func.id == "run":
                     if (self.function != "execute" or not node.args
@@ -192,12 +218,21 @@ class AdminHelperUpdater:
                     if not command.elts:
                         raise UpdateError("candidate_policy_empty_command")
                     executable = command.elts[0]
-                    allowed = {"/usr/bin/systemctl", "/usr/bin/df", "/usr/bin/sha256sum"}
+                    allowed = {"/usr/bin/systemctl", "/usr/bin/df", "/usr/bin/sha256sum",
+                               "/usr/bin/journalctl", "/usr/bin/python3"}
                     fixed_backup = (isinstance(executable, ast.Name)
                                     and executable.id == "BACKUP_SCRIPT")
+                    fixed_restore = (
+                        isinstance(executable, ast.Constant) and executable.value == "/usr/bin/python3"
+                        and len(command.elts) > 2 and isinstance(command.elts[1], ast.Constant)
+                        and command.elts[1].value == "-I"
+                        and isinstance(command.elts[2], ast.Name)
+                        and command.elts[2].id == "RESTORE_DRILL"
+                    )
                     if (not fixed_backup and
                             (not isinstance(executable, ast.Constant)
-                             or executable.value not in allowed)):
+                             or executable.value not in allowed)
+                            and not fixed_restore):
                         raise UpdateError("candidate_policy_unapproved_command")
                 self.generic_visit(node)
 
@@ -343,6 +378,8 @@ class AdminHelperUpdater:
             raise UpdateError("candidate_digest_mismatch")
         if digest != self._parse_digest(authorized_digest_data):
             raise UpdateError("root_authorization_mismatch")
+        if digest != self.approved_digest:
+            raise UpdateError("helper_not_in_updater_release_allowlist")
         self._validate_helper(candidate)
         current, backup = self._backup_current()
         previous_digest = hashlib.sha256(current).digest()

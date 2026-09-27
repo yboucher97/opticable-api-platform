@@ -17,10 +17,15 @@ update = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = update
 SPEC.loader.exec_module(update)
 
-CANDIDATE = b'''#!/usr/bin/python3
+CANDIDATE = b'''#!/usr/bin/python3 -I
+ADMIN_POLICY_ID = "opticable-admin-helper-v1"
 HELPER_VERSION = "candidate-2"
 def parse_request(args):
     return args == ["--self-test"]
+def _validate_command(argv):
+    return argv == ["/usr/bin/systemctl", "is-active", "example.service"]
+def sanitize_environment():
+    return None
 def main():
     import sys
     if sys.argv[1:] == ["--self-test"]:
@@ -82,7 +87,8 @@ class TransactionTests(unittest.TestCase):
             candidate_dir=self.incoming,
         )
         self.identity = update.Identity(uid, gid, uid, gid)
-        self.updater = update.AdminHelperUpdater(self.paths, self.identity)
+        self.updater = update.AdminHelperUpdater(
+            self.paths, self.identity, approved_digest=hashlib.sha256(CANDIDATE).hexdigest())
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -98,13 +104,30 @@ class TransactionTests(unittest.TestCase):
 
     def test_real_proposed_helper_passes_static_policy_validation(self):
         helper = pathlib.Path(__file__).parents[2] / "ops/admin/optibrain-admin.py"
-        update.AdminHelperUpdater._validate_helper(helper.read_bytes())
+        data = helper.read_bytes()
+        update.AdminHelperUpdater._validate_helper(data)
+        self.assertEqual(hashlib.sha256(data).hexdigest(), update.APPROVED_HELPER_SHA256)
 
     def test_wrong_digest_is_rejected_without_mutation(self):
         self.pin_path.chmod(0o640)
         self.pin_path.write_text("0" * 64 + "\n")
         self.pin_path.chmod(0o440)
         with self.assertRaisesRegex(update.UpdateError, "root_authorization_mismatch"):
+            self.updater.update()
+        self.assertEqual(self.helper_path.read_bytes(), OLD_HELPER)
+        self.assertEqual(list(self.backup_dir.iterdir()), [])
+
+    def test_new_generated_digest_does_not_expand_updater_release_allowlist(self):
+        changed = CANDIDATE.replace(b"candidate-2", b"candidate-3")
+        self.candidate_path.chmod(0o640)
+        self.candidate_path.write_bytes(changed)
+        self.candidate_path.chmod(0o440)
+        changed_digest = hashlib.sha256(changed).hexdigest()
+        for path in (self.digest_path, self.pin_path):
+            path.chmod(0o640)
+            path.write_text(changed_digest + "\n")
+            path.chmod(0o440)
+        with self.assertRaisesRegex(update.UpdateError, "helper_not_in_updater_release_allowlist"):
             self.updater.update()
         self.assertEqual(self.helper_path.read_bytes(), OLD_HELPER)
         self.assertEqual(list(self.backup_dir.iterdir()), [])
@@ -126,7 +149,8 @@ class TransactionTests(unittest.TestCase):
                     inner_self.paths.candidate.chmod(0o440)
                 return super()._write_new_root_file(destination, data, mode)
 
-        updater = RaceUpdater(self.paths, self.identity)
+        updater = RaceUpdater(self.paths, self.identity,
+                              approved_digest=hashlib.sha256(CANDIDATE).hexdigest())
         self.assertEqual(updater.update()[0], hashlib.sha256(CANDIDATE).hexdigest())
         self.assertEqual(self.helper_path.read_bytes(), CANDIDATE)
 
@@ -167,7 +191,7 @@ class TransactionTests(unittest.TestCase):
 
     def test_malformed_helper_is_rejected(self):
         with self.assertRaisesRegex(update.UpdateError, "malformed_candidate"):
-            update.AdminHelperUpdater._validate_helper(b"#!/usr/bin/python3\ndef broken(:\n")
+            update.AdminHelperUpdater._validate_helper(b"#!/usr/bin/python3 -I\ndef broken(:\n")
 
     def test_candidate_policy_rejects_dynamic_shell_execution(self):
         bad = CANDIDATE + b"\nimport os\nos.system('id')\n"
@@ -187,7 +211,9 @@ class TransactionTests(unittest.TestCase):
     def test_failed_self_test_restores_and_verifies_previous_helper(self):
         def fail_selftest(_path):
             return b"unexpected output\\n"
-        updater = update.AdminHelperUpdater(self.paths, self.identity, selftest_runner=fail_selftest)
+        updater = update.AdminHelperUpdater(
+            self.paths, self.identity, selftest_runner=fail_selftest,
+            approved_digest=hashlib.sha256(CANDIDATE).hexdigest())
         with self.assertRaisesRegex(update.UpdateError, "self_test_result_invalid"):
             updater.update()
         self.assertEqual(self.helper_path.read_bytes(), OLD_HELPER)
@@ -197,12 +223,13 @@ class TransactionTests(unittest.TestCase):
 
 
 class SudoPolicyTests(unittest.TestCase):
-    def test_sudoers_allows_only_fixed_no_argument_updater(self):
+    def test_sudoers_allows_only_fixed_updater_and_validating_helper(self):
         policy = pathlib.Path(__file__).parents[2] / "ops/admin/optibrain-admin-update.sudoers"
         text = policy.read_text()
-        self.assertIn('optibrain ALL=(root:root) NOPASSWD: /usr/local/sbin/optibrain-admin-update ""', text)
+        active = [line.strip() for line in text.splitlines() if line.strip() and not line.lstrip().startswith("#")]
+        self.assertEqual(active, ['optibrain ALL=(root:root) NOSETENV: NOPASSWD: /usr/local/sbin/optibrain-admin-update "", /usr/local/sbin/optibrain-admin'])
         for forbidden in ("NOPASSWD: ALL", " NOPASSWD: /bin/sh", "NOPASSWD: /usr/bin/env",
-                          "*", "systemctl", "python", "bash"):
+                          "*", "python", "bash", "/etc/", "systemctl"):
             self.assertNotIn(forbidden, text)
         visudo = shutil.which("visudo")
         if visudo:
