@@ -10,6 +10,7 @@ mkdir -p "${tmp}/repo/.git" "${tmp}/repo/apps/workflow-api/workflow" "${tmp}/dat
 printf 'fixture\n' >"${tmp}/repo/README"
 printf 'API_VERSION = "fixture-1.0"\n' >"${tmp}/repo/apps/workflow-api/workflow/api.py"
 printf 'fixture credential recovery payload\n' >"${tmp}/shared/recovery-fixture"
+printf '{"fixture":"nested manifest must be hashed"}\n' >"${tmp}/shared/manifest.json"
 chmod 2770 "${tmp}/shared"
 git -C "${tmp}/repo" init -q
 git -C "${tmp}/repo" config user.email test@example.invalid
@@ -36,6 +37,9 @@ cat >"${tmp}/workflow.env" <<EOF
 OPTICABLE_AUTOMATION_DB_PATH=${tmp}/data/automation/automation.db
 EOF
 
+printf 'transient sidecar fixture\n' >"${tmp}/data/automation/extra.db-wal"
+
+OPTIBRAIN_BACKUP_CONFIG="${tmp}/no-live-config" \
 OPTIBRAIN_REPO_DIR="${tmp}/repo" \
 OPTIBRAIN_BACKUP_DIR="${tmp}/backup" \
 OPTIBRAIN_WORKFLOW_ENV_FILE="${tmp}/workflow.env" \
@@ -44,7 +48,7 @@ GIT_CONFIG_SYSTEM=/dev/null \
 OPTIBRAIN_SKIP_LIVE_STATE=false \
 OPTIBRAIN_SKIP_LIVE_CONFIG=true \
 OPTIBRAIN_PLATFORM_SHARED_DIR="${tmp}/shared" \
-OPTIBRAIN_WORKFLOW_STATE_DIR="${tmp}/missing-workflow-state" \
+OPTIBRAIN_WORKFLOW_STATE_DIR="${tmp}/data" \
 OPTIBRAIN_PASSWORD_PDF_STATE_DIR="${tmp}/missing-password-state" \
 OPTIBRAIN_OMADA_STATE_DIR="${tmp}/missing-omada-state" \
   bash "${script}"
@@ -62,6 +66,9 @@ manifest="$(find "${extract_dir}" -name manifest.json -print -quit)"
 python3 - "${manifest}" <<'PY'
 import json, pathlib, sys
 data = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert any(entry["path"].endswith("/shared/manifest.json") for entry in data["files"])
+assert data["backup_script_version"] == "1.0.1"
+assert not any(entry["backup_path"].endswith(".db-wal") for entry in data["source_metadata"])
 matches = [entry for entry in data["source_metadata"] if entry["source_path"].endswith("/shared")]
 assert matches and matches[0]["mode"] == "2770", matches
 assert any(entry["backup_path"].endswith("/shared/recovery-fixture") for entry in data["source_metadata"])

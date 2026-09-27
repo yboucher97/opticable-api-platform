@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 readonly BACKUP_FORMAT_VERSION="1"
-readonly SCRIPT_VERSION="1.0.0"
+readonly SCRIPT_VERSION="1.0.1"
 readonly REPO_DEFAULT="/opt/opticable-api-platform"
 readonly DEST_DEFAULT="/var/backups/optibrain"
 readonly CONFIG_DEFAULT="/etc/optibrain/backup.conf"
@@ -196,7 +196,7 @@ paths = [root] if not root.is_dir() or root.is_symlink() else sorted([root, *roo
 with open(output, "a", encoding="utf-8") as handle:
     for path in paths:
         relative = "." if path == root else path.relative_to(root).as_posix()
-        if excluded_relative and (relative == excluded_relative or relative.startswith(excluded_relative + "/")):
+        if excluded_relative and (relative == excluded_relative or relative.startswith(excluded_relative + "/") or relative.endswith((".db-wal", ".db-shm"))):
             continue
         stat = path.lstat()
         mode = stat.st_mode & 0o7777
@@ -273,10 +273,10 @@ python3 - "${staging}" "${timestamp}" "${git_sha}" "${app_version}" "${sqlite_re
 import hashlib, json, pathlib, socket, sys
 root = pathlib.Path(sys.argv[1]); timestamp, git_sha, app_version, sqlite_result_path = sys.argv[2:]
 files = []
-for path in sorted(p for p in root.rglob("*") if p.is_file() and p.name != "manifest.json"):
+for path in sorted(p for p in root.rglob("*") if p.is_file() and p != root / "manifest.json"):
     files.append({"path": path.relative_to(root).as_posix(), "size": path.stat().st_size, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
 manifest = {
-    "backup_format_version": "1", "backup_script_version": "1.0.0", "timestamp": timestamp,
+    "backup_format_version": "1", "backup_script_version": "1.0.1", "timestamp": timestamp,
     "hostname": socket.getfqdn(), "production_git_sha": git_sha, "application_version": app_version,
     "included_components": ["source_release", "sqlite_database", "persistent_state", "generated_operational_state", "etc_configuration", "systemd_units", "caddy_configuration", "credential_metadata"],
     "database_integrity": pathlib.Path(sqlite_result_path).read_text(encoding="utf-8"),

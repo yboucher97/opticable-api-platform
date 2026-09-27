@@ -78,3 +78,42 @@ manually run the hardened service before enabling its timer. Local Phase 1 backu
 scheduling remains enabled. Retain all verified remote generations until a
 separately tested retention/recovery policy is approved. No phase completion or
 separate-host recoverability is claimed merely from ciphertext hash verification.
+
+## Human recovery evidence received — 2026-09-27
+
+Human reports a fresh R2 download on a separate Windows recovery machine for
+`20260927T021414Z`, object `backups/2026/09/27/20260927T021414Z.tar.gz.age`.
+AGE v1.3.1 successfully decrypted it with the offline human-held identity.
+- Encrypted SHA-256: `4e75906e0791d192ab296eea1f1a8e814c59fe7c081cf488c1341ed7a2cb89ed`
+- Recovered plaintext SHA-256: `c802d153a261e28f86440c718cddd06dfc1b7f19e157d72c058c7eaaede16792`
+- OFFLINE AGE DECRYPTION: PASS (human-attested).
+- SOURCE SHA-256 MATCH: PASS (human-attested).
+The private identity remains only on the human-controlled Windows machine; it
+was not copied to VPS, Git, Cloudflare, Codex or ChatGPT. No private key is needed
+for the remaining local archive validation: SHA-256 equality ties the local
+archive to the independently recovered plaintext. An isolated extraction,
+manifest/file checks, SQLite integrity, source export and ownership/configuration
+recovery validation will supplement this evidence. This is not a claim that a
+replacement production host or live provider failover has been tested.
+
+## Isolated archive validation completed — 2026-09-27
+
+`ops/backup/optibrain-restore-drill.py` validated the exact local plaintext archive
+whose SHA-256 matched the human's independently decrypted copy. It ran under a
+transient systemd unit with `PrivateNetwork=yes`, `ProtectSystem=strict`, private
+tmp, and only `/var/lib/optibrain` writable. Result: PASS (636 file checks, 675
+metadata entries, restored SQLite integrity, extracted versioned source, and
+three critical config uid/gid/mode/content restores). Credential-bearing staging
+was removed after validation; only a non-secret report remains.
+
+The drill identified two legacy v1.0.0 inventory defects: four Chromium dependency
+manifests lack individual manifest hashes (covered by whole-archive SHA-256), and
+two intentionally excluded SQLite WAL/SHM files remained listed in metadata.
+Phase 1 v1.0.1 corrects both for future generations; no old archive was modified.
+The validator recognizes and counts only these exact legacy omissions.
+
+Combined human offline decrypt/hash evidence and isolated archive restore checks
+satisfy the Phase 2A recovery gate. This does not establish a booted replacement
+host, provider failover, or an immutable off-host vault. Per-generation remote
+manifests remain immutable and their automatic `offline_restore_verified=false`
+field is not rewritten; the human evidence and isolated report are separate.

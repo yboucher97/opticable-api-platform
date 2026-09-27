@@ -1,8 +1,8 @@
 # OptiBrain autonomous resume journal
 
 Roadmap version: OPTIBRAIN AUTONOMOUS OVERNIGHT PROGRAM, 2026-09-27, Phases 2A–12.
-Current phase: 2A. Current subphase: offline recovery validation.
-Status: HUMAN_ACTION_REQUIRED for the offline AGE decryption/restore drill.
+Current phase: 2A. Current subphase: isolated validation and scheduling activation.
+Status: ACTIVE; human offline decryption evidence received.
 Temporary sudo works. Read the newest overnight sections below; the original
 checkpoint record is retained as history, not current live state.
 
@@ -247,3 +247,87 @@ Latest verified remote object:
 - Remote verification completed: 2026-09-27T02:16:26Z.
 - Final public workflow/PDF/Omada responses successful; backup service result
   success, exit 0; local backup timer active. No atomic operation remains running.
+
+## Human recovery evidence received — 2026-09-27
+
+Human reports a fresh R2 download on a separate Windows recovery machine for
+`20260927T021414Z`, object `backups/2026/09/27/20260927T021414Z.tar.gz.age`.
+AGE v1.3.1 successfully decrypted it with the offline human-held identity.
+- Encrypted SHA-256: `4e75906e0791d192ab296eea1f1a8e814c59fe7c081cf488c1341ed7a2cb89ed`
+- Recovered plaintext SHA-256: `c802d153a261e28f86440c718cddd06dfc1b7f19e157d72c058c7eaaede16792`
+- OFFLINE AGE DECRYPTION: PASS (human-attested).
+- SOURCE SHA-256 MATCH: PASS (human-attested).
+The private identity remains only on the human-controlled Windows machine; it
+was not copied to VPS, Git, Cloudflare, Codex or ChatGPT. No private key is needed
+for the remaining local archive validation: SHA-256 equality ties the local
+archive to the independently recovered plaintext. An isolated extraction,
+manifest/file checks, SQLite integrity, source export and ownership/configuration
+recovery validation will supplement this evidence. This is not a claim that a
+replacement production host or live provider failover has been tested.
+
+### Intent: isolated archive recovery validation
+
+Live workflow health is ok/1.7.0; Phase 1 timer active with a successful additional
+scheduled generation `20260927T023955Z`. Pre-activation recovery reference:
+`recovery/pre-phase2a-activation-d69e02b`. Validate the exact human-verified local
+archive SHA-256, safely extract into root-only temporary staging in a private
+network namespace, verify every manifest file and SQLite copy, extract source,
+and exercise critical configuration ownership/mode restoration in staging only.
+No recovered service or provider call will execute. Temporary extracted copies
+are cleaned up; all existing backup generations are preserved. Non-secret result
+is retained under `/var/lib/optibrain/restore-drills/`.
+
+### Validation finding (before activation)
+
+All existing Phase 1/2A fixtures and unit syntax checks pass. Fixed Phase 1 test
+isolation to explicitly avoid loading installed production backup.conf during
+fixture creation. Current R2 privacy and dedicated scope read-back pass.
+Isolated drill stopped because the historical manifest does not cover every
+archive file. Investigation found the Phase 1 generator excludes every file named
+manifest.json instead of only its own root manifest. No archive or production
+state was changed. Compare actual omitted paths before choosing a compatibility
+rule; the independent whole-archive SHA-256 remains a verified integrity anchor.
+
+### Intent: correct future manifest coverage
+
+The four omitted entries are Chromium runtime dependency manifests, not missing
+archive members. Their bytes remain covered by the human-verified archive hash.
+Apply a minimal Phase 1 fix: exclude only the top-level generated manifest, bump
+backup script version to 1.0.1, and add a nested-manifest fixture assertion.
+Rollback is the pre-activation Git reference; no existing archive will be edited.
+The isolated validator will allow only this precisely identified legacy 1.0.0
+omission and report its count; new-format coverage must be complete. No runtime
+cache exclusions are introduced. Existing recoverable data remains unchanged.
+
+Further drill finding: historical source metadata lists two transient SQLite
+WAL/SHM paths intentionally excluded from the archive. The consistent online
+SQLite snapshot is the recovery artifact; stale WAL/SHM must not be restored.
+Future metadata generation now matches these existing exclusions. Legacy drill
+reports both omitted transient entries explicitly; missing durable files still
+fail validation. The repeated drill failures affected only disposable staging.
+
+### Completed: isolated restore and activation gates
+
+Network-isolated drill passed for human-verified generation `20260927T021414Z`:
+636 manifest file checks, 675 metadata entries validated, one SQLite database
+restored/integrity-checked, versioned source extracted, three critical config
+files restored with verified uid/gid/mode/content. Four legacy Chromium manifests
+are protected by the independently verified whole-archive hash; two transient
+SQLite metadata entries are intentionally omitted. No service was started from
+restored state. Result: `/var/lib/optibrain/restore-drills/20260927T021414Z-result.json`.
+
+Phase 1 v1.0.1 fixture passes with nested manifest coverage, transient-sidecar
+metadata exclusion and installed-config isolation. Two new extraction-safety tests
+pass. Existing six uploader cases, bucket parsers, health cases and all four
+systemd units validate. No private identity was accessed.
+
+### Intent: manual hardened service activation
+
+Install only the already-validated off-host service/timer unit files, reload
+systemd, and manually start the upload service. Its existing dependency creates
+and verifies a fresh Phase 1 snapshot first. Three local generations currently
+exist, so the seven-generation retention threshold is not reached; no backups
+will be deleted. Verify upload/download hashes and hardened service result before
+enabling scheduling. Rollback: stop/disable only the new upload timer/service,
+restore pre-activation code if required, and retain all recovery data and Phase 1
+scheduling. Production API behavior and application services are unchanged.
