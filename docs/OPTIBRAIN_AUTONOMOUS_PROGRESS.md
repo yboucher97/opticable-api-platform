@@ -1,8 +1,10 @@
 # OptiBrain autonomous resume journal
 
 Roadmap version: OPTIBRAIN AUTONOMOUS OVERNIGHT PROGRAM, 2026-09-27, Phases 2A–12.
-Current phase: 2A. Current subphase: bootstrap bucket-path diagnosis.
-Status: BLOCKED / HUMAN_ACTION_REQUIRED; privileged execution unavailable.
+Current phase: 2A. Current subphase: offline recovery validation.
+Status: HUMAN_ACTION_REQUIRED for the offline AGE decryption/restore drill.
+Temporary sudo works. Read the newest overnight sections below; the original
+checkpoint record is retained as history, not current live state.
 
 - Running production baseline / last known good SHA: `936e75a` (Phase 1).
   Working checkout: `hardening/phase2a-resume`; resolve its checkpoint SHA with
@@ -74,3 +76,113 @@ credential requirement must be established after authenticated discovery.
 
 Resume instruction: Read this journal and the master runbook, rediscover Git and
 live state, then resume Phase 2A from the exact next safe operation above.
+
+## Overnight resume — 2026-09-27: privileged discovery
+
+- Temporary `sudo -n true` succeeded. Earlier root-access boundary is resolved;
+  no sudo policy or other security controls were changed.
+- Pre-change reference: `recovery/pre-phase2a-overnight-9f9d801`.
+- Read-only discovery confirms bootstrap account token active, target R2 bucket
+  already exists, and bucket-list access works. No bucket creation was necessary.
+- Latest local archive remains `optibrain-backup-20260926T232858Z.tar.gz`
+  (269147506 bytes); external checksum and full non-destructive archive/SQLite
+  verification both passed. Backup timer enabled/active, service result success.
+- Public and local workflow health HTTP 200, status ok, version 1.7.0.
+- Public recipient exists, root-owned 0644. Dedicated uploader credentials and
+  phase2a configuration are absent; age and aws executables are absent.
+- Discovery parser repaired to validate `result.buckets` and propagate failure;
+  production health now exits unsuccessfully when unhealthy.
+- Current Cloudflare documentation supports API creation of R2 credentials and
+  derivation of S3 keys; the prior blanket dashboard-only assertion is incorrect.
+  Read-only token-management capability and bucket privacy checks are in progress.
+  Source: https://developers.cloudflare.com/r2/api/tokens/
+- No provider writes, service restarts, migrations, uploads or timer activation.
+- Full Phases 2B–12 approved program is not present in searched repository docs,
+  config (absent), or ops paths; only its title exists in this journal.
+
+### Intent: Phase 2A dependencies and dedicated credential
+
+Recovery verified above; pre-change reference `recovery/pre-phase2a-overnight-9f9d801`.
+Bucket privacy verified by authenticated GET: managed public access disabled,
+custom-domain count zero. Bootstrap policy explicitly grants Account API Tokens
+Read and Write. No named `optibrain-recovery-uploader` token exists.
+Proceed with trusted Ubuntu package installation of age/awscli and one dedicated
+account token with only Workers R2 Storage Bucket Item Write on the single
+`optibrain-recovery-prod` default-jurisdiction bucket. This implements the
+approved least-privilege backup design; existing credentials will not be changed.
+Credential is stored root-only, never displayed. On ambiguous creation failure,
+stop and reconcile by token name; never blindly retry creation. Rollback is to
+leave uploader disabled and revoke only the new token if required after review.
+No bucket deletion or retention changes are authorized by this operation.
+
+### Completed: dedicated R2 credential
+
+Created `optibrain-recovery-uploader` through the account token API and read back
+its exact policy: one allow policy, Workers R2 Storage Bucket Item Write only,
+single default-jurisdiction recovery bucket. Credentials saved to
+`/etc/optibrain/r2-uploader.env`, root-only 0600. Protected intermediate creation
+response removed after successful validation and durable credential write.
+No existing token changed. No credential value entered Git or logs.
+Initial apt install found stale package indexes; refreshed indexes successfully.
+
+### Dependency adjustment
+
+Ubuntu repositories have no awscli candidate even after index refresh; no packages
+were installed by the failed attempts. Ubuntu's python3-boto3 1.34.46 is already
+installed. Use that packaged S3 SDK and install age only. Uploader repair will
+preserve encrypted bytes across retries, serialize execution, fail closed on
+non-404 reads, use conditional creation, and verify downloaded bytes before
+recording success. Keep scheduling disabled pending offline recovery validation.
+
+### Completed: encryption dependency
+
+Installed Ubuntu age 1.1.1-1ubuntu0.24.04.3 successfully. Existing packaged boto3
+will supply S3 access; awscli remains absent. Package-manager needrestart restarted
+`opticable-password-pdf.service`; public PDF health was checked immediately.
+Uploader rewritten around durable ciphertext preparation, conditional PUT,
+serialized execution, bounded SDK retries, and independent full download hashing.
+No upload or scheduling yet; regression validation precedes activation.
+
+### Validation and intent: first encrypted recovery upload
+
+- Six uploader regressions passed: ambiguous completed PUT reuses ciphertext,
+  denied HEAD prevents upload, downloaded corruption prevents success, changed
+  source refuses overwrite, conditional creation header, corrupt local checksum.
+  An initial AGE-header byte-count error was caught and fixed before live use.
+- Discovery parser fixtures pass; existing bootstrap parser and health tests pass.
+- Dedicated credential can list the empty target bucket; unrelated-bucket list
+  returns HTTP 403. Root-owned phase2a.conf created with account ID only.
+- Intent: encrypt verified local generation 20260926T232858Z using existing public
+  recipient, PUT only encrypted object and non-secret manifest with conditional
+  creation, then GET/hash both. Local source and encrypted spool are retained.
+  No remote retention/deletion, no schedule enablement. Runtime recovery remains
+  Phase 1 archive and pre-phase Git reference. Offline decryption remains human-only.
+
+### Completed: first encrypted off-host verification
+
+Generation `20260926T232858Z` encrypted and conditionally uploaded successfully.
+Full downloaded-byte SHA-256 and length matched for both encrypted archive and
+JSON manifest. State: `/var/lib/optibrain/phase2a/state.json`; durable mutation
+log: `/var/lib/optibrain/phase2a/audit.jsonl`; prepared ciphertext retained under
+`/var/lib/optibrain/phase2a/20260926T232858Z/` for retry/recovery.
+Object: `backups/2026/09/26/20260926T232858Z.tar.gz.age` (plus `.json`).
+Offline restore remains unverified. No schedule enabled, no data deleted.
+
+### Completed: live retry and documentation checkpoint
+
+Second live uploader invocation downloaded/hashed both existing objects and
+recorded success without any PUT. The durable audit confirms no overwrite.
+Master runbook now incorporates Phase 1 and records Phase 2A live state; stale
+claims about root access and mandatory dashboard credential creation superseded.
+Uploader regression coverage and recovery procedure are repository-backed.
+Package-manager-triggered PDF restart passed health. No uploader unit is installed.
+
+### Intent: post-change recovery generation
+
+Checkpoint reviewed non-secret recovery source/docs/tests on the existing branch,
+then run the existing Phase 1 backup service to capture that commit and protected
+credential/configuration state. Existing archive remains verified and retained;
+there are fewer than seven generations, so retention will delete nothing.
+Upload/download-hash the new generation with the tested uploader, then record
+production health, exact next operation and recovery reference before stopping at
+the human-only offline decryption boundary.

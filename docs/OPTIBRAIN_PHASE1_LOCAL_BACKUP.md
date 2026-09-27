@@ -1,11 +1,11 @@
 # OptiBrain Hardening Phase 1: Local Backup and Recovery
 
-Status: Phase 1 finalized in the repository on 2026-09-26. Phase 2 is not started.
+Status: Phase 1 finalized on 2026-09-26. Phase 2A advanced on 2026-09-27;
+see the autonomous progress journal. Root-owned runbook synchronization is now complete.
 
-This is the complete repository-side Phase 1 record. The canonical master runbook,
-`docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md`, is root-owned and cannot be edited by
-the current `optibrain` user. A root operator must copy this record into that master
-runbook and update its `Last updated` date; no material is intentionally omitted.
+The master runbook now incorporates this Phase 1 record by reference. Historical
+Phase 2 prerequisite notes below describe the original Phase 1 checkpoint; consult
+the current progress journal and Phase 2A document for live status.
 
 ## Objective
 
@@ -179,6 +179,5 @@ root-only permissions. Reproducible Omada runtime data still increases archive s
 - Classify irreplaceable state versus reproducible dependencies/cache/runtime.
 - Add independent destination monitoring and alerting.
 
-The canonical master runbook still requires the root action stated at the top of this
-document: merge this complete record into `docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md`
-as root, preserving its existing content.
+The master runbook synchronization was completed on 2026-09-27, preserving its
+existing content and incorporating this record by reference.

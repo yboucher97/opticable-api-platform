@@ -1,0 +1,80 @@
+# Phase 2A encrypted off-host recovery
+
+Status (2026-09-27): first encrypted upload and full download/hash verification
+passed. Dedicated credential scope and isolation passed. Offline decryption and
+separate-host restore are pending the human-held identity. Timer is not installed
+or enabled. See OPTIBRAIN_AUTONOMOUS_PROGRESS.md for current generations/checkpoint.
+
+## Implementation and recovery custody
+
+- Private R2 bucket: `optibrain-recovery-prod`; authenticated discovery found
+  r2.dev disabled and zero custom domains. No public access was configured.
+- `/etc/optibrain/age-recipient`: public recipient only. The matching private AGE
+  identity must remain offline with the human, never on this VPS or in Git.
+- `/etc/optibrain/r2-uploader.env`: root:root 0600 AWS shared-credential format.
+  Account token `optibrain-recovery-uploader` has exactly one policy:
+  Workers R2 Storage Bucket Item Write on this bucket in default jurisdiction.
+  Target list passed; an unrelated bucket list was denied HTTP 403.
+- Bootstrap token `/etc/optibrain/cloudflare-test-token` is used only for discovery
+  and provisioning. The routine uploader reads only its dedicated credentials.
+- `/etc/optibrain/phase2a.conf`: root-owned non-secret account ID configuration.
+- Ubuntu `age` and `/usr/bin/python3` with packaged `python3-boto3` are required.
+  AWS CLI is not used (no candidate in the configured Ubuntu repositories).
+
+`ops/backup/optibrain-r2-credential.py` creates a dedicated credential once, only
+following recorded intent and verified recovery. It refuses an existing local
+credential or same-name provider token. Ambiguous POST outcomes require read-only
+reconciliation, never blind retries or automatic rotation. A protected bootstrap
+response is retained if processing fails and removed after successful storage.
+Cloudflare supports API creation and S3-key derivation; the former dashboard-only
+claim was incorrect. Reference: https://developers.cloudflare.com/r2/api/tokens/
+
+## Upload transaction
+
+Run `sudo bash ops/backup/optibrain-phase2a-upload.sh` for a manual drill. The
+uploader verifies the newest local generation's checksum and manifest/SQLite
+integrity, encrypts using AGE, and retains the exact ciphertext across retries.
+A durable preparation checkpoint precedes remote writes. Concurrent invocations
+are locked out. Conditional PUT (`If-None-Match: *`) prevents replacement; only
+HTTP 404 means absent. All other read failures stop writes. Existing ciphertext
+must match its hash and length. GET streams all remote bytes for SHA-256 checking,
+then repeats verification for the JSON sidecar before marking success.
+
+Objects: `backups/YYYY/MM/DD/YYYYMMDDTHHMMSSZ.tar.gz.age` and matching `.json`.
+Root-only state, audit log, and per-generation spool live under
+`/var/lib/optibrain/phase2a/`. `state.json` records the last verified generation;
+`last-failure.json`, when present, records the latest failure (it may predate a
+later success; compare timestamps). `audit.jsonl` records durable intent/outcome.
+A network crash after PUT can be retried using the preserved ciphertext. If spool
+and remote differ, stop and investigate; do not overwrite or delete either copy.
+
+SDK retries use standard exponential backoff with four total attempts and bounded
+network timeouts. The wrapper has a 45-minute overall timeout. Archives above
+4 GiB are rejected before encryption/upload; multipart support is not implemented.
+No remote retention or local spool deletion is automated. Monitor disk and R2
+usage before long-running scheduling. The object-write token is not an immutable
+vault against a compromised uploader; separate immutable custody is still needed.
+
+## Human offline recovery drill — next required gate
+
+1. Obtain the latest verified encrypted object and matching JSON manifest using
+   authorized R2 access on a separate trusted recovery machine. Use the exact
+   object key and hashes recorded in the progress journal/root-only state.
+2. Verify downloaded ciphertext SHA-256 against `encrypted_sha256` in the
+   manifest and separately recorded verification evidence.
+3. On that separate machine only, decrypt with the offline human-held identity:
+   `age --decrypt --identity /offline/path/identity.txt --output recovery.tar.gz downloaded.tar.gz.age`.
+4. Verify `recovery.tar.gz` SHA-256 equals `source_sha256` in the manifest.
+   Run `optibrain-backup.sh --verify recovery.tar.gz` on an isolated Linux recovery
+   machine with the Phase 1 verifier's dependencies. Preserve root-only modes.
+5. Extract only into isolated staging. Validate SQLite, source, service config,
+   ownership metadata and necessary provider state using the Phase 1 restore
+   procedure. Do not start services that send production events during the drill.
+6. Record only date, generation, checksum/integrity result, and recovery findings.
+   Never send the identity, plaintext archive, or secret contents to Codex/chat.
+
+After this evidence is recorded, validate the service units, install them, and
+manually run the hardened service before enabling its timer. Local Phase 1 backup
+scheduling remains enabled. Retain all verified remote generations until a
+separately tested retention/recovery policy is approved. No phase completion or
+separate-host recoverability is claimed merely from ciphertext hash verification.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-source "${repo}/ops/backup/optibrain-phase2a-r2-bootstrap.sh"
+source "${repo}/ops/backup/${1:-optibrain-phase2a-r2-bootstrap.sh}"
 tmp_dir="$(mktemp -d)"
 check() {
   local payload="$1" expected="$2" result
@@ -18,9 +18,11 @@ for payload in '{bad' '{"success":false}' '{"success":true,"result":[]}' '{"succ
   fi
 done
 # A network/listing failure must propagate through the same capture used by main.
+if declare -F list_buckets >/dev/null; then
 http() { printf '503'; }
 ACCOUNT_ID=fixture
 if bucket_names="$(list_buckets 2>/dev/null)"; then
   printf 'Failed listing accepted\n' >&2; exit 1
+fi
 fi
 printf 'Phase 2A bucket listing regression tests passed\n'

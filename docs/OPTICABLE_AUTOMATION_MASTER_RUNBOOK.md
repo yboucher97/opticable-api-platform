@@ -1,6 +1,6 @@
 # Opticable Automation Master Runbook
 
-Last updated: 2026-09-25
+Last updated: 2026-09-27
 Authority: Git history + this runbook + machine-readable production state.
 Rule: never store secret values in Git. Record only locations, scopes, IDs that are safe to retain, and recovery procedures.
 
@@ -106,3 +106,36 @@ The three VPS-backed endpoints were independently verified HTTP 200 from OPX001 
 3. Add deterministic UI fallback only for functions that have no adequate API.
 4. Expand business-event sources (website/forms/email/CRM) into the durable control plane.
 5. Keep this runbook and config/automation/production-state.yaml current after material changes.
+
+
+## OptiBrain recovery hardening — 2026-09-27
+
+Phase 1 is deployed: root-only local archive with checksum, per-file manifest,
+consistent SQLite snapshot/integrity verification, seven-generation retention,
+and hardened daily systemd timer. Complete implementation, resolved namespace/
+Git-trust/setgid failures, and restore procedures are maintained in
+`docs/OPTIBRAIN_PHASE1_LOCAL_BACKUP.md` (incorporated here by reference).
+Runtime workflow version remains 1.7.0; no application deployment was performed.
+
+Phase 2A: private R2 bucket `optibrain-recovery-prod` exists; r2.dev disabled and
+no custom domains. Dedicated single-bucket object-write token was provisioned
+through the account token API, policy read back, and unrelated-bucket access
+verified denied. Credential custody: `/etc/optibrain/r2-uploader.env` root-only.
+Public AGE recipient only: `/etc/optibrain/age-recipient`. No private identity was
+created, read or placed on the VPS. Ubuntu age installed; packaged boto3 used.
+
+The first encrypted generation passed complete remote GET/hash verification.
+Uploader serializes executions, persists exact ciphertext for retries, conditionally
+creates objects, refuses conflicts/non-404 errors, and records durable intent and
+results. No remote deletion or retention automation. State and audit live in
+`/var/lib/optibrain/phase2a/`; latest details are in
+`docs/OPTIBRAIN_AUTONOMOUS_PROGRESS.md`. Phase 2A timer remains uninstalled;
+offline decryption/separate-host restore validation requires the human-held key.
+See `docs/OPTIBRAIN_PHASE2A_OFFHOST_RECOVERY.md` for exact recovery steps.
+
+Package installation's needrestart restarted the password-PDF service; its public
+health passed immediately. No application migration, Zoho mutation, firewall/SSH/
+sudo policy change, or credential rotation occurred. Temporary overnight sudo was
+used only for authorized inspection, backup infrastructure and root-owned records.
+The old root-access blocker is resolved. Full approved Phases 2B–12 details were
+not located in this checkout; recover that program before advancing beyond 2A.

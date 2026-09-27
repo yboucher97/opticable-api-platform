@@ -1,0 +1,3 @@
+# Root-owned non-secret configuration, mode 0600.
+# All paths and the recovery bucket are fixed by the uploader.
+OPTIBRAIN_PHASE2A_ACCOUNT_ID=REPLACE_WITH_ACCOUNT_ID

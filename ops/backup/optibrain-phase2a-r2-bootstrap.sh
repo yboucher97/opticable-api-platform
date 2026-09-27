@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-# Root-run Phase 2A R2 bootstrap. This script deliberately creates no R2 API
-# credential: Cloudflare's account R2 credential secret is dashboard-only and
-# is displayed once. Routine upload access must therefore be created manually
-# with an explicit bucket restriction.
+# Root-run Phase 2A bucket bootstrap. Does not create routine credentials.
+# Credential provisioning is separate: optibrain-r2-credential.py, using the
+# documented account token API and a single-bucket object-write policy.
 
 readonly ENV_FILE="${OPTIBRAIN_WORKFLOW_ENV_FILE:-/etc/opticable-workflow-api.env}"
 readonly BOOTSTRAP_TOKEN_FILE="${OPTIBRAIN_R2_BOOTSTRAP_TOKEN_FILE:-/etc/optibrain/cloudflare-test-token}"
@@ -168,10 +167,8 @@ bucket_names="$(list_buckets)" || die 'R2 bucket verification failed'
 mapfile -t buckets <<<"${bucket_names}"
 printf '%s\n' "${buckets[@]}" | grep -Fxq "${TARGET_BUCKET}" || die 'target bucket not present after bootstrap'
 printf 'Target bucket: %s\nBucket operation: %s\n' "${TARGET_BUCKET}" "${operation}"
-printf 'Bucket privacy: private by default; no public URL or custom-domain request made\n'
-printf 'Permanent uploader approach: dashboard-created account R2 API token, Object Read & Write, specific bucket only; no credential created by this script\n'
-printf 'Credential creation: dashboard-required (secret is one-time displayed; no secret stored or printed)\n'
-printf 'Dashboard steps: R2 Overview -> Manage API Tokens -> Create Account API token -> name optibrain-recovery-uploader -> Object Read & Write -> apply to specific buckets only -> select %s -> create -> save Access Key ID and Secret Access Key once in a root-only 0600 file\n' "${TARGET_BUCKET}"
+printf 'Bucket privacy: not proven by existence; verify managed and custom domains through authenticated GET before upload\n'
+printf 'Permanent uploader: use optibrain-r2-credential.py after logged intent and verified recovery; scope to this bucket only\n'
 printf 'AGE recipient: public recipient verified\nPrivate AGE identity on VPS: absent from recipient file; this script neither reads nor creates one\n'
 }
 
