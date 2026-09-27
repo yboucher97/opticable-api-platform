@@ -5,6 +5,7 @@ from typing import Any
 from ...google_api import GoogleApiClient
 from ..engine import AutomationEngine
 from ..models import WorkflowStep
+from ..provider_evidence import attach_provider_operation_id
 from ..store import AutomationStore
 
 
@@ -29,6 +30,8 @@ def register_google_actions(
             raise ValueError(f"{step.action} mutations require with.reason.")
 
         result = client.request(service, method, path, params=params, body=body)
+        if method != "GET":
+            result = attach_provider_operation_id(result)
 
         if method != "GET":
             event = context.get("event") or {}
@@ -46,6 +49,7 @@ def register_google_actions(
                     "workflow_id": (context.get("workflow") or {}).get("id"),
                     "step_id": step.id,
                     "body_keys": sorted(body.keys()) if isinstance(body, dict) else [],
+                    "provider_operation_id": result.get("provider_operation_id"),
                 },
             )
         return result
