@@ -816,3 +816,9 @@ or root command was run during package preparation; the production health,
 timer and sudoers state above is the observed evidence supplied for this
 incident, not a new check from this preparation session. No production
 mutation occurred.
+
+Reviewed package commit: `16ca00f` (`fix(admin): use raw digest authorization
+pins`). The finalized checkpoint is the commit containing this final recovery
+entry, referenced by `recovery/phase2b-digest-fix`. Repair remains pending a
+human root operator; this preparation session stopped before any root or
+production changes.

@@ -101,8 +101,9 @@ only 64 lowercase hexadecimal characters and one newline. In particular,
 `optibrain-admin.sha256` is used as both staged candidate digest and root
 authorization pin; `master-runbook.sha256` is the staged runbook digest and root
 pin. Neither may use `sha256sum` filename syntax. `optibrain-admin-update.sha256`
-is a raw source digest sidecar for review tooling, not an updater authorization
-input. Backup archive `.sha256` sidecars remain standard `sha256sum` records,
+is a raw source digest sidecar with no runtime parser or authorization consumer;
+the bootstrap manifest verifies its file bytes and reviewers can compare it to
+the updater source. Backup archive `.sha256` sidecars remain standard `sha256sum` records,
 because their consumer is `sha256sum -c`.
 
 The root-installed/staged source artifacts are:
@@ -194,7 +195,8 @@ sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin sync-master-r
 
 Expected updater output is one line of the form:
 `OptiBrain admin helper updated and self-test passed; sha256=30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4; preserved_previous=/var/lib/optibrain/admin-update/previous/optibrain-admin-<UTC timestamp>-<old digest prefix>.py`.
-The previous helper must remain in that exact printed backup path.
+The previous helper must remain in that exact printed backup path; its expected
+name ends with `-a35734a52d9c64ad.py`.
 
 After success, validate the new helper and installed bytes:
 
