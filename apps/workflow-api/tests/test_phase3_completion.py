@@ -31,6 +31,7 @@ class Phase3HealthMonitorTests(unittest.TestCase):
             "thread_alive": True,
             "healthy": True,
             "scan_stalled": False,
+            "heartbeat_stale": False,
             "stopped_due_to_failures": False,
             "consecutive_failures": 0,
         }
@@ -76,6 +77,28 @@ class Phase3HealthMonitorTests(unittest.TestCase):
         self.assertIn("human_action_required", codes)
         self.assertIn("stale_running", codes)
 
+    def test_stale_scheduler_heartbeat_is_critical(self) -> None:
+        worker = dict(self.worker, heartbeat_stale=True, healthy=False)
+        snapshot = self.monitor.evaluate(
+            worker,
+            database_health={
+                "queued": 0,
+                "claimed": 0,
+                "running": 0,
+                "stale_queued": 0,
+                "stale_running": 0,
+                "expired_leases": 0,
+                "human_action_required": 0,
+                "dead_letter": 0,
+                "recent_failure_count": 0,
+            },
+        )
+        self.assertEqual(snapshot["status"], "critical")
+        self.assertIn(
+            "recovery_worker_heartbeat_stale",
+            {item["code"] for item in snapshot["alerts"]},
+        )
+
     def test_queue_growth_is_compared_to_previous_durable_sample(self) -> None:
         snapshot = self.monitor.evaluate(
             self.worker,
@@ -96,14 +119,21 @@ class Phase3HealthMonitorTests(unittest.TestCase):
         self.assertIn("queue_growth", codes)
         self.assertIn("queue_backlog", codes)
 
-    def test_observe_persists_bounded_non_secret_state(self) -> None:
-        snapshot = self.monitor.observe(self.worker, force=True)
-        self.assertIsNotNone(snapshot)
-        audit = self.store.recent_audit(10)
-        actions = [item["action"] for item in audit if item["category"] == "automation_health"]
-        self.assertIn("sample", actions)
-        self.assertIn("alert_state_changed", actions)
-        sample = next(item for item in audit if item["action"] == "sample")
+    def test_observe_persists_initial_state_then_deduplicates_transition(self) -> None:
+        first = self.monitor.observe(self.worker, force=True)
+        second = self.monitor.observe(self.worker, force=True)
+        self.assertIsNotNone(first)
+        self.assertIsNotNone(second)
+        self.assertTrue(first["state_changed"])
+        self.assertFalse(second["state_changed"])
+        audit = self.store.recent_audit(20)
+        health_items = [item for item in audit if item["category"] == "automation_health"]
+        self.assertEqual(
+            sum(item["action"] == "alert_state_changed" for item in health_items),
+            1,
+        )
+        self.assertEqual(sum(item["action"] == "sample" for item in health_items), 2)
+        sample = next(item for item in health_items if item["action"] == "sample")
         self.assertNotIn("payload", sample["metadata"])
         self.assertNotIn("error", sample["metadata"])
 
