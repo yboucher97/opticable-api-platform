@@ -2,8 +2,10 @@ import importlib.util
 import os
 import pathlib
 import shutil
+import stat
 import subprocess
 import tempfile
+import types
 import unittest
 from unittest import mock
 
@@ -133,6 +135,24 @@ class RequestValidationTests(unittest.TestCase):
                        "OPTIBRAIN_BACKUP_RETENTION=5\nOPTIBRAIN_BACKUP_RETENTION=7\n"):
             with self.subTest(config=config), self.assertRaises(RuntimeError):
                 admin._retention_limit(config)
+
+    def test_manual_backup_uses_fixed_root_owned_nonblocking_lock(self):
+        fake_stat = types.SimpleNamespace(st_mode=stat.S_IFREG | 0o600, st_uid=0,
+                                          st_gid=0, st_nlink=1)
+        fake_parent = types.SimpleNamespace(st_mode=stat.S_IFDIR | 0o755, st_uid=0, st_gid=0)
+        with mock.patch.object(admin.os, "lstat", return_value=fake_parent), \
+             mock.patch.object(admin.os, "open", return_value=123), \
+             mock.patch.object(admin.os, "fstat", return_value=fake_stat), \
+             mock.patch.object(admin.os, "close") as close, \
+             mock.patch.object(admin.fcntl, "flock") as flock, \
+             mock.patch.object(admin, "_require_backup_headroom") as headroom, \
+             mock.patch.object(admin, "run") as run:
+            admin._run_manual_backup()
+        self.assertEqual(admin.BACKUP_LOCK, "/run/lock/optibrain-admin-backup.lock")
+        self.assertEqual(flock.call_args.args, (123, admin.fcntl.LOCK_EX | admin.fcntl.LOCK_NB))
+        headroom.assert_called_once_with()
+        run.assert_called_once_with([admin.BACKUP_SCRIPT], timeout=3600, quiet=True)
+        close.assert_called_once_with(123)
 
     def test_runbook_fixed_reader_rejects_symlinks_and_wrong_owner(self):
         with tempfile.TemporaryDirectory() as temporary:

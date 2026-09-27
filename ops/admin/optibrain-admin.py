@@ -1,6 +1,7 @@
 #!/usr/bin/python3 -I
 """Root-owned, fixed-operation OptiBrain maintenance interface."""
 import datetime
+import fcntl
 import hashlib
 import json
 import os
@@ -38,6 +39,7 @@ RUNBOOK_AUTHORIZED_DIGEST = "/etc/optibrain/master-runbook.sha256"
 RUNBOOK_DESTINATION = "/opt/opticable-api-platform/docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md"
 RUNBOOK_BACKUP_DIR = "/var/lib/optibrain/admin-update/previous"
 RESTORE_DRILL = "/usr/local/lib/optibrain-backup/optibrain-restore-drill.py"
+BACKUP_LOCK = "/run/lock/optibrain-admin-backup.lock"
 SAFE_PATH = "/usr/sbin:/usr/bin:/sbin:/bin"
 _ACTOR = "root"
 _SECRET_ASSIGNMENT = re.compile(
@@ -222,6 +224,27 @@ def _require_backup_headroom():
         raise RuntimeError("manual backup paused: insufficient non-destructive retention headroom")
 
 
+def _run_manual_backup():
+    parent_stat = os.lstat(os.path.dirname(BACKUP_LOCK))
+    if (not stat.S_ISDIR(parent_stat.st_mode) or parent_stat.st_uid != 0 or parent_stat.st_gid != 0
+            or stat.S_IMODE(parent_stat.st_mode) & 0o022):
+        raise RuntimeError("unsafe backup coordination directory")
+    fd = os.open(BACKUP_LOCK, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+    try:
+        lock_stat = os.fstat(fd)
+        if (not stat.S_ISREG(lock_stat.st_mode) or lock_stat.st_uid != 0 or lock_stat.st_gid != 0
+                or stat.S_IMODE(lock_stat.st_mode) != 0o600 or lock_stat.st_nlink != 1):
+            raise RuntimeError("unsafe backup coordination lock")
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise RuntimeError("manual backup already running") from exc
+        _require_backup_headroom()
+        run([BACKUP_SCRIPT], timeout=3600, quiet=True)
+    finally:
+        os.close(fd)
+
+
 def execute(op):
     name = op[0]
     if name == "--self-test":
@@ -263,8 +286,7 @@ def execute(op):
     elif name == "backup":
         _validate_fixed_root_file(BACKUP_SCRIPT, 0o750)
         _validate_fixed_root_file("/etc/optibrain/backup.conf", 0o640)
-        _require_backup_headroom()
-        run([BACKUP_SCRIPT], timeout=3600, quiet=True)
+        _run_manual_backup()
         print("backup: completed")
     elif name == "verify-latest":
         archive = _latest_archive()

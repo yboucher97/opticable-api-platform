@@ -36,7 +36,7 @@ SELF_TEST_LINE_RE = re.compile(rb"OPTIBRAIN_ADMIN_SELF_TEST_OK [A-Za-z0-9._-]{1,
 APPROVED_POLICY_ID = b'ADMIN_POLICY_ID = "opticable-admin-helper-v1"'
 # Exact helper source approved by this updater build. To change the helper, a
 # human must review and install a new updater build with a new literal digest.
-APPROVED_HELPER_SHA256 = "82db435576cf5e77c1910eb3330852cc172d83874fff5e60a0f6b28fbf0e6cde"
+APPROVED_HELPER_SHA256 = "30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4"
 
 
 class UpdateError(Exception):
@@ -167,7 +167,7 @@ class AdminHelperUpdater:
         if any(marker not in source for marker in required_policy_markers):
             raise UpdateError("candidate_policy_marker_missing")
         class PolicyVisitor(ast.NodeVisitor):
-            allowed_modules = {"datetime", "hashlib", "json", "os", "pwd", "re", "resource",
+            allowed_modules = {"datetime", "fcntl", "hashlib", "json", "os", "pwd", "re", "resource",
                                "secrets", "signal", "shutil", "sqlite3", "stat", "subprocess",
                                "sys", "tempfile", "urllib"}
 
@@ -211,11 +211,18 @@ class AdminHelperUpdater:
                                for keyword in node.keywords):
                             raise UpdateError("candidate_policy_shell_execution")
                 if isinstance(node.func, ast.Name) and node.func.id == "run":
-                    if (self.function != "execute" or not node.args
-                            or not isinstance(node.args[0], ast.List)):
+                    if self.function == "_run_manual_backup":
+                        command = node.args[0] if node.args else None
+                        if (not isinstance(command, ast.List) or len(command.elts) != 1
+                                or not isinstance(command.elts[0], ast.Name)
+                                or command.elts[0].id != "BACKUP_SCRIPT"):
+                            raise UpdateError("candidate_policy_unapproved_command")
+                    elif (self.function != "execute" or not node.args
+                          or not isinstance(node.args[0], ast.List)):
                         raise UpdateError("candidate_policy_dynamic_command")
-                    command = node.args[0]
-                    if not command.elts:
+                    else:
+                        command = node.args[0]
+                    if self.function == "execute" and not command.elts:
                         raise UpdateError("candidate_policy_empty_command")
                     executable = command.elts[0]
                     allowed = {"/usr/bin/systemctl", "/usr/bin/df", "/usr/bin/sha256sum",

@@ -732,3 +732,32 @@ Next step is human-root review of the complete procedure and artifact manifest i
 Consolidated proposal source commit: `89960223b6d049f4a7cec98389b688023ab7f084`. Its finalized progress/recovery reference is `recovery/phase2b-consolidated-bootstrap-8996022`; both are finalized by the immediately following journal-only checkpoint commit. No installation or production mutation was part of either commit.
 
 Final resume checkpoint is the commit pointed to by recovery ref `recovery/phase2b-consolidated-bootstrap-8996022`; resolve its exact SHA with `git rev-parse recovery/phase2b-consolidated-bootstrap-8996022`. Final read-only production check after checkpoint: all three health endpoints HTTP 200; both backup timers active/enabled; local archive `optibrain-backup-20260927T130636Z.tar.gz` verified; queue count 109 completed. Noninteractive arbitrary root remains unavailable (`sudo -n true` requests a password). No production mutation occurred. Resume only after human-root review of the committed bootstrap procedure; do not install from this session.
+
+### Consolidated Phase 2B proposal follow-up: backup-run serialization
+
+Review of the admin-triggered backup path identified a concurrency race: two
+noninteractive helper invocations could otherwise both pass retention-headroom
+checks before either backup begins. The proposed helper now takes an exclusive,
+nonblocking lock at the one fixed path `/run/lock/optibrain-admin-backup.lock`,
+first validates the fixed `/run/lock` parent as a root-owned directory without
+group/world write, then opens the lock with `O_NOFOLLOW|O_CLOEXEC`, validates
+root ownership, regular-file type, single link and mode `0600`, checks retention
+and executes only the fixed backup script while holding the lock. The helper
+always closes the lock descriptor. The updater import policy and compiled helper
+digest were updated for this exact reviewed candidate. The Phase 2B proposal
+describes this serialization and continues to reserve two generations of
+retention headroom.
+
+Rootless test coverage now also asserts the fixed lock path, exclusive
+nonblocking flock, headroom-before-run ordering, fixed backup target and
+descriptor close. This lock serializes admin helper runs; it does not coordinate
+with the independent Phase 1 timer, so the two-slot retention guard remains
+necessary. Validation passes: ops/admin adversarial suite 28/28; restore-drill
+suite 2/2 (root ownership-only check skipped under non-root test user); isolated
+backup fixture; helper self-test; Python compile; `visudo -cf`; all artifact
+manifest hashes; and `git diff --check`. Workflow API regression suite passed
+75 tests and 18 subtests in the canonical `.venv` without dependency installs.
+Read-only live checks again showed workflow/PDF/Omada health HTTP 200, all three
+OptiBrain services active, and both backup timers active/enabled. No production
+state was changed. Resume at final review, commit the package and move
+`recovery/phase2b-consolidated-bootstrap-8996022` to the resulting checkpoint.
