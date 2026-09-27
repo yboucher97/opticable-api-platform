@@ -186,3 +186,64 @@ there are fewer than seven generations, so retention will delete nothing.
 Upload/download-hash the new generation with the tested uploader, then record
 production health, exact next operation and recovery reference before stopping at
 the human-only offline decryption boundary.
+
+### Completed: post-change local backup
+
+Implementation checkpoint: `f7ad1c2`. Phase 1 service completed successfully
+(exit 0), producing `optibrain-backup-20260927T021414Z.tar.gz` (269206822 bytes),
+including committed source and updated protected configuration. Original archive
+retained. Workflow/PDF/Omada services active and public health checks pass.
+Next operation (authorized above): uploader independently verifies this new local
+archive, encrypts/uploads it and verifies full remote downloads.
+
+### Completed: post-change off-host recovery copy
+
+Generation `20260927T021414Z` passed local checksum and full archive verification,
+AGE encryption, conditional object/manifest creation, and full downloaded-byte
+hash verification for both remote objects. File security verified: archive and
+checksum root:root 0600, backup directory root:root 0700. Timer is not installed
+(`LoadState=not-found`, inactive). The first remote generation is also retained.
+
+## Current handoff — authoritative next operation
+
+Status: HUMAN_ACTION_REQUIRED only for the offline AGE recovery drill. Phase 2A
+is not declared complete. Root access and credential provisioning are resolved.
+
+1. Human: use the matching offline identity on a separate trusted recovery machine
+   to decrypt generation `20260927T021414Z`, verify plaintext SHA-256, and perform
+   the isolated Phase 1 restore validation described in
+   `docs/OPTIBRAIN_PHASE2A_OFFHOST_RECOVERY.md`. Return non-secret results only.
+   Never place the identity on this VPS or send it to Codex.
+2. Resume: read this journal/runbook, verify live health, protected backup state,
+   and dedicated token scope. Record offline evidence. Then validate/install and
+   manually test the hardened upload service before timer activation. Retention
+   remains non-destructive; monitor retained spool and remote storage growth.
+3. Recover the full approved Phases 2B–12 program from the operator before those
+   phases; its title alone is recorded in this checkout. Do not invent its scope.
+
+Runtime: workflow 1.7.0, unchanged application deployment; local backup timer
+active/enabled. Implementation source checkpoint `f7ad1c2` is included in the new
+local/off-host generation. Final journal-only checkpoint follows this entry.
+Pre-change recovery: `recovery/pre-phase2a-overnight-9f9d801`.
+Final recovery reference: `recovery/post-phase2a-offhost-20260927` (resolve SHA).
+No remote Git push/PR or application deployment was performed.
+
+Preserved pre-existing untracked file:
+`ops/backup/optibrain-cloudflare-auth-diagnostic.sh` (not reviewed/deployed).
+All other reviewed Phase 2A implementation, tests and docs are committed.
+
+No Zoho mutations, financial actions, private AGE-key operations, remote data
+removal, firewall/SSH/auth/sudo policy changes, or production credential rotations.
+The dedicated recovery credential is new and bucket-restricted; production token
+is unchanged. This temporary sudo authorization has not been made permanent.
+
+### Independent checksum evidence and final health
+
+Latest verified remote object:
+`backups/2026/09/27/20260927T021414Z.tar.gz.age`
+
+- Ciphertext SHA-256: `4e75906e0791d192ab296eea1f1a8e814c59fe7c081cf488c1341ed7a2cb89ed`
+- Plaintext archive SHA-256: `c802d153a261e28f86440c718cddd06dfc1b7f19e157d72c058c7eaaede16792`
+- Remote verification completed: 2026-09-27T02:16:26Z.
+- Final public workflow/PDF/Omada responses successful; backup service result
+  success, exit 0; local backup timer active. No atomic operation remains running.
