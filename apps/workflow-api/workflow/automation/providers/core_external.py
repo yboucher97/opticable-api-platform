@@ -7,6 +7,7 @@ from ...cloudflare_api import CloudflareApiClient
 from ...github_api import GithubApiClient
 from ..engine import AutomationEngine
 from ..models import WorkflowStep
+from ..provider_evidence import attach_provider_operation_id
 from ..store import AutomationStore
 
 
@@ -32,6 +33,8 @@ def register_core_external_actions(
                 raise ValueError(f"{name} mutations require with.reason.")
             result = client.request(path, method, params=params, body=body)
             if method != "GET":
+                result = attach_provider_operation_id(result)
+            if method != "GET":
                 event = context.get("event") or {}
                 store.audit(
                     category="provider_mutation",
@@ -45,6 +48,7 @@ def register_core_external_actions(
                         "workflow_id": (context.get("workflow") or {}).get("id"),
                         "step_id": step.id,
                         "body_keys": sorted(body.keys()) if isinstance(body, dict) else [],
+                        "provider_operation_id": result.get("provider_operation_id"),
                     },
                 )
             return result
