@@ -80,6 +80,18 @@ The three VPS-backed endpoints were independently verified HTTP 200 from OPX001 
 7. Never expose API keys, OAuth refresh tokens, private keys, passwords, or full secret files in chat or Git.
 
 ## Important resolved failures
+- Phase 2B `restore-verify-latest` exposed a second checksum-format integration
+  defect after the digest-pinned helper was installed. Phase 1 writes a standard
+  sha256sum record whose filename is the absolute archive path. The helper's
+  restore path correctly constrained the archive command target but its local
+  parser accepted only the basename, so it rejected the sidecar before invoking
+  the isolated restore verifier. `sha256sum -c` and the archive itself were
+  valid. The compatibility repair parses exactly one lowercase digest, two
+  spaces, the exact already-selected absolute archive path and one newline;
+  basename-only records and any other path remain rejected. The verifier still
+  checks the archive bytes against the parsed digest. No historical archive or
+  sidecar should be rewritten. This is a C-class helper/updater release; see
+  `docs/OPTIBRAIN_PHASE2B_ROOT_BOOTSTRAP.md` for preflight, install and rollback.
 - Phase 2B bootstrap first updater attempt failed closed with audit code
   `invalid_digest_artifact`. The candidate's actual SHA-256 matched the
   updater's compiled approval exactly (`30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4`);

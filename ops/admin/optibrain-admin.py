@@ -146,13 +146,12 @@ def _validate_command(argv):
     elif executable == "/usr/bin/df" and args == ["-h", "/var/backups/optibrain", "/var/lib/optibrain"]:
         return
     elif executable == "/usr/bin/sha256sum" and len(args) == 2 and args[0] == "-c":
-        if re.fullmatch(r"/var/backups/optibrain/optibrain-backup-[0-9]{8}T[0-9]{6}Z\.tar\.gz\.sha256", args[1]):
+        if args[1].endswith(".sha256") and _is_fixed_backup_archive(args[1][:-7]):
             return
     elif executable == BACKUP_SCRIPT:
         if args == []:
             return
-        if len(args) == 2 and args[0] == "--verify" and re.fullmatch(
-                r"/var/backups/optibrain/optibrain-backup-[0-9]{8}T[0-9]{6}Z\.tar\.gz", args[1]):
+        if len(args) == 2 and args[0] == "--verify" and _is_fixed_backup_archive(args[1]):
             return
     elif executable == "/usr/bin/journalctl":
         if (len(args) == 7 and args[0:3] == ["--no-pager", "--output=short-iso", "--unit"]
@@ -161,10 +160,85 @@ def _validate_command(argv):
                 and int(args[5]) <= 200 and args[6] == "--quiet"):
             return
     elif executable == "/usr/bin/python3" and len(args) == 4 and args[0] == "-I" and args[1] == RESTORE_DRILL:
-        if (re.fullmatch(r"/var/backups/optibrain/optibrain-backup-[0-9]{8}T[0-9]{6}Z\.tar\.gz", args[2])
+        if (_is_fixed_backup_archive(args[2])
                 and re.fullmatch(r"[0-9a-f]{64}", args[3])):
             return
     raise RuntimeError("command is outside the fixed OptiBrain command policy")
+
+
+def _is_fixed_backup_archive(path):
+    """Accept only the exact absolute archive names directly in BACKUP_DIR."""
+    if not isinstance(path, str):
+        return False
+    pattern = re.escape(BACKUP_DIR.rstrip("/")) + r"/optibrain-backup-[0-9]{8}T[0-9]{6}Z\.tar\.gz"
+    return re.fullmatch(pattern, path) is not None
+
+
+def _parse_backup_sidecar(data, archive):
+    """Parse one standard sha256sum record bound to the selected absolute archive."""
+    if not _is_fixed_backup_archive(archive):
+        raise RuntimeError("backup path is not fixed")
+    match = re.fullmatch(rb"([0-9a-f]{64})  ([^\r\n]+)\n", data)
+    if not match:
+        raise RuntimeError("backup digest sidecar invalid")
+    try:
+        filename = match.group(2).decode("ascii")
+    except UnicodeDecodeError as exc:
+        raise RuntimeError("backup digest sidecar invalid") from exc
+    # Basename-only records are intentionally unsupported. The reviewed Phase 1
+    # writer hashes an absolute path, and exact equality prevents path remapping.
+    if filename != archive:
+        raise RuntimeError("backup digest sidecar path mismatch")
+    return match.group(1).decode("ascii")
+
+
+def _read_backup_sidecar(archive):
+    """Read the selected archive and its root-only sidecar without following links."""
+    if not _is_fixed_backup_archive(archive):
+        raise RuntimeError("backup path is not fixed")
+    trusted_uid = os.geteuid()
+    trusted_gid = pwd.getpwuid(trusted_uid).pw_gid
+    directory = os.lstat(BACKUP_DIR)
+    if (not stat.S_ISDIR(directory.st_mode) or directory.st_uid != trusted_uid
+            or directory.st_gid != trusted_gid or stat.S_IMODE(directory.st_mode) != 0o700):
+        raise RuntimeError("backup directory policy mismatch")
+    archive_stat = os.lstat(archive)
+    if (not stat.S_ISREG(archive_stat.st_mode) or archive_stat.st_uid != trusted_uid
+            or archive_stat.st_gid != trusted_gid or stat.S_IMODE(archive_stat.st_mode) != 0o600
+            or archive_stat.st_nlink != 1):
+        raise RuntimeError("unsafe fixed backup archive")
+    sidecar = archive + ".sha256"
+    before = os.lstat(sidecar)
+    if (not stat.S_ISREG(before.st_mode) or before.st_uid != trusted_uid
+            or before.st_gid != trusted_gid or stat.S_IMODE(before.st_mode) != 0o600
+            or before.st_nlink != 1 or before.st_size > 256):
+        raise RuntimeError("unsafe fixed backup sidecar")
+    fd = os.open(sidecar, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        opened = os.fstat(fd)
+        if ((opened.st_dev, opened.st_ino, opened.st_uid, opened.st_gid, opened.st_nlink)
+                != (before.st_dev, before.st_ino, trusted_uid, trusted_gid, 1)
+                or not stat.S_ISREG(opened.st_mode)
+                or stat.S_IMODE(opened.st_mode) != 0o600 or opened.st_size > 256):
+            raise RuntimeError("backup sidecar changed during open")
+        chunks = []
+        total = 0
+        while True:
+            chunk = os.read(fd, min(257 - total, 257))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            total += len(chunk)
+            if total > 256:
+                raise RuntimeError("backup sidecar too large")
+        after = os.fstat(fd)
+        if ((opened.st_dev, opened.st_ino, opened.st_size, opened.st_mtime_ns)
+                != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns)
+                or total != after.st_size):
+            raise RuntimeError("backup sidecar changed during read")
+        return _parse_backup_sidecar(b"".join(chunks), archive)
+    finally:
+        os.close(fd)
 
 
 def _redact(data):
@@ -297,12 +371,8 @@ def execute(op):
     elif name == "restore-verify-latest":
         archive = _latest_archive()
         _validate_fixed_root_file(RESTORE_DRILL, 0o750)
-        sidecar = archive + ".sha256"
-        with open(sidecar, "r", encoding="ascii") as handle:
-            match = re.fullmatch(r"([0-9a-f]{64})  optibrain-backup-[0-9]{8}T[0-9]{6}Z\.tar\.gz\n", handle.read())
-        if not match:
-            raise RuntimeError("backup digest sidecar invalid")
-        run(["/usr/bin/python3", "-I", RESTORE_DRILL, archive, match.group(1)], timeout=3600, quiet=False)
+        digest = _read_backup_sidecar(archive)
+        run(["/usr/bin/python3", "-I", RESTORE_DRILL, archive, digest], timeout=3600, quiet=False)
     elif name == "upload":
         run(["/usr/bin/systemctl", "start", "--wait", UPLOAD_SERVICE], timeout=3600, quiet=True)
         print("off-host verification: completed")
@@ -563,16 +633,22 @@ def _validate_runbook_staging():
 
 def _latest_archive():
     directory_stat = os.lstat(BACKUP_DIR)
-    if (not stat.S_ISDIR(directory_stat.st_mode) or directory_stat.st_uid != 0
-            or stat.S_IMODE(directory_stat.st_mode) != 0o700):
+    trusted_uid = os.geteuid()
+    trusted_gid = pwd.getpwuid(trusted_uid).pw_gid
+    if (not stat.S_ISDIR(directory_stat.st_mode) or directory_stat.st_uid != trusted_uid
+            or directory_stat.st_gid != trusted_gid or stat.S_IMODE(directory_stat.st_mode) != 0o700):
         raise RuntimeError("backup directory policy mismatch")
     files = [f for f in os.listdir(BACKUP_DIR) if re.fullmatch(r"optibrain-backup-[0-9]{8}T[0-9]{6}Z\.tar\.gz", f)]
     if not files:
         raise RuntimeError("no archive available")
     archive = os.path.join(BACKUP_DIR, max(files))
+    if not _is_fixed_backup_archive(archive):
+        raise RuntimeError("unsafe fixed backup path")
     for path in (archive, archive + ".sha256"):
         item = os.lstat(path)
-        if (not stat.S_ISREG(item.st_mode) or item.st_uid != 0 or item.st_nlink != 1):
+        if (not stat.S_ISREG(item.st_mode) or item.st_uid != trusted_uid
+                or item.st_gid != trusted_gid or stat.S_IMODE(item.st_mode) != 0o600
+                or item.st_nlink != 1):
             raise RuntimeError("unsafe fixed backup input")
     return archive
 

@@ -822,3 +822,62 @@ pins`). The finalized checkpoint is the commit containing this final recovery
 entry, referenced by `recovery/phase2b-digest-fix`. Repair remains pending a
 human root operator; this preparation session stopped before any root or
 production changes.
+
+### Phase 2B restore sidecar compatibility release — 2026-09-27
+
+After the digest-format correction was installed, production remained healthy
+and the new helper self-test, scheduler and `verify-latest` passed. The reviewed
+restore verifier had its expected installed hash and the latest archive passed
+standard `sha256sum -c`. `restore-verify-latest` failed before invoking that
+verifier because its local sidecar parser expected the filename basename, but
+Phase 1 writes the absolute archive path. No archive or historical sidecar is
+to be modified.
+
+The helper now parses exactly one standard record and requires its filename to
+equal the absolute archive selected by `_latest_archive()`. It rejects
+basename-only legacy records, other valid archive paths, relative paths,
+traversal, whitespace variants, uppercase/malformed hashes, extra records and
+substitution. It opens the root-only sidecar without following symlinks and
+checks file identity/metadata while reading. The isolated restore verifier
+checks the actual archive bytes against the parsed digest. The reviewed
+updater's compiled approval was updated for the new helper.
+
+Incident baseline hashes: installed helper
+`30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4`, installed
+updater `3594770351bd2a96cda822a4242587cb265894906255cfc61f28a7fff1a54086`, and
+installed restore verifier
+`58f9e2305329326c5dfdbb88af4d1535f33fda3f9fb6d03163212b7929fc7db6`. Prepared
+release hashes: helper
+`b6313a79357afed164d3d7bfd363dd14403b3c8853927c721370e1e94df17244`; updater
+`8f1f2fdecb8603f94f746532ecfa2b90a26f9ee4e57b3d6e70e74509e166dfe6`. Raw
+helper pin content is `b6313a79357afed164d3d7bfd363dd14403b3c8853927c721370e1e94df17244`;
+updater review-sidecar content is
+`8f1f2fdecb8603f94f746532ecfa2b90a26f9ee4e57b3d6e70e74509e166dfe6`; updated
+master-runbook pin content is
+`cdab559d264fb7a17c469fd10953827a98a24ac4a926939db1055522a6dfc085`. Their
+file hashes respectively are `ed345cbc39b64ca133a791e64a375d3cc43c4a1561cc4ddecac51865926ca3ea`,
+`c644fa42d3ca692c61405bf1ee4a4e34d42471336470c9f11f5ec8960f368b51`, and
+`4b3e07a8e917c17734cc19340476a17b44336f02fa80f9ea7e1ba2fd297779b0`. The
+standard bootstrap manifest file hash is
+`bed5135c44a3bf59810eaf90a73e13f7a18d31d26a8d120d7e0a80c54fab5996` and is
+regenerated for all listed artifacts.
+
+Verification passed: ops/admin adversarial suite `37/37`; restore-drill tests
+`2/2`; backup shell fixture passed (root-only ownership case skipped because
+the test process is non-root); workflow API suite in the repository `.venv`
+`75 passed, 18 subtests passed`; Python compilation; proposed sudoers parse;
+raw pin equality; standard artifact manifest; and `git diff --check`. The
+representative Phase 1 archive fixture reached and passed the real isolated
+restore verifier. Wrong digest and post-selection archive substitution failed
+closed. Production facts in this entry are those supplied for the incident;
+this preparation did not run a production probe, write an archive or sidecar,
+or make any root/provider/timer/service change.
+
+This is a C-class helper/updater release. Human-root installation must replace
+the staged candidate and helper pin, installed updater and its preserved
+recovery copy, root helper authorization pin, updated staged master runbook and
+its root pin; then run the helper update transaction and fixed runbook sync.
+The restore verifier, sudoers, previous sudoers backup, both timers and all
+provider/R2/AGE state stay as installed. Recovery instructions are in
+`docs/OPTIBRAIN_PHASE2B_ROOT_BOOTSTRAP.md`. Do not mark Phase 2B complete until
+human installation and production validation pass.

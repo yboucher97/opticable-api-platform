@@ -123,9 +123,12 @@ Digest consumer inventory: `optibrain-admin-update.py::_parse_digest` consumes
 lowercase pins. `optibrain-admin.py::sync_master_runbook` consumes the staged
 `master-runbook.sha256` and `/etc/optibrain/master-runbook.sha256` with the same
 strict raw syntax. `sha256sum -c` consumes `ROOT_BOOTSTRAP_SHA256SUMS` and backup
-archive sidecars in standard manifest syntax. Python per-file manifest entries
-and the updater's `.sha256` review sidecar are raw digest values. This separation
-is tested so the formats cannot silently converge again.
+archive sidecars in standard manifest syntax. `restore-verify-latest` parses
+exactly one standard sha256sum record with an absolute filename equal byte for
+byte to the selected archive path; basename-only records and alternate paths
+are rejected. The updater's `.sha256` review sidecar is raw and has no runtime
+consumer. This separation is tested so the formats cannot silently converge
+again.
 
 No AGE identity, provider credential, or other secret is an installation
 artifact. The restore script is installed root-only because the helper invokes
@@ -259,6 +262,159 @@ Leave the helper authorization pin and all backup generations in place for
 review. The runbook pin is restored to the digest matching the prior document.
 The sudoers drop-in and its immutable
 `90-optibrain-admin.pre-consolidated` backup are not touched by this repair.
+
+## C-class restore-sidecar compatibility release
+
+The later `restore-verify-latest` failure was caused by a parser mismatch. Phase
+1 writes standard sha256sum records using the absolute archive path; the helper
+accepted only the basename. The corrected helper accepts one exact record bound
+to the archive selected by `_latest_archive()`: 64 lowercase hex characters,
+two spaces, that exact absolute path, and one final newline. It rejects
+basename-only records, alternate paths, extra records, malformed spacing and
+uppercase digests. The isolated verifier independently checks the archive
+contents against the digest. Existing archives and sidecars stay immutable.
+The reviewed helper SHA-256 is
+`b6313a79357afed164d3d7bfd363dd14403b3c8853927c721370e1e94df17244`; its
+reviewed updater SHA-256 is
+`8f1f2fdecb8603f94f746532ecfa2b90a26f9ee4e57b3d6e70e74509e166dfe6`.
+
+The approved helper release changes its digest, so the installed updater must
+also be replaced with the separately reviewed updater containing the new
+`APPROVED_HELPER_SHA256`. This is a human-root C-class transition. No production
+change was made while preparing this package. The exact reviewed helper and
+updater hashes are recorded in the checkpoint report and bootstrap manifest.
+
+The preflight below is for the post-digest-fix partial state: helper
+`30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4`, updater
+`3594770351bd2a96cda822a4242587cb265894906255cfc61f28a7fff1a54086`, and
+restore verifier
+`58f9e2305329326c5dfdbb88af4d1535f33fda3f9fb6d03163212b7929fc7db6`. Confirm
+the current helper health, scheduler, archive verification, timer state,
+sudoers and archive checksum. `restore-verify-latest` is expected to fail on
+this old helper until this release is installed.
+
+```bash
+cd /opt/opticable-api-platform
+git rev-parse HEAD
+sha256sum -c ops/admin/ROOT_BOOTSTRAP_SHA256SUMS
+sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin --self-test
+sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin health
+sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin scheduler
+sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin verify-latest
+if sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin restore-verify-latest; then echo 'Unexpected: prior restore parser passed'; else echo 'Expected: prior restore parser rejects absolute sidecar filename'; fi
+sudo systemctl is-active optibrain-backup.timer optibrain-phase2a-upload.timer
+sudo systemctl is-enabled optibrain-backup.timer optibrain-phase2a-upload.timer
+sudo visudo -c
+sudo sha256sum /usr/local/sbin/optibrain-admin /usr/local/sbin/optibrain-admin-update /usr/local/lib/optibrain-backup/optibrain-restore-drill.py
+sudo sha256sum -c /var/backups/optibrain/optibrain-backup-20260927T130636Z.tar.gz.sha256
+test "$(sudo cat /etc/optibrain/admin-helper.sha256)" = 30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4
+test "$(sudo cat /etc/optibrain/master-runbook.sha256)" = 23b5dbdcc886a19cba35c57c5a9be51ce64090b2ed0e370b39f7289753c9439e
+```
+
+If the production latest archive is no longer
+`optibrain-backup-20260927T130636Z.tar.gz`, run the installed `verify-latest`
+operation as above and use its currently selected archive for the direct
+`sha256sum -c` check. Do not alter any archive or sidecar. Stop if preflight
+health, timers, hashes, checksum or sudoers validity differ from the expected
+state.
+
+Before installing, recheck the checkpoint SHA and manifest. Record the exact
+old updater backup path; do not overwrite an existing recovery generation.
+Stage the reviewed helper and runbook files, save the old updater under its
+digest-derived recovery name, then install the new updater and authorization
+pins. The existing sudoers rule already names the same updater path and needs
+no change.
+
+```bash
+git rev-parse HEAD
+sha256sum -c ops/admin/ROOT_BOOTSTRAP_SHA256SUMS
+test "$(sha256sum ops/admin/optibrain-admin.py | cut -d' ' -f1)" = "$(cat ops/admin/optibrain-admin.sha256)"
+test "$(sha256sum ops/admin/optibrain-admin-update.py | cut -d' ' -f1)" = "$(cat ops/admin/optibrain-admin-update.sha256)"
+test "$(sha256sum docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md | cut -d' ' -f1)" = "$(cat ops/admin/master-runbook.sha256)"
+visudo -cf ops/admin/optibrain-admin-update.sudoers
+sudo test ! -e /var/lib/optibrain/admin-update/previous/optibrain-admin-update-3594770351bd2a96.py
+sudo test ! -L /var/lib/optibrain/admin-update/previous/optibrain-admin-update-3594770351bd2a96.py
+sudo install -o optibrain -g optibrain -m 0440 ops/admin/optibrain-admin.py /var/tmp/optibrain-admin-update/incoming/candidate.py
+sudo install -o optibrain -g optibrain -m 0440 ops/admin/optibrain-admin.sha256 /var/tmp/optibrain-admin-update/incoming/candidate.sha256
+sudo install -o optibrain -g optibrain -m 0440 docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md /var/tmp/optibrain-admin-update/incoming/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md
+sudo install -o optibrain -g optibrain -m 0440 ops/admin/master-runbook.sha256 /var/tmp/optibrain-admin-update/incoming/master-runbook.sha256
+sudo install -o root -g root -m 0750 /usr/local/sbin/optibrain-admin-update /var/lib/optibrain/admin-update/previous/optibrain-admin-update-3594770351bd2a96.py
+sudo install -o root -g root -m 0750 ops/admin/optibrain-admin-update.py /usr/local/sbin/optibrain-admin-update
+sudo install -o root -g root -m 0440 ops/admin/optibrain-admin.sha256 /etc/optibrain/admin-helper.sha256
+sudo install -o root -g root -m 0440 ops/admin/master-runbook.sha256 /etc/optibrain/master-runbook.sha256
+test "$(sudo sha256sum /usr/local/sbin/optibrain-admin-update | cut -d' ' -f1)" = "$(cat ops/admin/optibrain-admin-update.sha256)"
+sudo sha256sum /var/tmp/optibrain-admin-update/incoming/candidate.py /etc/optibrain/admin-helper.sha256
+sudo -k
+sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin-update
+sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin sync-master-runbook
+```
+
+Expected updater success reports the new helper hash, self-test passed, and a
+preserved previous-helper path whose suffix is
+`-30aad73bb2b56a11.py`. Expected runbook sync output is the SHA-256 in the
+updated `master-runbook.sha256`, currently
+`master runbook synchronized: sha256=cdab559d264fb7a17c469fd10953827a98a24ac4a926939db1055522a6dfc085`.
+
+Post-install validation:
+
+```bash
+sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin --self-test
+sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin health
+sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin scheduler
+sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin verify-latest
+sudo -u optibrain /usr/bin/sudo -n /usr/local/sbin/optibrain-admin restore-verify-latest
+sudo sha256sum /usr/local/sbin/optibrain-admin /usr/local/sbin/optibrain-admin-update /usr/local/lib/optibrain-backup/optibrain-restore-drill.py
+test "$(sudo sha256sum /usr/local/sbin/optibrain-admin | cut -d' ' -f1)" = b6313a79357afed164d3d7bfd363dd14403b3c8853927c721370e1e94df17244
+test "$(sudo sha256sum /usr/local/sbin/optibrain-admin-update | cut -d' ' -f1)" = 8f1f2fdecb8603f94f746532ecfa2b90a26f9ee4e57b3d6e70e74509e166dfe6
+test "$(sudo sha256sum /usr/local/lib/optibrain-backup/optibrain-restore-drill.py | cut -d' ' -f1)" = 58f9e2305329326c5dfdbb88af4d1535f33fda3f9fb6d03163212b7929fc7db6
+test "$(sha256sum docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md | cut -d' ' -f1)" = "$(sudo cat /etc/optibrain/master-runbook.sha256)"
+sudo visudo -c
+sudo systemctl is-active optibrain-backup.timer optibrain-phase2a-upload.timer
+sudo systemctl is-enabled optibrain-backup.timer optibrain-phase2a-upload.timer
+curl --fail --silent --show-error https://optibrain.opticable.ca/v1/system/health
+curl --fail --silent --show-error https://optibrain.opticable.ca/pdf/health
+curl --fail --silent --show-error https://optibrain.opticable.ca/omada/api/health
+```
+
+Run all negative privilege tests in the post-install validation section above.
+The helper and updater must match their reviewed hashes; the restore verifier
+must retain hash
+`58f9e2305329326c5dfdbb88af4d1535f33fda3f9fb6d03163212b7929fc7db6`.
+
+Rollback: the updater restores the exact previous helper automatically if its
+transaction fails. For a later failed validation, substitute the exact
+`preserved_previous` helper path printed by the updater and run:
+
+```bash
+HELPER_BACKUP='/var/lib/optibrain/admin-update/previous/<exact-printed-helper-backup>.py'
+UPDATER_BACKUP='/var/lib/optibrain/admin-update/previous/optibrain-admin-update-3594770351bd2a96.py'
+test "$(sudo sha256sum "$HELPER_BACKUP" | cut -d' ' -f1)" = 30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4
+test "$(sudo sha256sum "$UPDATER_BACKUP" | cut -d' ' -f1)" = 3594770351bd2a96cda822a4242587cb265894906255cfc61f28a7fff1a54086
+sudo install -o root -g root -m 0750 "$HELPER_BACKUP" /usr/local/sbin/.optibrain-admin.rollback
+sudo mv -fT /usr/local/sbin/.optibrain-admin.rollback /usr/local/sbin/optibrain-admin
+sudo install -o root -g root -m 0750 "$UPDATER_BACKUP" /usr/local/sbin/.optibrain-admin-update.rollback
+sudo mv -fT /usr/local/sbin/.optibrain-admin-update.rollback /usr/local/sbin/optibrain-admin-update
+printf '%s\n' 30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4 > /tmp/optibrain-helper.rollback.sha256
+sudo install -o root -g root -m 0440 /tmp/optibrain-helper.rollback.sha256 /etc/optibrain/admin-helper.sha256
+sudo install -o optibrain -g optibrain -m 0440 /tmp/optibrain-helper.rollback.sha256 /var/tmp/optibrain-admin-update/incoming/candidate.sha256
+```
+
+If runbook sync succeeded, use the exact previous-copy path created by that
+sync, verify its old digest, restore the document, and reset both runbook pins:
+
+```bash
+RUNBOOK_BACKUP='/var/lib/optibrain/admin-update/previous/<exact-master-runbook-backup-ending-23b5dbdcc886a19c>.md'
+test "$(sudo sha256sum "$RUNBOOK_BACKUP" | cut -d' ' -f1)" = 23b5dbdcc886a19cba35c57c5a9be51ce64090b2ed0e370b39f7289753c9439e
+sudo install -o root -g root -m 0644 "$RUNBOOK_BACKUP" /opt/opticable-api-platform/docs/.OPTICABLE_AUTOMATION_MASTER_RUNBOOK.rollback
+sudo mv -fT /opt/opticable-api-platform/docs/.OPTICABLE_AUTOMATION_MASTER_RUNBOOK.rollback /opt/opticable-api-platform/docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md
+printf '%s\n' 23b5dbdcc886a19cba35c57c5a9be51ce64090b2ed0e370b39f7289753c9439e > /tmp/optibrain-runbook.rollback.sha256
+sudo install -o root -g root -m 0440 /tmp/optibrain-runbook.rollback.sha256 /etc/optibrain/master-runbook.sha256
+sudo install -o optibrain -g optibrain -m 0440 /tmp/optibrain-runbook.rollback.sha256 /var/tmp/optibrain-admin-update/incoming/master-runbook.sha256
+```
+
+Retain both temporary rollback pin files for inspection and keep all recovery
+generations and the pre-consolidated sudoers backup. Do not change sudoers
+during rollback; its command paths are unchanged.
 
 ## Exact one-time human-root installation procedure
 

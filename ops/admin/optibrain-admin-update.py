@@ -36,7 +36,7 @@ SELF_TEST_LINE_RE = re.compile(rb"OPTIBRAIN_ADMIN_SELF_TEST_OK [A-Za-z0-9._-]{1,
 APPROVED_POLICY_ID = b'ADMIN_POLICY_ID = "opticable-admin-helper-v1"'
 # Exact helper source approved by this updater build. To change the helper, a
 # human must review and install a new updater build with a new literal digest.
-APPROVED_HELPER_SHA256 = "30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4"
+APPROVED_HELPER_SHA256 = "b6313a79357afed164d3d7bfd363dd14403b3c8853927c721370e1e94df17244"
 
 
 class UpdateError(Exception):
