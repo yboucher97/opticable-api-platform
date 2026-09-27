@@ -173,6 +173,51 @@ replay a run, and does not change root privileges or Phase 1/2A timers.
 4. Expand business-event sources (website/forms/email/CRM) into the durable control plane.
 5. Keep this runbook and config/automation/production-state.yaml current after material changes.
 
+## Phase 2B incident recovery lessons
+
+The digest-format failure was an authorization-artifact encoding defect:
+`sha256sum -c ops/admin/ROOT_BOOTSTRAP_SHA256SUMS` correctly consumes manifest
+records, while the updater consumes only a raw lowercase digest. The audit code
+was `invalid_digest_artifact`; the candidate bytes already matched the compiled
+helper digest. The corrective action was to regenerate only the raw helper pin,
+verify it against the reviewed candidate and compiled updater literal, then
+rerun the fixed updater. Its own transaction preserves/restores exact previous
+helper bytes on failure. Do not repeat first-install sudoers, timer or updater
+steps after this partial-state failure.
+
+The audit-directory and runbook-metadata gates failed closed when on-disk
+preconditions did not match the helper policy. Diagnosis is a fixed-path
+`stat -c '%n %a %U:%G'` and root-audit inspection, followed by a reviewed
+repair of only the mismatched ownership/mode and a repeat self-test or
+`sync-master-runbook`. The audit file must remain root:root 0600 in a root:root
+0700 directory. For runbook sync, keep the source/pin staged optibrain:optibrain
+0440, root pin root:root 0440 and destination root:root 0644; verify the
+canonical directory chain and exact digest. The sync preserves the previous
+runbook under `/var/lib/optibrain/admin-update/previous/`; use that verified
+copy for rollback, then recheck its root pin, metadata and helper health. The
+exact former bad metadata values and historical repair shell commands are not
+preserved in Git, so no more specific claim is made.
+
+The restore-sidecar failure was a second parser/producer mismatch: Phase 1
+generated `sha256sum "${archive}" >"${archive}.sha256"` with an absolute path,
+and `sha256sum -c` passed, but the old helper accepted only a basename. The
+reviewed helper now accepts one strict record whose path equals the archive it
+already selected, checks the digest and passes it to the isolated verifier.
+Historical archives and sidecars were not rewritten. The helper release
+required a matching digest-pinned updater; both old root binaries were
+preserved. If this release must be rolled back, verify the exact prior helper,
+updater and root pin together from the recorded copies, then run self-test,
+`verify-latest`, isolated restore on a fresh generation where appropriate,
+health and both timer checks. Keep the broad sudoers backup offline.
+
+These incidents establish a release rule: test the producer and parser together
+with actual production-shaped artifacts; verify path, owner, mode and pin
+preconditions before attempting a privileged transaction; treat a fail-closed
+audit code as recovery evidence; and never rewrite immutable backups to make
+a new parser pass. Exact installation and rollback command sequences remain in
+`docs/OPTIBRAIN_PHASE2B_ROOT_BOOTSTRAP.md`.
+
+
 
 ## OptiBrain recovery hardening — 2026-09-27
 
