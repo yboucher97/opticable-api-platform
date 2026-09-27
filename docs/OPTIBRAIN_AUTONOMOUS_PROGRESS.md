@@ -1097,3 +1097,33 @@ Validation: workflow pytest 93 tests plus 18 subtests, CI-style unittest 79/79,
 ops/admin adversarial 37/37, restore drill 2/2, Phase 1 backup fixture,
 Phase 2A uploader 9/9 plus bucket/R2 fixtures, Python compilation, proposed
 sudoers parse, artifact manifest and `git diff --check` all passed.
+
+### Phase 3 executor/schema release candidate — review only
+
+The next C-class candidate integrates claims, pre-action logical identity,
+fenced completion, append-only failure history and bounded retry into the
+actual `AutomationEngine` execution path. It remains **undeployed**; production
+is still the known-good application `e5143d3`. A bounded background scanner
+recovers only queued runs with an immutable definition snapshot and expired
+claims that definitely never started. Any expired claim with a step marker is
+isolated for human reconciliation. Only pure core actions and explicit
+read-only Windsor actions opt into classified transient retry. Other provider
+actions, including writes, run at most once and enter human review when the
+external result is ambiguous. No bulk redrive or provider-native idempotency
+assumption was added.
+
+The schema review retained two necessary tables: claims for cross-process
+worker/attempt leases, and append-only failures for classified attempt and
+terminal decisions. An existing step record supplies the durable started
+marker, so its duplicate claim flag was removed. Two nullable step columns
+hold a stable logical action digest and optional provider operation ID. The
+forward migration is additive, versioned and transactional; an e514 code
+rollback leaves the new metadata intact. Production data has not been
+migrated. Detailed release, forward-migration, recovery, runbook-ownership
+and post-deployment review gates are in
+`docs/OPTIBRAIN_PHASE3_EXECUTOR_RELEASE_CANDIDATE.md`.
+Initial review validation passed workflow pytest 108 tests plus 21 subtests,
+CI-style unittest 94/94, ops/admin adversarial 37/37, restore drill 2/2,
+Phase 1 backup, Phase 2A uploader 9/9 and bucket/R2 fixtures, compilation,
+sudoers parse, manifest and diff-check. The final isolated app-only candidate
+requires its own complete validation before deployment approval.

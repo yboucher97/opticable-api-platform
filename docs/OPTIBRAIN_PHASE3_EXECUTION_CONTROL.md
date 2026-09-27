@@ -122,3 +122,19 @@ retry/backoff and rate-limit behavior, dead-letter visibility and controlled
 redrive, stale-job and liveness alerts, reboot recovery, dependency-outage and
 poison-event drills, and human escalation. A passing unit suite or a healthy
 endpoint alone cannot establish those properties.
+
+### Integrated executor release candidate (not deployed)
+
+The subsequent C-class source candidate wires the claims and failure ledger
+into `AutomationEngine`, retains a stable action digest before each handler,
+and adds bounded startup/periodic recovery of never-started work. It stores
+an immutable queued definition in existing run context, adds only two nullable
+step columns, and uses transactional `PRAGMA user_version=1` migration for
+claims and append-only failure history. An expired started action is never
+replayed automatically. Pure core and explicitly read-only Windsor actions
+can use classified finite retries; unproven external writes cannot. The
+candidate is not on production and does not establish provider-native
+idempotency for write adapters. See
+`docs/OPTIBRAIN_PHASE3_EXECUTOR_RELEASE_CANDIDATE.md` for schema proof,
+rollback/recovery and C-class validation gates. The older prototype sections
+above remain as development history, not a description of production.

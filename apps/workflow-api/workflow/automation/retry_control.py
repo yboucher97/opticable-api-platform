@@ -48,6 +48,8 @@ def classify_failure(*, http_status: int | None = None,
 def _retry_after_seconds(value: str, now: datetime) -> float:
     stripped = value.strip()
     if stripped.isascii() and stripped.isdecimal():
+        if len(stripped) > 9:
+            raise ValueError("Retry-After exceeds bounded cooldown")
         return float(int(stripped))
     try:
         date = parsedate_to_datetime(stripped)

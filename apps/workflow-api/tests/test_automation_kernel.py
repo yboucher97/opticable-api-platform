@@ -3,13 +3,14 @@ from __future__ import annotations
 import tempfile
 import threading
 import unittest
+import yaml
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
 from workflow.automation.capabilities import capability_summary, load_capabilities
 from workflow.automation.engine import AutomationEngine
-from workflow.automation.models import AutomationEvent
+from workflow.automation.models import AutomationEvent, WorkflowDefinition
 from workflow.automation.store import AutomationStore
 
 
@@ -75,6 +76,10 @@ steps:
         self.assertEqual(run["status"], "completed")
         self.assertEqual([step["status"] for step in run["steps"]], ["completed", "completed"])
         self.assertEqual(run["context"]["vars"]["answer"], 42)
+        definition = WorkflowDefinition.model_validate(yaml.safe_load(
+            (self.workflows / "smoke.yaml").read_text()))
+        repeated = engine._action_emit(run["context"], definition.steps[1])
+        self.assertTrue(repeated["duplicate"])
 
     def test_idempotency_prevents_duplicate_run(self) -> None:
         self._write_smoke_workflow()
@@ -174,11 +179,13 @@ steps:
             conn.execute("UPDATE automation_runs SET status='failed' WHERE run_id=?", (failed,))
         snapshot = self.store.execution_health(now=datetime(2026, 9, 27, 16, tzinfo=timezone.utc))
         self.assertEqual(snapshot, {"total": 3, "queued": 1, "claimed": 0, "running": 1,
+                                    "completed": 0, "recent_failure_count": 0,
                                     "failed": 1, "partial": 0, "dead_letter": 0,
                                     "human_action_required": 0, "stale_queued": 1,
                                     "stale_running": 1, "expired_leases": 0,
                                     "oldest_queued_age_seconds": 3600,
-                                    "oldest_running_age_seconds": 7200})
+                                    "oldest_running_age_seconds": 7200,
+                                    "oldest_claim_age_seconds": 0})
         self.assertEqual(len(self.store.recent_runs()), 3)
         with self.assertRaises(ValueError):
             self.store.execution_health(now=datetime(2026, 9, 27, 16))
@@ -200,7 +207,7 @@ steps:
                          {"requeued": 1, "human_action_required": 0})
         self.assertEqual(self.store.get_run(run_id)["status"], "queued")
         self.assertIsNone(self.store.begin_claimed_action(
-            run_id, old_token, step_id="set_value", action="core.set", attempt=1,
+            run_id, old_token, step_id="set_value", action="core.set", action_identity="a" * 64, attempt=1,
             now=clock + timedelta(seconds=6)))
         new_token = self.store.claim_run(run_id, "worker-2", now=clock + timedelta(seconds=6))
         self.assertNotEqual(new_token, old_token)
@@ -215,10 +222,10 @@ steps:
         clock = datetime(2026, 9, 27, 16, tzinfo=timezone.utc)
         token = self.store.claim_run(run_id, "worker-1", now=clock, lease_seconds=5)
         marker = self.store.begin_claimed_action(
-            run_id, token, step_id="set_value", action="core.set", attempt=1, now=clock)
+            run_id, token, step_id="set_value", action="core.set", action_identity="a" * 64, attempt=1, now=clock)
         self.assertIsInstance(marker, int)
         self.assertIsNone(self.store.begin_claimed_action(
-            run_id, token, step_id="set_value", action="core.set", attempt=1, now=clock))
+            run_id, token, step_id="set_value", action="core.set", action_identity="a" * 64, attempt=1, now=clock))
         self.assertEqual(self.store.recover_expired_claims(now=clock + timedelta(seconds=6)),
                          {"requeued": 0, "human_action_required": 1})
         self.assertEqual(self.store.get_run(run_id)["status"], "human_action_required")
@@ -256,7 +263,7 @@ steps:
         self.assertTrue(self.store.renew_claim(run_id, token, now=clock + timedelta(seconds=4),
                                                lease_seconds=10))
         marker = self.store.begin_claimed_action(
-            run_id, token, step_id="set_value", action="core.set", attempt=1,
+            run_id, token, step_id="set_value", action="core.set", action_identity="a" * 64, attempt=1,
             now=clock + timedelta(seconds=6))
         self.assertIsInstance(marker, int)
         self.assertFalse(self.store.finish_claim(run_id, token, status="completed", now=clock))
@@ -295,7 +302,7 @@ steps:
         clock = datetime(2026, 9, 27, 16, tzinfo=timezone.utc)
         token = self.store.claim_run(run_id, "worker-1", now=clock, lease_seconds=5)
         marker = self.store.begin_claimed_action(
-            run_id, token, step_id="set_value", action="core.set", attempt=1, now=clock)
+            run_id, token, step_id="set_value", action="core.set", action_identity="a" * 64, attempt=1, now=clock)
         expired = clock + timedelta(seconds=6)
         self.assertFalse(self.store.complete_claimed_action(
             run_id, token, marker, succeeded=True, now=expired))
@@ -313,9 +320,10 @@ steps:
         clock = datetime(2026, 9, 27, 16, tzinfo=timezone.utc)
         token = self.store.claim_run(run_id, "worker-1", now=clock)
         marker = self.store.begin_claimed_action(
-            run_id, token, step_id="set_value", action="core.set", attempt=1, now=clock)
+            run_id, token, step_id="set_value", action="core.set", action_identity="a" * 64, attempt=1, now=clock)
         self.assertTrue(self.store.complete_claimed_action(
-            run_id, token, marker, succeeded=False, error="token=never-show-this", now=clock))
+            run_id, token, marker, succeeded=False, error="token=never-show-this",
+            failure_category="permanent", reason_code="provider_rejected", now=clock))
         with self.assertRaises(ValueError):
             self.store.finish_claim(run_id, token, status="dead_letter",
                                     failure_category="permanent", reason_code="token=never-show-this", now=clock)
@@ -327,13 +335,20 @@ steps:
                                         reason_code="provider_rejected", now=clock)
         self.assertEqual(self.store.get_run(run_id)["status"], "running")
         with self.store._connect() as conn:
-            self.assertEqual(conn.execute("SELECT COUNT(*) FROM automation_run_failures").fetchone()[0], 0)
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM automation_run_failures").fetchone()[0], 1)
         self.assertTrue(self.store.finish_claim(run_id, token, status="dead_letter",
                                                 failure_category="permanent", reason_code="provider_rejected",
                                                 error="token=never-show-this", now=clock))
         item = AutomationStore(self.store.db_path).failed_work()[0]
         self.assertEqual((item["run_id"], item["failure_category"], item["reason_code"],
                           item["step_attempts"]), (run_id, "permanent", "provider_rejected", 1))
+        with self.store._connect() as conn:
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM automation_run_failures").fetchone()[0], 2)
+        history = self.store.failure_history(run_id)
+        self.assertEqual([entry["reason_code"] for entry in history],
+                         ["provider_rejected", "provider_rejected"])
+        self.assertEqual(history[0]["terminal_state"], "dead_letter")
+        self.assertNotIn("never-show-this", str(history))
         self.assertNotIn("never-show-this", str(item))
         self.assertFalse(self.store.finish_claim(run_id, token, status="dead_letter",
                                                  failure_category="permanent", reason_code="provider_rejected",
@@ -391,7 +406,7 @@ steps:
         response = engine.ingest(AutomationEvent(event_type="test.bad", source="unit-test"))
         run = self.store.get_run(response.run_ids[0])
         self.assertEqual(run["status"], "failed")
-        self.assertIn("Unknown automation action", run["error"])
+        self.assertEqual(run["error"], "unknown_action")
         self.assertEqual(run["steps"][0]["status"], "failed")
 
     def test_workflow_templates_resolve_event_and_prior_step_context(self) -> None:
@@ -465,7 +480,7 @@ steps:
         )
         run = self.store.get_run(response.run_ids[0])
         self.assertEqual(run["status"], "failed")
-        self.assertIn("Workflow template reference not found", run["error"])
+        self.assertEqual(run["error"], "template_reference_missing")
         self.assertEqual(run["steps"][0]["status"], "failed")
 
     def test_capability_grading_loads(self) -> None:

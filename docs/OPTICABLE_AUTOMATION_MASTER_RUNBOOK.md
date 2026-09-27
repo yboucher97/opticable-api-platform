@@ -201,6 +201,26 @@ yet use these primitives. Do not assume automatic crash replay, dead-letter
 redrive or provider-write retries exist in production. See
 `docs/OPTIBRAIN_PHASE3_EXECUTION_CONTROL.md` for the exact safety boundary.
 
+The next integrated executor/schema release candidate is also **source only**.
+It claims runs before executing handlers, persists a stable logical action
+digest before the call, fences completion by attempt and lease, records
+classified failure history, and retries only explicitly proven safe actions
+within finite limits. An expired started action or ambiguous provider write
+requires human reconciliation. Its additive SQLite migration is versioned and
+transactional. The detailed C-class preflight, forward migration, code
+rollback and recovery procedure is in
+`docs/OPTIBRAIN_PHASE3_EXECUTOR_RELEASE_CANDIDATE.md`. Production remains
+`e5143d3`; no schema migration or root artifact change occurred while
+preparing this candidate.
+
+The recurring root-runbook conflict comes from publishing into a tracked
+checkout that the restricted deploy script resets wholesale. A separate
+reviewed helper/updater C release should publish the root-owned, digest-pinned
+runbook at a fixed path outside Git, while Git retains the source document.
+The exact ownership migration and rollback gate are in the release-candidate
+document. Do not sync the advanced source into the tracked production path or
+change helper/updater/sudoers as part of the application release.
+
 1. Build provider-specific declarative reconcilers and real event workflows.
 2. Add provider credential/token expiry monitoring, retry/DLQ monitoring, and drift reconciliation.
 3. Add deterministic UI fallback only for functions that have no adequate API.
