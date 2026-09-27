@@ -11,7 +11,15 @@ from .zoho_oauth import ZohoOAuthManager
 
 
 class ZohoGatewayError(RuntimeError):
-    pass
+    def __init__(self, message: str, *, response: httpx.Response | None = None) -> None:
+        super().__init__(message)
+        self.response = response
+
+
+class ZohoWriteUnconfirmedError(ZohoGatewayError):
+    """A mutation transport completed without trustworthy outcome evidence."""
+
+    ambiguous_external_write = True
 
 
 def is_books_api_path(service: str, path: str) -> bool:
@@ -124,6 +132,7 @@ class ZohoGatewayClient:
         headers: dict[str, str],
         body: Any,
         content_type: str,
+        access_token: str,
     ) -> dict[str, Any]:
         origin, prefix, auth_scheme = ZOHO_API_SERVICES[service]
         clean_path = path.lstrip("/")
@@ -132,7 +141,7 @@ class ZohoGatewayClient:
             raise ValueError("Zoho API request escaped the approved service host.")
 
         request_headers = {
-            "Authorization": f"{auth_scheme} {self.oauth.access_token()}",
+            "Authorization": f"{auth_scheme} {access_token}",
             "Accept": "application/json",
             **headers,
         }
@@ -167,7 +176,8 @@ class ZohoGatewayClient:
         }
         if not response.is_success:
             raise ZohoGatewayError(
-                f"Zoho {service} API returned HTTP {response.status_code}: {json.dumps(data)[:2000]}"
+                f"Zoho {service} API returned HTTP {response.status_code}: {json.dumps(data)[:2000]}",
+                response=response,
             )
         return result
 
@@ -219,7 +229,8 @@ class ZohoGatewayClient:
             data = {"raw": response.text}
         if not response.is_success:
             raise ZohoGatewayError(
-                f"Standby Zoho gateway returned HTTP {response.status_code}: {json.dumps(data)[:2000]}"
+                f"Standby Zoho gateway returned HTTP {response.status_code}: {json.dumps(data)[:2000]}",
+                response=response,
             )
         if isinstance(data, dict):
             data["provider_path"] = "connect_standby"
@@ -241,21 +252,9 @@ class ZohoGatewayClient:
         normalized_method, safe_headers = self._validate(
             service, method, path, headers, reason, confirm
         )
-        try:
-            if not self.configured:
-                raise ZohoGatewayError("Local Zoho OAuth is not configured and connected.")
-            return self._local_request(
-                service,
-                normalized_method,
-                path,
-                query=query or {},
-                headers=safe_headers,
-                body=body,
-                content_type=content_type,
-            )
-        except Exception:
-            if not self.settings.standby_enabled:
-                raise
+        mutation = normalized_method != "GET"
+
+        def standby() -> dict[str, Any]:
             return self._standby_request(
                 service,
                 normalized_method,
@@ -267,3 +266,51 @@ class ZohoGatewayClient:
                 reason=reason,
                 confirm=confirm,
             )
+
+        # These failures occur before any local provider request is sent, so a
+        # configured standby may be used without creating duplicate-write risk.
+        try:
+            local_configured = self.configured
+        except Exception:
+            if self.settings.standby_enabled:
+                return standby()
+            raise
+        if not local_configured:
+            if self.settings.standby_enabled:
+                return standby()
+            raise ZohoGatewayError("Local Zoho OAuth is not configured and connected.")
+        try:
+            access_token = self.oauth.access_token()
+        except Exception:
+            if self.settings.standby_enabled:
+                return standby()
+            raise
+
+        try:
+            return self._local_request(
+                service,
+                normalized_method,
+                path,
+                query=query or {},
+                headers=safe_headers,
+                body=body,
+                content_type=content_type,
+                access_token=access_token,
+            )
+        except httpx.TransportError as exc:
+            # Once a mutation reaches the HTTP transport boundary, we cannot
+            # prove whether Zoho applied it.  Never issue a second mutation via
+            # standby; execution control must reconcile it first.
+            if mutation:
+                raise ZohoWriteUnconfirmedError(
+                    "Zoho mutation transport result is unconfirmed; standby replay is blocked."
+                ) from exc
+            if not self.settings.standby_enabled:
+                raise
+            return standby()
+        except Exception:
+            # Explicit provider responses or local validation errors are never
+            # auto-failed-over for mutations. Reads may use standby safely.
+            if mutation or not self.settings.standby_enabled:
+                raise
+            return standby()
