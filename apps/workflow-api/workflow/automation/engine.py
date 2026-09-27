@@ -2,13 +2,19 @@ from __future__ import annotations
 
 import re
 import time
+import hashlib
+import json
+import os
+import socket
 from pathlib import Path
 from typing import Any, Callable
 
 import yaml
+import httpx
 
-from .models import AutomationEvent, EventIngestResponse, WorkflowDefinition, WorkflowStep, utc_now_iso
+from .models import AutomationEvent, EventIngestResponse, WorkflowDefinition, WorkflowStep
 from .store import AutomationStore
+from .retry_control import decide_retry
 
 ActionHandler = Callable[[dict[str, Any], WorkflowStep], Any]
 
@@ -61,15 +67,20 @@ class AutomationEngine:
         self.definitions_dir = definitions_dir
         self.max_event_depth = max_event_depth
         self._actions: dict[str, ActionHandler] = {}
-        self.register_action("core.noop", self._action_noop)
-        self.register_action("core.set", self._action_set)
+        self._retry_safe_actions: set[str] = set()
+        self.register_action("core.noop", self._action_noop, retry_safe=True)
+        self.register_action("core.set", self._action_set, retry_safe=True)
         self.register_action("event.emit", self._action_emit)
 
-    def register_action(self, name: str, handler: ActionHandler) -> None:
+    def register_action(self, name: str, handler: ActionHandler, *, retry_safe: bool = False) -> None:
         normalized = name.strip()
         if not normalized:
             raise ValueError("Action name cannot be blank.")
         self._actions[normalized] = handler
+        if retry_safe:
+            self._retry_safe_actions.add(normalized)
+        else:
+            self._retry_safe_actions.discard(normalized)
 
     def action_names(self) -> list[str]:
         return sorted(self._actions)
@@ -113,85 +124,150 @@ class AutomationEngine:
             run_ids=run_ids,
         )
 
-    def execute_run(self, run_id: str, definition: WorkflowDefinition, event: AutomationEvent) -> None:
+    @staticmethod
+    def action_identity(run_id: str, definition: WorkflowDefinition, step: WorkflowStep,
+                        resolved_inputs: dict[str, Any]) -> str:
+        """One stable logical key across worker attempts; only its digest is stored."""
+        inputs_digest = hashlib.sha256(json.dumps(resolved_inputs, sort_keys=True, separators=(",", ":"),
+                                                  ensure_ascii=False).encode()).hexdigest()
+        target = resolved_inputs.get("target_id")
+        if not isinstance(target, str) or not target:
+            target = inputs_digest
+        logical = [run_id, definition.id, definition.version, step.id, step.action, target, inputs_digest]
+        return hashlib.sha256(json.dumps(logical, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
+
+    @staticmethod
+    def _error_signal(exc: Exception) -> tuple[int | None, bool, str | None]:
+        response = getattr(exc, "response", None)
+        status = getattr(response, "status_code", None)
+        if status is None:
+            status = getattr(exc, "status_code", None)
+        if not isinstance(status, int) or not 100 <= status <= 599:
+            status = 422 if isinstance(exc, ValueError) else None
+        headers = getattr(response, "headers", {}) or {}
+        retry_after = headers.get("Retry-After") if hasattr(headers, "get") else None
+        return status, status is None and isinstance(
+            exc, (TimeoutError, ConnectionError, httpx.TimeoutException,
+                  httpx.ConnectError, httpx.ReadError)), retry_after
+
+    @staticmethod
+    def _failure_reason(action: str, category: str, retry_safe: bool) -> str:
+        if action == "retry":
+            return "transient_retry_scheduled"
+        if category == "authentication_expired":
+            return "authentication_expired"
+        if category == "permanent":
+            return "permanent_provider_error"
+        if not retry_safe:
+            return "external_result_ambiguous"
+        if action == "human_action_required":
+            return "provider_retry_after_unusable"
+        if category == "unknown":
+            return "unclassified_error"
+        return "attempts_exhausted"
+
+    def execute_run(self, run_id: str, definition: WorkflowDefinition, event: AutomationEvent,
+                    *, worker_id: str | None = None) -> bool:
+        worker = worker_id or f"{socket.gethostname()}:{os.getpid()}"
+        attempt_id = self.store.claim_run(run_id, worker, lease_seconds=300)
+        if attempt_id is None:
+            return False
         context: dict[str, Any] = {
             "event": event.model_dump(),
             "workflow": {"id": definition.id, "version": definition.version, "name": definition.name},
             "steps": {},
         }
-        self.store.set_run_status(run_id, "running")
-        self.store.audit(
-            category="workflow", action="run_started", actor="automation-engine", success=True,
-            correlation_id=event.correlation_id, target=definition.id, metadata={"run_id": run_id},
-        )
-
-        run_failed = False
-        failure_message: str | None = None
         continued_error = False
 
         for step in definition.steps:
             handler = self._actions.get(step.action)
-            if handler is None:
-                error = f"Unknown automation action: {step.action}"
-                self.store.append_step(
-                    run_id=run_id, step_id=step.id, action=step.action, attempt=1,
-                    status="failed", started_at=utc_now_iso(), error=error,
-                )
-                if step.on_error == "continue":
-                    continued_error = True
-                    continue
-                run_failed = True
-                failure_message = error
-                break
-
+            preflight_reason = "unknown_action" if handler is None else None
+            retry_safe = step.action in self._retry_safe_actions
             step_succeeded = False
-            last_error: str | None = None
+            try:
+                resolved_inputs = _resolve_templates(step.inputs, context)
+            except Exception:
+                resolved_inputs = step.inputs
+                handler = None
+                preflight_reason = "template_reference_missing"
+            identity = self.action_identity(run_id, definition, step, resolved_inputs)
             for attempt in range(1, step.retry.max_attempts + 1):
-                started_at = utc_now_iso()
+                marker = self.store.begin_claimed_action(
+                    run_id, attempt_id, step_id=step.id, action=step.action,
+                    action_identity=identity, attempt=attempt)
+                if marker is None:
+                    return False
                 try:
-                    resolved_inputs = _resolve_templates(step.inputs, context)
+                    if handler is None:
+                        raise ValueError("unknown action or unresolved workflow input")
                     effective_step = step.model_copy(update={"inputs": resolved_inputs})
+                    context["execution"] = {"action_identity": identity}
                     result = handler(context, effective_step)
                 except Exception as exc:  # provider/template runtime errors are captured durably
-                    last_error = str(exc)
-                    self.store.append_step(
-                        run_id=run_id, step_id=step.id, action=step.action, attempt=attempt,
-                        status="failed", started_at=started_at, error=last_error,
+                    status_code, timeout, retry_after = self._error_signal(exc)
+                    decision = decide_retry(
+                        attempt=attempt, max_attempts=step.retry.max_attempts,
+                        safe_to_retry=retry_safe, http_status=status_code, network_timeout=timeout,
+                        retry_after=retry_after,
+                        base_delay_seconds=step.retry.backoff_seconds or 2.0,
                     )
-                    if attempt < step.retry.max_attempts and step.retry.backoff_seconds:
-                        time.sleep(step.retry.backoff_seconds)
-                    continue
-                self.store.append_step(
-                    run_id=run_id, step_id=step.id, action=step.action, attempt=attempt,
-                    status="completed", started_at=started_at, result=result,
-                )
+                    reason = self._failure_reason(decision.action, decision.category, retry_safe)
+                    if preflight_reason is not None:
+                        reason = preflight_reason
+                    diagnostic = {"http_status": status_code} if status_code is not None else {}
+                    if decision.action == "retry":
+                        diagnostic["retry_delay_seconds"] = decision.delay_seconds
+                    if not self.store.complete_claimed_action(
+                            run_id, attempt_id, marker, succeeded=False,
+                            error=type(exc).__name__, failure_category=decision.category,
+                            reason_code=reason, diagnostic=diagnostic):
+                        return False
+                    if decision.action == "retry":
+                        remaining = decision.delay_seconds
+                        while remaining > 0:
+                            interval = min(30.0, remaining)
+                            time.sleep(interval)
+                            remaining -= interval
+                            if not self.store.renew_claim(run_id, attempt_id, lease_seconds=300):
+                                return False
+                        continue
+                    if decision.action == "dead_letter" and step.on_error == "continue":
+                        continued_error = True
+                        break
+                    terminal = ("failed" if decision.action == "dead_letter"
+                                and (decision.category == "permanent" or preflight_reason is not None)
+                                else decision.action)
+                    return self.store.finish_claim(
+                        run_id, attempt_id, status=terminal,
+                        error=reason, failure_category=decision.category,
+                        reason_code=reason, redrive_permitted=retry_safe and terminal == "dead_letter"
+                        and decision.category in {"rate_limited", "network_timeout", "provider_unavailable"},
+                        human_required=terminal == "human_action_required", context=context,
+                    )
+                provider_operation_id = (result.get("provider_operation_id")
+                                         if isinstance(result, dict) else None)
+                if not self.store.complete_claimed_action(
+                        run_id, attempt_id, marker, succeeded=True, result=result,
+                        provider_operation_id=provider_operation_id):
+                    return False
                 context["steps"][step.id] = result
                 step_succeeded = True
                 break
 
             if not step_succeeded:
                 if step.on_error == "continue":
-                    continued_error = True
                     continue
-                run_failed = True
-                failure_message = last_error or f"Step {step.id} failed."
-                break
-
-        if run_failed:
-            self.store.set_run_status(run_id, "failed", error=failure_message, context=context)
-            self.store.audit(
-                category="workflow", action="run_failed", actor="automation-engine", success=False,
-                correlation_id=event.correlation_id, target=definition.id,
-                metadata={"run_id": run_id, "error": failure_message},
-            )
-            return
+                return False
 
         final_status = "partial" if continued_error else "completed"
-        self.store.set_run_status(run_id, final_status, context=context)
-        self.store.audit(
-            category="workflow", action=f"run_{final_status}", actor="automation-engine", success=not continued_error,
-            correlation_id=event.correlation_id, target=definition.id, metadata={"run_id": run_id},
-        )
+        return self.store.finish_claim(run_id, attempt_id, status=final_status, context=context)
+
+    def recover_pending(self, *, limit: int = 10) -> dict[str, int]:
+        recovered = self.store.recover_expired_claims(limit=min(limit, 100))
+        attempted = 0
+        for run_id, definition, event in self.store.queued_envelopes(limit):
+            attempted += int(self.execute_run(run_id, definition, event))
+        return {**recovered, "executed": attempted}
 
     def _action_noop(self, context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
         return {"ok": True, "inputs": step.inputs}
@@ -217,7 +293,8 @@ class AutomationEngine:
             source=source,
             correlation_id=parent.correlation_id or parent.event_id,
             causation_id=parent.event_id,
-            idempotency_key=step.inputs.get("idempotency_key"),
+            idempotency_key=(step.inputs.get("idempotency_key")
+                             or "action:" + context["execution"]["action_identity"]),
             depth=parent.depth + 1,
             payload=payload,
         )
