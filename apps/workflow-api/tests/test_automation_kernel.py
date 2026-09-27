@@ -3,7 +3,7 @@ from __future__ import annotations
 import tempfile
 import threading
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -173,11 +173,124 @@ steps:
                          ("2026-09-27T14:00:00Z", running))
             conn.execute("UPDATE automation_runs SET status='failed' WHERE run_id=?", (failed,))
         snapshot = self.store.execution_health(now=datetime(2026, 9, 27, 16, tzinfo=timezone.utc))
-        self.assertEqual(snapshot, {"total": 3, "queued": 1, "running": 1, "failed": 1,
-                                    "partial": 0, "stale_queued": 1, "stale_running": 1})
+        self.assertEqual(snapshot, {"total": 3, "queued": 1, "claimed": 0, "running": 1,
+                                    "failed": 1, "partial": 0, "dead_letter": 0,
+                                    "human_action_required": 0, "stale_queued": 1,
+                                    "stale_running": 1, "expired_leases": 0,
+                                    "oldest_queued_age_seconds": 3600,
+                                    "oldest_running_age_seconds": 7200})
         self.assertEqual(len(self.store.recent_runs()), 3)
         with self.assertRaises(ValueError):
             self.store.execution_health(now=datetime(2026, 9, 27, 16))
+
+    def test_expired_never_started_claim_is_fenced_and_requeued(self) -> None:
+        self._write_smoke_workflow()
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test")
+        self.store.ingest_event(event)
+        run_id = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        clock = datetime(2026, 9, 27, 16, tzinfo=timezone.utc)
+        old_token = self.store.claim_run(run_id, "worker-1", now=clock, lease_seconds=5)
+        self.assertIsNotNone(old_token)
+        self.assertIsNone(AutomationStore(self.store.db_path).claim_run(run_id, "worker-2", now=clock))
+        snapshot = self.store.execution_health(now=clock + timedelta(seconds=6))
+        self.assertEqual((snapshot["claimed"], snapshot["expired_leases"]), (1, 1))
+        self.assertEqual(self.store.recover_expired_claims(now=clock + timedelta(seconds=6)),
+                         {"requeued": 1, "human_action_required": 0})
+        self.assertEqual(self.store.get_run(run_id)["status"], "queued")
+        self.assertIsNone(self.store.begin_claimed_action(
+            run_id, old_token, step_id="set_value", action="core.set", attempt=1,
+            now=clock + timedelta(seconds=6)))
+        new_token = self.store.claim_run(run_id, "worker-2", now=clock + timedelta(seconds=6))
+        self.assertNotEqual(new_token, old_token)
+
+    def test_expired_started_action_requires_human_reconciliation(self) -> None:
+        self._write_smoke_workflow()
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test")
+        self.store.ingest_event(event)
+        run_id = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        clock = datetime(2026, 9, 27, 16, tzinfo=timezone.utc)
+        token = self.store.claim_run(run_id, "worker-1", now=clock, lease_seconds=5)
+        marker = self.store.begin_claimed_action(
+            run_id, token, step_id="set_value", action="core.set", attempt=1, now=clock)
+        self.assertIsInstance(marker, int)
+        self.assertIsNone(self.store.begin_claimed_action(
+            run_id, token, step_id="set_value", action="core.set", attempt=1, now=clock))
+        self.assertEqual(self.store.recover_expired_claims(now=clock + timedelta(seconds=6)),
+                         {"requeued": 0, "human_action_required": 1})
+        self.assertEqual(self.store.get_run(run_id)["status"], "human_action_required")
+        self.assertEqual(self.store.execution_health(now=clock + timedelta(seconds=7))["human_action_required"], 1)
+        self.assertIsNone(self.store.claim_run(run_id, "worker-2", now=clock + timedelta(seconds=6)))
+        self.assertEqual(self.store.recover_expired_claims(now=clock + timedelta(seconds=7)),
+                         {"requeued": 0, "human_action_required": 0})
+
+    def test_claim_transaction_rolls_back_on_audit_failure(self) -> None:
+        self._write_smoke_workflow()
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test")
+        self.store.ingest_event(event)
+        run_id = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        with patch.object(AutomationStore, "_claim_audit", side_effect=RuntimeError("audit failed")):
+            with self.assertRaisesRegex(RuntimeError, "audit failed"):
+                self.store.claim_run(run_id, "worker-1")
+        self.assertEqual(self.store.get_run(run_id)["status"], "queued")
+        with self.store._connect() as conn:
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM automation_run_claims").fetchone()[0], 0)
+
+    def test_claim_renewal_and_terminal_result_are_fenced(self) -> None:
+        self._write_smoke_workflow()
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test")
+        self.store.ingest_event(event)
+        run_id = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        clock = datetime(2026, 9, 27, 16, tzinfo=timezone.utc)
+        token = self.store.claim_run(run_id, "worker-1", now=clock, lease_seconds=5)
+        self.assertFalse(self.store.renew_claim(run_id, "wrong-token", now=clock))
+        self.assertTrue(self.store.renew_claim(run_id, token, now=clock + timedelta(seconds=4),
+                                               lease_seconds=10))
+        marker = self.store.begin_claimed_action(
+            run_id, token, step_id="set_value", action="core.set", attempt=1,
+            now=clock + timedelta(seconds=6))
+        self.assertIsInstance(marker, int)
+        self.assertFalse(self.store.finish_claim(run_id, token, status="completed", now=clock))
+        self.assertFalse(self.store.complete_claimed_action(
+            run_id, "wrong-token", marker, succeeded=True, now=clock))
+        self.assertTrue(self.store.complete_claimed_action(
+            run_id, token, marker, succeeded=True, result={"ok": True}, now=clock))
+        self.assertTrue(self.store.finish_claim(run_id, token, status="completed", now=clock))
+        self.assertEqual(self.store.get_run(run_id)["status"], "completed")
+        self.assertFalse(self.store.renew_claim(run_id, token, now=clock))
+
+    def test_claim_schema_addition_preserves_existing_runs(self) -> None:
+        self._write_smoke_workflow()
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test")
+        self.store.ingest_event(event)
+        run_id = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        with self.store._connect() as conn:
+            conn.execute("DROP TABLE automation_run_claims")
+        migrated = AutomationStore(self.store.db_path)
+        self.assertEqual(migrated.get_run(run_id)["status"], "queued")
+        self.assertIsNotNone(migrated.claim_run(run_id, "worker-after-migration"))
+
+    def test_early_lease_renewal_cannot_shorten_existing_lease(self) -> None:
+        self._write_smoke_workflow()
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test")
+        self.store.ingest_event(event)
+        run_id = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        clock = datetime(2026, 9, 27, 16, tzinfo=timezone.utc)
+        token = self.store.claim_run(run_id, "worker-1", now=clock, lease_seconds=300)
+        self.assertTrue(self.store.renew_claim(run_id, token, now=clock, lease_seconds=5))
+        self.assertEqual(self.store.recover_expired_claims(now=clock + timedelta(seconds=6)),
+                         {"requeued": 0, "human_action_required": 0})
 
     def test_unknown_action_fails_durably(self) -> None:
         (self.workflows / "bad.yaml").write_text(

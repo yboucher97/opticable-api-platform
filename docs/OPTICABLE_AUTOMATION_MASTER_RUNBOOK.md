@@ -162,10 +162,32 @@ The three VPS-backed endpoints were independently verified HTTP 200 from OPX001 
 ## Current autonomy priorities
 Phase 3 execution/control inventory, A–D operation classes, concrete gaps and
 human resume gates are in `docs/OPTIBRAIN_PHASE3_EXECUTION_CONTROL.md`.
-The Phase 3 source change makes event acceptance and matching queued-run
-creation one SQLite transaction and adds authenticated, aggregate execution
-health for stale queued/running work. It is not deployed, does not automatically
-replay a run, and does not change root privileges or Phase 1/2A timers.
+The Phase 3 application-only release `e5143d35ca1664a8b4faeda40f0f15a80fe7673d`
+is deployed through validated main and the restricted deploy identity. It
+makes event acceptance and matching queued-run creation one SQLite transaction
+and adds authenticated, aggregate execution health for stale queued/running
+work. It does not automatically replay a run or change root privileges,
+Phase 1/2A timers or lifecycle schedules. Pre/post recovery refs are
+`recovery/pre-phase3-deploy-4010398` and
+`recovery/post-phase3-app-deploy-e5143d3`. The four application-file diff
+matches the approved `883b081` checkpoint exactly; the application-only commit
+was separately approved because the original checkpoint also changed this
+root-owned runbook source. Production still has runbook digest
+`cdab559d264fb7a17c469fd10953827a98a24ac4a926939db1055522a6dfc085`.
+After deployment, all three health endpoints, helper self-test, both backup
+timers and latest-backup verification passed. A naturally scheduled event
+returned HTTP 200 and completed; queue status rose from 112 to 113 with no
+queued/running runs. The new execution-health endpoint returned 401 without
+the protected API key. An authenticated response and live duplicate drill
+remain unverified from this operator identity.
+This source runbook update is not root-synced. A future reviewed C-class
+procedure must resolve the conflict between constrained runbook sync and the
+deploy script's whole-checkout reset before installing a new runbook pin.
+
+GitHub and Cloudflare lifecycle schedules overlap and remain unchanged.
+OptiBrain is the long-term canonical owner for business scheduling, but migrate
+one workflow at a time only after verifying shared idempotency identity and a
+rollback path. No schedule was added or disabled for this Phase 3 release.
 
 1. Build provider-specific declarative reconcilers and real event workflows.
 2. Add provider credential/token expiry monitoring, retry/DLQ monitoring, and drift reconciliation.

@@ -970,3 +970,84 @@ Phase 2A uploader fixture 9/9, bucket-listing and R2-health fixtures passed.
 Python compilation, proposed sudoers parse, complete root-artifact SHA manifest
 and `git diff --check` passed. None of these tests deployed source or modified
 production backup, timer, credential, provider or root-owned artifacts.
+
+## Phase 3 application deployment and independent claim prototype — 2026-09-27
+
+The requested reviewed checkpoint `883b081c0bc5b69f2352d266751767b444b0b50a`
+could not be passed through the existing restricted deploy script as one unit:
+that script resets the whole checkout, while the checkpoint changed the
+root-owned master runbook and its pin. Such a reset would bypass the separate
+digest-pinned `sync-master-runbook` transaction. Before deployment, the
+operator approved application-only commit
+`e5143d35ca1664a8b4faeda40f0f15a80fe7673d`; its four application-file
+diff is byte-for-byte identical to the app diff in the reviewed checkpoint
+(diff SHA-256 `f95ddb3382185da9a7a70ddd0de3e5ed598ebf53fbe0d004d2e2c74327f258f1`).
+No schedule, root helper, sudoers, backup, provider or runbook file changed in
+that release.
+
+Pre-deploy production was `40103981abdb887fdfcfebb9d0b6c68eb0151a95`;
+recovery ref `recovery/pre-phase3-deploy-4010398` was created and pushed before
+the main update. Helper self-test, three health endpoints, both active/enabled
+backup timers, latest archive `20260927T130636Z`, queue 112 completed and disk
+14% passed. The existing untracked Cloudflare diagnostic script was left
+unchanged. Pushing only the approved app commit to main triggered Validate API
+Platform run `36333948204` (success), followed by the restricted Deploy API
+Platform run `36333965257` (success). The production checkout now has exact
+SHA `e5143d35ca1664a8b4faeda40f0f15a80fe7673d`. Post-deploy recovery ref
+`recovery/post-phase3-app-deploy-e5143d3` was created and pushed.
+
+Post-deploy checks: workflow/PDF/Omada HTTP 200; helper self-test PASS;
+both backup timers active/enabled; latest archive verification PASS;
+queue count unchanged at 112 completed (no queued/running shown); disk 14%;
+arbitrary sudo denied. Workflow service logs show a clean stop/start and 13
+definitions loaded without startup exceptions. Unauthenticated
+`/v1/automation/execution-health` returned 401, proving the route is present
+behind the existing API-key gate. The protected production API key is not
+available to this identity, so an authenticated execution-health response and
+new live duplicate/transaction smoke were not asserted. Existing
+automation behavior is covered by the deployed commit's CI and local 79-test
+suite; a live authenticated duplicate test remains `HUMAN_ACTION_REQUIRED` through an
+existing approved credential-custody mechanism, without exposing the key.
+At 16:46 UTC, the existing unmodified schedule had naturally delivered an
+automation event: bounded service logs recorded `POST /v1/automation/events`
+HTTP 200 after the restart and helper `queue-status` rose from 112 to 113
+completed with no queued/running state. This verifies live acceptance and one
+completed workflow without injecting a new schedule or event. It does not
+prove duplicate-event handling or the authenticated execution-health body;
+those remain separate validation items.
+
+The production runbook remains root:root 0644 with SHA-256
+`cdab559d264fb7a17c469fd10953827a98a24ac4a926939db1055522a6dfc085`.
+The new source runbook and raw pin were not root-synced. `sudo -n -l` grants
+only the fixed helper/updater; installing a new `/etc/optibrain/master-runbook.sha256`
+pin is outside that NOPASSWD boundary. Moreover, a helper-only sync would make
+the tracked root-owned runbook dirty and the current restricted deploy script
+would refuse or overwrite it on a future reset. `HUMAN_ACTION_REQUIRED`:
+review a C-class deployment/runbook coexistence procedure that preserves the
+root-owned runbook and its constrained sync, then install the reviewed root pin,
+stage exact source/pin, run `sync-master-runbook`, verify backup/hash/health,
+and document its rollback. Do not use broad sudo or a raw Git reset as a
+substitute.
+
+Both overlapping GitHub and Cloudflare lifecycle schedules remain unchanged.
+OptiBrain is the intended future business-schedule owner; move one workflow at
+a time only after a verified shared dedupe identity, gap-free handoff and
+rollback. No new schedule or invented business key was created here.
+
+Independent Phase 3 source work on `hardening/phase3-claims` adds an
+`automation_run_claims` table and atomic claim/lease primitives in the test
+checkout only. A worker and attempt token fence action start; a pre-action
+marker is durable before any handler call. Expiry with no action marker is
+requeued; expiry after a marker becomes `human_action_required`, never
+automatically replayed. Renewal and terminal-result primitives are bounded and
+audited in the same SQLite transaction. The current production engine does not
+yet use these primitives, and this C-class schema change is not deployed.
+Focused tests cover cross-connection claim exclusion, stale-token rejection,
+crash rollback, safe requeue, ambiguous escalation and terminal fencing.
+Prototype validation passed in the existing repository `.venv`: workflow
+pytest 85 passed with 18 subtests, CI-style unittest 71/71, and 16 kernel
+tests. Ops/admin adversarial 37/37, restore-drill 2/2, Phase 1 backup fixture,
+Phase 2A uploader 9/9, bucket-listing and R2-health fixtures all passed;
+Python compilation, sudoers parse, artifact manifest and `git diff --check`
+passed. The prototype is not wired into production execution and must not be
+described as completed crash recovery.

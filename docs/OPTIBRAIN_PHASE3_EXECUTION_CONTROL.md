@@ -1,7 +1,8 @@
 # OptiBrain Phase 3 execution and control inventory
 
-Status: IN PROGRESS, source-only review; production remains on the known-good
-Phase 2B release. Baseline: `recovery/phase2b-production-known-good`.
+Status: IN PROGRESS. The approved application-only release `e5143d3` is in
+production and Phase 2B remains known good. Claim/lease work below is source
+only and not deployed. Baseline: `recovery/phase2b-production-known-good`.
 
 ## Existing implementation and precise gaps
 
@@ -14,7 +15,7 @@ Phase 2B release. Baseline: `recovery/phase2b-production-known-good`.
 | Ingest crash window | Previously the event committed before matching runs were separately inserted. | The Phase 3 source change commits the event and all matching queued runs in one `BEGIN IMMEDIATE` transaction, without a schema change. It prevents an accepted event with only some or no runs. A crash after commit can still strand a queued run; no automatic replay is enabled. |
 | Retries, backoff and rate limits | Workflow step attempts are capped at five with configurable fixed delay up to 30 seconds. Cloudflare delivery uses exponential backoff. API clients set timeouts. | Core retries catch every exception, lack transient/permanent classification, jitter, `Retry-After` handling and operation-specific idempotency proofs. Retrying a write after an ambiguous response can duplicate an external action. |
 | Concurrency and locks | SQLite writer serialization and a process-local `RLock` protect store writes; GitHub scheduler has a concurrency group; admin manual backup has a fixed nonblocking lock. | No core run claim/lease, per-entity lock or cross-scheduler lock. Neither SQLite locking nor event uniqueness proves exactly-once external effects. |
-| Stuck jobs and reboot recovery | systemd restarts the example API unit; backup timers use `Persistent=true`; audit/run records survive process exit. A new authenticated `GET /v1/automation/execution-health` returns aggregate counts and flags queued work older than 15 minutes or running work older than one hour. | No proved production unit restart policy, startup scan, heartbeat, worker liveness, replay gate or crash-recovery drill. Snapshot flags require diagnosis before any resume. |
+| Stuck jobs and reboot recovery | systemd restarts the example API unit; backup timers use `Persistent=true`; audit/run records survive process exit. The deployed authenticated `GET /v1/automation/execution-health` returns aggregate counts and flags queued work older than 15 minutes or running work older than one hour. | No proved production unit restart policy, startup scan, heartbeat, worker liveness, replay gate or crash-recovery drill. Snapshot flags require diagnosis before any resume. |
 | Dependencies and outages | Public API/PDF/Omada and Worker health checks run every 15 minutes via GitHub, with a deduplicated incident issue. Provider inventory checks configured/connected status; adapters isolate APIs. | Endpoint HTTP 200 does not prove scheduler/worker liveness, queue age, provider API availability, token expiry, rate limits or upstream outage duration. No circuit breaker or bounded repair controller is established. |
 | Backup and capacity | Admin helper checks both timers, latest archive, full isolated restore and disk capacity; Phase 1/2A tests and recovery records exist. | Scheduled backup freshness, off-host success, restore evidence age, seven-generation headroom and disk trend are not part of one automated alert check. Do not change timers or retention to add this. |
 | Alerts and audit | GitHub monitor opens/comments/closes one health issue. Core audit captures workflow and selected provider actions; root helper/updater audit is fixed and protected. | No severity/escalation policy for DLQ, stale runs, backup age or credentials. The monitor checks endpoints, not the execution backlog. Audit does not prove an external provider write was idempotent. |
@@ -39,22 +40,46 @@ Queues or prematurely changing the existing schedulers.
 | D | Read AGE private identity, perform interactive credential custody, make Zoho Books mutations, expose R2 publicly, grant arbitrary sudo/root shell or automate destructive restore. | Never autonomous under this program. |
 
 `HUMAN_ACTION_REQUIRED`: a production release of the reviewed Phase 3 API
-commit needs the existing approval/deployment path. Exact resume: review the
-final source diff and tests, validate current production health and both backup
-timers, preserve a pre-deploy recovery point, deploy only the approved main
-commit through the restricted workflow, run an end-to-end idempotency/crash
-drill, recheck health/latest backup/restore evidence, and record a post-deploy
-recovery point. No root helper/updater or sudoers replacement is part of this
-source change.
+commit was completed as approved application-only commit `e5143d3`. The live
+authenticated execution-health and event/duplicate smoke still need an
+approved credential-custody path; do not expose the API key in chat or logs.
+The root-owned runbook sync is a separate C-class boundary, not part of the
+application deploy. The future claim-table schema migration and executor
+integration require separate review before production use.
 
 `HUMAN_ACTION_REQUIRED`: duplicate GitHub/Cloudflare lifecycle scheduling
-requires an owner decision before any trigger is disabled. Exact resume:
-compare live schedules and equivalent event payloads, choose the canonical
-owner, define a shared business idempotency key, stage a reversible handoff,
-verify no missed or doubled run, then disable only the superseded trigger under
-review. Phase 3 transaction work can proceed independently.
+remains intentionally unchanged. OptiBrain is the long-term canonical business
+scheduler. Exact resume: select one workflow, compare live schedules and
+payloads, verify a shared business idempotency key, stage a reversible handoff,
+prove no missed or doubled run, then disable only that superseded trigger under
+review. Phase 3 reliability work proceeds independently; no key is invented
+solely to unblock this phase.
 
 ## Acceptance still outstanding
+
+### Claim/lease source prototype (not deployed)
+
+`automation_run_claims` is a new SQLite table keyed by run ID with worker
+identity, unique attempt token, claim time, lease expiry and a durable
+`action_started` flag. `claim_run` uses `BEGIN IMMEDIATE`; only a queued run
+without a claim can transition to `claimed`. `begin_claimed_action` checks the
+attempt token and unexpired lease in the same transaction that writes a
+pre-handler step marker and moves the run to `running`. A stale token cannot
+start an action. Lease renewal is bounded to 5–300 seconds. Completion is
+token-fenced and refuses to clear `human_action_required` or finalize a run
+with an unfinished action marker.
+
+On expiry, a claim that is still `claimed` with no action marker can be
+atomically requeued. A run with a started action becomes
+`human_action_required`, retaining claim/step/audit evidence; no provider write
+is replayed. The recovery scan is bounded to 100 claims and idempotent on
+repeat. This deliberately treats even a pure-core started action as ambiguous
+until the engine and action taxonomy are integrated. The current production
+engine still executes synchronously and does not call these primitives.
+This table addition is a C-class schema migration; it is not in the deployed
+application commit. Before integration, add a worker heartbeat, action-specific
+idempotency and transient/permanent failure classification, a durable terminal
+reason, and restart/outage drills. Do not deploy the prototype as self-healing.
 
 Phase 3 is not complete. Before completion, prove a durable claim/lease and
 recovery state machine, safe handling of ambiguous provider results, finite
