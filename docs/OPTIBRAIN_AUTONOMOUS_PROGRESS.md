@@ -533,10 +533,25 @@ package/update mechanism), preserving the exact allowlist boundary. Until then
 Phase 2B is NOT COMPLETE and Phase 3 production implementation must not begin.
 
 Recovery refs: pre-change `recovery/pre-phase2b-1bae01c`; current code checkpoint
-will be `recovery/post-phase2b-foundation-<commit>` after committing this record.
+is `recovery/post-phase2b-foundation-6cc37a9` (HEAD at this checkpoint).
 The root-only copy of the old broad rule remains at
 `/var/lib/optibrain/admin-recovery/optibrain-overnight.pre-phase2b`; it is recovery
 evidence only and must never be restored as steady state.
+
+### Current stop boundary and exact resume operation
+
+The master runbook is root:root mode 0644. Updating it failed under the narrowed
+sudo policy, and the installed admin helper has no reviewed-file installation or
+root-owned documentation operation. Do not restore broad sudo. A trusted,
+reviewed helper update/deployment path is required before adding more root-owned
+operations. Exact next operation: install a root-owned, digest-verified helper
+release/update mechanism with explicit allowlisted operations for reviewed unit
+install/update, deploy/rollback integration, permission repair, isolated restore,
+redacted logs/audit inspection, and approved root-owned runbook updates; validate
+its escape boundary, then update the root-owned master runbook, complete Phase 2B
+gates and only then proceed to Phase 3. Existing prod remains healthy and old
+backups are preserved. The original broad-rule recovery file is offline from the
+sudoers include path and must not be restored as the solution.
 
 ### Phase 2B implementation and pre-install review
 
