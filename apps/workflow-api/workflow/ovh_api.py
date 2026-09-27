@@ -92,7 +92,12 @@ class OvhApiClient:
         except json.JSONDecodeError:
             data = text
 
-        result = {"ok": response.is_success, "status": response.status_code, "data": data}
+        result = {
+            "ok": response.is_success,
+            "status": response.status_code,
+            "request_id": response.headers.get("x-request-id") or response.headers.get("x-ovh-queryid"),
+            "data": data,
+        }
         if not response.is_success:
             raise OvhApiError(f"OVH API returned HTTP {response.status_code}: {str(data)[:2000]}")
         return result
