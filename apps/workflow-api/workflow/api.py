@@ -539,6 +539,14 @@ def _validate_api_key(provided_api_key: str | None) -> None:
         raise HTTPException(status_code=401, detail="Invalid X-API-Key")
 
 
+def _validate_inspection_api_key(provided_api_key: str | None) -> None:
+    """Inspection routes stay unavailable when server authentication is unset."""
+    expected_api_key = os.getenv(settings.api.api_key_env)
+    if not expected_api_key or not expected_api_key.strip():
+        raise HTTPException(status_code=503, detail="Inspection authentication is unavailable.")
+    _validate_api_key(provided_api_key)
+
+
 def _validate_browser_or_header_api_key(
     header_api_key: str | None,
     query_api_key: str | None = None,
@@ -862,7 +870,7 @@ async def workflow_health() -> HealthResponse:
 async def automation_capabilities(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     records = load_capabilities(settings.automation.capabilities_path)
     return {
         "enabled": settings.automation.enabled,
@@ -875,7 +883,7 @@ async def automation_capabilities(
 async def automation_actions(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return {"actions": automation_engine.action_names()}
 
 
@@ -883,7 +891,7 @@ async def automation_actions(
 async def automation_workflows(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return {"workflows": automation_store.list_workflows()}
 
 
@@ -1009,7 +1017,7 @@ class DesiredStateApplyRequest(BaseModel):
 async def automation_desired_state_adapters(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return {"adapters": desired_state_registry.list_adapters()}
 
 
@@ -1090,7 +1098,7 @@ async def automation_runs(
     limit: int = Query(default=50, ge=1, le=200),
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return {"runs": automation_store.recent_runs(limit)}
 
 
@@ -1098,7 +1106,7 @@ async def automation_runs(
 async def automation_execution_health(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, int]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return automation_store.execution_health()
 
 
@@ -1107,7 +1115,7 @@ async def automation_failed_work(
     limit: int = Query(default=50, ge=1, le=100),
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return {"runs": automation_store.failed_work(limit)}
 
 
@@ -1117,8 +1125,8 @@ async def automation_run_failures(
     limit: int = Query(default=50, ge=1, le=100),
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
-    if automation_store.get_run(run_id) is None:
+    _validate_inspection_api_key(x_api_key)
+    if not automation_store.run_exists(run_id):
         raise HTTPException(status_code=404, detail="Automation run not found.")
     return {"failures": automation_store.failure_history(run_id, limit)}
 
@@ -1128,7 +1136,7 @@ async def automation_run(
     run_id: str,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     run = automation_store.get_run(run_id)
     if run is None:
         raise HTTPException(status_code=404, detail="Automation run not found.")
@@ -1140,7 +1148,7 @@ async def automation_audit(
     limit: int = Query(default=100, ge=1, le=500),
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return {"audit": automation_store.recent_audit(limit)}
 
 

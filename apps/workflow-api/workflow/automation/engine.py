@@ -209,7 +209,9 @@ class AutomationEngine:
                         retry_after=retry_after,
                         base_delay_seconds=step.retry.backoff_seconds or 2.0,
                     )
-                    reason = self._failure_reason(decision.action, decision.category, retry_safe)
+                    category = ("ambiguous_external" if getattr(exc, "ambiguous_external_write", False)
+                                else decision.category)
+                    reason = self._failure_reason(decision.action, category, retry_safe)
                     if preflight_reason is not None:
                         reason = preflight_reason
                     diagnostic = {"http_status": status_code} if status_code is not None else {}
@@ -217,7 +219,7 @@ class AutomationEngine:
                         diagnostic["retry_delay_seconds"] = decision.delay_seconds
                     if not self.store.complete_claimed_action(
                             run_id, attempt_id, marker, succeeded=False,
-                            error=type(exc).__name__, failure_category=decision.category,
+                            error=type(exc).__name__, failure_category=category,
                             reason_code=reason, diagnostic=diagnostic):
                         return False
                     if decision.action == "retry":
@@ -232,13 +234,13 @@ class AutomationEngine:
                     # A workflow's continuation preference cannot downgrade a
                     # protected execution-control terminal classification.
                     terminal = ("failed" if decision.action == "dead_letter"
-                                and (decision.category == "permanent" or preflight_reason is not None)
+                                and (category == "permanent" or preflight_reason is not None)
                                 else decision.action)
                     return self.store.finish_claim(
                         run_id, attempt_id, status=terminal,
-                        error=reason, failure_category=decision.category,
+                        error=reason, failure_category=category,
                         reason_code=reason, redrive_permitted=retry_safe and terminal == "dead_letter"
-                        and decision.category in {"rate_limited", "network_timeout", "provider_unavailable"},
+                        and category in {"rate_limited", "network_timeout", "provider_unavailable"},
                         human_required=terminal == "human_action_required", context=context,
                     )
                 provider_operation_id = (result.get("provider_operation_id")

@@ -1164,3 +1164,46 @@ runbook, helper, updater, sudoers, timers, backups, provider scopes and
 schedules were not changed. Production remains at `e5143d3`; V2 is not
 deployed and requires a new independent C-class review. Root-runbook
 ownership migration and remaining Phase 3/Phase 4 capabilities stay separate.
+
+### Phase 3 executor Release Candidate V3 — source only
+
+The second independent C-class review returned
+`OPTIBRAIN_PHASE3_C_REVIEW_V2_FAIL`. It reproduced four blockers in V2:
+mixed-width TEXT lease comparison (early requeue and late renewal), false
+completion of an HTTP 200 HTML Windsor write response, inspection auth
+fail-open with a missing server key, and 1,000 step results materialized for a
+failure-history request with `limit=1`. V2 remains undeployed.
+
+The isolated application-only V3 candidate is
+`d61510d0d2ba3b6db182daea864705baeb9fcc61`, directly based on
+production `e5143d35ca1664a8b4faeda40f0f15a80fe7673d`. Its 12-file
+application diff SHA-256 is
+`0512288dd2afae81127965bb13d3f97296c2c5ddb35d1deef147497519760f9e`.
+Only seven application paths differ from V2. The unreleased final V1 claim
+schema now stores integer UTC epoch microseconds; at equality a lease is
+expired. Windsor writes require the documented nonempty JSON `result` string
+and reject malformed/error/partial responses into single-attempt human
+reconciliation. All automation GET inspection routes fail closed with 503
+when the server key is absent; a valid configured key preserves 401 rejection
+for anonymous/wrong credentials. Failure-history existence uses `SELECT 1`
+and no longer materializes the full run; failed-work limits terminal runs
+before joining evidence.
+
+The exact V2 reproductions changed to early recovery 0, late renewal false,
+malformed Windsor write `human_action_required` with one call, missing-key
+inspection 503 before lookup, and no `get_run` call for 1,001-step bounded
+failure history. Workflow pytest passed 128 tests and 75 subtests; CI-style
+unittest 114/114, admin adversarial 37/37, restore 2/2, Phase 2A uploader
+9/9, Phase 1 backup, Phase 2A bucket/R2, compilation, shell syntax, source
+sudoers parse, artifact-byte and diff checks passed. The full 15-boundary
+crash/restart matrix and rollback/preflight requirements are in the release
+candidate record. Production remains at `e5143d3`; no V3 deployment or root
+runbook publication occurred.
+
+Terminal claim rows remain retained and filtered from recovery. Their future
+retention/cleanup, provider-native reconciliation, controlled redrive,
+heartbeat/liveness, alerting, escalation, live drills, authenticated
+production validation, and root-runbook publication design remain separate
+Phase 3 work. Phase 4 event ingestion and dedupe remain separate from action
+idempotency. V3 requires a new independent C-class review and separate human
+authorization before any deployment.

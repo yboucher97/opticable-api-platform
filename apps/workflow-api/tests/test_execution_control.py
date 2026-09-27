@@ -5,6 +5,7 @@ import tempfile
 import threading
 import unittest
 import hashlib
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -105,6 +106,88 @@ steps:
         self.assertEqual(len(runs), 1)
         return runs[0][0], event
 
+    def test_integer_lease_clock_never_recovers_or_steals_early(self) -> None:
+        self.engine()
+        run_id, _ = self.queue()
+        claimed = datetime(2026, 1, 1, 0, 0, 0, 500000, timezone.utc)
+        expires = claimed + timedelta(seconds=5)
+        token = self.store.claim_run(run_id, "worker-a", lease_seconds=5, now=claimed)
+        with self.store._connect() as conn:
+            row = conn.execute("SELECT claimed_at,lease_expires_at FROM automation_run_claims "
+                               "WHERE run_id=?", (run_id,)).fetchone()
+            self.assertEqual((type(row[0]), type(row[1])), (int, int))
+            self.assertEqual(row[1] - row[0], 5_000_000)
+        for now in (expires - timedelta(microseconds=500000),
+                    expires - timedelta(microseconds=1)):
+            with self.subTest(now=now):
+                self.assertEqual(self.store.execution_health(now=now)["expired_leases"], 0)
+                self.assertEqual(self.store.recover_expired_claims(now=now)["requeued"], 0)
+                self.assertIsNone(self.store.claim_run(run_id, "worker-b", now=now))
+                self.assertEqual(self.store.get_run(run_id)["status"], "claimed")
+        at_expiry = self.store.execution_health(now=expires)
+        self.assertEqual(at_expiry["expired_leases"], 1)
+        self.assertEqual(at_expiry["oldest_claim_age_seconds"], 5)
+        self.assertEqual(self.store.recover_expired_claims(now=expires)["requeued"], 1)
+        self.assertIsNone(self.store.begin_claimed_action(
+            run_id, token, step_id="operation", action="fixture.action",
+            action_identity="a" * 64, attempt=1, now=expires))
+
+    def test_integer_lease_clock_rejects_exact_and_late_renewal(self) -> None:
+        self.engine()
+        run_id, _ = self.queue()
+        claimed = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        expires = claimed + timedelta(seconds=5)
+        token = self.store.claim_run(run_id, "worker-a", lease_seconds=5, now=claimed)
+        self.assertFalse(self.store.renew_claim(run_id, token, now=expires))
+        self.assertFalse(self.store.renew_claim(
+            run_id, token, now=expires + timedelta(microseconds=1)))
+        self.assertFalse(self.store.renew_claim(
+            run_id, token, now=expires + timedelta(microseconds=100000)))
+        self.assertTrue(self.store.renew_claim(
+            run_id, token, now=expires - timedelta(microseconds=1), lease_seconds=5))
+        self.assertEqual(self.store.recover_expired_claims(now=expires)["requeued"], 0)
+        self.assertEqual(self.store.recover_expired_claims(
+            now=expires + timedelta(seconds=5) - timedelta(microseconds=2))["requeued"], 0)
+        self.assertEqual(self.store.recover_expired_claims(
+            now=expires + timedelta(seconds=5) - timedelta(microseconds=1))["requeued"], 1)
+
+    def test_completion_fence_uses_exact_microsecond_expiry(self) -> None:
+        self.engine()
+        run_id, _ = self.queue()
+        claimed = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        expires = claimed + timedelta(seconds=5)
+        token = self.store.claim_run(run_id, "worker-a", lease_seconds=5, now=claimed)
+        marker = self.store.begin_claimed_action(
+            run_id, token, step_id="operation", action="fixture.action",
+            action_identity="a" * 64, attempt=1, now=claimed)
+        self.assertIsNotNone(marker)
+        self.assertFalse(self.store.complete_claimed_action(
+            run_id, token, marker, succeeded=True, now=expires))
+        self.assertFalse(self.store.complete_claimed_action(
+            run_id, token, marker, succeeded=True,
+            now=expires + timedelta(microseconds=1)))
+        self.assertTrue(self.store.complete_claimed_action(
+            run_id, token, marker, succeeded=True, result={"ok": True},
+            final_context={"done": True}, now=expires - timedelta(microseconds=1)))
+        self.assertEqual(self.store.get_run(run_id)["status"], "completed")
+        self.assertEqual(self.store.recover_expired_claims(now=expires + timedelta(days=1)),
+                         {"requeued": 0, "human_action_required": 0})
+
+    def test_marked_claim_escalates_only_at_exact_expiry(self) -> None:
+        self.engine()
+        run_id, _ = self.queue()
+        claimed = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        expires = claimed + timedelta(seconds=5)
+        token = self.store.claim_run(run_id, "worker-a", lease_seconds=5, now=claimed)
+        self.assertIsNotNone(self.store.begin_claimed_action(
+            run_id, token, step_id="operation", action="fixture.action",
+            action_identity="a" * 64, attempt=1, now=claimed))
+        self.assertEqual(self.store.recover_expired_claims(
+            now=expires - timedelta(microseconds=1))["human_action_required"], 0)
+        self.assertEqual(self.store.recover_expired_claims(
+            now=expires)["human_action_required"], 1)
+        self.assertEqual(self.store.get_run(run_id)["status"], "human_action_required")
+
     def test_two_executors_race_one_handler_execution(self) -> None:
         first = self.engine()
         other_store = AutomationStore(self.db)
@@ -158,7 +241,7 @@ steps:
         self.assertIsNotNone(token)
         with self.store._connect() as conn:
             conn.execute("UPDATE automation_run_claims SET lease_expires_at=? WHERE run_id=?",
-                         ("2000-01-01T00:00:00Z", run_id))
+                         (0, run_id))
         restarted = AutomationEngine(AutomationStore(self.db), self.workflows)
         restarted.sync_definitions()
         restarted.register_action("fixture.action", lambda context, step: {"ok": True})
@@ -176,7 +259,7 @@ steps:
         self.assertEqual(self.store.get_run(run_id)["status"], "claimed")
         with self.store._connect() as conn:
             conn.execute("UPDATE automation_run_claims SET lease_expires_at=? WHERE run_id=?",
-                         ("2000-01-01T00:00:00Z", run_id))
+                         (0, run_id))
         restarted = AutomationEngine(AutomationStore(self.db), self.workflows)
         restarted.sync_definitions()
         calls = []
@@ -199,7 +282,7 @@ steps:
             engine.execute_run(run_id, definition, event)
         with self.store._connect() as conn:
             conn.execute("UPDATE automation_run_claims SET lease_expires_at=? WHERE run_id=?",
-                         ("2000-01-01T00:00:00Z", run_id))
+                         (0, run_id))
         self.assertEqual(engine.recover_pending()["human_action_required"], 1)
         self.assertEqual(engine.recover_pending()["executed"], 0)
         self.assertEqual(calls, [1])
@@ -220,7 +303,7 @@ steps:
         self.assertIsNotNone(marker)
         with self.store._connect() as conn:
             conn.execute("UPDATE automation_run_claims SET lease_expires_at=? WHERE run_id=?",
-                         ("2000-01-01T00:00:00Z", run_id))
+                         (0, run_id))
         restarted = AutomationEngine(AutomationStore(self.db), self.workflows)
         calls = []
         restarted.register_action("fixture.action", lambda context, step: calls.append(1))
@@ -244,7 +327,7 @@ steps:
             self.assertEqual(marker["status"], "started")
             self.assertEqual(len(marker["action_identity"]), 64)
             conn.execute("UPDATE automation_run_claims SET lease_expires_at=? WHERE run_id=?",
-                         ("2000-01-01T00:00:00Z", run_id))
+                         (0, run_id))
         restarted = AutomationEngine(AutomationStore(self.db), self.workflows)
         restarted.register_action("fixture.action", lambda context, step: calls.append(1))
         self.assertEqual(restarted.recover_pending()["human_action_required"], 1)
@@ -292,7 +375,7 @@ steps:
                 "SELECT attempt_id FROM automation_run_claims WHERE run_id=?", (run_id,)
             ).fetchone()[0], token)
             conn.execute("UPDATE automation_run_claims SET lease_expires_at=? WHERE run_id=?",
-                         ("2000-01-01T00:00:00Z", run_id))
+                         (0, run_id))
         self.assertEqual(restarted.store.recover_expired_claims()["requeued"], 1)
 
     def test_stable_logical_identity_and_duplicate_step_fence(self) -> None:

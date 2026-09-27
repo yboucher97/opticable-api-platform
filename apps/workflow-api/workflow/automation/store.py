@@ -11,6 +11,8 @@ from uuid import uuid4
 
 from .models import AutomationEvent, WorkflowDefinition, utc_now_iso
 
+_UTC_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
+
 
 class AutomationStore:
     """Durable local store with a schema that can later be migrated to Postgres."""
@@ -133,6 +135,7 @@ class AutomationStore:
                     "SELECT name FROM sqlite_master WHERE type='index'")}
                 if complete and {"idx_automation_run_steps_run", "idx_automation_run_claims_expiry",
                                  "idx_automation_run_failures_run"} <= indexes:
+                    self._require_numeric_claim_clock(conn)
                     return
             columns = {row["name"] for row in conn.execute("PRAGMA table_info(automation_run_steps)")}
             if "action_identity" not in columns:
@@ -146,8 +149,8 @@ class AutomationStore:
                     run_id TEXT PRIMARY KEY,
                     worker_id TEXT NOT NULL,
                     attempt_id TEXT NOT NULL UNIQUE,
-                    claimed_at TEXT NOT NULL,
-                    lease_expires_at TEXT NOT NULL,
+                    claimed_at INTEGER NOT NULL,
+                    lease_expires_at INTEGER NOT NULL,
                     FOREIGN KEY(run_id) REFERENCES automation_runs(run_id)
                 )
             """)
@@ -192,7 +195,15 @@ class AutomationStore:
                 actual = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
                 if not required <= actual:
                     raise RuntimeError(f"automation migration schema mismatch: {table}")
+            self._require_numeric_claim_clock(conn)
             conn.execute("PRAGMA user_version=1")
+
+    @staticmethod
+    def _require_numeric_claim_clock(conn: sqlite3.Connection) -> None:
+        types = {row["name"]: row["type"].upper()
+                 for row in conn.execute("PRAGMA table_info(automation_run_claims)")}
+        if types.get("claimed_at") != "INTEGER" or types.get("lease_expires_at") != "INTEGER":
+            raise RuntimeError("automation claim clock schema must use integer microseconds")
 
     def upsert_workflow(self, definition: WorkflowDefinition, source_path: str | None = None) -> None:
         payload = definition.model_dump(by_alias=True)
@@ -404,6 +415,13 @@ class AutomationStore:
         return value.isoformat().replace("+00:00", "Z")
 
     @staticmethod
+    def _claim_epoch_us(value: datetime) -> int:
+        """Exact UTC microseconds; equality with expiry means the lease has expired."""
+        delta = value - _UTC_EPOCH
+        return ((delta.days * 86400 + delta.seconds) * 1_000_000
+                + delta.microseconds)
+
+    @staticmethod
     def _validate_lease(worker_id: str, lease_seconds: int) -> None:
         if not re.fullmatch(r"[A-Za-z0-9._:-]{1,128}", worker_id):
             raise ValueError("invalid worker identity")
@@ -457,8 +475,8 @@ class AutomationStore:
         """Atomically claim queued work. The returned attempt token fences later actions."""
         self._validate_lease(worker_id, lease_seconds)
         checked = self._claim_time(now)
-        claimed_at = self._claim_iso(checked)
-        expires_at = self._claim_iso(checked + timedelta(seconds=lease_seconds))
+        claimed_at = self._claim_epoch_us(checked)
+        expires_at = self._claim_epoch_us(checked + timedelta(seconds=lease_seconds))
         with self._lock, self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
             row = conn.execute("SELECT status FROM automation_runs WHERE run_id=?", (run_id,)).fetchone()
@@ -479,7 +497,8 @@ class AutomationStore:
     def begin_claimed_action(self, run_id: str, attempt_id: str, *, step_id: str, action: str,
                              action_identity: str, attempt: int, now: datetime | None = None) -> int | None:
         """Persist a pre-action marker before any handler call; fail closed on stale tokens."""
-        checked_at = self._claim_iso(self._claim_time(now))
+        checked = self._claim_time(now)
+        checked_at = self._claim_epoch_us(checked)
         if (not step_id or not action or not 1 <= attempt <= 5
                 or not re.fullmatch(r"[0-9a-f]{64}", action_identity)):
             raise ValueError("invalid step attempt")
@@ -509,11 +528,11 @@ class AutomationStore:
             ).fetchone():
                 return None
             conn.execute("UPDATE automation_runs SET status='running',started_at=COALESCE(started_at,?) WHERE run_id=?",
-                         (checked_at, run_id))
+                         (self._claim_iso(checked), run_id))
             cursor = conn.execute(
                 "INSERT INTO automation_run_steps(run_id,step_id,action,action_identity,attempt,status,started_at) "
                 "VALUES(?,?,?,?,?,?,?)",
-                (run_id, step_id, action, action_identity, attempt, "started", checked_at),
+                (run_id, step_id, action, action_identity, attempt, "started", self._claim_iso(checked)),
             )
             self._claim_audit(conn, "action_started", claim["worker_id"], run_id, attempt_id)
         return int(cursor.lastrowid)
@@ -522,8 +541,8 @@ class AutomationStore:
                     now: datetime | None = None) -> bool:
         """Extend only an unexpired active claim held by the same attempt token."""
         checked = self._claim_time(now)
-        checked_at = self._claim_iso(checked)
-        expires_at = self._claim_iso(checked + timedelta(seconds=lease_seconds))
+        checked_at = self._claim_epoch_us(checked)
+        expires_at = self._claim_epoch_us(checked + timedelta(seconds=lease_seconds))
         if not isinstance(lease_seconds, int) or isinstance(lease_seconds, bool) or not 5 <= lease_seconds <= 300:
             raise ValueError("claim lease must be 5–300 seconds")
         with self._lock, self._connect() as conn:
@@ -550,7 +569,9 @@ class AutomationStore:
                                 final_context: dict[str, Any] | None = None,
                                 now: datetime | None = None) -> bool:
         """Record an observed result, atomically finishing the final successful step."""
-        finished_at = self._claim_iso(self._claim_time(now))
+        checked = self._claim_time(now)
+        finished_at = self._claim_iso(checked)
+        finished_at_us = self._claim_epoch_us(checked)
         if provider_operation_id is not None and (
                 not isinstance(provider_operation_id, str)
                 or not re.fullmatch(r"[A-Za-z0-9._:-]{1,200}", provider_operation_id)):
@@ -566,7 +587,7 @@ class AutomationStore:
             claim = conn.execute(
                 "SELECT c.worker_id FROM automation_run_claims c JOIN automation_runs r ON r.run_id=c.run_id "
                 "WHERE c.run_id=? AND c.attempt_id=? AND c.lease_expires_at>? AND r.status='running'",
-                (run_id, attempt_id, finished_at),
+                (run_id, attempt_id, finished_at_us),
             ).fetchone()
             if claim is None:
                 return False
@@ -618,13 +639,15 @@ class AutomationStore:
             raise ValueError("human review flag required")
         if status in {"completed", "partial"} and (redrive_permitted or human_required):
             raise ValueError("invalid success recovery flags")
-        finished_at = self._claim_iso(self._claim_time(now))
+        checked = self._claim_time(now)
+        finished_at = self._claim_iso(checked)
+        finished_at_us = self._claim_epoch_us(checked)
         with self._lock, self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
             claim = conn.execute(
                 "SELECT c.worker_id FROM automation_run_claims c JOIN automation_runs r ON r.run_id=c.run_id "
                 "WHERE c.run_id=? AND c.attempt_id=? AND c.lease_expires_at>? AND r.status='running'",
-                (run_id, attempt_id, finished_at),
+                (run_id, attempt_id, finished_at_us),
             ).fetchone()
             if claim is None or conn.execute(
                 "SELECT 1 FROM automation_run_steps WHERE run_id=? AND status='started'",
@@ -651,7 +674,9 @@ class AutomationStore:
         """Requeue only claims with no action marker; isolate all ambiguous work."""
         if not 1 <= limit <= 100:
             raise ValueError("recovery limit must be 1–100")
-        checked_at = self._claim_iso(self._claim_time(now))
+        checked = self._claim_time(now)
+        checked_at = self._claim_epoch_us(checked)
+        checked_at_iso = self._claim_iso(checked)
         result = {"requeued": 0, "human_action_required": 0}
         with self._lock, self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
@@ -673,12 +698,12 @@ class AutomationStore:
                 else:
                     conn.execute(
                         "UPDATE automation_runs SET status='human_action_required',finished_at=?,error=? WHERE run_id=?",
-                        (checked_at, "Claim expired after an action may have started; reconcile external effects before redrive.",
+                        (checked_at_iso, "Claim expired after an action may have started; reconcile external effects before redrive.",
                          claim["run_id"]),
                     )
                     self._insert_failure(conn, run_id=claim["run_id"], step_id=None,
                                          attempt_id=claim["attempt_id"], category="ambiguous_external",
-                                         reason_code="lease_expired_after_action", recorded_at=checked_at,
+                                         reason_code="lease_expired_after_action", recorded_at=checked_at_iso,
                                          terminal_state="human_action_required", human_required=True)
                     action = "expired_ambiguous_escalated"
                     result["human_action_required"] += 1
@@ -757,6 +782,12 @@ class AutomationStore:
             result["steps"].append(item)
         return result
 
+    def run_exists(self, run_id: str) -> bool:
+        """Check existence without loading a workflow snapshot or step results."""
+        with self._connect() as conn:
+            return conn.execute("SELECT 1 FROM automation_runs WHERE run_id=? LIMIT 1",
+                                (run_id,)).fetchone() is not None
+
     def recent_runs(self, limit: int = 50) -> list[dict[str, Any]]:
         safe_limit = max(1, min(limit, 200))
         with self._connect() as conn:
@@ -772,17 +803,22 @@ class AutomationStore:
         with self._connect() as conn:
             rows = conn.execute(
                 """
+                WITH selected AS (
+                    SELECT run_id,workflow_id,status,created_at,finished_at
+                    FROM automation_runs
+                    WHERE status IN ('failed','partial','dead_letter','human_action_required')
+                    ORDER BY created_at DESC,run_id DESC LIMIT ?
+                )
                 SELECT r.run_id,r.workflow_id,r.status,r.created_at,r.finished_at,
                        f.category AS failure_category,f.reason_code,f.recorded_at AS failure_at,
                        f.redrive_permitted,f.human_required,
                        COUNT(s.id) AS step_attempts,MAX(s.started_at) AS last_attempt_at
-                FROM automation_runs r
+                FROM selected r
                 LEFT JOIN automation_run_steps s ON s.run_id=r.run_id
                 LEFT JOIN automation_run_failures f ON f.id=(
                     SELECT MAX(last.id) FROM automation_run_failures last WHERE last.run_id=r.run_id)
-                WHERE r.status IN ('failed','partial','dead_letter','human_action_required')
                 GROUP BY r.run_id
-                ORDER BY r.created_at DESC,r.run_id DESC LIMIT ?
+                ORDER BY r.created_at DESC,r.run_id DESC
                 """,
                 (safe_limit,),
             ).fetchall()
@@ -812,7 +848,7 @@ class AutomationStore:
         queued_cutoff = self._claim_iso(checked_at - timedelta(minutes=15))
         running_cutoff = self._claim_iso(checked_at - timedelta(hours=1))
         recent_cutoff = running_cutoff
-        now_iso = self._claim_iso(checked_at)
+        now_us = self._claim_epoch_us(checked_at)
         with self._connect() as conn:
             row = conn.execute(
                 """
@@ -834,7 +870,7 @@ class AutomationStore:
                     MIN(CASE WHEN status IN ('claimed','running') THEN c.claimed_at END) AS oldest_claim_at
                 FROM automation_runs r LEFT JOIN automation_run_claims c ON c.run_id=r.run_id
                 """,
-                (queued_cutoff, running_cutoff, now_iso),
+                (queued_cutoff, running_cutoff, now_us),
             ).fetchone()
             recent_failures = conn.execute(
                 "SELECT COUNT(*) FROM automation_run_failures WHERE recorded_at>=?",
@@ -847,7 +883,8 @@ class AutomationStore:
         for name in ("queued", "running", "claim"):
             value = row[f"oldest_{name}_at"]
             if value:
-                started = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                started = (_UTC_EPOCH + timedelta(microseconds=int(value)) if name == "claim"
+                           else datetime.fromisoformat(value.replace("Z", "+00:00")))
                 result[f"oldest_{name}_age_seconds"] = max(0, int((checked_at - started).total_seconds()))
             else:
                 result[f"oldest_{name}_age_seconds"] = 0

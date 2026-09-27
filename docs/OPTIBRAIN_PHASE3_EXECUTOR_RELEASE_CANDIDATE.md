@@ -310,3 +310,128 @@ The V2 version guard, stable local action digest, and transaction boundaries
 do not materially constrain later webhook-first event ingestion, provider
 event/account identity, delta sync, bounded polling, safe replay, or usage/cost
 accounting. V2 makes no Phase 4 implementation or provider API calls.
+
+## Release Candidate V3 — source review package, not deployed
+
+The second independent C-class review returned
+`OPTIBRAIN_PHASE3_C_REVIEW_V2_FAIL`. Four reproduced blockers were: mixed-width
+SQLite TEXT lease comparisons requeued a valid lease and renewed an expired
+one; HTTP 200 HTML could complete an unconfirmed Windsor write; missing
+server-side inspection key allowed anonymous inspection; and failure history
+materialized all 1,000 step results despite `limit=1`. V3 fixes only these
+four boundaries and their equivalent paths. V2 remains undeployed.
+
+The immutable application candidate is
+`d61510d0d2ba3b6db182daea864705baeb9fcc61`, directly parented by
+production `e5143d35ca1664a8b4faeda40f0f15a80fe7673d`. Its 12 changed
+paths are all under `apps/workflow-api/`; application diff SHA-256 is
+`0512288dd2afae81127965bb13d3f97296c2c5ddb35d1deef147497519760f9e`.
+Relative to failed V2, only `test_execution_control.py`,
+`test_inspection_boundaries.py`, `test_windsor_provider.py`, `api.py`,
+`engine.py`, `store.py`, and `windsor_api.py` changed. This source package
+also updates this release record and the progress journal; those files are
+not in the deployable application diff.
+
+### Lease clock and final V1 schema
+
+The unreleased `automation_run_claims.claimed_at` and `lease_expires_at`
+columns are now SQLite `INTEGER` UTC epoch microseconds. The conversion uses
+integer day/second/microsecond arithmetic; no float is used for durable
+ordering. Claim insertion, action start, renewal, result and terminal fences,
+expiry recovery, and execution-health expired-lease counts all use the same
+integer clock. ISO-8601 remains human-readable evidence for run/step/failure
+timestamps. **At equality, `now >= lease_expires_at` means expired.** A
+version-1 database with incompatible TEXT claim columns is rejected, not
+silently used. Because no Phase 3 schema was deployed, the production path
+remains one additive V0 → final V1 migration; no artificial V1 → V2 step exists.
+
+Exact fixtures cover expiry `05.500000` versus now `05.000000` (not expired),
+expiry `05.000000` versus now `05.100000` (expired), exact equality, one
+microsecond before/after, renewal, completion fencing, recovery, and
+execution-health counts. The V2 reproductions changed from early requeue 1 to
+0 and late renewal `True` to `False`. Existing crash, stale-token, competing
+worker, duplicate-event, and migration tests remain green. Version-2 future
+schema fixtures retain their pre-initialization schema/data/file hashes.
+
+### Windsor write confirmation
+
+The [Windsor Connectors API documentation](https://windsor.ai/api-documentation/)
+shows a successful action returning a JSON object with a nonempty `result`
+string. V3 requires a JSON media type, parsed object, that documented result
+shape, and no obvious error/partial-success envelope before recording a
+Windsor write as successful. Other result shapes require later provider-specific
+proof. HTTP status alone is insufficient. Unconfirmable responses raise a
+fixed-message `WindsorWriteUnconfirmedError`; the engine records restricted
+`ambiguous_external` evidence and `human_action_required`. It stores neither
+HTML nor raw provider response text, does not retry, and does not redrive.
+Safe read registration is unchanged. Fixtures cover valid success, HTML,
+malformed JSON, empty body, wrong shape/media type, error/failed/partial
+envelopes, read timeout, and connection uncertainty. Every ambiguous write
+uses exactly one provider call even with five workflow attempts configured.
+
+### Inspection authentication and bounds
+
+All `/v1/automation/` GET inspection routes share a fail-closed inspection
+guard. If the configured server key is absent, empty, or whitespace-only, the
+route returns 503 before any store lookup; no key value is disclosed. With a
+configured key, missing or wrong client credentials return 401 and a correct
+key retains existing endpoint behavior. Production deployment preflight must
+verify only the *presence* of the server-side inspection key through the
+approved credential-custody path; never print, rotate, or export it for this
+check. The current production service returns 401 anonymously.
+
+Failure-history existence now uses `SELECT 1 FROM automation_runs WHERE
+run_id=? LIMIT 1`; it never calls `get_run` or parses workflow snapshots and
+step results. The history query retains its `ORDER BY id DESC LIMIT ?` and
+100-row server cap. `failed_work` first selects at most 100 terminal runs in
+a CTE before joining step/failure evidence. A fixture with 1,001 large step
+results and `limit=1` verifies that `get_run` is not invoked, one failure row
+is returned, and excessive/invalid limits are rejected.
+
+### V3 crash/restart matrix and validation
+
+| Boundary | V3 fixture result |
+|---|---|
+| 1. Before claim commit | Queued run and claim transition roll back. |
+| 2. Claimed before marker | Valid claim remains held; marker-free expiry requeues. |
+| 3. Marker before handler | Expiry escalates for human reconciliation. |
+| 4. During handler | Expiry escalates; no blind replay. |
+| 5. Response before local result | Started marker remains; expiry escalates. |
+| 6. After final result commit | Completed run remains authoritative. |
+| 7. Restart during valid lease | No claim theft, including exact-second edge. |
+| 8. Restart after expiry | Marker-free requeue; marked claim escalates. |
+| 9. Expired never-started claim | Requeues at or after exact expiry only. |
+| 10. Expired started claim | Human action required at or after exact expiry only. |
+| 11. Stale worker late commit | Wrong/expired attempt rejected; equality is expired. |
+| 12. Competing workers | One claimant and one handler invocation. |
+| 13. Interrupted migration | Additions and version roll back on existing V0 fixture. |
+| 14. Duplicate source event | One event/run for the deployed event ID/key semantics. |
+| 15. Duplicate logical action | Local digest/completed-step guard blocks local duplicate. |
+
+Workflow pytest: **128 passed, 75 subtests**; CI-style unittest: **114/114**.
+Admin adversarial: **37/37**; restore: **2/2**; Phase 2A uploader: **9/9**
+with `/usr/bin/python3` and Ubuntu boto3/botocore 1.34.46. Phase 1 backup,
+Phase 2A bucket/R2 fixtures, compilation, shell syntax, source sudoers parse,
+artifact-byte checks, and diff whitespace checks passed. These are isolated
+fixtures, not a live reboot or provider outage drill.
+
+Terminal runs retain their claim rows. Recovery filters terminal statuses, so
+retained rows neither requeue nor replay work; one row per terminal run can
+accumulate indefinitely. Review retention/cleanup separately in Phase 3,
+without broadening V3. Code rollback to `e5143d3` read the final V1 additive
+schema and preserved V0 fixture counts/statuses. It does not automatically
+redrive claimed or ambiguous work; inspect such work before any manual action.
+The local action digest is execution evidence, not provider-native write
+idempotency. Event dedupe is a separate mechanism.
+
+Remaining Phase 3 work: provider-native write reconciliation/idempotency,
+controlled redrive, worker and scheduler heartbeat/liveness, queue growth and
+stale-work alerting, escalation, live reboot and controlled outage drills,
+authenticated production validation, terminal-claim retention, and separate
+root-runbook publication design. V3 adds no Phase 4 implementation and does
+not materially block native event IDs, durable webhook-first ingestion,
+deterministic dedupe, delta sync, bounded polling, correlation/causation IDs,
+event replay/signatures/ordering, or usage accounting.
+
+**Not deployed. A new independent C-class review and separate human deployment
+authorization are required.**

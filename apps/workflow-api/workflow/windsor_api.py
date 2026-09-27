@@ -15,6 +15,12 @@ class WindsorApiError(RuntimeError):
         self.response = response
 
 
+class WindsorWriteUnconfirmedError(WindsorApiError):
+    """A sent write has no trustworthy success evidence; never retry it blindly."""
+
+    ambiguous_external_write = True
+
+
 _SAFE_CONNECTOR = re.compile(r"^[a-z0-9_]+$")
 
 
@@ -71,15 +77,40 @@ class WindsorApiClient:
             json={"account": account, "action": action, "params": params or {}},
             timeout=httpx.Timeout(float(self.settings.timeout_seconds), connect=20.0),
         )
-        return self._parse(response)
+        return self._parse(response, require_write_confirmation=True)
 
-    def _parse(self, response: httpx.Response) -> dict[str, Any]:
+    @staticmethod
+    def _confirmed_write(data: Any) -> bool:
+        # Windsor documents a nonempty JSON "result" string for a successful
+        # action. Other shapes need action-specific proof before confirmation.
+        if not isinstance(data, dict) or "result" not in data:
+            return False
+        result = data["result"]
+        if not isinstance(result, str) or not result.strip():
+            return False
+        lowered = result.strip().lower()
+        if any(marker in lowered for marker in
+               ("error", "failed", "failure", "unauthorized", "not authorized",
+                "denied", "partial success", "partial_success")):
+            return False
+        if (data.get("error") or data.get("errors")
+                or data.get("success") is False or data.get("ok") is False
+                or str(data.get("status", "")).lower() in
+                {"error", "failed", "failure", "unauthorized", "partial_success"}):
+            return False
+        return True
+
+    def _parse(self, response: httpx.Response, *, require_write_confirmation: bool = False) -> dict[str, Any]:
         try:
             data: Any = response.json()
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, UnicodeDecodeError):
             data = response.text
-        result = {"ok": response.is_success, "status": response.status_code, "data": data}
         if not response.is_success:
             raise WindsorApiError(f"Windsor API returned HTTP {response.status_code}: {str(data)[:2000]}",
                                   response=response)
-        return result
+        if require_write_confirmation:
+            media_type = response.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
+            if not ((media_type == "application/json" or media_type.endswith("+json"))
+                    and self._confirmed_write(data)):
+                raise WindsorWriteUnconfirmedError("Windsor write result is unconfirmed", response=response)
+        return {"ok": True, "status": response.status_code, "data": data}
