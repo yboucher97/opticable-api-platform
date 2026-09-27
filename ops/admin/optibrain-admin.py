@@ -128,6 +128,12 @@ def main(args):
         op = parse_request(args)
     except ValueError:
         print("optibrain-admin: unsupported operation", file=sys.stderr)
+        try:
+            rejected = ("rejected",)
+            fd = audit_start(rejected)
+            audit_end(fd, rejected, "denied")
+        except Exception:
+            pass
         return 2
     if op == ("help",):
         execute(op)
