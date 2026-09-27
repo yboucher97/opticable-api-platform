@@ -89,7 +89,7 @@ class AutomationEngine:
     def ingest(self, event: AutomationEvent) -> EventIngestResponse:
         if event.depth > self.max_event_depth:
             raise ValueError(f"Event depth {event.depth} exceeds max depth {self.max_event_depth}.")
-        accepted, event_id, correlation_id = self.store.ingest_event(event)
+        accepted, event_id, correlation_id, queued_runs = self.store.ingest_event_and_runs(event)
         if not accepted:
             return EventIngestResponse(
                 accepted=False,
@@ -101,8 +101,7 @@ class AutomationEngine:
 
         effective_event = event.model_copy(update={"correlation_id": correlation_id})
         run_ids: list[str] = []
-        for definition in self.store.matching_workflows(effective_event):
-            run_id = self.store.create_run(definition.id, effective_event.event_id, correlation_id)
+        for run_id, definition in queued_runs:
             run_ids.append(run_id)
             self.execute_run(run_id, definition, effective_event)
 

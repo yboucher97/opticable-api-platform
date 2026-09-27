@@ -1069,6 +1069,14 @@ async def automation_runs(
     return {"runs": automation_store.recent_runs(limit)}
 
 
+@app.get("/v1/automation/execution-health", tags=["automation"])
+async def automation_execution_health(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, int]:
+    _validate_api_key(x_api_key)
+    return automation_store.execution_health()
+
+
 @app.get("/v1/automation/runs/{run_id}", tags=["automation"])
 async def automation_run(
     run_id: str,

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -200,6 +201,66 @@ class AutomationStore:
                 return False, str(existing["event_id"]), str(existing["correlation_id"])
         return True, event.event_id, correlation_id
 
+    def ingest_event_and_runs(
+        self, event: AutomationEvent
+    ) -> tuple[bool, str, str, list[tuple[str, WorkflowDefinition]]]:
+        """Commit the event and every matching queued run in one SQLite transaction.
+
+        This does not execute or replay a run. A crash after commit leaves a
+        visible queued run for explicit recovery, rather than an orphan event.
+        """
+        correlation_id = event.correlation_id or event.event_id
+        with self._lock, self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            existing = None
+            if event.idempotency_key:
+                existing = conn.execute(
+                    "SELECT event_id,correlation_id FROM automation_events WHERE idempotency_key=?",
+                    (event.idempotency_key,),
+                ).fetchone()
+            if existing is None:
+                existing = conn.execute(
+                    "SELECT event_id,correlation_id FROM automation_events WHERE event_id=?",
+                    (event.event_id,),
+                ).fetchone()
+            if existing is not None:
+                return False, str(existing["event_id"]), str(existing["correlation_id"]), []
+
+            rows = conn.execute(
+                "SELECT definition_json FROM automation_workflows WHERE enabled=1 ORDER BY workflow_id"
+            ).fetchall()
+            matches: list[WorkflowDefinition] = []
+            for row in rows:
+                definition = WorkflowDefinition.model_validate(json.loads(row["definition_json"]))
+                if event.event_type not in definition.trigger.event_types and "*" not in definition.trigger.event_types:
+                    continue
+                if definition.trigger.sources and event.source not in definition.trigger.sources:
+                    continue
+                matches.append(definition)
+
+            now = utc_now_iso()
+            conn.execute(
+                """
+                INSERT INTO automation_events(
+                    event_id,event_type,source,occurred_at,correlation_id,causation_id,
+                    idempotency_key,depth,payload_json,created_at
+                ) VALUES(?,?,?,?,?,?,?,?,?,?)
+                """,
+                (event.event_id, event.event_type, event.source, event.occurred_at,
+                 correlation_id, event.causation_id, event.idempotency_key, event.depth,
+                 json.dumps(event.payload, separators=(",", ":"), ensure_ascii=False), now),
+            )
+            runs: list[tuple[str, WorkflowDefinition]] = []
+            for definition in matches:
+                run_id = uuid4().hex
+                conn.execute(
+                    "INSERT INTO automation_runs(run_id,workflow_id,event_id,correlation_id,status,created_at) "
+                    "VALUES(?,?,?,?,?,?)",
+                    (run_id, definition.id, event.event_id, correlation_id, "queued", now),
+                )
+                runs.append((run_id, definition))
+        return True, event.event_id, correlation_id, runs
+
     def create_run(self, workflow_id: str, event_id: str, correlation_id: str) -> str:
         run_id = uuid4().hex
         now = utc_now_iso()
@@ -288,6 +349,31 @@ class AutomationStore:
                 (safe_limit,),
             ).fetchall()
         return [dict(row) for row in rows]
+
+    def execution_health(self, *, now: datetime | None = None) -> dict[str, int]:
+        """Return bounded aggregate state; never claim or replay a run."""
+        checked_at = now or datetime.now(timezone.utc)
+        if checked_at.tzinfo is None:
+            raise ValueError("execution health requires a timezone-aware clock")
+        queued_cutoff = (checked_at.astimezone(timezone.utc) - timedelta(minutes=15)).isoformat().replace("+00:00", "Z")
+        running_cutoff = (checked_at.astimezone(timezone.utc) - timedelta(hours=1)).isoformat().replace("+00:00", "Z")
+        with self._connect() as conn:
+            row = conn.execute(
+                """
+                SELECT
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN status='queued' THEN 1 ELSE 0 END) AS queued,
+                    SUM(CASE WHEN status='running' THEN 1 ELSE 0 END) AS running,
+                    SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) AS failed,
+                    SUM(CASE WHEN status='partial' THEN 1 ELSE 0 END) AS partial,
+                    SUM(CASE WHEN status='queued' AND created_at<=? THEN 1 ELSE 0 END) AS stale_queued,
+                    SUM(CASE WHEN status='running' AND (started_at IS NULL OR started_at<=?) THEN 1 ELSE 0 END) AS stale_running
+                FROM automation_runs
+                """,
+                (queued_cutoff, running_cutoff),
+            ).fetchone()
+        return {key: int(row[key] or 0) for key in
+                ("total", "queued", "running", "failed", "partial", "stale_queued", "stale_running")}
 
     def audit(self, *, category: str, action: str, actor: str, success: bool, correlation_id: str | None = None, target: str | None = None, metadata: dict[str, Any] | None = None) -> None:
         with self._connect() as conn:

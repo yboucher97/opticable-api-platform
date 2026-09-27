@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import tempfile
+import threading
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 from workflow.automation.capabilities import capability_summary, load_capabilities
 from workflow.automation.engine import AutomationEngine
@@ -95,6 +98,86 @@ steps:
         self.assertFalse(second.accepted)
         self.assertEqual(second.event_id, first.event_id)
         self.assertEqual(len(self.store.recent_runs()), 1)
+
+    def test_event_and_all_runs_roll_back_together_on_crash(self) -> None:
+        self._write_smoke_workflow()
+        (self.workflows / "second.yaml").write_text(
+            (self.workflows / "smoke.yaml").read_text().replace("test.smoke", "test.second")
+        )
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test", idempotency_key="crash")
+        with patch("workflow.automation.store.uuid4", side_effect=[type("Id", (), {"hex": "first"})(), RuntimeError("crash")]):
+            with self.assertRaisesRegex(RuntimeError, "crash"):
+                engine.ingest(event)
+        with self.store._connect() as conn:
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM automation_events").fetchone()[0], 0)
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM automation_runs").fetchone()[0], 0)
+        result = engine.ingest(event)
+        self.assertEqual(len(result.run_ids), 2)
+        self.assertEqual(len(self.store.recent_runs()), 2)
+
+    def test_duplicate_ingest_across_store_instances_has_one_run(self) -> None:
+        self._write_smoke_workflow()
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        other = AutomationStore(self.store.db_path)
+        barrier = threading.Barrier(2)
+        results = []
+        errors = []
+
+        def submit(store: AutomationStore) -> None:
+            try:
+                barrier.wait()
+                results.append(store.ingest_event_and_runs(AutomationEvent(
+                    event_type="test.started", source="unit-test", idempotency_key="raced")))
+            except Exception as exc:
+                errors.append(exc)
+
+        threads = [threading.Thread(target=submit, args=(store,)) for store in (self.store, other)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=10)
+            self.assertFalse(thread.is_alive())
+        self.assertEqual(errors, [])
+        self.assertEqual(sorted(result[0] for result in results), [False, True])
+        self.assertEqual(len(self.store.recent_runs()), 1)
+
+    def test_crash_after_commit_leaves_visible_queued_run(self) -> None:
+        self._write_smoke_workflow()
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test", idempotency_key="before-execute")
+        with patch.object(engine, "execute_run", side_effect=RuntimeError("crash")):
+            with self.assertRaisesRegex(RuntimeError, "crash"):
+                engine.ingest(event)
+        self.assertEqual(self.store.recent_runs()[0]["status"], "queued")
+        duplicate = engine.ingest(event)
+        self.assertTrue(duplicate.duplicate)
+        self.assertEqual(len(self.store.recent_runs()), 1)
+
+    def test_execution_health_flags_stale_work_without_replay(self) -> None:
+        self._write_smoke_workflow()
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test")
+        self.store.ingest_event(event)
+        queued = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        running = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        failed = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        with self.store._connect() as conn:
+            conn.execute("UPDATE automation_runs SET created_at=? WHERE run_id=?",
+                         ("2026-09-27T15:00:00Z", queued))
+            conn.execute("UPDATE automation_runs SET status='running',started_at=? WHERE run_id=?",
+                         ("2026-09-27T14:00:00Z", running))
+            conn.execute("UPDATE automation_runs SET status='failed' WHERE run_id=?", (failed,))
+        snapshot = self.store.execution_health(now=datetime(2026, 9, 27, 16, tzinfo=timezone.utc))
+        self.assertEqual(snapshot, {"total": 3, "queued": 1, "running": 1, "failed": 1,
+                                    "partial": 0, "stale_queued": 1, "stale_running": 1})
+        self.assertEqual(len(self.store.recent_runs()), 3)
+        with self.assertRaises(ValueError):
+            self.store.execution_health(now=datetime(2026, 9, 27, 16))
 
     def test_unknown_action_fails_durably(self) -> None:
         (self.workflows / "bad.yaml").write_text(
