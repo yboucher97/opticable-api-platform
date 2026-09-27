@@ -127,6 +127,7 @@ class GithubApiClient:
         result = {
             "ok": response.is_success,
             "status": response.status_code,
+            "request_id": response.headers.get("X-GitHub-Request-Id") or response.headers.get("x-request-id"),
             "data": data,
             "auth_mode": self.auth_mode,
             "accepted_permissions": response.headers.get("X-Accepted-GitHub-Permissions"),
