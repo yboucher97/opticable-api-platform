@@ -1,10 +1,10 @@
 # OptiBrain autonomous resume journal
 
-Roadmap version: OPTIBRAIN AUTONOMOUS OVERNIGHT PROGRAM, 2026-09-27, Phases 2A–12.
-Current phase: 2A complete; next phase definition required.
-Status: HUMAN_ACTION_REQUIRED for the approved Phase 2B–12 scope.
-Temporary sudo works. All content before `Overnight resume` below is historical
-checkpoint context; use the final verification and roadmap boundary for live state.
+Roadmap version: OptiBrain approved Phase 2B–12 roadmap, 2026-09-27.
+Current phase: Phase 2B autonomous privileged operator.
+Status: IN PROGRESS. Phase 2A complete; Phase 2B implementation is starting.
+The earlier human-action boundary below is superseded by the roadmap supplied
+in this session. Rediscover live state before relying on historical entries.
 
 - Running production baseline / last known good SHA: `936e75a` (Phase 1).
   Working checkout: `hardening/phase2a-resume`; resolve its checkpoint SHA with
@@ -458,11 +458,50 @@ no new local or remote generation was created. Both timers remain active. Curren
 production HTTP health remains good; no jobs remain in progress.
 
 
-## HUMAN_ACTION_REQUIRED — approved next-phase plan
+## Superseded boundary
 
-Action: Provide the approved Phase 2B–12 roadmap (paste it here or identify its
-repository document), including each phase's scope and safety gates.
+The prior request for an approved Phase 2B–12 roadmap is resolved: the complete
+approved roadmap was supplied on 2026-09-27. Resume at Phase 2B below.
 
-Resume: Once available, reread live state and continue at the first approved safe
-operation after completed Phase 2A. The current recovery refs and service state
-are recorded above; no secrets or private identity are needed.
+## Approved roadmap resume — live baseline and Phase 2B intent (2026-09-27)
+
+- Checkout HEAD `1bae01c`; pre-existing untracked diagnostic script preserved.
+- Recovery branch `recovery/pre-phase2b-1bae01c` records the last-known-good code.
+- Production workflow API, PDF and Omada endpoints returned HTTP 200; all three
+  corresponding services are active. API version is 1.7.0.
+- Phase 1 `optibrain-backup.timer` and Phase 2A `optibrain-phase2a-upload.timer`
+  are enabled and active. Latest local archive `20260927T025414Z` passed sidecar
+  checksum verification. Off-host encrypted generation remains verified by
+  separate download/hash, human offline decrypt/hash, and isolated restore.
+  Disk has 63 GiB free (14% used).
+- `sudo -n true`, `visudo -c`, and `sudo -ll` succeeded. The legacy
+  `/etc/sudoers.d/optibrain-overnight` grants `NOPASSWD: ALL`; the ordinary
+  authenticated sudo-group rule and separate deploy rule also exist. Phase 2B
+  will replace only that broad drop-in after the fixed helper and exact-path
+  authorization have passed tests. Preserve base sudoers and deploy policy.
+- Mutation intent: install a root-owned fixed-operation operator, add its exact
+  path NOPASSWD rule, test routine operations and escape rejections, then remove
+  only the old broad overnight rule. Audit entries must contain no secrets.
+  Rollback is to restore the captured drop-in only if necessary, then immediately
+  re-establish the fixed helper policy; never leave broad sudo as steady state.
+- No Phase 2B sudo/service mutation has yet occurred. Next operation: implement
+  the helper and adversarial tests, validate installed files and sudo syntax,
+  then switch authorization and verify the old arbitrary sudo probe is denied.
+
+### Phase 2B implementation and pre-install review
+
+A fixed Python operator has been implemented at `ops/admin/optibrain-admin.py`.
+The initial command surface is health, scheduler/timer status, capacity, backup,
+latest local archive/checksum verification, off-host service execution and
+verification, read-only queue counts, and restart/status for exactly the three
+OptiBrain-owned API services. It accepts no arbitrary paths, commands, or unit
+names. Raw logs and credentials are never returned. Every non-help invocation
+writes durable start/result audit entries. Escape tests reject shell execution,
+path arguments, service injection, unrelated units and backup arguments.
+
+Before installation, Phase 2A checksum/state evidence and production health were
+revalidated as recorded above. No system configuration has changed yet. Next:
+review implementation and test outcome; install root-owned helper; validate helper
+operations with the still-authorized session; add exact-path sudo rule and verify
+it; remove broad overnight rule; prove non-helper `sudo -n` is denied and fixed
+commands still work. Then commit the completed policy switch and test results.
