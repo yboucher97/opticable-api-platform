@@ -563,6 +563,24 @@ class AutomationStore:
             ).fetchall()
         return [dict(row) for row in rows]
 
+    def failed_work(self, limit: int = 50) -> list[dict[str, Any]]:
+        """Inspect terminal/reconciliation work without payloads or raw errors."""
+        safe_limit = max(1, min(limit, 100))
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT r.run_id,r.workflow_id,r.status,r.created_at,r.finished_at,
+                       COUNT(s.id) AS step_attempts,MAX(s.started_at) AS last_attempt_at
+                FROM automation_runs r
+                LEFT JOIN automation_run_steps s ON s.run_id=r.run_id
+                WHERE r.status IN ('failed','dead_letter','human_action_required')
+                GROUP BY r.run_id
+                ORDER BY r.created_at DESC,r.run_id DESC LIMIT ?
+                """,
+                (safe_limit,),
+            ).fetchall()
+        return [dict(row) for row in rows]
+
     def execution_health(self, *, now: datetime | None = None) -> dict[str, int]:
         """Return bounded aggregate state; never claim or replay a run."""
         checked_at = self._claim_time(now)

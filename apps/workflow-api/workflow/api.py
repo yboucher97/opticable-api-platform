@@ -1077,6 +1077,15 @@ async def automation_execution_health(
     return automation_store.execution_health()
 
 
+@app.get("/v1/automation/failed-work", tags=["automation"])
+async def automation_failed_work(
+    limit: int = Query(default=50, ge=1, le=100),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_api_key(x_api_key)
+    return {"runs": automation_store.failed_work(limit)}
+
+
 @app.get("/v1/automation/runs/{run_id}", tags=["automation"])
 async def automation_run(
     run_id: str,

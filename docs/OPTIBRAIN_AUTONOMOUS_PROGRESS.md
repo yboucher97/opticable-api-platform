@@ -1051,3 +1051,28 @@ Phase 2A uploader 9/9, bucket-listing and R2-health fixtures all passed;
 Python compilation, sudoers parse, artifact manifest and `git diff --check`
 passed. The prototype is not wired into production execution and must not be
 described as completed crash recovery.
+
+### Independent Phase 3 retry and failed-work source slice
+
+On `hardening/phase3-retry-policy`, a pure bounded retry decision module now
+classifies 429/rate limit, provider 5xx, network timeout, 401/403 credential
+expiry, permanent 4xx and unknown failures. Only an operation explicitly proven
+safe to retry can receive finite exponential backoff (at most five attempts,
+at most 300 seconds) with optional positive jitter. Valid `Retry-After`
+seconds or HTTP dates are honored; malformed or overlong cooldowns escalate
+instead of retrying early. Ambiguous external writes and authentication expiry
+require human reconciliation. No runtime handler invokes this module yet.
+
+A bounded, read-only failed-work query and draft API route list terminal or
+human-review runs and attempt counts without event payloads or raw exception
+text. They provide inspection, not redrive. No schema or production change is
+part of this slice beyond the prior undeployed claim-table prototype. Route
+authorization and provider-specific idempotency still require review before
+any release. The next safe operation is to finish failure-category persistence
+and fixtures for a controlled, non-ambiguous redrive; the unsafe boundary is
+automatic provider-write replay, which remains prohibited.
+Validation for this source slice passed: workflow pytest 91 tests with 18
+subtests, CI-style unittest 77/77, ops/admin adversarial 37/37, restore drill
+2/2, Python compilation, failed-work route registration, proposed sudoers
+parse, artifact manifest and `git diff --check`. The prior Phase 1/2A fixtures
+passed on the parent claim checkpoint; this slice does not change them.

@@ -292,6 +292,24 @@ steps:
         self.assertEqual(self.store.recover_expired_claims(now=clock + timedelta(seconds=6)),
                          {"requeued": 0, "human_action_required": 0})
 
+    def test_failed_work_inspection_omits_payloads_and_raw_errors(self) -> None:
+        self._write_smoke_workflow()
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test",
+                                payload={"secret": "never-show-this"})
+        self.store.ingest_event(event)
+        run_id = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        self.store.set_run_status(run_id, "failed", error="token=never-show-this")
+        self.store.append_step(run_id=run_id, step_id="set_value", action="core.set",
+                               attempt=1, status="failed", started_at="2026-09-27T16:00:00Z",
+                               error="token=never-show-this")
+        result = self.store.failed_work()
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["run_id"], run_id)
+        self.assertEqual(result[0]["step_attempts"], 1)
+        self.assertNotIn("never-show-this", str(result))
+
     def test_unknown_action_fails_durably(self) -> None:
         (self.workflows / "bad.yaml").write_text(
             """

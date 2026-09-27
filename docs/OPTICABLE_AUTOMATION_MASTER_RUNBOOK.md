@@ -189,6 +189,14 @@ OptiBrain is the long-term canonical owner for business scheduling, but migrate
 one workflow at a time only after verifying shared idempotency identity and a
 rollback path. No schedule was added or disabled for this Phase 3 release.
 
+The subsequent Phase 3 claim/lease and retry prototypes are source-only and
+not in production. They add a proposed SQLite claim table, fenced pre-action
+markers, conservative human escalation for expired started work, bounded retry
+decisions and a read-only failed-work view. The claim table is a C-class schema
+migration and the engine does not yet use these primitives. Do not assume
+automatic crash replay or provider-write retries exist in production. See
+`docs/OPTIBRAIN_PHASE3_EXECUTION_CONTROL.md` for the exact safety boundary.
+
 1. Build provider-specific declarative reconcilers and real event workflows.
 2. Add provider credential/token expiry monitoring, retry/DLQ monitoring, and drift reconciliation.
 3. Add deterministic UI fallback only for functions that have no adequate API.

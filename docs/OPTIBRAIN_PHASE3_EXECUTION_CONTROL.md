@@ -81,6 +81,26 @@ application commit. Before integration, add a worker heartbeat, action-specific
 idempotency and transient/permanent failure classification, a durable terminal
 reason, and restart/outage drills. Do not deploy the prototype as self-healing.
 
+### Retry and failed-work source slice (not deployed)
+
+`retry_control.py` is a pure decision module: HTTP 429, provider 5xx and
+network timeouts can receive at most five idempotent attempts with capped
+exponential delay, optional positive jitter and strict `Retry-After` parsing.
+An invalid or overlong provider cooldown fails to human review rather than
+retrying early. HTTP 401/403 requires credential reconciliation; other 4xx
+responses are terminal. An ambiguous external write is never retried merely
+because its transport error looks transient. No provider call, sleep, token
+refresh or redrive occurs in this module. It is not yet wired to the engine;
+doing so requires per-action idempotency proofs and a durable attempt schedule.
+
+`AutomationStore.failed_work` and the draft authenticated
+`GET /v1/automation/failed-work` route list bounded terminal/reconciliation
+runs with attempt counts but omit event payloads and raw error strings. They do
+not redrive anything. Before production use, review API authorization and
+response shape, then test terminal reason/category persistence and a controlled
+redrive gate. The current production API exposes only the earlier aggregate
+execution-health route.
+
 Phase 3 is not complete. Before completion, prove a durable claim/lease and
 recovery state machine, safe handling of ambiguous provider results, finite
 retry/backoff and rate-limit behavior, dead-letter visibility and controlled
