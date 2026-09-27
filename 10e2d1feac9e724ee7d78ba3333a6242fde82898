@@ -1,0 +1,51 @@
+OPTIBRAIN PHASE 3 COMPLETION RECORD
+Date: 2026-09-27
+
+PRODUCTION
+commit=10e2d1feac9e724ee7d78ba3333a6242fde82898
+previous_baseline=cbf28ccc358b506177f671937768de21bc15263d
+diff_sha256=c35de0c65a84c70c09ac8037f53f2e34fb64db0b644d12cb2b4eb332fd8db5a6
+
+RECOVERY
+pre_tag=recovery/pre-phase3-completion-v1-20260927
+post_tag=recovery/post-phase3-completion-v1-20260927
+post_backup=optibrain-backup-20260927T235328Z.tar.gz
+restore_generation=20260927T235328Z
+
+TEST EVIDENCE
+foundation_full_regression=146 passed + 99 subtests
+api_wiring_full_regression=152 passed + 99 subtests
+final_candidate_full_regression=153 passed + 99 subtests
+focused_failure_matrix=66 passed + 81 subtests
+isolated_failure_drill=PASS
+production_smoke=PASS
+production_smoke_run=a1dc514df76f4e4a87f2820b5c36e25b
+production_smoke_idempotency_key=phase3-completion-prod-smoke-1d4712b2dde743f8a5a98c08bc99663c
+
+FINAL SAFETY SEMANTICS
+- atomic queued-run claims preserved
+- durable action marker before handler preserved
+- attempt and lease fencing preserved
+- marker-free expired claim may safely requeue
+- expiry after action marker -> human_action_required
+- ambiguous external writes are never blindly retried
+- request IDs are reconciliation evidence only
+- controlled redrive requires redrive_permitted
+- ambiguous/human-required runs cannot be redriven
+- redrive creates a new run from exact workflow snapshot
+- terminal claim cleanup excludes active/unresolved work
+- heartbeat stale threshold = 60 seconds
+- recovery scan stall threshold = 300 seconds
+- independent watchdog interval = 30 seconds
+- alert transitions are durable
+- Zoho uncertain mutation cannot fail over into duplicate write
+- Zoho Books safeguards unchanged
+- database schema remains user_version=1
+- protected diagnostic file remained untouched
+
+DEPLOYMENT LESSON
+Use bounded readiness after workflow API restart.
+An immediate curl may race Uvicorn startup.
+
+PHASE 4 STARTING BASELINE
+10e2d1feac9e724ee7d78ba3333a6242fde82898
