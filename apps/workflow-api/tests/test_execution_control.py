@@ -4,6 +4,7 @@ import sqlite3
 import tempfile
 import threading
 import unittest
+import hashlib
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -31,6 +32,47 @@ class ExecutionControlTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
+
+    @staticmethod
+    def database_snapshot(db: Path) -> tuple:
+        with sqlite3.connect(db) as conn:
+            version = conn.execute("PRAGMA user_version").fetchone()[0]
+            schema = conn.execute(
+                "SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name"
+            ).fetchall()
+            tables = [row[1] for row in schema if row[0] == "table"]
+            data = {table: conn.execute(f'SELECT * FROM "{table}"').fetchall()
+                    for table in tables if table != "sqlite_sequence"}
+        return version, schema, data, hashlib.sha256(db.read_bytes()).hexdigest()
+
+    def test_unknown_schema_version_causes_zero_mutation(self) -> None:
+        for future_objects in (False, True):
+            with self.subTest(future_objects=future_objects):
+                db = self.root / f"future-{future_objects}.db"
+                with sqlite3.connect(db) as conn:
+                    conn.execute("PRAGMA user_version=2")
+                    if future_objects:
+                        conn.execute("CREATE TABLE future_actions(id INTEGER PRIMARY KEY,payload TEXT)")
+                        conn.execute("CREATE INDEX future_actions_payload ON future_actions(payload)")
+                        conn.execute("CREATE TRIGGER future_actions_guard AFTER UPDATE ON future_actions "
+                                     "BEGIN SELECT RAISE(ABORT,'future guard'); END")
+                        conn.execute("INSERT INTO future_actions(payload) VALUES('preserve me')")
+                before = self.database_snapshot(db)
+                with self.assertRaisesRegex(RuntimeError, "unknown automation schema version: 2"):
+                    AutomationStore(db)
+                self.assertEqual(self.database_snapshot(db), before)
+
+    def test_version_zero_initializes_and_version_one_reopens_without_schema_changes(self) -> None:
+        db = self.root / "versioned.db"
+        with sqlite3.connect(db) as conn:
+            self.assertEqual(conn.execute("PRAGMA user_version").fetchone()[0], 0)
+        AutomationStore(db)
+        before = self.database_snapshot(db)
+        self.assertEqual(before[0], 1)
+        self.assertIn("automation_run_claims", before[2])
+        self.assertIn("automation_run_failures", before[2])
+        AutomationStore(db)
+        self.assertEqual(self.database_snapshot(db)[:3], before[:3])
 
     def engine(self, *, attempts: int = 1, action: str = "fixture.action",
                inputs: str = "target_id: target-7", on_error: str = "stop") -> AutomationEngine:
@@ -168,6 +210,91 @@ steps:
                                  (run_id,)).fetchone()[0]
         self.assertFalse(self.store.complete_claimed_action(run_id, token, marker, succeeded=True))
 
+    def test_crash_after_action_marker_before_handler_requires_reconciliation(self) -> None:
+        self.engine()
+        run_id, _ = self.queue()
+        token = self.store.claim_run(run_id, "crashed-worker", lease_seconds=5)
+        marker = self.store.begin_claimed_action(
+            run_id, token, step_id="operation", action="fixture.action",
+            action_identity="a" * 64, attempt=1)
+        self.assertIsNotNone(marker)
+        with self.store._connect() as conn:
+            conn.execute("UPDATE automation_run_claims SET lease_expires_at=? WHERE run_id=?",
+                         ("2000-01-01T00:00:00Z", run_id))
+        restarted = AutomationEngine(AutomationStore(self.db), self.workflows)
+        calls = []
+        restarted.register_action("fixture.action", lambda context, step: calls.append(1))
+        self.assertEqual(restarted.recover_pending()["human_action_required"], 1)
+        self.assertEqual(calls, [])
+        self.assertEqual(self.store.get_run(run_id)["status"], "human_action_required")
+
+    def test_crash_after_provider_response_before_result_commit_never_replays(self) -> None:
+        engine = self.engine(attempts=3)
+        run_id, event = self.queue()
+        definition = self.store.queued_envelopes()[0][1]
+        calls = []
+        engine.register_action("fixture.action", lambda context, step: calls.append(1) or {"ok": True})
+        with patch.object(self.store, "complete_claimed_action", side_effect=SystemExit("after response")):
+            with self.assertRaises(SystemExit):
+                engine.execute_run(run_id, definition, event)
+        with self.store._connect() as conn:
+            marker = conn.execute(
+                "SELECT status,action_identity FROM automation_run_steps WHERE run_id=?", (run_id,)
+            ).fetchone()
+            self.assertEqual(marker["status"], "started")
+            self.assertEqual(len(marker["action_identity"]), 64)
+            conn.execute("UPDATE automation_run_claims SET lease_expires_at=? WHERE run_id=?",
+                         ("2000-01-01T00:00:00Z", run_id))
+        restarted = AutomationEngine(AutomationStore(self.db), self.workflows)
+        restarted.register_action("fixture.action", lambda context, step: calls.append(1))
+        self.assertEqual(restarted.recover_pending()["human_action_required"], 1)
+        self.assertEqual(calls, [1])
+        self.assertEqual(self.store.get_run(run_id)["status"], "human_action_required")
+        self.assertEqual(self.store.failure_history(run_id)[0]["reason_code"],
+                         "lease_expired_after_action")
+
+    def test_crash_after_successful_result_commit_preserves_completion(self) -> None:
+        engine = self.engine()
+        run_id, event = self.queue()
+        definition = self.store.queued_envelopes()[0][1]
+        calls = []
+        engine.register_action("fixture.action", lambda context, step: calls.append(1) or {"ok": True})
+        complete = self.store.complete_claimed_action
+
+        def crash_after_commit(*args, **kwargs):
+            self.assertTrue(complete(*args, **kwargs))
+            raise SystemExit("after durable result commit")
+
+        with patch.object(self.store, "complete_claimed_action", side_effect=crash_after_commit):
+            with self.assertRaises(SystemExit):
+                engine.execute_run(run_id, definition, event)
+        restarted = AutomationEngine(AutomationStore(self.db), self.workflows)
+        restarted.register_action("fixture.action", lambda context, step: calls.append(1))
+        self.assertEqual(restarted.recover_pending(),
+                         {"requeued": 0, "human_action_required": 0, "executed": 0})
+        self.assertEqual(calls, [1])
+        run = self.store.get_run(run_id)
+        self.assertEqual(run["status"], "completed")
+        self.assertEqual(run["steps"][0]["status"], "completed")
+        self.assertEqual(run["steps"][0]["result"], {"ok": True})
+
+    def test_restart_during_valid_lease_does_not_steal_claim(self) -> None:
+        self.engine()
+        run_id, _ = self.queue()
+        token = self.store.claim_run(run_id, "first-worker", lease_seconds=300)
+        restarted = AutomationEngine(AutomationStore(self.db), self.workflows)
+        self.assertEqual(restarted.recover_pending(),
+                         {"requeued": 0, "human_action_required": 0, "executed": 0})
+        self.assertEqual(self.store.get_run(run_id)["status"], "claimed")
+        self.assertIsNone(restarted.store.claim_run(run_id, "other-worker"))
+        with self.store._connect() as conn:
+            self.assertEqual(conn.execute(
+                "SELECT attempt_id FROM automation_run_claims WHERE run_id=?", (run_id,)
+            ).fetchone()[0], token)
+            conn.execute("UPDATE automation_run_claims SET lease_expires_at=? WHERE run_id=?",
+                         ("2000-01-01T00:00:00Z", run_id))
+        self.assertEqual(restarted.store.recover_expired_claims()["requeued"], 1)
+
     def test_stable_logical_identity_and_duplicate_step_fence(self) -> None:
         engine = self.engine(attempts=2)
         run_id, event = self.queue()
@@ -275,6 +402,73 @@ steps:
                 self.assertEqual(calls, [1])
                 item = store.failed_work()[0]
                 self.assertEqual(item["human_required"], int(expected == "human_action_required"))
+
+    def test_continue_cannot_downgrade_exhausted_safe_retry(self) -> None:
+        engine = self.engine(attempts=2, on_error="continue")
+        run_id, event = self.queue()
+        definition = self.store.queued_envelopes()[0][1]
+        calls = []
+
+        def unavailable_read(context, step):
+            calls.append(1)
+            raise ProviderError(503)
+
+        engine.register_action("fixture.action", unavailable_read, retry_safe=True)
+        with patch("workflow.automation.engine.time.sleep"):
+            self.assertTrue(engine.execute_run(run_id, definition, event))
+        self.assertEqual(calls, [1, 1])
+        self.assertEqual(self.store.get_run(run_id)["status"], "dead_letter")
+        self.assertEqual(self.store.failure_history(run_id)[0]["terminal_state"], "dead_letter")
+        self.assertEqual(engine.recover_pending()["executed"], 0)
+        self.assertEqual(self.store.get_run(run_id)["status"], "dead_letter")
+
+    def test_continue_cannot_downgrade_permanent_validation_failure(self) -> None:
+        engine = self.engine(attempts=3, on_error="continue")
+        run_id, event = self.queue()
+        definition = self.store.queued_envelopes()[0][1]
+        calls = []
+
+        def invalid_read(context, step):
+            calls.append(1)
+            raise ValueError("invalid fixture input")
+
+        engine.register_action("fixture.action", invalid_read, retry_safe=True)
+        self.assertTrue(engine.execute_run(run_id, definition, event))
+        self.assertEqual(calls, [1])
+        self.assertEqual(self.store.get_run(run_id)["status"], "failed")
+        self.assertEqual(self.store.failure_history(run_id)[0]["terminal_state"], "failed")
+
+    def test_continue_cannot_downgrade_ambiguous_write_or_auth_failure(self) -> None:
+        for status in (401, 503):
+            with self.subTest(status=status):
+                store = AutomationStore(self.root / f"continue-{status}.db")
+                engine = AutomationEngine(store, self.workflows)
+                self.engine(attempts=3, on_error="continue")
+                engine.sync_definitions()
+                calls = []
+
+                def write(context, step):
+                    calls.append(1)
+                    raise ProviderError(status)
+
+                engine.register_action("fixture.action", write)
+                result = engine.ingest(AutomationEvent(event_type="fixture.event", source="unit"))
+                self.assertEqual(calls, [1])
+                self.assertEqual(store.get_run(result.run_ids[0])["status"], "human_action_required")
+                self.assertEqual(store.failure_history(result.run_ids[0])[0]["terminal_state"],
+                                 "human_action_required")
+
+    def test_continue_setting_remains_valid_for_successful_multistep_workflow(self) -> None:
+        engine = self.engine(on_error="continue")
+        path = self.workflows / "fixture.yaml"
+        path.write_text(path.read_text() + "  - id: second\n    action: core.noop\n", encoding="utf-8")
+        engine.sync_definitions()
+        run_id, event = self.queue()
+        definition = self.store.queued_envelopes()[0][1]
+        engine.register_action("fixture.action", lambda context, step: {"ok": True})
+        self.assertTrue(engine.execute_run(run_id, definition, event))
+        self.assertEqual(self.store.get_run(run_id)["status"], "completed")
+        self.assertEqual(len(self.store.get_run(run_id)["steps"]), 2)
 
     def test_action_marker_precedes_handler_and_provider_id_can_be_recorded(self) -> None:
         engine = self.engine()

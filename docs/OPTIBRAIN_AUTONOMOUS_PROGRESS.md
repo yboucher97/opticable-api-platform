@@ -1131,3 +1131,36 @@ suite. Its application diff hash against known-good e514 is
 `ca198bbb4a2a14db464e8aacd1a4b1e6b13b20e84076f05583260f38f58c7343`,
 matching the source review checkout exactly. It remains off main and
 undeployed pending C-class review.
+
+### Phase 3 executor Release Candidate V2 — source only
+
+Independent C-class review returned `OPTIBRAIN_PHASE3_C_REVIEW_FAIL` for V1
+`5cb0f666ceea4298602e8f1821bc316d683d806a`. Startup created baseline
+SQLite objects before rejecting unknown `user_version=2`; `on_error: continue`
+could downgrade exhausted safe retries or permanent errors to `partial`.
+Direct provider-response/result-commit and valid-lease restart tests were also
+missing. The uploader test failure was an environment mismatch: the suite is
+specified to use `/usr/bin/python3` with Ubuntu-packaged `boto3`/`botocore`.
+
+The isolated application-only V2 candidate is
+`f20f48c46065d0715bda39986a5109459601d5b6`, directly parented by the
+known-good production commit `e5143d35ca1664a8b4faeda40f0f15a80fe7673d`.
+Its 11 changed paths are all under `apps/workflow-api/`; the application diff
+SHA-256 is
+`ab26a60b8b7f6a175dba0370494aa2934d9ab1d34e24004ab98791e05709aa76`.
+Version inspection now precedes WAL/schema work and future versions leave the
+database byte/logical state unchanged in regression fixtures. Protected
+execution terminal states override `on_error: continue`. The final successful
+step result and run completion commit atomically so restart cannot downgrade
+committed completion. The additive schema is unchanged from V1.
+
+Validation: workflow pytest 118 tests plus 25 subtests; CI-style unittest
+104/104; admin adversarial 37/37; restore 2/2; Phase 2A uploader 9/9 in its
+documented system Python environment; Phase 1 backup, Phase 2A bucket/R2,
+compilation, artifact manifest, sudoers parse and diff-check passed. The
+complete crash/restart state matrix and deployment/rollback gates are in
+`docs/OPTIBRAIN_PHASE3_EXECUTOR_RELEASE_CANDIDATE.md`. The installed root
+runbook, helper, updater, sudoers, timers, backups, provider scopes and
+schedules were not changed. Production remains at `e5143d3`; V2 is not
+deployed and requires a new independent C-class review. Root-runbook
+ownership migration and remaining Phase 3/Phase 4 capabilities stay separate.

@@ -24,6 +24,13 @@ class AutomationStore:
     def _connect(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.db_path, timeout=30, check_same_thread=False)
         conn.row_factory = sqlite3.Row
+        # Inspect the version before WAL configuration or any schema statement.
+        # Even a connection opened solely to reject a future schema must not
+        # change database metadata.
+        version = conn.execute("PRAGMA user_version").fetchone()[0]
+        if version not in (0, 1):
+            conn.close()
+            raise RuntimeError(f"unknown automation schema version: {version}")
         conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("PRAGMA foreign_keys=ON")
         conn.execute("PRAGMA busy_timeout=30000")
@@ -31,7 +38,8 @@ class AutomationStore:
 
     def _initialize(self) -> None:
         with self._connect() as conn:
-            conn.executescript(
+            if conn.execute("PRAGMA user_version").fetchone()[0] == 0:
+                conn.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS automation_events (
                     event_id TEXT PRIMARY KEY,
@@ -103,7 +111,7 @@ class AutomationStore:
                 CREATE INDEX IF NOT EXISTS idx_automation_audit_correlation ON automation_audit(correlation_id);
 
                 """
-            )
+                )
         self._migrate_execution_control()
 
     def _migrate_execution_control(self) -> None:
@@ -111,8 +119,21 @@ class AutomationStore:
         with self._lock, self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
             version = conn.execute("PRAGMA user_version").fetchone()[0]
-            if version > 1:
-                raise RuntimeError("unknown automation schema version")
+            if version == 1:
+                required = {
+                    "automation_run_steps": {"action_identity", "provider_operation_id"},
+                    "automation_run_claims": {"run_id", "worker_id", "attempt_id", "claimed_at", "lease_expires_at"},
+                    "automation_run_failures": {"id", "run_id", "category", "reason_code", "recorded_at"},
+                }
+                complete = all(
+                    columns <= {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
+                    for table, columns in required.items()
+                )
+                indexes = {row["name"] for row in conn.execute(
+                    "SELECT name FROM sqlite_master WHERE type='index'")}
+                if complete and {"idx_automation_run_steps_run", "idx_automation_run_claims_expiry",
+                                 "idx_automation_run_failures_run"} <= indexes:
+                    return
             columns = {row["name"] for row in conn.execute("PRAGMA table_info(automation_run_steps)")}
             if "action_identity" not in columns:
                 conn.execute("ALTER TABLE automation_run_steps ADD COLUMN action_identity TEXT")
@@ -526,8 +547,9 @@ class AutomationStore:
                                 provider_operation_id: str | None = None,
                                 failure_category: str | None = None, reason_code: str | None = None,
                                 diagnostic: dict[str, int | float] | None = None,
+                                final_context: dict[str, Any] | None = None,
                                 now: datetime | None = None) -> bool:
-        """Record an observed handler result; never clear human-review state."""
+        """Record an observed result, atomically finishing the final successful step."""
         finished_at = self._claim_iso(self._claim_time(now))
         if provider_operation_id is not None and (
                 not isinstance(provider_operation_id, str)
@@ -537,6 +559,8 @@ class AutomationStore:
             raise ValueError("successful action cannot carry failure evidence")
         if not succeeded and (failure_category is None or reason_code is None):
             raise ValueError("failed action requires failure evidence")
+        if final_context is not None and not succeeded:
+            raise ValueError("a failed action cannot complete a run")
         with self._lock, self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
             claim = conn.execute(
@@ -561,8 +585,16 @@ class AutomationStore:
                                      attempt_id=attempt_id, category=failure_category,
                                      reason_code=reason_code, recorded_at=finished_at,
                                      diagnostic=diagnostic)
+            if final_context is not None:
+                conn.execute(
+                    "UPDATE automation_runs SET status='completed',finished_at=?,error=NULL,context_json=? "
+                    "WHERE run_id=? AND status='running'",
+                    (finished_at, json.dumps(final_context, separators=(",", ":"), ensure_ascii=False), run_id),
+                )
             self._claim_audit(conn, "action_completed" if succeeded else "action_failed",
                               claim["worker_id"], run_id, attempt_id, success=succeeded)
+            if final_context is not None:
+                self._claim_audit(conn, "run_completed", claim["worker_id"], run_id, attempt_id)
         return True
 
     def finish_claim(self, run_id: str, attempt_id: str, *, status: str,

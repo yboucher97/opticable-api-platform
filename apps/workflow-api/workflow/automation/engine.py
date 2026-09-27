@@ -177,9 +177,7 @@ class AutomationEngine:
             "workflow": {"id": definition.id, "version": definition.version, "name": definition.name},
             "steps": {},
         }
-        continued_error = False
-
-        for step in definition.steps:
+        for step_index, step in enumerate(definition.steps):
             handler = self._actions.get(step.action)
             preflight_reason = "unknown_action" if handler is None else None
             retry_safe = step.action in self._retry_safe_actions
@@ -231,9 +229,8 @@ class AutomationEngine:
                             if not self.store.renew_claim(run_id, attempt_id, lease_seconds=300):
                                 return False
                         continue
-                    if decision.action == "dead_letter" and step.on_error == "continue":
-                        continued_error = True
-                        break
+                    # A workflow's continuation preference cannot downgrade a
+                    # protected execution-control terminal classification.
                     terminal = ("failed" if decision.action == "dead_letter"
                                 and (decision.category == "permanent" or preflight_reason is not None)
                                 else decision.action)
@@ -246,21 +243,22 @@ class AutomationEngine:
                     )
                 provider_operation_id = (result.get("provider_operation_id")
                                          if isinstance(result, dict) else None)
+                context["steps"][step.id] = result
+                final_step = step_index == len(definition.steps) - 1
                 if not self.store.complete_claimed_action(
                         run_id, attempt_id, marker, succeeded=True, result=result,
-                        provider_operation_id=provider_operation_id):
+                        provider_operation_id=provider_operation_id,
+                        final_context=context if final_step else None):
                     return False
-                context["steps"][step.id] = result
+                if final_step:
+                    return True
                 step_succeeded = True
                 break
 
             if not step_succeeded:
-                if step.on_error == "continue":
-                    continue
                 return False
 
-        final_status = "partial" if continued_error else "completed"
-        return self.store.finish_claim(run_id, attempt_id, status=final_status, context=context)
+        return False
 
     def recover_pending(self, *, limit: int = 10) -> dict[str, int]:
         recovered = self.store.recover_expired_claims(limit=min(limit, 100))

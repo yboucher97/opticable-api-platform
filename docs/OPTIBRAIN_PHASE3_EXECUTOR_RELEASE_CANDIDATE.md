@@ -1,5 +1,11 @@
 # OptiBrain Phase 3 executor release candidate — review only
 
+**V2 status (2026-09-27):** The V1 application candidate below failed independent
+C-class review and must not be deployed. The V2 application candidate and its
+review evidence are recorded in the V2 section at the end of this document.
+Only V2 may be submitted for a new independent C-class review. Production
+remains `e5143d35ca1664a8b4faeda40f0f15a80fe7673d`.
+
 Status: C-class application/schema candidate. Do not deploy without a separate
 human approval, an online SQLite recovery copy, verified Phase 1 archive and a
 reviewed validated-main application-only commit. Production remains at
@@ -191,3 +197,116 @@ writes, poison attempt exhaustion, provider operation ID persistence and
 transactional migration rollback. These are fixture results, not a production
 schema or reboot drill. Run the complete suite again on the final app-only
 candidate before C-class approval.
+
+## Release Candidate V2 — source review package, not deployed
+
+The independent result for V1 (`5cb0f666ceea4298602e8f1821bc316d683d806a`;
+application diff SHA-256
+`ca198bbb4a2a14db464e8aacd1a4b1e6b13b20e84076f05583260f38f58c7343`)
+was `OPTIBRAIN_PHASE3_C_REVIEW_FAIL`. It found two correctness defects:
+unknown `user_version` was rejected only after baseline schema creation, and
+`on_error: continue` could turn exhausted safe retry or permanent failure into
+`partial`. Direct tests were also missing for three crash boundaries. A prior
+Phase 2A uploader test invocation used the workflow virtual environment,
+which lacks `botocore`.
+
+The clean application-only V2 commit is
+`f20f48c46065d0715bda39986a5109459601d5b6`, directly based on known-good
+production `e5143d35ca1664a8b4faeda40f0f15a80fe7673d`. Its application
+diff SHA-256 is
+`ab26a60b8b7f6a175dba0370494aa2934d9ab1d34e24004ab98791e05709aa76`.
+It changes the same 11 application paths as V1, under `apps/workflow-api/` only.
+This source package carries the same application bytes plus this documentation
+and the progress journal; the documentation is not part of the application
+deployment diff. There is **no schema change relative to V1**: the additive
+SQLite migration remains `user_version` 0 to 1, with the same claims and
+append-only failures tables and the same two nullable step columns.
+
+### V2 behavior and precedence
+
+`AutomationStore._connect` reads `PRAGMA user_version` before WAL configuration
+or any schema statement. A version outside `{0,1}` closes the connection and
+raises. Version 0 runs the existing baseline and transactional migration.
+Version 1 checks its additive schema and indexes; a complete version 1 returns
+without migration DDL, while a missing additive object follows the existing
+repeat-safe repair path. No downgrade of a future version is attempted.
+Tests compare version, every `sqlite_master` table/index/trigger entry, data,
+and the database-file SHA-256 before and after rejection of empty and populated
+version-2 fixtures. All comparisons are equal. Version-0 initialization and
+version-1 reopening also pass.
+
+Execution-control classification overrides `on_error: continue`:
+exhausted retry-safe work is `dead_letter`; permanent/validation failure is
+`failed`; authentication or ambiguous external-write failure is
+`human_action_required`. These states cannot be changed later by the ordinary
+completion path. The DSL still accepts `on_error: continue`, but the present
+engine has no separately classified non-terminal failure eligible for it.
+Successful multistep execution with the setting remains valid. A future
+continuable failure class needs its own safety proof and review; V2 does not
+invent one.
+
+For the final successful step, the step result, run `completed` state,
+finished timestamp, context, and audit records commit in one SQLite
+transaction. A crash immediately after that commit therefore leaves an
+authoritative completed run. Intermediate completed steps followed by a crash
+remain protected by the existing marker-based human-review rule; V2 does not
+replay them or make a provider write twice.
+
+### Crash and restart matrix
+
+| Boundary | Expected and fixture-observed state |
+|---|---|
+| Before claim commit | Claim and run transition roll back; queued run remains. |
+| After claim, before marker | Valid lease stays claimed; after expiry, requeues. |
+| After marker, before handler | After expiry, `human_action_required`; no handler replay. |
+| During handler | After expiry, `human_action_required`; no blind replay. |
+| Provider response before local result commit | Durable `started` marker remains; after expiry, `human_action_required` with `lease_expired_after_action` evidence; no replay. |
+| Immediately after final successful result commit | `completed` remains committed; no requeue, duplicate action, or escalation. |
+| Restart during valid lease | Still claimed; another worker cannot claim; recovery does nothing. |
+| Restart after lease expiry | Marker-free claim requeues; marked claim escalates. |
+| Expired never-started claim | Requeues only after expiry. |
+| Expired started claim | `human_action_required`; marker and digest remain. |
+| Stale worker late result | Token/expiry fence rejects commit. |
+| Competing workers | One claimant and one handler invocation. |
+| Interrupted migration | Added columns/version roll back together. |
+| Duplicate source event | One logical event and queued run. |
+| Duplicate logical action | Stable action digest and completed-step guard prevent local duplicate. |
+
+These are fixture observations, not a live reboot or provider-outage drill.
+An ambiguous provider write remains single-attempt without provider-native
+idempotency or deterministic reconciliation. No generic redrive was added.
+
+### V2 validation and rollback
+
+Workflow pytest passed **118 tests and 25 subtests**; CI-style unittest
+passed **104/104**. Admin adversarial tests passed **37/37**; restore tests
+**2/2**. The Phase 1 backup fixture, Phase 2A bucket and R2 fixtures, Python
+compilation, artifact manifest, sudoers parse, and diff whitespace check
+passed. The Phase 2A uploader suite passed **9/9** using its documented
+`/usr/bin/python3` environment with Ubuntu-packaged `boto3`/`botocore`
+1.34.46; no production package or dependency manifest was changed. The first
+parallel workflow pytest/unittest run contended on their shared fixture
+database, so the complete suites were rerun sequentially and both passed.
+
+The rollback target remains
+`e5143d35ca1664a8b4faeda40f0f15a80fe7673d`. Any later authorized
+deployment still requires a verified current backup, an online SQLite recovery
+copy, exact candidate and count checks, authenticated inspection, and separate
+human C-class approval. Code rollback may leave the additive version-1 schema;
+claimed, dead-letter, and ambiguous runs require inspection. Never redrive an
+uncertain external write automatically.
+
+The review lesson is to test the *absence of mutation* on a rejected schema,
+to keep safety terminal states above workflow DSL convenience, and to test
+the transaction boundary between handler response and durable completion.
+An exception alone is insufficient evidence of fail-closed startup.
+
+Remaining Phase 3 work is separately reviewed: provider-native write
+idempotency/reconciliation, controlled redrive, worker and scheduler liveness,
+queue growth/escalation, live reboot and provider-outage drills, authenticated
+production execution-control validation, and the root-owned published-runbook
+architecture. Phase 4 event dedupe remains separate from action idempotency.
+The V2 version guard, stable local action digest, and transaction boundaries
+do not materially constrain later webhook-first event ingestion, provider
+event/account identity, delta sync, bounded polling, safe replay, or usage/cost
+accounting. V2 makes no Phase 4 implementation or provider API calls.
