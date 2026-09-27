@@ -881,3 +881,8 @@ The restore verifier, sudoers, previous sudoers backup, both timers and all
 provider/R2/AGE state stay as installed. Recovery instructions are in
 `docs/OPTIBRAIN_PHASE2B_ROOT_BOOTSTRAP.md`. Do not mark Phase 2B complete until
 human installation and production validation pass.
+
+Reviewed package source commit: `3039dab` (`fix(admin): verify absolute backup
+sidecar paths`). The final journal checkpoint containing this recovery record
+is referenced by `recovery/phase2b-restore-compat`. The package is prepared for
+human-root review; no production installation was performed.

@@ -306,9 +306,14 @@ sudo systemctl is-active optibrain-backup.timer optibrain-phase2a-upload.timer
 sudo systemctl is-enabled optibrain-backup.timer optibrain-phase2a-upload.timer
 sudo visudo -c
 sudo sha256sum /usr/local/sbin/optibrain-admin /usr/local/sbin/optibrain-admin-update /usr/local/lib/optibrain-backup/optibrain-restore-drill.py
+test "$(sudo sha256sum /usr/local/sbin/optibrain-admin | cut -d' ' -f1)" = 30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4
+test "$(sudo sha256sum /usr/local/sbin/optibrain-admin-update | cut -d' ' -f1)" = 3594770351bd2a96cda822a4242587cb265894906255cfc61f28a7fff1a54086
+test "$(sudo sha256sum /usr/local/lib/optibrain-backup/optibrain-restore-drill.py | cut -d' ' -f1)" = 58f9e2305329326c5dfdbb88af4d1535f33fda3f9fb6d03163212b7929fc7db6
 sudo sha256sum -c /var/backups/optibrain/optibrain-backup-20260927T130636Z.tar.gz.sha256
 test "$(sudo cat /etc/optibrain/admin-helper.sha256)" = 30aad73bb2b56a110e38348cce5babefb1816b7f1ffd7cd37449a51a0f1527c4
 test "$(sudo cat /etc/optibrain/master-runbook.sha256)" = 23b5dbdcc886a19cba35c57c5a9be51ce64090b2ed0e370b39f7289753c9439e
+sudo test -f /var/lib/optibrain/admin-update/previous/90-optibrain-admin.pre-consolidated
+sudo stat -c '%n %a %U:%G' /var/lib/optibrain/admin-update/previous/90-optibrain-admin.pre-consolidated
 ```
 
 If the production latest archive is no longer
