@@ -596,3 +596,45 @@ conditional create prevents replacement, and the uploader will GET/hash both
 objects. This is the approved backup operation, not a repeat of an existing
 provider mutation. If conflict or verification failure occurs, stop without
 changing existing objects.
+
+### Read-only Phase 3/4 inventory while privileged updates are unavailable
+
+Live state was rechecked: production health endpoints return HTTP 200, both
+backup timers remain active/enabled, the admin queue-count reports 109 completed
+runs, and arbitrary root commands remain denied. `sudo -n -l` shows the ordinary
+authenticated all-command rule plus NOPASSWD for only `/usr/local/sbin/optibrain-admin`;
+the separate API deploy wrapper is installed for a different identity and is not
+an admin-helper update channel. No existing authorized root update route was
+found.
+
+Phase 3 evidence from `workflow/automation/store.py`, `engine.py`, models and
+`tests/test_automation_kernel.py`: SQLite WAL persistence exists for events,
+workflow definitions, runs, step attempts and audit. Event ID and optional
+idempotency key are unique; correlation, causation and depth are retained. Run
+and step statuses and bounded per-step attempts exist. Six kernel tests pass.
+Gaps: ingest commits/deduplicates the event before independently creating runs,
+so a process crash between those operations can permanently suppress work;
+execution is synchronous in the API process; run/step transitions are not a
+claim/lease protocol; a crash can strand `running`; there is no stale recovery,
+core-engine DLQ/replay, execution timeout, retry classification or jitter.
+Retries catch all exceptions and use fixed `backoff_seconds` (maximum five
+attempts, maximum 30 seconds). Existing Cloudflare Queues/Workflows provide
+durable delivery, exponential delivery retries and a DLQ for the control-plane
+boundary, but do not repair the core SQLite crash gap. Do not replace this with a
+second queue until Phase 2B closes and the transaction/recovery design is tested.
+
+Phase 4 scheduling inventory found daily Phase 1 local backup and Phase 2A
+off-host systemd timers; GitHub scheduled workflows for lifecycle dispatch,
+mailbox polling, owner digest and production monitoring; and a Cloudflare Worker
+15-minute cron that enqueues mailbox, Sign, finance and digest events. The GitHub
+schedule dispatcher and Worker cron both run every 15 minutes and can request
+overlapping lifecycle work. Mailbox polling and daily digest also have separate
+GitHub workflows. Event keys differ across those paths, so event-level
+idempotency alone does not prove cross-scheduler deduplication. No scheduler was
+disabled or modified; Phase 4 must assign ownership and migrate/verify before
+removing any trigger.
+
+Validation in this inventory: `apps/workflow-api/.venv/bin/python -m unittest
+tests.test_automation_kernel -v` passed 6/6. Control-plane worker dependencies
+are not installed in this checkout, so no worker dry-run was attempted. This is
+read-only inventory, not completion of Phases 3 or 4.
