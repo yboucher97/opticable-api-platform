@@ -3,8 +3,8 @@
 Roadmap version: OPTIBRAIN AUTONOMOUS OVERNIGHT PROGRAM, 2026-09-27, Phases 2A–12.
 Current phase: 2A complete; next phase definition required.
 Status: HUMAN_ACTION_REQUIRED for the approved Phase 2B–12 scope.
-Temporary sudo works. Read the newest overnight sections below; the original
-checkpoint record is retained as history, not current live state.
+Temporary sudo works. All content before `Overnight resume` below is historical
+checkpoint context; use the final verification and roadmap boundary for live state.
 
 - Running production baseline / last known good SHA: `936e75a` (Phase 1).
   Working checkout: `hardening/phase2a-resume`; resolve its checkpoint SHA with
@@ -54,9 +54,9 @@ checkpoint record is retained as history, not current live state.
 - Discovery script still uses the obsolete list shape and needs the same fix
   before it is used to conclude the target is absent.
 
-## Exact next safe operation
+## Original checkpoint next operation (completed)
 
-Local parser repair is checkpointed on `hardening/phase2a-resume`; it is not a
+Local parser repair was checkpointed on `hardening/phase2a-resume`; it is not a
 completed phase or deployment. Once privileged execution is available, verify
 the current local archive and production, create
 the pre-phase recovery reference, and run authenticated read-only bucket and
@@ -65,9 +65,9 @@ durable intent before any provider mutation and result immediately afterward.
 Do not enable uploader timer until dedicated bucket scope, encryption, upload,
 download/hash verification, and safe retention are proven.
 
-## Human boundary
+## Historical human boundary (resolved)
 
-This shell runs as `optibrain` (uid 1001), with no noninteractive sudo access.
+At the original checkpoint this shell ran as `optibrain` (uid 1001), with no noninteractive sudo access.
 Root-only backups and bootstrap credentials cannot be inspected; root service
 installation cannot proceed. Operator must provide an approved privileged
 execution session. Do not paste passwords or secrets into Codex. Any dashboard
@@ -203,10 +203,10 @@ hash verification for both remote objects. File security verified: archive and
 checksum root:root 0600, backup directory root:root 0700. Timer is not installed
 (`LoadState=not-found`, inactive). The first remote generation is also retained.
 
-## Current handoff — authoritative next operation
+## Superseded handoff before offline evidence arrived
 
-Status: HUMAN_ACTION_REQUIRED only for the offline AGE recovery drill. Phase 2A
-is not declared complete. Root access and credential provisioning are resolved.
+Historical status before the user supplied offline recovery evidence; the offline
+recovery and Phase 2A activation are completed in entries below.
 
 1. Human: use the matching offline identity on a separate trusted recovery machine
    to decrypt generation `20260927T021414Z`, verify plaintext SHA-256, and perform
@@ -400,8 +400,8 @@ new local Phase 1 generation as a service dependency, then upload/verify it.
   succeeded and the remote archive and JSON were both downloaded and hash verified.
 - Production workflow API HTTP 200/status ok/version 1.7.0; PDF and Omada endpoints
   also passed after package restart. No application release or migration occurred.
-- Implementation commits: `f7ad1c2`, `56112e8`; schedule runtime/path fix and final
-  documentation are in the latest commit. Recovery refs point to final checkpoint.
+- Implementation commits: `f7ad1c2`, `56112e8`; schedule cadence fix is `d1ceff7`.
+  The final journal commit follows; recovery refs will point to that final SHA.
 
 ### Roadmap boundary
 
@@ -416,7 +416,8 @@ Latest scheduled-service manual generation details (20260927T025414Z):
 - Encrypted SHA-256: `ab5deb2f200207ba412c4e739a32b9fd8ef3ac612e4529adc323f724eaff4a40`
 - Source archive SHA-256: `f88d17767f26a2c89961e13752aa6cd7e81f2ef547d3a3257f98de4cccb4d997`
 - Service result: success; fully downloaded object and sidecar hashes passed.
-- Timer next scheduled run: 2026-09-28 03:04:13 UTC (randomized delay).
+- Timer next scheduled run at first inspection: 2026-09-28 03:04:13 UTC; after
+  the final unit reload its live next run is 2026-09-28 03:12:35 UTC.
 
 ### Schedule review: preserve Phase 1 retention cadence
 
@@ -449,8 +450,19 @@ boundaries. Static and installed unit verification pass; the installed unit keep
 its empty capability set and strict filesystem protections. Phase 1 remains the
 only daily local timer, preserving its seven-generation cadence.
 
+Five local backup generations remain present; no existing backup was deleted.
 After installing this exact runtime code, the manual hardened service succeeded
 again at 2026-09-27 12:06:26 UTC. It validated existing generation `20260927T025414Z`
 and streamed/hashed the existing remote archive and manifest. Audit shows no PUT;
 no new local or remote generation was created. Both timers remain active. Current
 production HTTP health remains good; no jobs remain in progress.
+
+
+## HUMAN_ACTION_REQUIRED — approved next-phase plan
+
+Action: Provide the approved Phase 2B–12 roadmap (paste it here or identify its
+repository document), including each phase's scope and safety gates.
+
+Resume: Once available, reread live state and continue at the first approved safe
+operation after completed Phase 2A. The current recovery refs and service state
+are recorded above; no secrets or private identity are needed.
