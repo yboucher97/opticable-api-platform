@@ -1,3 +1,4 @@
+import datetime
 import importlib.util
 import io
 import json
@@ -80,6 +81,17 @@ class UploadTests(unittest.TestCase):
         self.archive.with_name(self.archive.name+'.sha256').write_text(u.sha(self.archive))
         with self.assertRaises(RuntimeError): self.run_upload()
         self.assertEqual(self.client.puts, 2)
+    def test_stale_generation_is_refused(self):
+        now = datetime.datetime(2026, 9, 29, tzinfo=datetime.timezone.utc)
+        with self.assertRaises(RuntimeError):
+            u.validate_generation_freshness(self.archive.name, now)
+    def test_future_generation_beyond_clock_skew_is_refused(self):
+        now = datetime.datetime(2026, 9, 26, tzinfo=datetime.timezone.utc)
+        with self.assertRaises(RuntimeError):
+            u.validate_generation_freshness(self.archive.name, now)
+    def test_fresh_generation_is_allowed(self):
+        now = datetime.datetime(2026, 9, 27, 2, tzinfo=datetime.timezone.utc)
+        self.assertEqual(u.validate_generation_freshness(self.archive.name, now), '20260927T010000Z')
     def test_conditional_put_header(self):
         params={'headers':{}}
         u.create_only_header(params)

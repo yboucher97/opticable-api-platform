@@ -101,11 +101,23 @@ def transfer(client, path, key, root):
         raise RuntimeError('downloaded object checksum mismatch')
     audit(root, 'download_hash_verified', key=key, sha256=digest)
 
+def validate_generation_freshness(name, now=None):
+    match = re.fullmatch(r'optibrain-backup-(\d{8}T\d{6}Z)\.tar\.gz', name)
+    if not match:
+        raise RuntimeError('invalid generation name')
+    created = datetime.datetime.strptime(match[1], '%Y%m%dT%H%M%SZ').replace(tzinfo=datetime.timezone.utc)
+    now = now or datetime.datetime.now(datetime.timezone.utc)
+    age = now - created
+    if age < datetime.timedelta(minutes=-5) or age > datetime.timedelta(hours=36):
+        raise RuntimeError('latest local backup is outside the allowed freshness window')
+    return match[1]
+
 def run(client, archive, recipient, root, verifier):
     generation = re.fullmatch(r'optibrain-backup-(\d{8}T\d{6}Z)\.tar\.gz', archive.name)
     if not generation:
         raise RuntimeError('invalid generation name')
     generation = generation[1]
+    validate_generation_freshness(archive.name)
     digest = sha(archive)
     if archive.with_name(archive.name + '.sha256').read_text().split()[0] != digest:
         raise RuntimeError('archive checksum mismatch')

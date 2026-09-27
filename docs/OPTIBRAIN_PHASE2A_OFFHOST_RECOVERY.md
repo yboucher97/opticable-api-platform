@@ -1,9 +1,9 @@
 # Phase 2A encrypted off-host recovery
 
-Status (2026-09-27): first encrypted upload and full download/hash verification
-passed. Dedicated credential scope and isolation passed. Offline decryption and
-separate-host restore are pending the human-held identity. Timer is not installed
-or enabled. See OPTIBRAIN_AUTONOMOUS_PROGRESS.md for current generations/checkpoint.
+Status (2026-09-27): human offline decryption/hash and isolated staging restore
+passed. Hardened manual upload passed. `optibrain-phase2a-upload.timer` is installed,
+enabled and active; Phase 1 local timer remains enabled and active. See the progress
+journal for live generation and service verification.
 
 ## Implementation and recovery custody
 
@@ -55,7 +55,7 @@ No remote retention or local spool deletion is automated. Monitor disk and R2
 usage before long-running scheduling. The object-write token is not an immutable
 vault against a compromised uploader; separate immutable custody is still needed.
 
-## Human offline recovery drill — next required gate
+## Human offline recovery drill — completed gate
 
 1. Obtain the latest verified encrypted object and matching JSON manifest using
    authorized R2 access on a separate trusted recovery machine. Use the exact
@@ -73,11 +73,11 @@ vault against a compromised uploader; separate immutable custody is still needed
 6. Record only date, generation, checksum/integrity result, and recovery findings.
    Never send the identity, plaintext archive, or secret contents to Codex/chat.
 
-After this evidence is recorded, validate the service units, install them, and
-manually run the hardened service before enabling its timer. Local Phase 1 backup
-scheduling remains enabled. Retain all verified remote generations until a
-separately tested retention/recovery policy is approved. No phase completion or
-separate-host recoverability is claimed merely from ciphertext hash verification.
+This evidence was recorded. Unit validation, runtime deployment, successful
+manual service execution and timer activation are complete. Local Phase 1 backup
+scheduling remains enabled. Phase 2A recovery is validated at archive/decryption
+level; a booted replacement host, provider failover and immutable vault have not
+been tested. No remote retention deletion is configured.
 
 ## Human recovery evidence received — 2026-09-27
 
@@ -117,3 +117,18 @@ satisfy the Phase 2A recovery gate. This does not establish a booted replacement
 host, provider failover, or an immutable off-host vault. Per-generation remote
 manifests remain immutable and their automatic `offline_restore_verified=false`
 field is not rewritten; the human evidence and isolated report are separate.
+
+The most recent manual hardened service run (generation `20260927T025414Z`)
+completed successfully. Its encrypted object hash is
+`ab5deb2f200207ba412c4e739a32b9fd8ef3ac612e4529adc323f724eaff4a40`; local
+source archive hash is `f88d17767f26a2c89961e13752aa6cd7e81f2ef547d3a3257f98de4cccb4d997`.
+Both object and JSON sidecar were downloaded and hash-checked. The daily service
+timer is now enabled and active; Phase 1's timer is still enabled and active.
+
+
+The Phase 2A timer no longer forces a duplicate local backup. `After=` preserves
+ordering with an in-progress Phase 1 run; the uploader selects the newest daily
+local generation and stops if it is older than 36 hours or more than five minutes
+in the future. This preserves Phase 1's seven-generation retention cadence while
+surfacing missed local backup runs. The updated service passed a second manual run
+and verified existing remote bytes without another PUT.

@@ -129,8 +129,9 @@ Uploader serializes executions, persists exact ciphertext for retries, condition
 creates objects, refuses conflicts/non-404 errors, and records durable intent and
 results. No remote deletion or retention automation. State and audit live in
 `/var/lib/optibrain/phase2a/`; latest details are in
-`docs/OPTIBRAIN_AUTONOMOUS_PROGRESS.md`. Phase 2A timer remains uninstalled;
-offline decryption/separate-host restore validation requires the human-held key.
+`docs/OPTIBRAIN_AUTONOMOUS_PROGRESS.md`. Phase 2A timer has since been installed, enabled and active after human offline
+decryption/hash verification and an isolated archive/SQLite/config restore drill.
+A booted replacement host, provider failover and immutable vault remain untested.
 See `docs/OPTIBRAIN_PHASE2A_OFFHOST_RECOVERY.md` for exact recovery steps.
 
 Package installation's needrestart restarted the password-PDF service; its public
@@ -139,3 +140,38 @@ sudo policy change, or credential rotation occurred. Temporary overnight sudo wa
 used only for authorized inspection, backup infrastructure and root-owned records.
 The old root-access blocker is resolved. Full approved Phases 2B–12 details were
 not located in this checkout; recover that program before advancing beyond 2A.
+
+
+### Phase 2A completion update — 2026-09-27
+
+Human-attested separate-Windows-machine AGE decryption passed for generation
+`20260927T021414Z`; encrypted and plaintext SHA-256 matched the server's verified
+values. The identity stayed offline. A private-network isolated restore drill
+verified all file hashes, restored SQLite integrity, extracted release source,
+and replayed critical config ownership/modes in staging. It reported four legacy
+Chromium manifest omissions, still protected by the independently verified whole
+archive hash, and two transient WAL/SHM metadata entries; Phase 1 v1.0.1 corrects
+future inventories.
+
+The hardened Phase 2A service was installed as root-owned runtime code and passed
+manual execution; generation `20260927T025414Z` uploaded and downloaded with full
+hash verification. The daily Phase 2A timer is enabled/active. Phase 1 daily local
+timer remains enabled/active. No remote deletion or retention task is configured.
+Application runtime remains version 1.7.0. Current tests, references, service
+state and remaining approved roadmap boundary are in the progress journal.
+
+
+Current daily Phase 2A schedule uses `/usr/local/lib/optibrain-backup/`, a root:root
+0750 runtime bundle. It avoids executing the optibrain-owned checkout from a root
+unit with an empty capability set. Updates must install reviewed wrapper, uploader
+and Phase 1 verifier into this bundle, validate the installed unit and manually
+run it before enabling/sustaining the timer. Do not broaden checkout permissions
+or add DAC-bypass capabilities.
+
+
+The off-host unit only orders after Phase 1 (`After=`; no `Requires=`), preventing
+an extra local generation that would shorten seven-generation retention. The
+uploader rejects archives outside its 36-hour freshness window (with five minutes
+of tolerated clock skew). A missed local run fails closed and is visible through
+systemd/audit state. Latest code passed nine uploader fixture tests and a second
+manual end-to-end hash verification without writing duplicate objects.

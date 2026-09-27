@@ -1,8 +1,8 @@
 # OptiBrain autonomous resume journal
 
 Roadmap version: OPTIBRAIN AUTONOMOUS OVERNIGHT PROGRAM, 2026-09-27, Phases 2A–12.
-Current phase: 2A. Current subphase: isolated validation and scheduling activation.
-Status: ACTIVE; human offline decryption evidence received.
+Current phase: 2A complete; next phase definition required.
+Status: HUMAN_ACTION_REQUIRED for the approved Phase 2B–12 scope.
 Temporary sudo works. Read the newest overnight sections below; the original
 checkpoint record is retained as history, not current live state.
 
@@ -11,15 +11,14 @@ checkpoint record is retained as history, not current live state.
   `git rev-parse HEAD`. No service restart/deployment accompanied this commit.
 - Latest verified-phase recovery reference: `heads/recovery/post-phase1-936e75a`.
   Parser-only checkpoint baseline: `recovery/pre-phase2a-parser-936e75a`.
-- Local backup: last documented verified archive is
-  `/var/backups/optibrain/optibrain-backup-20260926T232858Z.tar.gz`.
-  This session cannot independently verify it: directory is root-only and
-  `sudo -n true` reports a password is required.
-- Off-host backup: none verified; remote bucket existence and credential presence
-  remain unknown to this session.
-- Production health: local HTTP 200, status=ok, version=1.7.0; workflow service
-  active. Backup timer enabled/active; last backup service result=success,
-  exit=0 at 2026-09-26 23:29:59 UTC. Off-host timer not installed.
+- Historical Phase 1 baseline below is retained from the original checkpoint.
+  Current local generation: `20260927T025414Z`; verified SHA sidecar and archive.
+- Current off-host generation: `20260927T025414Z`, full encrypted GET/hash verified.
+  The human independently decrypted and hash-matched `20260927T021414Z`.
+- Both Phase 1 local and Phase 2A off-host timers are enabled/active. Latest manual
+  local and off-host services completed successfully; see final verification below.
+- Production workflow API: HTTP 200, status=ok, version=1.7.0; PDF/Omada health
+  also pass. Sudo and credentials are available under the temporary authorization.
 - Completed migrations: none this session.
 - Provider mutations: none this session. Previous bootstrap may have created
   `optibrain-recovery-prod` before failing its list parser; do not assume absent
@@ -240,7 +239,7 @@ is unchanged. This temporary sudo authorization has not been made permanent.
 ### Independent checksum evidence and final health
 
 Latest verified remote object:
-`backups/2026/09/27/20260927T021414Z.tar.gz.age`
+`backups/2026/09/27/20260927T025414Z.tar.gz.age`
 
 - Ciphertext SHA-256: `4e75906e0791d192ab296eea1f1a8e814c59fe7c081cf488c1341ed7a2cb89ed`
 - Plaintext archive SHA-256: `c802d153a261e28f86440c718cddd06dfc1b7f19e157d72c058c7eaaede16792`
@@ -331,3 +330,127 @@ will be deleted. Verify upload/download hashes and hardened service result befor
 enabling scheduling. Rollback: stop/disable only the new upload timer/service,
 restore pre-activation code if required, and retain all recovery data and Phase 1
 scheduling. Production API behavior and application services are unchanged.
+
+### Completed mutation: unit installation
+
+Source checkpoint `56112e8`. Off-host service and timer installed root:root 0644;
+systemd daemon reload and installed-unit verification passed. Manual hardened
+service was queued successfully. Scheduling remains disabled pending its result.
+
+### Hardened service failure and repair intent
+
+Manual dependency created/verified generation `20260927T025210Z` successfully;
+four local archives now exist, none deleted. Uploader exited 126 before any upload:
+checkout shell script is owned by optibrain mode 0750, so root with an empty
+CapabilityBoundingSet cannot read it. Preserve capability and permission controls.
+Install a root:root 0750 runtime directory `/usr/local/lib/optibrain-backup` with
+root-owned uploader wrapper/Python module and Phase 1 verifier, then point only
+the off-host unit there. This avoids running writable checkout code under the
+hardened scheduler. Do not expand modes or restore DAC-bypass capabilities.
+Retry once after unit validation; preserve all existing archives/remote objects.
+
+### Completed mutation: hardened runtime deployment
+
+Root-owned runtime bundle installed with directory/files mode 0750, no capability
+or source-file permission expansion. Off-host unit now executes that bundle;
+installed-unit validation and daemon reload passed. Second manual run queued.
+
+### Completed: manual hardened off-host service
+
+After the checkout-permission failure, the root-owned runtime bundle ran the
+hardened service successfully with its original empty capability set. Its Phase 1
+dependency created and verified local generation `20260927T025414Z`; all four
+existing backups remain present. Encrypted generation `20260927T025414Z` then
+passed conditional upload and full downloaded-byte hash verification for both
+archive and JSON sidecar. Service result success/exit 0 at 2026-09-27 02:55:55Z.
+The earlier 126 failure preceded all provider writes; no duplicate or partial
+object resulted. No service privilege or file mode was expanded.
+
+### Intent: enable Phase 2A schedule
+
+Recovery references: pre-activation `recovery/pre-phase2a-activation-d69e02b`;
+latest encrypted generations `20260927T021414Z` (human decryption + isolated
+restore) and `20260927T025414Z` (manual hardened service + remote read-back).
+Phase 1 timer is enabled/active. All Phase 2A fixture tests and installed systemd
+unit validation pass. Enable only the validated upload timer. Verify active and
+enabled state without stopping or modifying Phase 1 scheduling.
+
+### Completed: Phase 2A scheduled activation
+
+`optibrain-phase2a-upload.timer` enabled and active. Phase 1 local timer remains
+enabled and active. This daily 03:00 UTC timer runs the manual-tested root-owned
+hardened service. No retention deletion is configured in Phase 2A; local Phase 1
+policy remains seven valid generations. Next scheduled off-host run will create a
+new local Phase 1 generation as a service dependency, then upload/verify it.
+
+
+### Completed: final regression and live-state verification
+
+- Six encrypted uploader tests passed: retry after ambiguous PUT uses the same
+  ciphertext, denied HEAD prevents writes, downloaded corruption blocks success,
+  source changes refuse overwrite, create-only header, and bad local checksum.
+- Bucket-list tests passed for bootstrap and discovery parsers, including malformed
+  and failed responses. Health failure tests passed. Restore extraction safety
+  tests passed (traversal, absolute paths, symlinks and wrong source checksum).
+- Root-run Phase 1 backup fixture passed, including nested manifest checksums and
+  transient SQLite sidecar metadata exclusion. All four installed systemd units
+  validated. Private-network restore drill passed as recorded above.
+- Phase 2A daily timer installed/enabled/active. Phase 1 timer remains enabled and
+  active; latest local backup service succeeded. Hardened Phase 2A manual service
+  succeeded and the remote archive and JSON were both downloaded and hash verified.
+- Production workflow API HTTP 200/status ok/version 1.7.0; PDF and Omada endpoints
+  also passed after package restart. No application release or migration occurred.
+- Implementation commits: `f7ad1c2`, `56112e8`; schedule runtime/path fix and final
+  documentation are in the latest commit. Recovery refs point to final checkpoint.
+
+### Roadmap boundary
+
+The checked-in authoritative master runbook prioritizes provider adapters but does
+not define the numbered approved Phases 2B–12 or their gates. The architecture note
+lists potential future adapters, not an approved phase plan. Do not infer or execute
+provider mutations from that unordered list. Resume once the operator supplies the
+approved remaining phase plan; no credentials or other artifacts are needed.
+
+
+Latest scheduled-service manual generation details (20260927T025414Z):
+- Encrypted SHA-256: `ab5deb2f200207ba412c4e739a32b9fd8ef3ac612e4529adc323f724eaff4a40`
+- Source archive SHA-256: `f88d17767f26a2c89961e13752aa6cd7e81f2ef547d3a3257f98de4cccb4d997`
+- Service result: success; fully downloaded object and sidecar hashes passed.
+- Timer next scheduled run: 2026-09-28 03:04:13 UTC (randomized delay).
+
+### Schedule review: preserve Phase 1 retention cadence
+
+Final review found the Phase 2A unit's `Requires=optibrain-backup.service` would
+create a second local generation each day, shortening Phase 1's seven-generation
+window. Keep ordering (`After=`) so concurrent runs serialize, but do not start a
+second backup. Upload the newest independently scheduled Phase 1 generation and
+fail closed when it is older than 36 hours or over five minutes in the future.
+This preserves daily local cadence and catches missed backup runs. Existing
+archives and retention settings are unchanged. Validate the age boundaries and
+unit behavior before sustaining the timer.
+
+### Intent: preserve seven-generation local window
+
+Pre-mutation recovery: existing local archive `20260927T025414Z`, encrypted remote
+copy, and ref `recovery/pre-phase2a-activation-d69e02b`. Deploy the tested 36-hour
+freshness guard and remove the service's dependency that forced a second daily
+local generation. Keep After ordering and the Phase 1 timer unchanged. Update the
+root-owned runtime copy and installed unit, reload, verify unit/timer state, then
+run one idempotent verification of the latest generation (remote objects already
+exist; conflicts remain fail-closed). Existing archive count/retention is untouched.
+
+
+### Completed: retention-safe schedule and fresh rerun
+
+Removed the service's Phase 1 backup requirement while preserving `After=` ordering.
+The uploader now refuses local generations older than 36 hours or more than five
+minutes ahead of UTC. Nine uploader tests pass, including all three freshness
+boundaries. Static and installed unit verification pass; the installed unit keeps
+its empty capability set and strict filesystem protections. Phase 1 remains the
+only daily local timer, preserving its seven-generation cadence.
+
+After installing this exact runtime code, the manual hardened service succeeded
+again at 2026-09-27 12:06:26 UTC. It validated existing generation `20260927T025414Z`
+and streamed/hashed the existing remote archive and manifest. Audit shows no PUT;
+no new local or remote generation was created. Both timers remain active. Current
+production HTTP health remains good; no jobs remain in progress.
