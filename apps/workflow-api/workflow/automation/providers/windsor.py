@@ -69,6 +69,6 @@ def register_windsor_actions(engine: AutomationEngine, client: WindsorApiClient,
         )
         return result
 
-    engine.register_action("windsor.read", read)
-    engine.register_action("windsor.list_actions", list_actions)
+    engine.register_action("windsor.read", read, retry_safe=True)
+    engine.register_action("windsor.list_actions", list_actions, retry_safe=True)
     engine.register_action("windsor.execute_action", execute)

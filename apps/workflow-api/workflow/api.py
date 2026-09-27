@@ -8,6 +8,7 @@ from typing import Any, Literal
 
 import yaml
 from fastapi import Body, FastAPI, Header, HTTPException, Query, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
@@ -475,6 +476,8 @@ OMADA_WORKDRIVE_JOB_EXAMPLES = {
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Site workflow API starting")
+    recovery_stop = threading.Event()
+    recovery_thread: threading.Thread | None = None
     if settings.automation.enabled:
         try:
             loaded_workflows = automation_engine.sync_definitions()
@@ -482,10 +485,32 @@ async def lifespan(app: FastAPI):
         except Exception:
             logger.exception("Automation kernel failed to load workflow definitions")
             raise
+        def observe_and_recover() -> None:
+            failures = 0
+            while not recovery_stop.is_set():
+                try:
+                    automation_engine.recover_pending(limit=10)
+                    failures = 0
+                except Exception:
+                    failures += 1
+                    logger.exception("Automation recovery scan failed (%d/3)", failures)
+                    if failures >= 3:
+                        logger.error("Automation recovery stopped; human action required")
+                        return
+                recovery_stop.wait(5 if failures == 0 else 30)
+
+        recovery_thread = threading.Thread(target=observe_and_recover,
+                                           name="automation-recovery", daemon=True)
+        recovery_thread.start()
     else:
         logger.warning("Automation kernel is disabled by OPTICABLE_AUTOMATION_ENABLED")
-    yield
-    logger.info("Site workflow API shutting down")
+    try:
+        yield
+    finally:
+        recovery_stop.set()
+        if recovery_thread is not None:
+            recovery_thread.join(timeout=5)
+        logger.info("Site workflow API shutting down")
 
 
 app = FastAPI(
@@ -512,6 +537,14 @@ def _validate_api_key(provided_api_key: str | None) -> None:
     expected_api_key = os.getenv(settings.api.api_key_env)
     if expected_api_key and provided_api_key != expected_api_key:
         raise HTTPException(status_code=401, detail="Invalid X-API-Key")
+
+
+def _validate_inspection_api_key(provided_api_key: str | None) -> None:
+    """Inspection routes stay unavailable when server authentication is unset."""
+    expected_api_key = os.getenv(settings.api.api_key_env)
+    if not expected_api_key or not expected_api_key.strip():
+        raise HTTPException(status_code=503, detail="Inspection authentication is unavailable.")
+    _validate_api_key(provided_api_key)
 
 
 def _validate_browser_or_header_api_key(
@@ -837,7 +870,7 @@ async def workflow_health() -> HealthResponse:
 async def automation_capabilities(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     records = load_capabilities(settings.automation.capabilities_path)
     return {
         "enabled": settings.automation.enabled,
@@ -850,7 +883,7 @@ async def automation_capabilities(
 async def automation_actions(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return {"actions": automation_engine.action_names()}
 
 
@@ -858,7 +891,7 @@ async def automation_actions(
 async def automation_workflows(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return {"workflows": automation_store.list_workflows()}
 
 
@@ -889,7 +922,7 @@ async def automation_ingest_event(
     if not settings.automation.enabled:
         raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
     try:
-        return automation_engine.ingest(event)
+        return await run_in_threadpool(automation_engine.ingest, event)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -912,7 +945,7 @@ async def lifecycle_ingest_lead(
         payload=raw,
     )
     try:
-        return automation_engine.ingest(event)
+        return await run_in_threadpool(automation_engine.ingest, event)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -933,7 +966,7 @@ async def lifecycle_ingest_email(
         idempotency_key=email_event_idempotency_key(raw),
         payload=raw,
     )
-    return automation_engine.ingest(event)
+    return await run_in_threadpool(automation_engine.ingest, event)
 
 
 @app.post("/v1/lifecycle/meetings", response_model=EventIngestResponse, tags=["automation"])
@@ -954,7 +987,7 @@ async def lifecycle_create_meeting(
         ),
         payload=raw,
     )
-    return automation_engine.ingest(event)
+    return await run_in_threadpool(automation_engine.ingest, event)
 
 
 @app.post("/v1/automation/smoke-test", response_model=EventIngestResponse, tags=["automation"])
@@ -970,7 +1003,7 @@ async def automation_smoke_test(
         idempotency_key=f"manual-smoke:{utc_timestamp()}",
         payload={"requested_via": "api"},
     )
-    return automation_engine.ingest(event)
+    return await run_in_threadpool(automation_engine.ingest, event)
 
 
 class DesiredStateApplyRequest(BaseModel):
@@ -984,7 +1017,7 @@ class DesiredStateApplyRequest(BaseModel):
 async def automation_desired_state_adapters(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return {"adapters": desired_state_registry.list_adapters()}
 
 
@@ -1065,7 +1098,7 @@ async def automation_runs(
     limit: int = Query(default=50, ge=1, le=200),
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return {"runs": automation_store.recent_runs(limit)}
 
 
@@ -1073,8 +1106,29 @@ async def automation_runs(
 async def automation_execution_health(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, int]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return automation_store.execution_health()
+
+
+@app.get("/v1/automation/failed-work", tags=["automation"])
+async def automation_failed_work(
+    limit: int = Query(default=50, ge=1, le=100),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_inspection_api_key(x_api_key)
+    return {"runs": automation_store.failed_work(limit)}
+
+
+@app.get("/v1/automation/runs/{run_id}/failures", tags=["automation"])
+async def automation_run_failures(
+    run_id: str,
+    limit: int = Query(default=50, ge=1, le=100),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_inspection_api_key(x_api_key)
+    if not automation_store.run_exists(run_id):
+        raise HTTPException(status_code=404, detail="Automation run not found.")
+    return {"failures": automation_store.failure_history(run_id, limit)}
 
 
 @app.get("/v1/automation/runs/{run_id}", tags=["automation"])
@@ -1082,7 +1136,7 @@ async def automation_run(
     run_id: str,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     run = automation_store.get_run(run_id)
     if run is None:
         raise HTTPException(status_code=404, detail="Automation run not found.")
@@ -1094,7 +1148,7 @@ async def automation_audit(
     limit: int = Query(default=100, ge=1, le=500),
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     return {"audit": automation_store.recent_audit(limit)}
 
 

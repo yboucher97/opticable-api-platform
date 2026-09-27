@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Any, Literal
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 def utc_now_iso() -> str:
@@ -53,6 +53,13 @@ class WorkflowDefinition(BaseModel):
     description: str | None = None
     trigger: WorkflowTrigger
     steps: list[WorkflowStep] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def unique_step_ids(self) -> "WorkflowDefinition":
+        ids = [step.id for step in self.steps]
+        if len(ids) != len(set(ids)):
+            raise ValueError("workflow step IDs must be unique")
+        return self
 
 
 class AutomationEvent(BaseModel):
