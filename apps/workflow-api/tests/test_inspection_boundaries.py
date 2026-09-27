@@ -109,6 +109,87 @@ class InspectionBoundaryTests(unittest.TestCase):
                 api._automation_recovery_state.update(original_state)
                 api._automation_recovery_thread = original_thread
 
+    def test_execution_health_detects_stalled_live_worker(self) -> None:
+        class FakeThread:
+            def is_alive(self) -> bool:
+                return True
+
+        with api._automation_recovery_lock:
+            original_state = dict(api._automation_recovery_state)
+            original_thread = api._automation_recovery_thread
+
+        try:
+            with api._automation_recovery_lock:
+                api._automation_recovery_state.update({
+                    "enabled": True,
+                    "state": "running",
+                    "consecutive_failures": 0,
+                    "scan_in_progress": True,
+                    "_scan_started_monotonic": (
+                        api.time.monotonic()
+                        - api.AUTOMATION_RECOVERY_STALL_SECONDS
+                        - 1
+                    ),
+                    "last_scan_started_at": "20260927T213000Z",
+                    "last_scan_completed_at": "20260927T212955Z",
+                    "last_success_at": "20260927T212955Z",
+                    "stopped_due_to_failures": False,
+                })
+                api._automation_recovery_thread = FakeThread()
+
+            health = api._automation_recovery_health()
+
+            self.assertTrue(health["thread_alive"])
+            self.assertTrue(health["scan_in_progress"])
+            self.assertTrue(health["scan_stalled"])
+            self.assertGreaterEqual(
+                health["scan_age_seconds"],
+                int(api.AUTOMATION_RECOVERY_STALL_SECONDS),
+            )
+            self.assertFalse(health["healthy"])
+            self.assertNotIn("_scan_started_monotonic", health)
+        finally:
+            with api._automation_recovery_lock:
+                api._automation_recovery_state.clear()
+                api._automation_recovery_state.update(original_state)
+                api._automation_recovery_thread = original_thread
+
+    def test_execution_health_reports_live_recent_worker_healthy(self) -> None:
+        class FakeThread:
+            def is_alive(self) -> bool:
+                return True
+
+        with api._automation_recovery_lock:
+            original_state = dict(api._automation_recovery_state)
+            original_thread = api._automation_recovery_thread
+
+        try:
+            with api._automation_recovery_lock:
+                api._automation_recovery_state.update({
+                    "enabled": True,
+                    "state": "running",
+                    "consecutive_failures": 0,
+                    "scan_in_progress": True,
+                    "_scan_started_monotonic": api.time.monotonic(),
+                    "last_scan_started_at": "20260927T213000Z",
+                    "last_scan_completed_at": "20260927T212955Z",
+                    "last_success_at": "20260927T212955Z",
+                    "stopped_due_to_failures": False,
+                })
+                api._automation_recovery_thread = FakeThread()
+
+            health = api._automation_recovery_health()
+
+            self.assertTrue(health["thread_alive"])
+            self.assertFalse(health["scan_stalled"])
+            self.assertTrue(health["healthy"])
+            self.assertEqual(health["stall_after_seconds"], 300)
+        finally:
+            with api._automation_recovery_lock:
+                api._automation_recovery_state.clear()
+                api._automation_recovery_state.update(original_state)
+                api._automation_recovery_thread = original_thread
+
     def test_failure_history_never_loads_large_step_results(self) -> None:
         large_json = '{"data":"' + ("x" * 8192) + '"}'
         with sqlite3.connect(self.store.db_path) as conn:

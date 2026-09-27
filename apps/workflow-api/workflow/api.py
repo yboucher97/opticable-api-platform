@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import threading
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Literal
@@ -104,6 +105,8 @@ PLATFORM_DOCS_PATH = "/docs"
 PLATFORM_OPENAPI_PATH = "/openapi.json"
 
 
+AUTOMATION_RECOVERY_STALL_SECONDS = 300.0
+
 _automation_recovery_lock = threading.Lock()
 _automation_recovery_thread: threading.Thread | None = None
 _automation_recovery_state: dict[str, Any] = {
@@ -111,6 +114,7 @@ _automation_recovery_state: dict[str, Any] = {
     "state": "not_started" if settings.automation.enabled else "disabled",
     "consecutive_failures": 0,
     "scan_in_progress": False,
+    "_scan_started_monotonic": None,
     "last_scan_started_at": None,
     "last_scan_completed_at": None,
     "last_success_at": None,
@@ -135,8 +139,20 @@ def _automation_recovery_health() -> dict[str, Any]:
         snapshot = dict(_automation_recovery_state)
         thread = _automation_recovery_thread
 
+    started_monotonic = snapshot.pop("_scan_started_monotonic", None)
     thread_alive = bool(thread is not None and thread.is_alive())
     enabled = bool(snapshot["enabled"])
+    scan_in_progress = bool(snapshot["scan_in_progress"])
+
+    scan_age_seconds = 0
+    scan_stalled = False
+    if scan_in_progress:
+        if isinstance(started_monotonic, (int, float)):
+            scan_age_seconds = max(0, int(time.monotonic() - started_monotonic))
+            scan_stalled = scan_age_seconds >= AUTOMATION_RECOVERY_STALL_SECONDS
+        else:
+            # Inconsistent telemetry must fail closed rather than claim healthy.
+            scan_stalled = True
 
     if not enabled:
         healthy = snapshot["state"] == "disabled"
@@ -146,9 +162,13 @@ def _automation_recovery_health() -> dict[str, Any]:
             and snapshot["state"] == "running"
             and int(snapshot["consecutive_failures"]) == 0
             and not bool(snapshot["stopped_due_to_failures"])
+            and not scan_stalled
         )
 
     snapshot["thread_alive"] = thread_alive
+    snapshot["scan_age_seconds"] = scan_age_seconds
+    snapshot["scan_stalled"] = scan_stalled
+    snapshot["stall_after_seconds"] = int(AUTOMATION_RECOVERY_STALL_SECONDS)
     snapshot["healthy"] = healthy
     return snapshot
 
@@ -534,6 +554,7 @@ async def lifespan(app: FastAPI):
             state="starting",
             consecutive_failures=0,
             scan_in_progress=False,
+            _scan_started_monotonic=None,
             last_scan_started_at=None,
             last_scan_completed_at=None,
             last_success_at=None,
@@ -557,6 +578,7 @@ async def lifespan(app: FastAPI):
                 _update_automation_recovery_state(
                     state="running" if failures == 0 else "degraded",
                     scan_in_progress=True,
+                    _scan_started_monotonic=time.monotonic(),
                     last_scan_started_at=started_at,
                 )
 
@@ -568,6 +590,7 @@ async def lifespan(app: FastAPI):
                         state="running",
                         consecutive_failures=0,
                         scan_in_progress=False,
+                        _scan_started_monotonic=None,
                         last_scan_completed_at=completed_at,
                         last_success_at=completed_at,
                         stopped_due_to_failures=False,
@@ -580,6 +603,7 @@ async def lifespan(app: FastAPI):
                         state="stopped" if stopped else "degraded",
                         consecutive_failures=failures,
                         scan_in_progress=False,
+                        _scan_started_monotonic=None,
                         last_scan_completed_at=completed_at,
                         stopped_due_to_failures=stopped,
                     )
@@ -604,6 +628,7 @@ async def lifespan(app: FastAPI):
             state="disabled",
             consecutive_failures=0,
             scan_in_progress=False,
+            _scan_started_monotonic=None,
             last_scan_started_at=None,
             last_scan_completed_at=None,
             last_success_at=None,
@@ -621,6 +646,7 @@ async def lifespan(app: FastAPI):
             _update_automation_recovery_state(
                 state="shutdown",
                 scan_in_progress=False,
+                _scan_started_monotonic=None,
             )
         _set_automation_recovery_thread(None)
         logger.info("Site workflow API shutting down")
