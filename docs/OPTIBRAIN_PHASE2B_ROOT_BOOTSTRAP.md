@@ -1,6 +1,8 @@
 # Phase 2B consolidated root bootstrap proposal
 
-Status: corrected recovery package for a partially installed bootstrap. The
+Status: Phase 2B production release COMPLETE and known good on 2026-09-27.
+The installation procedures below are historical recovery records; do not rerun
+them against the now-complete installation. The
 first updater attempt failed closed with `invalid_digest_artifact`; production
 remained healthy, both backup timers remained active/enabled, sudoers remained
 valid, and the previous helper remained installed. This package corrects the
@@ -11,6 +13,21 @@ allowlisted OptiBrain administration and the reviewed helper update path. Verify
 all installation artifact hashes with `ops/admin/ROOT_BOOTSTRAP_SHA256SUMS`
 and compare the checkout to the separately supplied reviewed checkpoint before
 running any root command.
+
+The installed helper/updater/restorer hashes are respectively
+`b6313a79357afed164d3d7bfd363dd14403b3c8853927c721370e1e94df17244`,
+`8f1f2fdecb8603f94f746532ecfa2b90a26f9ee4e57b3d6e70e74509e166dfe6`, and
+`58f9e2305329326c5dfdbb88af4d1535f33fda3f9fb6d03163212b7929fc7db6`.
+Recovery refs: `recovery/phase2b-restore-compat` for reviewed installed code
+and `recovery/phase2b-production-known-good` for the completion record.
+Before rollback or another release, recheck production health, both timers,
+installed hashes, sudoers, latest backup, restore evidence and root audit.
+The old broad sudoers file stays only in root-only recovery storage; never
+restore it as steady-state access. Reinstall a previous reviewed helper/updater
+pair only with its matching root pin, verify self-test, backup and restore,
+then validate service health and both timers. Historical backups and sidecars
+stay immutable. A failed installation must preserve its root audit and all
+previous release copies for diagnosis.
 
 ## Privilege architecture
 

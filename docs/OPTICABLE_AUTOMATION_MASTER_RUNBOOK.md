@@ -80,6 +80,25 @@ The three VPS-backed endpoints were independently verified HTTP 200 from OPX001 
 7. Never expose API keys, OAuth refresh tokens, private keys, passwords, or full secret files in chat or Git.
 
 ## Important resolved failures
+- Phase 2B is complete and the installed release is known good as of 2026-09-27.
+  The human-validated helper self-test, latest-backup verification and isolated
+  restore all pass; the restore checked 640 files, 675 metadata entries, one
+  database, three critical configs and source extraction. All three service
+  health endpoints returned HTTP 200; both backup timers were active/enabled;
+  queue status reported 112 completed runs and disk use was about 14%. A fresh
+  optibrain-identity check reconfirmed self-test, health, scheduler, latest
+  checksum/archive, queue and capacity. Installed release SHA-256 values are
+  helper `b6313a79357afed164d3d7bfd363dd14403b3c8853927c721370e1e94df17244`,
+  updater `8f1f2fdecb8603f94f746532ecfa2b90a26f9ee4e57b3d6e70e74509e166dfe6`,
+  restore verifier `58f9e2305329326c5dfdbb88af4d1535f33fda3f9fb6d03163212b7929fc7db6`.
+  The installed runbook release digest is
+  `cdab559d264fb7a17c469fd10953827a98a24ac4a926939db1055522a6dfc085`.
+  The source recovery ref is `recovery/phase2b-production-known-good`;
+  `recovery/phase2b-restore-compat` identifies the installed code baseline.
+  Recheck health, both timers, installed hashes, `visudo -c`, latest checksum,
+  audit and restore evidence before changing root artifacts. This updated
+  source runbook is not yet installed in the root-owned location; its new pin
+  needs a separately reviewed C-class sync.
 - Phase 2B `restore-verify-latest` exposed a second checksum-format integration
   defect after the digest-pinned helper was installed. Phase 1 writes a standard
   sha256sum record whose filename is the absolute archive path. The helper's

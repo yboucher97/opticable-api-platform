@@ -1,8 +1,8 @@
 # OptiBrain autonomous resume journal
 
 Roadmap version: OptiBrain approved Phase 2B–12 roadmap, 2026-09-27.
-Current phase: Phase 2B autonomous privileged operator.
-Status: IN PROGRESS. Phase 2A complete; Phase 2B implementation is starting.
+Current phase: Phase 3 autonomous execution/control layer.
+Status: Phase 2B COMPLETE in production; Phase 3 inventory and bounded implementation in progress.
 The earlier human-action boundary below is superseded by the roadmap supplied
 in this session. Rediscover live state before relying on historical entries.
 
@@ -886,3 +886,41 @@ Reviewed package source commit: `3039dab` (`fix(admin): verify absolute backup
 sidecar paths`). The final journal checkpoint containing this recovery record
 is referenced by `recovery/phase2b-restore-compat`. The package is prepared for
 human-root review; no production installation was performed.
+
+## Phase 2B production completion and Phase 3 handoff — 2026-09-27
+
+The human-installed Phase 2B release is KNOWN GOOD. The operator reported the
+installed helper/updater release hashes, master runbook, sudoers and audit logging
+all passing. The helper self-test, `verify-latest`, `restore-verify-latest` and
+isolated restore passed: 640 files, 675 metadata entries, one database, three
+critical configs and source extraction. Workflow/PDF/Omada health returned HTTP
+200; both backup timers were active and enabled; queue status showed 112
+completed runs; disk use was about 14%. This supersedes earlier pending-release
+and not-complete statements above, which remain as incident history.
+
+An additional live recheck from the optibrain identity passed helper
+`--self-test`, `health` (all three public endpoints HTTP 200), `scheduler` (both
+timers active/enabled), `verify-latest` (generation
+`20260927T130636Z`), `queue-status` (112 completed), and `capacity` (14% root
+filesystem use). `sudo -n -l` showed the existing NOPASSWD helper/updater paths;
+no root shell was obtained. The successful isolated restore result and installed
+root-only file hashes are human-attested; repeating the restore against the same
+generation would encounter its exclusive result-file creation, so it was not
+rerun. No production release, service, timer, sudoers, provider, R2, archive or
+sidecar was changed during this checkpoint.
+
+Known-good installed release hashes: helper
+`b6313a79357afed164d3d7bfd363dd14403b3c8853927c721370e1e94df17244`, updater
+`8f1f2fdecb8603f94f746532ecfa2b90a26f9ee4e57b3d6e70e74509e166dfe6`, restore
+verifier `58f9e2305329326c5dfdbb88af4d1535f33fda3f9fb6d03163212b7929fc7db6`.
+The installed master-runbook hash at Phase 2B release was
+`cdab559d264fb7a17c469fd10953827a98a24ac4a926939db1055522a6dfc085`.
+The source baseline is `40103981abdb887fdfcfebb9d0b6c68eb0151a95`
+(`recovery/phase2b-restore-compat`). The completion-documentation commit is
+tagged `recovery/phase2b-production-known-good`; use it to restore the reviewed
+code and incident record, then validate installed hashes/health before any
+release. This journal/runbook documentation update is not installed on the root
+host; its new runbook digest/pin is a future C-class sync, not a Phase 2B binary
+release. The unrelated untracked
+`ops/backup/optibrain-cloudflare-auth-diagnostic.sh` in the production checkout
+was left untouched and excluded from this checkpoint.
