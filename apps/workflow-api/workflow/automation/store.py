@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -348,6 +349,31 @@ class AutomationStore:
                 (safe_limit,),
             ).fetchall()
         return [dict(row) for row in rows]
+
+    def execution_health(self, *, now: datetime | None = None) -> dict[str, int]:
+        """Return bounded aggregate state; never claim or replay a run."""
+        checked_at = now or datetime.now(timezone.utc)
+        if checked_at.tzinfo is None:
+            raise ValueError("execution health requires a timezone-aware clock")
+        queued_cutoff = (checked_at.astimezone(timezone.utc) - timedelta(minutes=15)).isoformat().replace("+00:00", "Z")
+        running_cutoff = (checked_at.astimezone(timezone.utc) - timedelta(hours=1)).isoformat().replace("+00:00", "Z")
+        with self._connect() as conn:
+            row = conn.execute(
+                """
+                SELECT
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN status='queued' THEN 1 ELSE 0 END) AS queued,
+                    SUM(CASE WHEN status='running' THEN 1 ELSE 0 END) AS running,
+                    SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) AS failed,
+                    SUM(CASE WHEN status='partial' THEN 1 ELSE 0 END) AS partial,
+                    SUM(CASE WHEN status='queued' AND created_at<=? THEN 1 ELSE 0 END) AS stale_queued,
+                    SUM(CASE WHEN status='running' AND (started_at IS NULL OR started_at<=?) THEN 1 ELSE 0 END) AS stale_running
+                FROM automation_runs
+                """,
+                (queued_cutoff, running_cutoff),
+            ).fetchone()
+        return {key: int(row[key] or 0) for key in
+                ("total", "queued", "running", "failed", "partial", "stale_queued", "stale_running")}
 
     def audit(self, *, category: str, action: str, actor: str, success: bool, correlation_id: str | None = None, target: str | None = None, metadata: dict[str, Any] | None = None) -> None:
         with self._connect() as conn:

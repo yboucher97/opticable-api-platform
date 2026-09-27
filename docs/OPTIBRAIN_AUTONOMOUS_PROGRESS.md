@@ -939,6 +939,13 @@ No schema, provider action, scheduler or root policy changes are made. A
 post-commit crash can still leave a queued run; this package exposes that state
 but intentionally does not blindly replay external actions.
 
+An authenticated, read-only `/v1/automation/execution-health` endpoint now
+reports aggregate queued/running/failed/partial counts and flags queued runs
+older than 15 minutes and running runs older than one hour. Its clock is UTC,
+it returns no payloads, and it neither claims nor replays a run. A fixture
+proves stale detection and confirms that reading the snapshot leaves run state
+unchanged. It is diagnostic only; alert delivery and recovery are still gaps.
+
 Tests inject failure during multi-run creation and prove a complete rollback,
 race the same idempotency key from separate SQLite connections and prove one
 accepted event/run, and inject failure before execution to prove one visible
@@ -955,8 +962,8 @@ wait while independent source/test work proceeds. The production state remains
 the Phase 2B known-good installation.
 
 Source validation for this checkpoint: workflow regression in the existing
-repository `.venv` passed `78 passed, 18 subtests passed` under pytest and
-64/64 under CI-style unittest discovery. The nine kernel unittest cases passed.
+repository `.venv` passed `79 passed, 18 subtests passed` under pytest and
+65/65 under CI-style unittest discovery. The ten kernel unittest cases passed.
 Ops/admin adversarial discovery passed 37/37; restore drill 2/2; Phase 1 backup
 fixture passed (root-only ownership case skipped under non-root test user);
 Phase 2A uploader fixture 9/9, bucket-listing and R2-health fixtures passed.

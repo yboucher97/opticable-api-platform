@@ -163,7 +163,8 @@ The three VPS-backed endpoints were independently verified HTTP 200 from OPX001 
 Phase 3 execution/control inventory, A–D operation classes, concrete gaps and
 human resume gates are in `docs/OPTIBRAIN_PHASE3_EXECUTION_CONTROL.md`.
 The Phase 3 source change makes event acceptance and matching queued-run
-creation one SQLite transaction; it is not deployed, does not automatically
+creation one SQLite transaction and adds authenticated, aggregate execution
+health for stale queued/running work. It is not deployed, does not automatically
 replay a run, and does not change root privileges or Phase 1/2A timers.
 
 1. Build provider-specific declarative reconcilers and real event workflows.

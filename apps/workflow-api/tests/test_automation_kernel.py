@@ -3,6 +3,7 @@ from __future__ import annotations
 import tempfile
 import threading
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -155,6 +156,28 @@ steps:
         duplicate = engine.ingest(event)
         self.assertTrue(duplicate.duplicate)
         self.assertEqual(len(self.store.recent_runs()), 1)
+
+    def test_execution_health_flags_stale_work_without_replay(self) -> None:
+        self._write_smoke_workflow()
+        engine = AutomationEngine(self.store, self.workflows)
+        engine.sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test")
+        self.store.ingest_event(event)
+        queued = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        running = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        failed = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        with self.store._connect() as conn:
+            conn.execute("UPDATE automation_runs SET created_at=? WHERE run_id=?",
+                         ("2026-09-27T15:00:00Z", queued))
+            conn.execute("UPDATE automation_runs SET status='running',started_at=? WHERE run_id=?",
+                         ("2026-09-27T14:00:00Z", running))
+            conn.execute("UPDATE automation_runs SET status='failed' WHERE run_id=?", (failed,))
+        snapshot = self.store.execution_health(now=datetime(2026, 9, 27, 16, tzinfo=timezone.utc))
+        self.assertEqual(snapshot, {"total": 3, "queued": 1, "running": 1, "failed": 1,
+                                    "partial": 0, "stale_queued": 1, "stale_running": 1})
+        self.assertEqual(len(self.store.recent_runs()), 3)
+        with self.assertRaises(ValueError):
+            self.store.execution_health(now=datetime(2026, 9, 27, 16))
 
     def test_unknown_action_fails_durably(self) -> None:
         (self.workflows / "bad.yaml").write_text(
