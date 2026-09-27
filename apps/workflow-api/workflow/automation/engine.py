@@ -173,6 +173,7 @@ class AutomationEngine:
         if attempt_id is None:
             return False
         context: dict[str, Any] = {
+            "queued_definition": definition.model_dump(by_alias=True),
             "event": event.model_dump(),
             "workflow": {"id": definition.id, "version": definition.version, "name": definition.name},
             "steps": {},
