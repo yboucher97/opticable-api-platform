@@ -138,6 +138,40 @@ class Phase3HealthMonitorTests(unittest.TestCase):
         self.assertNotIn("error", sample["metadata"])
 
 
+    def test_alert_transition_bypasses_periodic_sample_throttle(self) -> None:
+        first = self.monitor.observe(self.worker, force=True)
+        self.assertEqual(first["status"], "ok")
+
+        dead = dict(
+            self.worker,
+            thread_alive=False,
+            healthy=False,
+        )
+
+        # This happens immediately, well inside the 30-second sample interval.
+        second = self.monitor.observe(dead)
+
+        self.assertEqual(second["status"], "critical")
+        self.assertTrue(second["state_changed"])
+        self.assertTrue(second["sample_persisted"])
+
+        codes = {
+            item["code"]
+            for item in second["alerts"]
+        }
+        self.assertIn("recovery_worker_dead", codes)
+
+        transitions = [
+            item
+            for item in self.store.recent_audit(20)
+            if item["category"] == "automation_health"
+            and item["action"] == "alert_state_changed"
+        ]
+        self.assertEqual(len(transitions), 2)
+
+
+
+
 class Phase3MaintenanceTests(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()

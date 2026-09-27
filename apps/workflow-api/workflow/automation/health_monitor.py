@@ -169,18 +169,32 @@ class AutomationHealthMonitor:
         """Return current bounded health without writing audit state."""
         return self.evaluate(worker_health, previous_sample=self._last_sample())
 
-    def observe(self, worker_health: dict[str, Any], *, force: bool = False) -> dict[str, Any] | None:
-        """Persist periodic samples and alert transitions; never alter execution."""
+    def observe(
+        self,
+        worker_health: dict[str, Any],
+        *,
+        force: bool = False,
+    ) -> dict[str, Any]:
+        """Evaluate every call; persist transitions immediately and samples periodically."""
         with self._lock:
             now = time.monotonic()
-            if not force and now - self._last_sample_monotonic < self.sample_interval_seconds:
-                return None
+
             previous_sample = self._last_sample()
-            snapshot = self.evaluate(worker_health, previous_sample=previous_sample)
+            snapshot = self.evaluate(
+                worker_health,
+                previous_sample=previous_sample,
+            )
+
             db = snapshot["database"]
-            active_codes = sorted(item["code"] for item in snapshot["alerts"])
+            active_codes = sorted(
+                item["code"] for item in snapshot["alerts"]
+            )
             previous_codes = self._last_state()
-            state_changed = previous_codes is None or active_codes != previous_codes
+
+            state_changed = (
+                previous_codes is None
+                or active_codes != previous_codes
+            )
 
             if state_changed:
                 self.store.audit(
@@ -195,28 +209,49 @@ class AutomationHealthMonitor:
                     },
                 )
 
-            self.store.audit(
-                category="automation_health",
-                action="sample",
-                actor="health-monitor",
-                success=snapshot["status"] == "ok",
-                metadata={
-                    "status": snapshot["status"],
-                    "queued": int(db.get("queued") or 0),
-                    "claimed": int(db.get("claimed") or 0),
-                    "running": int(db.get("running") or 0),
-                    "stale_queued": int(db.get("stale_queued") or 0),
-                    "stale_running": int(db.get("stale_running") or 0),
-                    "expired_leases": int(db.get("expired_leases") or 0),
-                    "dead_letter": int(db.get("dead_letter") or 0),
-                    "human_action_required": int(db.get("human_action_required") or 0),
-                    "recent_failure_count": int(db.get("recent_failure_count") or 0),
-                    "worker_healthy": bool(worker_health.get("healthy")),
-                    "worker_stalled": bool(worker_health.get("scan_stalled")),
-                    "worker_heartbeat_stale": bool(worker_health.get("heartbeat_stale")),
-                    "active_codes": active_codes,
-                },
+            sample_due = (
+                force
+                or state_changed
+                or self._last_sample_monotonic == 0.0
+                or now - self._last_sample_monotonic
+                >= self.sample_interval_seconds
             )
-            self._last_sample_monotonic = now
+
+            if sample_due:
+                self.store.audit(
+                    category="automation_health",
+                    action="sample",
+                    actor="health-monitor",
+                    success=snapshot["status"] == "ok",
+                    metadata={
+                        "status": snapshot["status"],
+                        "queued": int(db.get("queued") or 0),
+                        "claimed": int(db.get("claimed") or 0),
+                        "running": int(db.get("running") or 0),
+                        "stale_queued": int(db.get("stale_queued") or 0),
+                        "stale_running": int(db.get("stale_running") or 0),
+                        "expired_leases": int(db.get("expired_leases") or 0),
+                        "dead_letter": int(db.get("dead_letter") or 0),
+                        "human_action_required": int(
+                            db.get("human_action_required") or 0
+                        ),
+                        "recent_failure_count": int(
+                            db.get("recent_failure_count") or 0
+                        ),
+                        "worker_healthy": bool(
+                            worker_health.get("healthy")
+                        ),
+                        "worker_stalled": bool(
+                            worker_health.get("scan_stalled")
+                        ),
+                        "worker_heartbeat_stale": bool(
+                            worker_health.get("heartbeat_stale")
+                        ),
+                        "active_codes": active_codes,
+                    },
+                )
+                self._last_sample_monotonic = now
+
             snapshot["state_changed"] = state_changed
+            snapshot["sample_persisted"] = sample_due
             return snapshot

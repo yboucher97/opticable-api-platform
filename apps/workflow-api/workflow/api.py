@@ -44,6 +44,8 @@ from .automation import (
     DesiredStateRegistry,
 )
 from .automation.capabilities import capability_summary, load_capabilities
+from .automation.health_monitor import AutomationHealthMonitor
+from .automation.maintenance import AutomationMaintenance
 from .automation.models import EventIngestResponse
 from .automation.providers.google import register_google_actions
 from .automation.providers.zoho import register_zoho_actions
@@ -67,6 +69,7 @@ automation_engine = AutomationEngine(
     settings.automation.workflows_dir,
     max_event_depth=settings.automation.max_event_depth,
 )
+automation_health_monitor = AutomationHealthMonitor(automation_store)
 desired_state_registry = DesiredStateRegistry()
 desired_state_controller = DesiredStateController(desired_state_registry)
 google_oauth_manager = GoogleOAuthManager(settings.google_oauth)
@@ -89,7 +92,7 @@ register_lifecycle_actions(automation_engine, zoho_gateway_client, automation_st
 register_lifecycle_extended_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_phase2_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_mailbox_actions(automation_engine, zoho_gateway_client, automation_store)
-API_VERSION = "1.7.0"
+API_VERSION = "1.8.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
 PRIMARY_JOB_STATUS_PATH = "/v1/site-and-password/jobs/{job_id}"
@@ -106,6 +109,10 @@ PLATFORM_OPENAPI_PATH = "/openapi.json"
 
 
 AUTOMATION_RECOVERY_STALL_SECONDS = 300.0
+AUTOMATION_RECOVERY_HEARTBEAT_STALE_SECONDS = 60.0
+AUTOMATION_TERMINAL_CLAIM_RETENTION_DAYS = 30
+AUTOMATION_MAINTENANCE_INTERVAL_SECONDS = 3600.0
+AUTOMATION_HEALTH_WATCHDOG_INTERVAL_SECONDS = 30.0
 
 _automation_recovery_lock = threading.Lock()
 _automation_recovery_thread: threading.Thread | None = None
@@ -115,6 +122,7 @@ _automation_recovery_state: dict[str, Any] = {
     "consecutive_failures": 0,
     "scan_in_progress": False,
     "_scan_started_monotonic": None,
+    "_last_success_monotonic": None,
     "last_scan_started_at": None,
     "last_scan_completed_at": None,
     "last_success_at": None,
@@ -134,12 +142,14 @@ def _set_automation_recovery_thread(thread: threading.Thread | None) -> None:
 
 
 def _automation_recovery_health() -> dict[str, Any]:
-    """Return bounded in-process recovery-worker state without changing execution."""
+    """Return bounded in-process recovery/scheduler state without changing execution."""
     with _automation_recovery_lock:
         snapshot = dict(_automation_recovery_state)
         thread = _automation_recovery_thread
 
     started_monotonic = snapshot.pop("_scan_started_monotonic", None)
+    last_success_monotonic = snapshot.pop("_last_success_monotonic", None)
+
     thread_alive = bool(thread is not None and thread.is_alive())
     enabled = bool(snapshot["enabled"])
     scan_in_progress = bool(snapshot["scan_in_progress"])
@@ -151,8 +161,22 @@ def _automation_recovery_health() -> dict[str, Any]:
             scan_age_seconds = max(0, int(time.monotonic() - started_monotonic))
             scan_stalled = scan_age_seconds >= AUTOMATION_RECOVERY_STALL_SECONDS
         else:
-            # Inconsistent telemetry must fail closed rather than claim healthy.
             scan_stalled = True
+
+    heartbeat_age_seconds = 0
+    heartbeat_stale = False
+    if enabled and snapshot["state"] == "running" and not scan_in_progress:
+        if isinstance(last_success_monotonic, (int, float)):
+            heartbeat_age_seconds = max(
+                0,
+                int(time.monotonic() - last_success_monotonic),
+            )
+            heartbeat_stale = (
+                heartbeat_age_seconds
+                >= AUTOMATION_RECOVERY_HEARTBEAT_STALE_SECONDS
+            )
+        else:
+            heartbeat_stale = True
 
     if not enabled:
         healthy = snapshot["state"] == "disabled"
@@ -163,14 +187,34 @@ def _automation_recovery_health() -> dict[str, Any]:
             and int(snapshot["consecutive_failures"]) == 0
             and not bool(snapshot["stopped_due_to_failures"])
             and not scan_stalled
+            and not heartbeat_stale
         )
 
     snapshot["thread_alive"] = thread_alive
     snapshot["scan_age_seconds"] = scan_age_seconds
     snapshot["scan_stalled"] = scan_stalled
     snapshot["stall_after_seconds"] = int(AUTOMATION_RECOVERY_STALL_SECONDS)
+    snapshot["heartbeat_age_seconds"] = heartbeat_age_seconds
+    snapshot["heartbeat_stale"] = heartbeat_stale
+    snapshot["heartbeat_stale_after_seconds"] = int(
+        AUTOMATION_RECOVERY_HEARTBEAT_STALE_SECONDS
+    )
     snapshot["healthy"] = healthy
     return snapshot
+
+
+class AutomationRedriveRequest(BaseModel):
+    reason: str = Field(min_length=8, max_length=500)
+
+
+class AutomationCleanupRequest(BaseModel):
+    retention_days: int = Field(default=30, ge=1, le=3650)
+    limit: int = Field(default=100, ge=1, le=1000)
+    reason: str = Field(
+        default="Explicit bounded terminal claim retention cleanup",
+        min_length=8,
+        max_length=500,
+    )
 
 
 class ServiceRoute(BaseModel):
@@ -547,6 +591,7 @@ async def lifespan(app: FastAPI):
     logger.info("Site workflow API starting")
     recovery_stop = threading.Event()
     recovery_thread: threading.Thread | None = None
+    health_thread: threading.Thread | None = None
 
     if settings.automation.enabled:
         _update_automation_recovery_state(
@@ -555,6 +600,7 @@ async def lifespan(app: FastAPI):
             consecutive_failures=0,
             scan_in_progress=False,
             _scan_started_monotonic=None,
+            _last_success_monotonic=None,
             last_scan_started_at=None,
             last_scan_completed_at=None,
             last_success_at=None,
@@ -564,7 +610,11 @@ async def lifespan(app: FastAPI):
 
         try:
             loaded_workflows = automation_engine.sync_definitions()
-            logger.info("Automation kernel loaded %d workflow definition(s): %s", len(loaded_workflows), loaded_workflows)
+            logger.info(
+                "Automation kernel loaded %d workflow definition(s): %s",
+                len(loaded_workflows),
+                loaded_workflows,
+            )
         except Exception:
             _update_automation_recovery_state(state="startup_failed")
             logger.exception("Automation kernel failed to load workflow definitions")
@@ -572,6 +622,7 @@ async def lifespan(app: FastAPI):
 
         def observe_and_recover() -> None:
             failures = 0
+            last_cleanup_monotonic = 0.0
 
             while not recovery_stop.is_set():
                 started_at = utc_timestamp()
@@ -582,6 +633,7 @@ async def lifespan(app: FastAPI):
                     last_scan_started_at=started_at,
                 )
 
+                stopped = False
                 try:
                     automation_engine.recover_pending(limit=10)
                     failures = 0
@@ -591,6 +643,7 @@ async def lifespan(app: FastAPI):
                         consecutive_failures=0,
                         scan_in_progress=False,
                         _scan_started_monotonic=None,
+                        _last_success_monotonic=time.monotonic(),
                         last_scan_completed_at=completed_at,
                         last_success_at=completed_at,
                         stopped_due_to_failures=False,
@@ -607,10 +660,42 @@ async def lifespan(app: FastAPI):
                         last_scan_completed_at=completed_at,
                         stopped_due_to_failures=stopped,
                     )
-                    logger.exception("Automation recovery scan failed (%d/3)", failures)
+                    logger.exception(
+                        "Automation recovery scan failed (%d/3)",
+                        failures,
+                    )
                     if stopped:
-                        logger.error("Automation recovery stopped; human action required")
-                        return
+                        logger.error(
+                            "Automation recovery stopped; human action required"
+                        )
+
+                if stopped:
+                    return
+
+                now_monotonic = time.monotonic()
+                if (
+                    now_monotonic - last_cleanup_monotonic
+                    >= AUTOMATION_MAINTENANCE_INTERVAL_SECONDS
+                ):
+                    last_cleanup_monotonic = now_monotonic
+                    try:
+                        cleanup = AutomationMaintenance(
+                            automation_store
+                        ).cleanup_terminal_claims(
+                            retention_days=AUTOMATION_TERMINAL_CLAIM_RETENTION_DAYS,
+                            limit=100,
+                            actor="automation-maintenance",
+                            reason="Automatic bounded terminal claim retention cleanup",
+                        )
+                        if cleanup["deleted_claims"]:
+                            logger.info(
+                                "Automation maintenance removed %d old terminal claim(s)",
+                                cleanup["deleted_claims"],
+                            )
+                    except Exception:
+                        logger.exception(
+                            "Automation terminal-claim maintenance failed"
+                        )
 
                 recovery_stop.wait(5 if failures == 0 else 30)
 
@@ -621,6 +706,53 @@ async def lifespan(app: FastAPI):
         )
         _set_automation_recovery_thread(recovery_thread)
         recovery_thread.start()
+
+        def observe_health() -> None:
+            while not recovery_stop.is_set():
+                try:
+                    observed = automation_health_monitor.observe(
+                        _automation_recovery_health()
+                    )
+
+                    if observed.get("state_changed"):
+                        codes = [
+                            item["code"]
+                            for item in observed.get("alerts", [])
+                            if isinstance(item, dict)
+                            and item.get("code")
+                        ]
+
+                        if observed["status"] == "critical":
+                            logger.error(
+                                "Automation health critical: %s",
+                                ",".join(codes) or "unspecified",
+                            )
+                        elif observed["status"] == "warning":
+                            logger.warning(
+                                "Automation health warning: %s",
+                                ",".join(codes) or "unspecified",
+                            )
+                        else:
+                            logger.info(
+                                "Automation health recovered; "
+                                "no active alerts"
+                            )
+                except Exception:
+                    # The watchdog must never influence workflow execution.
+                    logger.exception(
+                        "Automation health watchdog failed"
+                    )
+
+                recovery_stop.wait(
+                    AUTOMATION_HEALTH_WATCHDOG_INTERVAL_SECONDS
+                )
+
+        health_thread = threading.Thread(
+            target=observe_health,
+            name="automation-health-watchdog",
+            daemon=True,
+        )
+        health_thread.start()
     else:
         _set_automation_recovery_thread(None)
         _update_automation_recovery_state(
@@ -629,12 +761,15 @@ async def lifespan(app: FastAPI):
             consecutive_failures=0,
             scan_in_progress=False,
             _scan_started_monotonic=None,
+            _last_success_monotonic=None,
             last_scan_started_at=None,
             last_scan_completed_at=None,
             last_success_at=None,
             stopped_due_to_failures=False,
         )
-        logger.warning("Automation kernel is disabled by OPTICABLE_AUTOMATION_ENABLED")
+        logger.warning(
+            "Automation kernel is disabled by OPTICABLE_AUTOMATION_ENABLED"
+        )
 
     try:
         yield
@@ -642,11 +777,14 @@ async def lifespan(app: FastAPI):
         recovery_stop.set()
         if recovery_thread is not None:
             recovery_thread.join(timeout=5)
+        if health_thread is not None:
+            health_thread.join(timeout=5)
         if settings.automation.enabled:
             _update_automation_recovery_state(
                 state="shutdown",
                 scan_in_progress=False,
                 _scan_started_monotonic=None,
+                _last_success_monotonic=None,
             )
         _set_automation_recovery_thread(None)
         logger.info("Site workflow API shutting down")
@@ -1251,6 +1389,16 @@ async def automation_execution_health(
     return snapshot
 
 
+@app.get("/v1/automation/health-alerts", tags=["automation"])
+async def automation_health_alerts(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_inspection_api_key(x_api_key)
+    # A fresh inspector ensures tests and future store swaps use the current store.
+    monitor = AutomationHealthMonitor(automation_store)
+    return monitor.inspect(_automation_recovery_health())
+
+
 @app.get("/v1/automation/failed-work", tags=["automation"])
 async def automation_failed_work(
     limit: int = Query(default=50, ge=1, le=100),
@@ -1270,6 +1418,45 @@ async def automation_run_failures(
     if not automation_store.run_exists(run_id):
         raise HTTPException(status_code=404, detail="Automation run not found.")
     return {"failures": automation_store.failure_history(run_id, limit)}
+
+
+@app.post("/v1/automation/runs/{run_id}/redrive", tags=["automation"])
+async def automation_redrive_run(
+    run_id: str,
+    payload: AutomationRedriveRequest,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_inspection_api_key(x_api_key)
+    try:
+        return AutomationMaintenance(automation_store).redrive(
+            run_id,
+            actor="api",
+            reason=payload.reason,
+        )
+    except LookupError as exc:
+        raise HTTPException(
+            status_code=404,
+            detail="Automation run not found.",
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.post(
+    "/v1/automation/maintenance/cleanup-terminal-claims",
+    tags=["automation"],
+)
+async def automation_cleanup_terminal_claims(
+    payload: AutomationCleanupRequest,
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    _validate_inspection_api_key(x_api_key)
+    return AutomationMaintenance(automation_store).cleanup_terminal_claims(
+        retention_days=payload.retention_days,
+        limit=payload.limit,
+        actor="api",
+        reason=payload.reason,
+    )
 
 
 @app.get("/v1/automation/runs/{run_id}", tags=["automation"])
