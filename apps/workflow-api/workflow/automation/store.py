@@ -200,6 +200,66 @@ class AutomationStore:
                 return False, str(existing["event_id"]), str(existing["correlation_id"])
         return True, event.event_id, correlation_id
 
+    def ingest_event_and_runs(
+        self, event: AutomationEvent
+    ) -> tuple[bool, str, str, list[tuple[str, WorkflowDefinition]]]:
+        """Commit the event and every matching queued run in one SQLite transaction.
+
+        This does not execute or replay a run. A crash after commit leaves a
+        visible queued run for explicit recovery, rather than an orphan event.
+        """
+        correlation_id = event.correlation_id or event.event_id
+        with self._lock, self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            existing = None
+            if event.idempotency_key:
+                existing = conn.execute(
+                    "SELECT event_id,correlation_id FROM automation_events WHERE idempotency_key=?",
+                    (event.idempotency_key,),
+                ).fetchone()
+            if existing is None:
+                existing = conn.execute(
+                    "SELECT event_id,correlation_id FROM automation_events WHERE event_id=?",
+                    (event.event_id,),
+                ).fetchone()
+            if existing is not None:
+                return False, str(existing["event_id"]), str(existing["correlation_id"]), []
+
+            rows = conn.execute(
+                "SELECT definition_json FROM automation_workflows WHERE enabled=1 ORDER BY workflow_id"
+            ).fetchall()
+            matches: list[WorkflowDefinition] = []
+            for row in rows:
+                definition = WorkflowDefinition.model_validate(json.loads(row["definition_json"]))
+                if event.event_type not in definition.trigger.event_types and "*" not in definition.trigger.event_types:
+                    continue
+                if definition.trigger.sources and event.source not in definition.trigger.sources:
+                    continue
+                matches.append(definition)
+
+            now = utc_now_iso()
+            conn.execute(
+                """
+                INSERT INTO automation_events(
+                    event_id,event_type,source,occurred_at,correlation_id,causation_id,
+                    idempotency_key,depth,payload_json,created_at
+                ) VALUES(?,?,?,?,?,?,?,?,?,?)
+                """,
+                (event.event_id, event.event_type, event.source, event.occurred_at,
+                 correlation_id, event.causation_id, event.idempotency_key, event.depth,
+                 json.dumps(event.payload, separators=(",", ":"), ensure_ascii=False), now),
+            )
+            runs: list[tuple[str, WorkflowDefinition]] = []
+            for definition in matches:
+                run_id = uuid4().hex
+                conn.execute(
+                    "INSERT INTO automation_runs(run_id,workflow_id,event_id,correlation_id,status,created_at) "
+                    "VALUES(?,?,?,?,?,?)",
+                    (run_id, definition.id, event.event_id, correlation_id, "queued", now),
+                )
+                runs.append((run_id, definition))
+        return True, event.event_id, correlation_id, runs
+
     def create_run(self, workflow_id: str, event_id: str, correlation_id: str) -> str:
         run_id = uuid4().hex
         now = utc_now_iso()

@@ -124,6 +124,21 @@ The three VPS-backed endpoints were independently verified HTTP 200 from OPX001 
   `sha256sum -c` remain standard manifest lines. Repair details and preflight
   checks are in `docs/OPTIBRAIN_PHASE2B_ROOT_BOOTSTRAP.md`; do not repeat the
   first-install sudoers/updater/timer steps for this partial state.
+- The Phase 2B audit-directory and runbook-metadata incidents were fail-closed
+  installation-precondition mismatches, not reasons to relax helper validation.
+  The helper requires `/var/log/optibrain` to be root:root 0700 and its audit
+  file to be root:root 0600, regular, single-linked and non-symlinked. The
+  runbook sync requires `/opt` root:root 0755, the checkout optibrain:optibrain
+  0755, `docs` optibrain:optibrain 0775, destination runbook root:root 0644,
+  staged candidate/pin optibrain:optibrain 0440, and root pin root:root 0440.
+  Diagnose with `stat -c '%n %a %U:%G'` on these fixed paths and inspect the
+  root audit; repair only the specific mismatched metadata through an approved
+  root procedure, then rerun self-test/sync and health checks. Never bypass
+  metadata checks, follow a symlink, edit arbitrary destinations, or restore
+  broad sudo. The former on-disk metadata values and exact repair commands for
+  these two incidents were not captured in this repository; do not invent them
+  as historical evidence. Preserve the runbook's versioned old copy before any
+  future sync and roll back only to its verified exact bytes if validation fails.
 - OpenAI 401 invalid_api_key: replaced invalid key; next failure showed billing_not_active; billing was activated; live test then returned OPTIBRAIN_OPENAI_OK.
 - Anthropic 400 missing anthropic-workspace-id: added ANTHROPIC_WORKSPACE_ID support, header injection, installer preservation, regression test; live test then succeeded.
 - GitHub static token dependence: replaced with GitHub App installation-token authentication while preserving read-only deploy key for checkout.
@@ -145,6 +160,12 @@ The three VPS-backed endpoints were independently verified HTTP 200 from OPX001 
 - After deployment, the full production health monitor passed, skipped incident creation, and automatically executed the recovery/close path for the existing incident.
 
 ## Current autonomy priorities
+Phase 3 execution/control inventory, A–D operation classes, concrete gaps and
+human resume gates are in `docs/OPTIBRAIN_PHASE3_EXECUTION_CONTROL.md`.
+The Phase 3 source change makes event acceptance and matching queued-run
+creation one SQLite transaction; it is not deployed, does not automatically
+replay a run, and does not change root privileges or Phase 1/2A timers.
+
 1. Build provider-specific declarative reconcilers and real event workflows.
 2. Add provider credential/token expiry monitoring, retry/DLQ monitoring, and drift reconciliation.
 3. Add deterministic UI fallback only for functions that have no adequate API.

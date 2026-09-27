@@ -924,3 +924,42 @@ host; its new runbook digest/pin is a future C-class sync, not a Phase 2B binary
 release. The unrelated untracked
 `ops/backup/optibrain-cloudflare-auth-diagnostic.sh` in the production checkout
 was left untouched and excluded from this checkpoint.
+
+## Phase 3 source implementation — atomic event/run acceptance
+
+The detailed inventory and A–D classification are in
+`docs/OPTIBRAIN_PHASE3_EXECUTION_CONTROL.md`. Existing Cloudflare Queue,
+Workflow retries/DLQ, GitHub incident monitor, systemd backup timers and
+Phase 2B helper remain in place. The core defect selected for this safe source
+slice was a two-commit acceptance path: an event could be deduplicated in SQLite
+before its matching runs were created, so a crash could suppress all later
+delivery retries. The new store transaction reads enabled definitions and
+commits the event and all matching queued runs together under `BEGIN IMMEDIATE`.
+No schema, provider action, scheduler or root policy changes are made. A
+post-commit crash can still leave a queued run; this package exposes that state
+but intentionally does not blindly replay external actions.
+
+Tests inject failure during multi-run creation and prove a complete rollback,
+race the same idempotency key from separate SQLite connections and prove one
+accepted event/run, and inject failure before execution to prove one visible
+queued run and no duplicate execution. Existing smoke/template/failure tests
+remain passing. Phase 3 is NOT COMPLETE: durable claim/lease, stuck-run
+diagnosis, safe replay, retry classification, rate-limit handling, DLQ redrive,
+worker/scheduler liveness, backup freshness alerts and reboot/outage drills
+remain. `HUMAN_ACTION_REQUIRED`: review and deploy the final API commit through
+the existing approved restricted deployment path; preserve pre- and post-change
+recovery points and verify production health, both timers and restore evidence.
+`HUMAN_ACTION_REQUIRED`: select the canonical lifecycle scheduler and shared
+business dedupe key before disabling either current trigger. Both items can
+wait while independent source/test work proceeds. The production state remains
+the Phase 2B known-good installation.
+
+Source validation for this checkpoint: workflow regression in the existing
+repository `.venv` passed `78 passed, 18 subtests passed` under pytest and
+64/64 under CI-style unittest discovery. The nine kernel unittest cases passed.
+Ops/admin adversarial discovery passed 37/37; restore drill 2/2; Phase 1 backup
+fixture passed (root-only ownership case skipped under non-root test user);
+Phase 2A uploader fixture 9/9, bucket-listing and R2-health fixtures passed.
+Python compilation, proposed sudoers parse, complete root-artifact SHA manifest
+and `git diff --check` passed. None of these tests deployed source or modified
+production backup, timer, credential, provider or root-owned artifacts.
