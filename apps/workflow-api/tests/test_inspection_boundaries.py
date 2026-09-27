@@ -64,6 +64,51 @@ class InspectionBoundaryTests(unittest.TestCase):
                             self.assertEqual(response.status_code, 503)
                             self.assertNotIn("fixture-key", response.text)
 
+    def test_execution_health_exposes_recovery_worker_liveness(self) -> None:
+        class FakeThread:
+            def is_alive(self) -> bool:
+                return False
+
+        with api._automation_recovery_lock:
+            original_state = dict(api._automation_recovery_state)
+            original_thread = api._automation_recovery_thread
+
+        try:
+            with api._automation_recovery_lock:
+                api._automation_recovery_state.update({
+                    "enabled": True,
+                    "state": "stopped",
+                    "consecutive_failures": 3,
+                    "scan_in_progress": False,
+                    "last_scan_started_at": "2026-09-27T21:30:00Z",
+                    "last_scan_completed_at": "2026-09-27T21:30:01Z",
+                    "last_success_at": "2026-09-27T21:29:55Z",
+                    "stopped_due_to_failures": True,
+                })
+                api._automation_recovery_thread = FakeThread()
+
+            with patch.dict(os.environ, {self.key_name: "fixture-key"}):
+                response = self.client.get(
+                    "/v1/automation/execution-health",
+                    headers={"X-API-Key": "fixture-key"},
+                )
+
+            self.assertEqual(response.status_code, 200)
+            payload = response.json()
+            self.assertIn("total", payload)
+            worker = payload["recovery_worker"]
+            self.assertTrue(worker["enabled"])
+            self.assertEqual(worker["state"], "stopped")
+            self.assertEqual(worker["consecutive_failures"], 3)
+            self.assertFalse(worker["thread_alive"])
+            self.assertFalse(worker["healthy"])
+            self.assertTrue(worker["stopped_due_to_failures"])
+        finally:
+            with api._automation_recovery_lock:
+                api._automation_recovery_state.clear()
+                api._automation_recovery_state.update(original_state)
+                api._automation_recovery_thread = original_thread
+
     def test_failure_history_never_loads_large_step_results(self) -> None:
         large_json = '{"data":"' + ("x" * 8192) + '"}'
         with sqlite3.connect(self.store.db_path) as conn:

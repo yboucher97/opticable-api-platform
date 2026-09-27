@@ -104,6 +104,55 @@ PLATFORM_DOCS_PATH = "/docs"
 PLATFORM_OPENAPI_PATH = "/openapi.json"
 
 
+_automation_recovery_lock = threading.Lock()
+_automation_recovery_thread: threading.Thread | None = None
+_automation_recovery_state: dict[str, Any] = {
+    "enabled": bool(settings.automation.enabled),
+    "state": "not_started" if settings.automation.enabled else "disabled",
+    "consecutive_failures": 0,
+    "scan_in_progress": False,
+    "last_scan_started_at": None,
+    "last_scan_completed_at": None,
+    "last_success_at": None,
+    "stopped_due_to_failures": False,
+}
+
+
+def _update_automation_recovery_state(**updates: Any) -> None:
+    with _automation_recovery_lock:
+        _automation_recovery_state.update(updates)
+
+
+def _set_automation_recovery_thread(thread: threading.Thread | None) -> None:
+    global _automation_recovery_thread
+    with _automation_recovery_lock:
+        _automation_recovery_thread = thread
+
+
+def _automation_recovery_health() -> dict[str, Any]:
+    """Return bounded in-process recovery-worker state without changing execution."""
+    with _automation_recovery_lock:
+        snapshot = dict(_automation_recovery_state)
+        thread = _automation_recovery_thread
+
+    thread_alive = bool(thread is not None and thread.is_alive())
+    enabled = bool(snapshot["enabled"])
+
+    if not enabled:
+        healthy = snapshot["state"] == "disabled"
+    else:
+        healthy = (
+            thread_alive
+            and snapshot["state"] == "running"
+            and int(snapshot["consecutive_failures"]) == 0
+            and not bool(snapshot["stopped_due_to_failures"])
+        )
+
+    snapshot["thread_alive"] = thread_alive
+    snapshot["healthy"] = healthy
+    return snapshot
+
+
 class ServiceRoute(BaseModel):
     name: str
     path_prefix: str
@@ -478,38 +527,102 @@ async def lifespan(app: FastAPI):
     logger.info("Site workflow API starting")
     recovery_stop = threading.Event()
     recovery_thread: threading.Thread | None = None
+
     if settings.automation.enabled:
+        _update_automation_recovery_state(
+            enabled=True,
+            state="starting",
+            consecutive_failures=0,
+            scan_in_progress=False,
+            last_scan_started_at=None,
+            last_scan_completed_at=None,
+            last_success_at=None,
+            stopped_due_to_failures=False,
+        )
+        _set_automation_recovery_thread(None)
+
         try:
             loaded_workflows = automation_engine.sync_definitions()
             logger.info("Automation kernel loaded %d workflow definition(s): %s", len(loaded_workflows), loaded_workflows)
         except Exception:
+            _update_automation_recovery_state(state="startup_failed")
             logger.exception("Automation kernel failed to load workflow definitions")
             raise
+
         def observe_and_recover() -> None:
             failures = 0
+
             while not recovery_stop.is_set():
+                started_at = utc_timestamp()
+                _update_automation_recovery_state(
+                    state="running" if failures == 0 else "degraded",
+                    scan_in_progress=True,
+                    last_scan_started_at=started_at,
+                )
+
                 try:
                     automation_engine.recover_pending(limit=10)
                     failures = 0
+                    completed_at = utc_timestamp()
+                    _update_automation_recovery_state(
+                        state="running",
+                        consecutive_failures=0,
+                        scan_in_progress=False,
+                        last_scan_completed_at=completed_at,
+                        last_success_at=completed_at,
+                        stopped_due_to_failures=False,
+                    )
                 except Exception:
                     failures += 1
+                    completed_at = utc_timestamp()
+                    stopped = failures >= 3
+                    _update_automation_recovery_state(
+                        state="stopped" if stopped else "degraded",
+                        consecutive_failures=failures,
+                        scan_in_progress=False,
+                        last_scan_completed_at=completed_at,
+                        stopped_due_to_failures=stopped,
+                    )
                     logger.exception("Automation recovery scan failed (%d/3)", failures)
-                    if failures >= 3:
+                    if stopped:
                         logger.error("Automation recovery stopped; human action required")
                         return
+
                 recovery_stop.wait(5 if failures == 0 else 30)
 
-        recovery_thread = threading.Thread(target=observe_and_recover,
-                                           name="automation-recovery", daemon=True)
+        recovery_thread = threading.Thread(
+            target=observe_and_recover,
+            name="automation-recovery",
+            daemon=True,
+        )
+        _set_automation_recovery_thread(recovery_thread)
         recovery_thread.start()
     else:
+        _set_automation_recovery_thread(None)
+        _update_automation_recovery_state(
+            enabled=False,
+            state="disabled",
+            consecutive_failures=0,
+            scan_in_progress=False,
+            last_scan_started_at=None,
+            last_scan_completed_at=None,
+            last_success_at=None,
+            stopped_due_to_failures=False,
+        )
         logger.warning("Automation kernel is disabled by OPTICABLE_AUTOMATION_ENABLED")
+
     try:
         yield
     finally:
         recovery_stop.set()
         if recovery_thread is not None:
             recovery_thread.join(timeout=5)
+        if settings.automation.enabled:
+            _update_automation_recovery_state(
+                state="shutdown",
+                scan_in_progress=False,
+            )
+        _set_automation_recovery_thread(None)
         logger.info("Site workflow API shutting down")
 
 
@@ -1105,9 +1218,11 @@ async def automation_runs(
 @app.get("/v1/automation/execution-health", tags=["automation"])
 async def automation_execution_health(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
-) -> dict[str, int]:
+) -> dict[str, Any]:
     _validate_inspection_api_key(x_api_key)
-    return automation_store.execution_health()
+    snapshot: dict[str, Any] = automation_store.execution_health()
+    snapshot["recovery_worker"] = _automation_recovery_health()
+    return snapshot
 
 
 @app.get("/v1/automation/failed-work", tags=["automation"])
