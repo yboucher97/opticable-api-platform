@@ -63,7 +63,7 @@ class AutomationHealthMonitor:
                 return metadata
         return None
 
-    def _last_state(self) -> list[str]:
+    def _last_state(self) -> list[str] | None:
         for item in self.store.recent_audit(200):
             if item.get("category") != "automation_health":
                 continue
@@ -75,7 +75,7 @@ class AutomationHealthMonitor:
             codes = metadata.get("active_codes")
             if isinstance(codes, list) and all(isinstance(code, str) for code in codes):
                 return sorted(set(codes))
-        return []
+        return None
 
     def evaluate(
         self,
@@ -176,7 +176,7 @@ class AutomationHealthMonitor:
             active_codes = sorted(item["code"] for item in snapshot["alerts"])
             previous_codes = self._last_state()
 
-            if active_codes != previous_codes:
+            if previous_codes is None or active_codes != previous_codes:
                 self.store.audit(
                     category="automation_health",
                     action="alert_state_changed",
