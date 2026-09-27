@@ -14,7 +14,7 @@ class AutomationHealthMonitor:
     """Bounded, read-mostly automation health evaluation with durable transitions.
 
     The monitor never claims, executes, retries, redrives, or mutates workflow
-    runs.  It only reads bounded aggregate health and appends non-secret audit
+    runs. It only reads bounded aggregate health and appends non-secret audit
     records when the alert state changes or a periodic sample is due.
     """
 
@@ -98,6 +98,11 @@ class AutomationHealthMonitor:
                     "recovery_worker_stalled", "critical", 1,
                     "Automation recovery scan exceeded its stall threshold.",
                 ))
+            if worker_health.get("heartbeat_stale"):
+                alerts.append(self._alert(
+                    "recovery_worker_heartbeat_stale", "critical", 1,
+                    "Automation recovery heartbeat exceeded its stale threshold.",
+                ))
             failures = int(worker_health.get("consecutive_failures") or 0)
             if failures:
                 alerts.append(self._alert(
@@ -175,8 +180,9 @@ class AutomationHealthMonitor:
             db = snapshot["database"]
             active_codes = sorted(item["code"] for item in snapshot["alerts"])
             previous_codes = self._last_state()
+            state_changed = previous_codes is None or active_codes != previous_codes
 
-            if previous_codes is None or active_codes != previous_codes:
+            if state_changed:
                 self.store.audit(
                     category="automation_health",
                     action="alert_state_changed",
@@ -207,8 +213,10 @@ class AutomationHealthMonitor:
                     "recent_failure_count": int(db.get("recent_failure_count") or 0),
                     "worker_healthy": bool(worker_health.get("healthy")),
                     "worker_stalled": bool(worker_health.get("scan_stalled")),
+                    "worker_heartbeat_stale": bool(worker_health.get("heartbeat_stale")),
                     "active_codes": active_codes,
                 },
             )
             self._last_sample_monotonic = now
+            snapshot["state_changed"] = state_changed
             return snapshot
