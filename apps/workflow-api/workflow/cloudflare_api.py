@@ -53,7 +53,12 @@ class CloudflareApiClient:
             data: Any = response.json()
         except json.JSONDecodeError:
             data = response.text
-        result = {"ok": response.is_success, "status": response.status_code, "data": data}
+        result = {
+            "ok": response.is_success,
+            "status": response.status_code,
+            "request_id": response.headers.get("cf-ray") or response.headers.get("x-request-id"),
+            "data": data,
+        }
         if not response.is_success:
             raise CloudflareApiError(f"Cloudflare API returned HTTP {response.status_code}: {str(data)[:2000]}")
         return result
