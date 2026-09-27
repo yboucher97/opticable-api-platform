@@ -202,6 +202,9 @@ redrive or provider-write retries exist in production. See
 `docs/OPTIBRAIN_PHASE3_EXECUTION_CONTROL.md` for the exact safety boundary.
 
 The next integrated executor/schema release candidate is also **source only**.
+Its isolated app-only SHA is `5cb0f666ceea4298602e8f1821bc316d683d806a`
+on the e514 production base; its application diff hash is
+`ca198bbb4a2a14db464e8aacd1a4b1e6b13b20e84076f05583260f38f58c7343`.
 It claims runs before executing handlers, persists a stable logical action
 digest before the call, fences completion by attempt and lease, records
 classified failure history, and retries only explicitly proven safe actions

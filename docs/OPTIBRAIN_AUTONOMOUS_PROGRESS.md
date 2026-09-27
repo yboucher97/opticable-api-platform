@@ -1126,4 +1126,8 @@ Initial review validation passed workflow pytest 108 tests plus 21 subtests,
 CI-style unittest 94/94, ops/admin adversarial 37/37, restore drill 2/2,
 Phase 1 backup, Phase 2A uploader 9/9 and bucket/R2 fixtures, compilation,
 sudoers parse, manifest and diff-check. The final isolated app-only candidate
-requires its own complete validation before deployment approval.
+`5cb0f666ceea4298602e8f1821bc316d683d806a` passed the same complete
+suite. Its application diff hash against known-good e514 is
+`ca198bbb4a2a14db464e8aacd1a4b1e6b13b20e84076f05583260f38f58c7343`,
+matching the source review checkout exactly. It remains off main and
+undeployed pending C-class review.

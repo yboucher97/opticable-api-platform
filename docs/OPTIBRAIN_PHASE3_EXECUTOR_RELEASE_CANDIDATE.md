@@ -6,6 +6,15 @@ reviewed validated-main application-only commit. Production remains at
 `e5143d35ca1664a8b4faeda40f0f15a80fe7673d` during preparation. Neither
 GitHub nor Cloudflare schedule changes belong to this release.
 
+The isolated application candidate is
+`5cb0f666ceea4298602e8f1821bc316d683d806a`, based directly on that
+production commit. Its 11 changed paths are all under `apps/workflow-api/`.
+The application diff has SHA-256
+`ca198bbb4a2a14db464e8aacd1a4b1e6b13b20e84076f05583260f38f58c7343`
+both in this source review checkout and in the isolated application checkout.
+The source/documentation checkpoint before this release-index update is
+`845b9889952ff965e8e4bd94f3e51e6a58278453`.
+
 ## Why the schema is needed
 
 `automation_runs` already stores state and timestamps, but has no worker,
@@ -169,8 +178,9 @@ The updated Git source and pin must not be interpreted as installed root state.
 
 ## Candidate validation evidence
 
-The source checkpoint passed workflow pytest (108 tests, 21 subtests), the
-CI-style unittest discovery (94 tests), ops/admin adversarial (37 tests),
+Both the source checkpoint and isolated application candidate passed workflow
+pytest (108 tests, 21 subtests), CI-style unittest discovery (94 tests),
+ops/admin adversarial (37 tests),
 restore-drill (2 tests), the Phase 1 backup fixture, Phase 2A uploader
 (9 tests), Phase 2A bucket/R2 fixtures, Python compilation, sudoers parse,
 artifact manifest verification and `git diff --check`. Focused fixtures
