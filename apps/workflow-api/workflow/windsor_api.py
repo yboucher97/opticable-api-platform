@@ -10,7 +10,9 @@ from .config import WindsorSettings
 
 
 class WindsorApiError(RuntimeError):
-    pass
+    def __init__(self, message: str, *, response: httpx.Response | None = None) -> None:
+        super().__init__(message)
+        self.response = response
 
 
 _SAFE_CONNECTOR = re.compile(r"^[a-z0-9_]+$")
@@ -78,5 +80,6 @@ class WindsorApiClient:
             data = response.text
         result = {"ok": response.is_success, "status": response.status_code, "data": data}
         if not response.is_success:
-            raise WindsorApiError(f"Windsor API returned HTTP {response.status_code}: {str(data)[:2000]}")
+            raise WindsorApiError(f"Windsor API returned HTTP {response.status_code}: {str(data)[:2000]}",
+                                  response=response)
         return result
