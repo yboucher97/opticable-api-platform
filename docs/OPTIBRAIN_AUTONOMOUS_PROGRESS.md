@@ -1076,3 +1076,24 @@ subtests, CI-style unittest 77/77, ops/admin adversarial 37/37, restore drill
 2/2, Python compilation, failed-work route registration, proposed sudoers
 parse, artifact manifest and `git diff --check`. The prior Phase 1/2A fixtures
 passed on the parent claim checkpoint; this slice does not change them.
+
+### Independent Phase 3 terminal-failure evidence slice
+
+The undeployed claim prototype now records a fixed failure category and a
+restricted machine-readable reason code in `automation_run_failures`, in the
+same SQLite transaction as a failed/dead-letter terminal result and its audit
+entry. An expired lease after an action marker records
+`ambiguous_external/lease_expired_after_action` and
+`human_action_required`; an expired worker cannot finish an action or run
+before the recovery scan. The read-only failed-work view exposes the category,
+reason and attempt count, but no event payload or raw exception. Legacy failed
+runs have no category until explicitly migrated; no speculative category is
+assigned. This is an additional C-class schema change, source only. There is
+still no automatic redrive, worker integration or provider-specific proof of
+idempotency. Exact resume: review the schema and per-action side-effect
+taxonomy, then wire only proven-safe execution paths through claim, retry and
+terminal transitions with restart/outage fixtures before a separate deployment.
+Validation: workflow pytest 93 tests plus 18 subtests, CI-style unittest 79/79,
+ops/admin adversarial 37/37, restore drill 2/2, Phase 1 backup fixture,
+Phase 2A uploader 9/9 plus bucket/R2 fixtures, Python compilation, proposed
+sudoers parse, artifact manifest and `git diff --check` all passed.

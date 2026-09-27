@@ -192,9 +192,13 @@ rollback path. No schedule was added or disabled for this Phase 3 release.
 The subsequent Phase 3 claim/lease and retry prototypes are source-only and
 not in production. They add a proposed SQLite claim table, fenced pre-action
 markers, conservative human escalation for expired started work, bounded retry
-decisions and a read-only failed-work view. The claim table is a C-class schema
-migration and the engine does not yet use these primitives. Do not assume
-automatic crash replay or provider-write retries exist in production. See
+decisions and a read-only failed-work view. A second proposed table records
+fixed failure categories and safe reason codes atomically with terminal/audit
+state. Completion now rejects expired leases even before recovery scans; an
+expired started action records ambiguous external state for human review.
+Both proposed tables are C-class schema migrations, and the engine does not
+yet use these primitives. Do not assume automatic crash replay, dead-letter
+redrive or provider-write retries exist in production. See
 `docs/OPTIBRAIN_PHASE3_EXECUTION_CONTROL.md` for the exact safety boundary.
 
 1. Build provider-specific declarative reconcilers and real event workflows.

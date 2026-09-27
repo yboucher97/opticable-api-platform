@@ -113,6 +113,15 @@ class AutomationStore:
                 );
                 CREATE INDEX IF NOT EXISTS idx_automation_run_claims_expiry
                     ON automation_run_claims(lease_expires_at);
+
+                CREATE TABLE IF NOT EXISTS automation_run_failures (
+                    run_id TEXT PRIMARY KEY,
+                    category TEXT NOT NULL,
+                    reason_code TEXT NOT NULL,
+                    attempt_id TEXT,
+                    recorded_at TEXT NOT NULL,
+                    FOREIGN KEY(run_id) REFERENCES automation_runs(run_id)
+                );
                 """
             )
 
@@ -406,8 +415,8 @@ class AutomationStore:
             conn.execute("BEGIN IMMEDIATE")
             claim = conn.execute(
                 "SELECT c.worker_id FROM automation_run_claims c JOIN automation_runs r ON r.run_id=c.run_id "
-                "WHERE c.run_id=? AND c.attempt_id=? AND r.status='running'",
-                (run_id, attempt_id),
+                "WHERE c.run_id=? AND c.attempt_id=? AND c.lease_expires_at>? AND r.status='running'",
+                (run_id, attempt_id, finished_at),
             ).fetchone()
             if claim is None:
                 return False
@@ -425,17 +434,27 @@ class AutomationStore:
         return True
 
     def finish_claim(self, run_id: str, attempt_id: str, *, status: str,
-                     error: str | None = None, now: datetime | None = None) -> bool:
+                     error: str | None = None, failure_category: str | None = None,
+                     reason_code: str | None = None, now: datetime | None = None) -> bool:
         """Persist a terminal result only when no action remains unconfirmed."""
         if status not in {"completed", "partial", "failed", "dead_letter"}:
             raise ValueError("invalid terminal claim status")
+        if status in {"failed", "dead_letter"}:
+            if not isinstance(failure_category, str) or failure_category not in {
+                    "rate_limited", "network_timeout", "provider_unavailable",
+                    "authentication_expired", "permanent", "unknown", "ambiguous_external"}:
+                raise ValueError("invalid failure category")
+            if not isinstance(reason_code, str) or not re.fullmatch(r"[a-z][a-z0-9_]{0,63}", reason_code):
+                raise ValueError("invalid failure reason code")
+        elif failure_category is not None or reason_code is not None:
+            raise ValueError("success or partial result cannot carry a failure category")
         finished_at = self._claim_iso(self._claim_time(now))
         with self._lock, self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
             claim = conn.execute(
                 "SELECT c.worker_id FROM automation_run_claims c JOIN automation_runs r ON r.run_id=c.run_id "
-                "WHERE c.run_id=? AND c.attempt_id=? AND r.status='running'",
-                (run_id, attempt_id),
+                "WHERE c.run_id=? AND c.attempt_id=? AND c.lease_expires_at>? AND r.status='running'",
+                (run_id, attempt_id, finished_at),
             ).fetchone()
             if claim is None or conn.execute(
                 "SELECT 1 FROM automation_run_steps WHERE run_id=? AND status='started'",
@@ -446,6 +465,12 @@ class AutomationStore:
                 "UPDATE automation_runs SET status=?,finished_at=?,error=? WHERE run_id=?",
                 (status, finished_at, error[:1000] if error else None, run_id),
             )
+            if failure_category is not None:
+                conn.execute(
+                    "INSERT INTO automation_run_failures(run_id,category,reason_code,attempt_id,recorded_at) "
+                    "VALUES(?,?,?,?,?)",
+                    (run_id, failure_category, reason_code, attempt_id, finished_at),
+                )
             self._claim_audit(conn, "run_" + status, claim["worker_id"], run_id, attempt_id,
                               success=status == "completed")
         return True
@@ -474,9 +499,15 @@ class AutomationStore:
                     result["requeued"] += 1
                 else:
                     conn.execute(
-                        "UPDATE automation_runs SET status='human_action_required',error=? WHERE run_id=?",
-                        ("Claim expired after an action may have started; reconcile external effects before redrive.",
+                        "UPDATE automation_runs SET status='human_action_required',finished_at=?,error=? WHERE run_id=?",
+                        (checked_at, "Claim expired after an action may have started; reconcile external effects before redrive.",
                          claim["run_id"]),
+                    )
+                    conn.execute(
+                        "INSERT INTO automation_run_failures(run_id,category,reason_code,attempt_id,recorded_at) "
+                        "VALUES(?,?,?,?,?)",
+                        (claim["run_id"], "ambiguous_external", "lease_expired_after_action",
+                         claim["attempt_id"], checked_at),
                     )
                     action = "expired_ambiguous_escalated"
                     result["human_action_required"] += 1
@@ -570,9 +601,11 @@ class AutomationStore:
             rows = conn.execute(
                 """
                 SELECT r.run_id,r.workflow_id,r.status,r.created_at,r.finished_at,
+                       f.category AS failure_category,f.reason_code,
                        COUNT(s.id) AS step_attempts,MAX(s.started_at) AS last_attempt_at
                 FROM automation_runs r
                 LEFT JOIN automation_run_steps s ON s.run_id=r.run_id
+                LEFT JOIN automation_run_failures f ON f.run_id=r.run_id
                 WHERE r.status IN ('failed','dead_letter','human_action_required')
                 GROUP BY r.run_id
                 ORDER BY r.created_at DESC,r.run_id DESC LIMIT ?

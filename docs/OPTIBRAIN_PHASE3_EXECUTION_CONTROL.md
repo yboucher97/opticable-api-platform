@@ -78,8 +78,8 @@ until the engine and action taxonomy are integrated. The current production
 engine still executes synchronously and does not call these primitives.
 This table addition is a C-class schema migration; it is not in the deployed
 application commit. Before integration, add a worker heartbeat, action-specific
-idempotency and transient/permanent failure classification, a durable terminal
-reason, and restart/outage drills. Do not deploy the prototype as self-healing.
+idempotency and transient/permanent failure classification, and restart/outage
+drills. Do not deploy the prototype as self-healing.
 
 ### Retry and failed-work source slice (not deployed)
 
@@ -97,9 +97,24 @@ doing so requires per-action idempotency proofs and a durable attempt schedule.
 `GET /v1/automation/failed-work` route list bounded terminal/reconciliation
 runs with attempt counts but omit event payloads and raw error strings. They do
 not redrive anything. Before production use, review API authorization and
-response shape, then test terminal reason/category persistence and a controlled
-redrive gate. The current production API exposes only the earlier aggregate
-execution-health route.
+response shape and a controlled redrive gate. The current production API
+exposes only the earlier aggregate execution-health route.
+
+### Terminal-failure evidence source slice (not deployed)
+
+`automation_run_failures` records one fixed category, safe reason code,
+attempt ID and timestamp per terminal run. `finish_claim` requires this
+evidence for failed/dead-letter outcomes and writes it atomically with run
+state and audit. Lease expiry after an action marker records
+`ambiguous_external/lease_expired_after_action` and human review. Completion
+and terminal transitions reject expired leases even before a recovery scan.
+The failed-work view includes these safe fields and attempt counts; existing
+legacy failed rows can have null category and are not guessed. Tests cover
+transaction rollback on audit failure, secret exclusion, stale-token/lease
+fencing and idempotent recovery. This new table is a C-class schema migration
+in source only. A controlled redrive still requires proof that the specific
+action never wrote externally or a human reconciliation decision. No generic
+dead-letter redrive is exposed.
 
 Phase 3 is not complete. Before completion, prove a durable claim/lease and
 recovery state machine, safe handling of ambiguous provider results, finite

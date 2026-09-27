@@ -222,6 +222,8 @@ steps:
         self.assertEqual(self.store.recover_expired_claims(now=clock + timedelta(seconds=6)),
                          {"requeued": 0, "human_action_required": 1})
         self.assertEqual(self.store.get_run(run_id)["status"], "human_action_required")
+        self.assertEqual(self.store.failed_work()[0]["failure_category"], "ambiguous_external")
+        self.assertEqual(self.store.failed_work()[0]["reason_code"], "lease_expired_after_action")
         self.assertEqual(self.store.execution_health(now=clock + timedelta(seconds=7))["human_action_required"], 1)
         self.assertIsNone(self.store.claim_run(run_id, "worker-2", now=clock + timedelta(seconds=6)))
         self.assertEqual(self.store.recover_expired_claims(now=clock + timedelta(seconds=7)),
@@ -275,9 +277,67 @@ steps:
         run_id = self.store.create_run("test.smoke", event.event_id, event.event_id)
         with self.store._connect() as conn:
             conn.execute("DROP TABLE automation_run_claims")
+            conn.execute("DROP TABLE automation_run_failures")
         migrated = AutomationStore(self.store.db_path)
         self.assertEqual(migrated.get_run(run_id)["status"], "queued")
         self.assertIsNotNone(migrated.claim_run(run_id, "worker-after-migration"))
+        with migrated._connect() as conn:
+            self.assertIsNotNone(conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='automation_run_failures'"
+            ).fetchone())
+
+    def test_expired_worker_cannot_finalize_action_before_recovery_scan(self) -> None:
+        self._write_smoke_workflow()
+        AutomationEngine(self.store, self.workflows).sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test")
+        self.store.ingest_event(event)
+        run_id = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        clock = datetime(2026, 9, 27, 16, tzinfo=timezone.utc)
+        token = self.store.claim_run(run_id, "worker-1", now=clock, lease_seconds=5)
+        marker = self.store.begin_claimed_action(
+            run_id, token, step_id="set_value", action="core.set", attempt=1, now=clock)
+        expired = clock + timedelta(seconds=6)
+        self.assertFalse(self.store.complete_claimed_action(
+            run_id, token, marker, succeeded=True, now=expired))
+        self.assertFalse(self.store.finish_claim(run_id, token, status="completed", now=expired))
+        self.assertEqual(self.store.recover_expired_claims(now=expired),
+                         {"requeued": 0, "human_action_required": 1})
+
+    def test_terminal_failure_category_is_durable_and_safe_to_inspect(self) -> None:
+        self._write_smoke_workflow()
+        AutomationEngine(self.store, self.workflows).sync_definitions()
+        event = AutomationEvent(event_type="test.started", source="unit-test",
+                                payload={"secret": "never-show-this"})
+        self.store.ingest_event(event)
+        run_id = self.store.create_run("test.smoke", event.event_id, event.event_id)
+        clock = datetime(2026, 9, 27, 16, tzinfo=timezone.utc)
+        token = self.store.claim_run(run_id, "worker-1", now=clock)
+        marker = self.store.begin_claimed_action(
+            run_id, token, step_id="set_value", action="core.set", attempt=1, now=clock)
+        self.assertTrue(self.store.complete_claimed_action(
+            run_id, token, marker, succeeded=False, error="token=never-show-this", now=clock))
+        with self.assertRaises(ValueError):
+            self.store.finish_claim(run_id, token, status="dead_letter",
+                                    failure_category="permanent", reason_code="token=never-show-this", now=clock)
+        with self.assertRaises(ValueError):
+            self.store.finish_claim(run_id, token, status="dead_letter", now=clock)
+        with patch.object(AutomationStore, "_claim_audit", side_effect=RuntimeError("audit failed")):
+            with self.assertRaisesRegex(RuntimeError, "audit failed"):
+                self.store.finish_claim(run_id, token, status="dead_letter", failure_category="permanent",
+                                        reason_code="provider_rejected", now=clock)
+        self.assertEqual(self.store.get_run(run_id)["status"], "running")
+        with self.store._connect() as conn:
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM automation_run_failures").fetchone()[0], 0)
+        self.assertTrue(self.store.finish_claim(run_id, token, status="dead_letter",
+                                                failure_category="permanent", reason_code="provider_rejected",
+                                                error="token=never-show-this", now=clock))
+        item = AutomationStore(self.store.db_path).failed_work()[0]
+        self.assertEqual((item["run_id"], item["failure_category"], item["reason_code"],
+                          item["step_attempts"]), (run_id, "permanent", "provider_rejected", 1))
+        self.assertNotIn("never-show-this", str(item))
+        self.assertFalse(self.store.finish_claim(run_id, token, status="dead_letter",
+                                                 failure_category="permanent", reason_code="provider_rejected",
+                                                 now=clock))
 
     def test_early_lease_renewal_cannot_shorten_existing_lease(self) -> None:
         self._write_smoke_workflow()
