@@ -55,7 +55,12 @@ class ApolloApiClient:
             data: Any = response.json()
         except json.JSONDecodeError:
             data = response.text
-        result = {"ok": response.is_success, "status": response.status_code, "data": data}
+        result = {
+            "ok": response.is_success,
+            "status": response.status_code,
+            "request_id": response.headers.get("x-request-id") or response.headers.get("request-id"),
+            "data": data,
+        }
         if not response.is_success:
             raise ApolloApiError(f"Apollo API returned HTTP {response.status_code}: {str(data)[:2000]}")
         return result
