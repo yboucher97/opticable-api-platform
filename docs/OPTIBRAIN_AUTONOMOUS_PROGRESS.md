@@ -488,6 +488,56 @@ approved roadmap was supplied on 2026-09-27. Resume at Phase 2B below.
   the helper and adversarial tests, validate installed files and sudo syntax,
   then switch authorization and verify the old arbitrary sudo probe is denied.
 
+### Phase 2B — constrained sudo policy active; post-change recovery verified
+
+`/etc/sudoers.d/90-optibrain-admin` contains only the exact helper path and was
+validated with `visudo -cf` before installation; `visudo -c` passed with both
+rules present. The old broad file was moved out of sudoers.d into root-only
+recovery storage, not deleted. Arbitrary `/usr/bin/id` and bare `sudo -n true`
+are now denied; health/scheduler/service-status through the helper succeed.
+Public health remains HTTP 200 for all three services, and both backup timers
+remain enabled and active. This demonstrates the least-privilege boundary, while
+several roadmap operations (reviewed unit installation, deployment/rollback,
+permission repair, restore drills and bounded log access) still need assessment
+or implementation; do not mark Phase 2B complete until these are addressed.
+
+Post-change recovery intent: run the fixed helper's local backup operation, then
+verify archive/checksum/SQLite integrity, then invoke its fixed off-host
+verification operation for that unique generation. This creates no provider
+credential or permission change and cannot overwrite a remote generation because
+the uploader is create-only. If either step fails, preserve all old recovery
+generations and diagnose before continuing. Record resulting generation, hashes,
+service health and recovery refs immediately afterward.
+
+Post-change recovery completed: helper backup created local generation
+`20260927T130636Z`; checksum and full archive/SQLite verification passed. The
+helper's off-host operation completed successfully, which runs the installed
+Phase 2A uploader's full downloaded-object verification path. Its unique remote
+generation was create-only; no previous R2 generation was replaced or removed.
+The helper does not yet expose its protected state/hash metadata, so this record
+does not invent an encrypted digest. Health endpoints remain HTTP 200; both
+timers remain active/enabled; disk has 62 GiB free (14% used). Arbitrary sudo
+remains denied after the off-host run.
+
+Phase 2B foundation gate evidence: arbitrary root execution rejected; routine
+health, scheduler, backup, archive verification, upload/remote verification,
+capacity, service status and queue count work non-interactively. The broader
+requested command catalog remains incomplete: reviewed unit deployment/update,
+controlled application deployment/rollback, controlled permission repair,
+isolated restore drills, and redacted OptiBrain log/audit inspection need a
+reviewed extension. The current exact-path rule intentionally has no mechanism
+for installing a new root-owned helper version from the optibrain-writable
+checkout. Do not restore broad sudo to work around this. First design and
+validate a root-trusted update path (e.g., separately reviewed, digest-pinned
+package/update mechanism), preserving the exact allowlist boundary. Until then
+Phase 2B is NOT COMPLETE and Phase 3 production implementation must not begin.
+
+Recovery refs: pre-change `recovery/pre-phase2b-1bae01c`; current code checkpoint
+will be `recovery/post-phase2b-foundation-<commit>` after committing this record.
+The root-only copy of the old broad rule remains at
+`/var/lib/optibrain/admin-recovery/optibrain-overnight.pre-phase2b`; it is recovery
+evidence only and must never be restored as steady state.
+
 ### Phase 2B implementation and pre-install review
 
 A fixed Python operator has been implemented at `ops/admin/optibrain-admin.py`.
@@ -505,3 +555,29 @@ review implementation and test outcome; install root-owned helper; validate help
 operations with the still-authorized session; add exact-path sudo rule and verify
 it; remove broad overnight rule; prove non-helper `sudo -n` is denied and fixed
 commands still work. Then commit the completed policy switch and test results.
+
+### Phase 2B helper live validation — before sudo authorization switch
+
+Helper installed at `/usr/local/sbin/optibrain-admin`, root:root 0750. Its
+SHA-256 exactly matches reviewed source commit `1083218`:
+`a35734a52d9c64adfc0bb9b242f117aad099c85d5cbc0aac248e422ebe25367c`.
+Root-only audit directory is `/var/log/optibrain`; original broad sudoers file
+is preserved root:root 0600 at `/var/lib/optibrain/admin-recovery/optibrain-overnight.pre-phase2b`.
+
+Live helper checks passed: public health endpoints (3 x HTTP 200), both timer
+states, disk capacity, read-only automation-run counts (109 completed), latest
+local checksum plus full archive verification, and API service status. The
+shell-injection-shaped operation was rejected (exit 2); its args were not logged.
+No service was restarted, no new backup was created, and no R2 operation occurred.
+Intent immediately before sudo-policy switch: install an exact-path NOPASSWD
+rule for this helper, verify syntax and access, then move the broad overnight
+file out of sudoers.d and prove arbitrary non-helper root execution is denied.
+
+Local post-policy-change recovery point completed through the constrained helper:
+generation `20260927T130636Z`, checksum sidecar and full archive/SQLite verification
+passed. Original five prior generations remain. No retention deletion occurred.
+Next atomic operation is one Phase 2A uploader run for this new unique generation;
+conditional create prevents replacement, and the uploader will GET/hash both
+objects. This is the approved backup operation, not a repeat of an existing
+provider mutation. If conflict or verification failure occurs, stop without
+changing existing objects.
