@@ -5,6 +5,7 @@ from typing import Any
 from ...ovh_api import OvhApiClient
 from ..engine import AutomationEngine
 from ..models import WorkflowStep
+from ..provider_evidence import attach_provider_operation_id
 from ..store import AutomationStore
 
 
@@ -25,6 +26,8 @@ def register_ovh_actions(engine: AutomationEngine, client: OvhApiClient, store: 
 
         result = client.request(path, method, query=query, body=body)
         if method != "GET":
+            result = attach_provider_operation_id(result)
+        if method != "GET":
             event = context.get("event") or {}
             store.audit(
                 category="provider_mutation",
@@ -38,6 +41,7 @@ def register_ovh_actions(engine: AutomationEngine, client: OvhApiClient, store: 
                     "workflow_id": (context.get("workflow") or {}).get("id"),
                     "step_id": step.id,
                     "body_keys": sorted(body.keys()) if isinstance(body, dict) else [],
+                    "provider_operation_id": result.get("provider_operation_id"),
                 },
             )
         return result
