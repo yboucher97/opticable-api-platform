@@ -638,3 +638,59 @@ Validation in this inventory: `apps/workflow-api/.venv/bin/python -m unittest
 tests.test_automation_kernel -v` passed 6/6. Control-plane worker dependencies
 are not installed in this checkout, so no worker dry-run was attempted. This is
 read-only inventory, not completion of Phases 3 or 4.
+
+### Read-only inventory for Phases 5–12
+
+- **Phase 5:** Separate provider clients/adapters exist for Zoho, Google,
+  Cloudflare, GitHub, Windsor, OVH, Apollo and other systems. A small common
+  abstraction is not evident: pagination/cursor handling, retry-after, quota
+  policy, normalized errors, circuit breakers and common provider health remain
+  provider-specific or unverified. Existing credentials/scopes must remain
+  unchanged absent the phase's specific need.
+- **Phase 6:** Current event and provider records retain useful source IDs in
+  selected flows; Zoho CRM field reconciliation is declarative and protects
+  standard fields/deletions. No shared canonical business-entity store,
+  provenance mapping, cross-provider conflict queue, or schema migration layer
+  was found in the inspected workflow store. Broader schema inventory is needed
+  before proposing entities; no cross-provider merge or mutation was attempted.
+- **Phase 7:** Cloudflare queue and Workflow bindings provide queued events,
+  durable workflow executions, retries and a named dead-letter queue. Core API
+  event/run history persists correlation, causation and idempotency fields.
+  CI deploy workflow runs an end-to-end smoke event. Core transaction loss window
+  remains as recorded in Phase 3 inventory; replay and duplicate external-action
+  drills are not evidenced.
+- **Phase 8:** API exposes system and provider health; the GitHub monitor checks
+  three VPS endpoints, Worker health and provider inventory every 15 minutes.
+  Logging helper is plain text. No established metrics endpoint, queue age/depth
+  telemetry, scheduler lag, sync lag, DB-integrity status, restart counters or
+  bounded self-heal controller was found in this pass. No failure injection was
+  performed.
+- **Phase 9:** GitHub monitor opens one matching incident issue, comments on
+  repeated failures, and closes it on recovery; this is a useful deduplicated
+  alert path. A severity model, richer recovery context, multiple alert
+  categories, alert storms, and an operational summary delivery gate are not
+  established by the inspected workflow alone. Lifecycle digest drafts exist,
+  but are not a general operations summary.
+- **Phase 10:** API deployment waits for validation, deploys an exact commit via
+  the restricted SSH identity, runs pre-switch tests, health-checks, and rolls
+  back application code when post-switch health fails. Control-plane deployment
+  dry-runs before deploy and sends an authenticated smoke event. No autonomous
+  rollback of a failed Cloudflare deployment, observation window, migration
+  recovery plan, or deliberately broken-deployment drill is evidenced.
+- **Phase 11:** Existing policy/tests enforce Zoho Books read-only behavior and
+  Apollo credit use remains disabled by default; credential-safe inventory
+  exists. A full users/groups/sudo/systemd/firewall/secret-storage/backup audit,
+  credential-purpose inventory, rotation procedures, dependency scanning and
+  secret scanning gate were not verified here. Phase 2B has already tightened
+  the active NOPASSWD surface, but its operator catalog remains incomplete.
+- **Phase 12:** Phase 2A archive/offline-decrypt/isolated-restore evidence and
+  production health monitors exist. No comprehensive chaos/reboot/provider
+  outage/duplicate trigger/poison job/database recovery/failed deployment/disk
+  pressure drill matrix or final autonomy deliverables currently prove the
+  requested production-readiness gate.
+
+This is repository-based inventory only; it does not certify runtime behavior
+for untested components. No external/provider mutations were made. Phase 2B's
+root-owned helper update boundary still prevents implementation or deployment of
+the missing operations. Current branch checkpoint `85c3b70` preserves the Phase
+3/4 inventory; this section will be included in the next documentation commit.
