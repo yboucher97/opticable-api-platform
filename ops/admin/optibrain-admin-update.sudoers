@@ -1,0 +1,2 @@
+# One fixed updater, root only, with no command-line arguments.
+optibrain ALL=(root:root) NOPASSWD: /usr/local/sbin/optibrain-admin-update ""

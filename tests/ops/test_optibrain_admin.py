@@ -22,6 +22,13 @@ class RequestValidationTests(unittest.TestCase):
             with self.subTest(args=args), self.assertRaises(ValueError):
                 admin.parse_request(args)
 
+    def test_root_runbook_sync_has_no_path_or_argument_override(self):
+        self.assertEqual(admin.parse_request(["sync-master-runbook"]), ("sync-master-runbook",))
+        for args in (["sync-master-runbook", "/etc/passwd"],
+                     ["sync-master-runbook;id"], ["sync-master-runbook", "--destination=/etc/shadow"]):
+            with self.subTest(args=args), self.assertRaises(ValueError):
+                admin.parse_request(args)
+
 
 if __name__ == "__main__":
     unittest.main()
