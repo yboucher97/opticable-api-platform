@@ -11,18 +11,13 @@ import os
 import re
 
 from ...zoho_gateway import ZohoWriteUnconfirmedError
-from ..outbound_approval import OutboundApprovalLedger, POLICY_VERSION
+from ..outbound_approval import OutboundApprovalLedger, POLICY_VERSION, _email, validate_text
 
 
 _INTERNAL_DOMAINS = {"opticable.ca", "opti-plex.ca"}
-_EMAIL = re.compile(r"[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?\.[A-Za-z]{2,63}")
-
-
-def _email(value):
-    cleaned = str(value or "").strip().lower()
-    if len(cleaned) > 254 or not _EMAIL.fullmatch(cleaned):
-        raise ValueError("Invalid outbound email address")
-    return cleaned
+_SEND_FIELDS = {"approval_id", "action_type", "source_type", "source_id", "source_version",
+                "mailbox_account_id", "message_id", "from_address", "to_address",
+                "subject", "content", "mail_format"}
 
 
 def _provider_message_id(response):
@@ -32,17 +27,16 @@ def _provider_message_id(response):
     if not isinstance(outer, dict):
         return None
     status = outer.get("status")
-    if isinstance(status, dict) and status.get("code") not in {200, 201}:
+    if not isinstance(status, dict) or status.get("code") not in {200, 201}:
         return None
     data = outer.get("data")
-    candidates = []
-    if isinstance(data, dict):
-        candidates.extend([data.get("messageId"), data.get("message_id"), data.get("id")])
-    candidates.extend([outer.get("messageId"), outer.get("message_id"), outer.get("id")])
-    for value in candidates:
-        identity = str(value or "").strip()
-        if re.fullmatch(r"[0-9]{1,30}", identity):
-            return identity
+    if not isinstance(data, dict):
+        return None
+    # Only the expected Mail message identity slot is recognized. Generic
+    # IDs and partial envelopes are not proof that this send was accepted.
+    identity = data.get("messageId")
+    if isinstance(identity, str) and re.fullmatch(r"[0-9]{1,30}", identity):
+        return identity
     return None
 
 
@@ -53,27 +47,26 @@ def register_outbound_mail_action(engine, client, store):
         if os.environ.get("OPTIBRAIN_OUTBOUND_SENDS") != POLICY_VERSION:
             return {"sent": False, "reason": "observe"}
         request = step.inputs.get("send")
-        if not isinstance(request, dict):
+        if not isinstance(request, dict) or set(request) - _SEND_FIELDS:
             raise ValueError("lifecycle.mail_send_approved_v2 requires with.send object")
 
-        approval_id = str(request.get("approval_id") or "").strip()
-        action_type = str(request.get("action_type") or "").strip()
-        source_type = str(request.get("source_type") or "").strip()
-        source_id = str(request.get("source_id") or "").strip()
-        source_version = str(request.get("source_version") or "").strip()
-        account_id = str(request.get("mailbox_account_id") or "").strip()
-        message_id = str(request.get("message_id") or "").strip() or None
+        approval_id = request.get("approval_id")
+        action_type = request.get("action_type")
+        source_type = request.get("source_type")
+        source_id = request.get("source_id")
+        source_version = request.get("source_version")
+        account_id = request.get("mailbox_account_id")
+        message_id = request.get("message_id")
         from_address = _email(request.get("from_address"))
         recipient = _email(request.get("to_address"))
-        subject = str(request.get("subject") or "").strip()
-        content = str(request.get("content") or "").strip()
-        mail_format = str(request.get("mail_format") or "plaintext").strip().lower()
+        subject, content = validate_text(request.get("subject"), request.get("content"))
+        mail_format = request.get("mail_format", "plaintext")
 
         if action_type not in {"send_new_email", "reply_email"}:
             raise ValueError("Invalid outbound action type")
         if source_type not in {"lead", "message", "draft"}:
             raise ValueError("Invalid outbound source type")
-        if not re.fullmatch(r"[0-9]{1,30}", account_id):
+        if not isinstance(account_id, str) or not re.fullmatch(r"[0-9]{1,30}", account_id):
             raise ValueError("Invalid outbound mailbox account")
         if from_address.rsplit("@", 1)[1] not in _INTERNAL_DOMAINS:
             raise ValueError("Outbound sender must be Opticable-owned")
@@ -84,7 +77,7 @@ def register_outbound_mail_action(engine, client, store):
         if mail_format != "plaintext":
             raise ValueError("Phase 6 outbound mail is plaintext only")
         if action_type == "reply_email":
-            if not message_id or not re.fullmatch(r"[0-9]{1,30}", message_id):
+            if not isinstance(message_id, str) or not re.fullmatch(r"[0-9]{1,30}", message_id):
                 raise ValueError("reply_email requires numeric message_id")
         elif message_id is not None:
             raise ValueError("send_new_email must not include message_id")
@@ -124,6 +117,10 @@ def register_outbound_mail_action(engine, client, store):
                     path = f"/api/accounts/{account_id}/messages/{message_id}"
                 else:
                     path = f"/api/accounts/{account_id}/messages"
+                ledger.require_consuming(approval)
+                if os.environ.get("OPTIBRAIN_OUTBOUND_SENDS") != POLICY_VERSION:
+                    ledger.mark_manual(approval, error="policy_disabled")
+                    return {"sent": False, "reason": "observe", "approval_state": "manual"}
                 response = client.request(
                     "mail",
                     "POST",
@@ -135,16 +132,20 @@ def register_outbound_mail_action(engine, client, store):
                 operation = _provider_message_id(response)
                 if operation is None:
                     raise ZohoWriteUnconfirmedError("Outbound mail acknowledgement is unconfirmed")
-            except Exception as exc:
-                ledger.mark_manual(approval, error=type(exc).__name__)
+                ledger.mark_consumed(
+                    approval, provider_operation_id=operation, request_id=response.get("request_id"),
+                )
+            except Exception:
+                try:
+                    ledger.mark_manual(approval, error="provider_unconfirmed")
+                except Exception:
+                    # A failed journal finalization must not hide the ambiguous
+                    # classification. The durable consuming/consumed marker
+                    # still permanently prevents another automatic send.
+                    pass
                 raise ZohoWriteUnconfirmedError(
                     "Outbound mail outcome requires human reconciliation; approval cannot be reused"
                 ) from None
-            ledger.mark_consumed(
-                approval,
-                provider_operation_id=operation,
-                request_id=response.get("request_id"),
-            )
             event = context.get("event") or {}
             return {
                 "sent": True,

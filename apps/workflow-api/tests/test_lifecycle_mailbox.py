@@ -64,7 +64,7 @@ class FakeMailZoho:
 
 
 class LifecycleMailboxTests(unittest.TestCase):
-    def _engine(self, workflow_text: str):
+    def _engine(self, workflow_text: str, *, allow_legacy_reply: bool = False):
         tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         root = Path(tmp.name)
         workflows = root / "workflows"
@@ -73,7 +73,7 @@ class LifecycleMailboxTests(unittest.TestCase):
         store = AutomationStore(root / "automation.db")
         engine = AutomationEngine(store, workflows)
         zoho = FakeMailZoho()
-        register_lifecycle_mailbox_actions(engine, zoho, store)
+        register_lifecycle_mailbox_actions(engine, zoho, store, allow_legacy_reply=allow_legacy_reply)
         engine.sync_definitions()
         return tmp, store, engine, zoho
 
@@ -165,7 +165,7 @@ steps:
     with:
       reply: "{{ event.payload }}"
 """
-        tmp, store, engine, zoho = self._engine(workflow)
+        tmp, store, engine, zoho = self._engine(workflow, allow_legacy_reply=True)
         try:
             response = engine.ingest(
                 AutomationEvent(
