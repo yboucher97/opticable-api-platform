@@ -120,6 +120,8 @@ class Phase4OperationsTests(unittest.TestCase):
             inspected = json.loads(subprocess.check_output([*command, "--inspect"]))
             self.assertEqual(inspected["version"], 1)
             self.assertIsNone(inspected["watchdog_sample_at"])
+            self.assertEqual(inspected["watchdog_sample_id"], 0)
+            self.assertFalse(inspected["watchdog_sample_healthy"])
             self.assertEqual(inspected["run_status_counts"], {})
             json.loads(subprocess.check_output([*command, "--snapshot-to", str(destination)]))
             self.assertEqual(destination.stat().st_mode & 0o777, 0o600)
@@ -127,3 +129,26 @@ class Phase4OperationsTests(unittest.TestCase):
             self.assertEqual(migrated["result"], "PASS")
             self.assertEqual(migrated["new_version"], 2)
             self.assertEqual(json.loads(subprocess.check_output([*command, "--inspect"]))["version"], 1)
+
+    def test_readonly_inspection_reports_watchdog_identity_and_health_without_migrating(self):
+        with tempfile.TemporaryDirectory() as root:
+            source = Path(root) / "source.db"
+            make_v1(source)
+            command = [sys.executable, str(REPO / "ops/phase4/migrate_db.py"), "--db", str(source), "--inspect"]
+            for success, metadata, expected in (
+                (1, {"status": "ok", "worker_healthy": True}, True),
+                (0, {"status": "ok", "worker_healthy": True}, False),
+                (1, {"status": "warning", "worker_healthy": True}, False),
+                (1, {"status": "ok", "worker_healthy": False}, False),
+                (1, [], False),
+            ):
+                with self.subTest(success=success, metadata=metadata):
+                    with sqlite3.connect(source) as conn:
+                        inserted = conn.execute("INSERT INTO automation_audit(at,category,action,actor,success,metadata_json) "
+                            "VALUES('2026-09-28T00:00:00Z','automation_health','sample','health-monitor',?,?)",
+                            (success, json.dumps(metadata))).lastrowid
+                    value = json.loads(subprocess.check_output(command))
+                    self.assertEqual(value["version"], 1)
+                    self.assertEqual(value["watchdog_sample_id"], inserted)
+                    self.assertEqual(value["watchdog_sample_at"], "2026-09-28T00:00:00Z")
+                    self.assertEqual(value["watchdog_sample_healthy"], expected)

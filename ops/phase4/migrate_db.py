@@ -30,10 +30,15 @@ if __name__ == "__main__":
         if args.inspect:
             result = inventory(args.db.resolve())
             with sqlite3.connect(args.db.resolve().as_uri() + "?mode=ro", uri=True) as conn:
-                sample = conn.execute("SELECT at FROM automation_audit WHERE category='automation_health' AND action='sample' ORDER BY id DESC LIMIT 1").fetchone()
+                sample = conn.execute("SELECT id,at,success,metadata_json FROM automation_audit "
+                                      "WHERE category='automation_health' AND action='sample' ORDER BY id DESC LIMIT 1").fetchone()
                 result["run_status_counts"] = dict(conn.execute("SELECT status,COUNT(*) FROM automation_runs GROUP BY status"))
                 result["smoke_policy"] = smoke_policy(conn)
-            result["watchdog_sample_at"] = sample[0] if sample else None
+            result["watchdog_sample_at"] = sample[1] if sample else None
+            result["watchdog_sample_id"] = sample[0] if sample else 0
+            metadata = json.loads(sample[3]) if sample else {}
+            result["watchdog_sample_healthy"] = bool(sample and sample[2] == 1 and isinstance(metadata, dict)
+                                                     and metadata.get("status") == "ok" and metadata.get("worker_healthy") is True)
         elif args.snapshot_to:
             check(not args.snapshot_to.exists() and args.snapshot_to.resolve() != args.db.resolve(), "snapshot_target_exists")
             snapshot(args.db.resolve(), args.snapshot_to.resolve())

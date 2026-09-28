@@ -35,6 +35,10 @@ SERVICE = "opticable-workflow-api.service"
 PROTECTED = PROD / "ops/backup/optibrain-cloudflare-auth-diagnostic.sh"
 PROTECTED_SHA = "7b2a45b141ea8983e761fdc548e25690fe89bf15ee20b994be2bf4855f701000"
 SAFE_ENV = {"PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", "LANG": "C.UTF-8"}
+EXPECTED_STATUS = "?? ops/backup/optibrain-cloudflare-auth-diagnostic.sh"
+OFFHOST_STATE = Path("/var/lib/optibrain/phase2a/state.json")
+UNRESOLVED_STATES = ("queued", "claimed", "running", "expired_leases", "failed", "partial",
+                     "dead_letter", "human_action_required", "stale_queued", "stale_running")
 
 
 def check(condition: bool, category: str) -> None:
@@ -69,11 +73,38 @@ def parse_env(text: str) -> dict[str, str]:
     return result
 
 
+def write_record(path: Path, value: dict) -> None:
+    """Publish one durable private record without exposing a partial JSON file."""
+    temporary = path.with_name("." + path.name + ".tmp")
+    with temporary.open("w") as output:
+        json.dump(value, output, sort_keys=True, indent=2)
+        output.write("\n")
+        output.flush()
+        os.fsync(output.fileno())
+    os.replace(temporary, path)
+    directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(directory)
+    finally:
+        os.close(directory)
+
+
 class Campaign:
     def __init__(self, candidate: str, root: Path) -> None:
         self.candidate, self.root = candidate, root
         self.stage = "preflight"
-        self.result = {"baseline": BASELINE, "candidate": candidate, "result": "IN_PROGRESS"}
+        self.result = {
+            "baseline": BASELINE, "candidate": candidate, "result": "IN_PROGRESS",
+            "recovery_workspace": str(root), "production_git_sha": "unknown", "remote_main_sha": "unknown",
+            "production_service_active": "unknown", "production_service_active_before_campaign": "unknown",
+            "production_database_version": "unknown", "production_service_stop_attempted": False,
+            "production_service_stop_completed": False, "production_migration_started": False,
+            "production_migration_completed": False, "production_checkout_advanced": "unknown",
+            "production_service_restart_attempted": False, "production_service_ready": False,
+            "production_smoke_completed": False, "postdeployment_backup_completed": False,
+            "offhost_verification_completed": False, "remote_main_promotion_attempted": False,
+            "remote_main_promoted": "unknown",
+        }
         self.owner = pwd.getpwnam("optibrain")
         self.service_user = pwd.getpwnam("opticable-workflow-api")
         self.key = ""
@@ -97,8 +128,46 @@ class Campaign:
         check(completed.returncode == 0, "fixed_operation_failed")
         return completed.stdout.decode("utf-8", "replace").strip()
 
-    def git(self, repository: Path, *args: str) -> str:
-        return self.run(["/usr/bin/git", "-C", str(repository), *args], user="optibrain")
+    def git(self, repository: Path, *args: str, timeout: int = 900) -> str:
+        return self.run(["/usr/bin/git", "-C", str(repository), *args], user="optibrain", timeout=timeout)
+
+    def mark(self, **values) -> None:
+        self.result.update(values)
+        write_record(self.root / "progress.json", dict(self.result, current_stage=self.stage))
+
+    def service_state(self) -> str:
+        value = self.run(["/usr/bin/systemctl", "show", SERVICE, "--property=ActiveState", "--value"], timeout=10)
+        check(value in {"active", "inactive", "failed", "activating", "deactivating", "reloading", "maintenance", "refreshing"},
+              "unknown_production_service_state")
+        return value
+
+    def inspect_database(self, path: Path = DB) -> dict:
+        # --inspect is read-only and does not instantiate AutomationStore.
+        return json.loads(self.run([str(PYTHON), str(REPO / "ops/phase4/migrate_db.py"), "--db", str(path), "--inspect"],
+                                  user="opticable-workflow-api", timeout=30))
+
+    @staticmethod
+    def watchdog_fresh(database: dict) -> bool:
+        sample = database.get("watchdog_sample_at")
+        if not isinstance(sample, str):
+            return False
+        try:
+            observed = datetime.fromisoformat(sample.replace("Z", "+00:00"))
+            return observed.tzinfo is not None and 0 <= (datetime.now(timezone.utc) - observed).total_seconds() < 600
+        except (ValueError, TypeError):
+            return False
+
+    def wait_watchdog(self, previous_id: int, version: int) -> None:
+        deadline = time.monotonic() + 90
+        while time.monotonic() < deadline:
+            database = self.inspect_database()
+            check(database["version"] == version, "watchdog_database_version")
+            if (database.get("watchdog_sample_id", 0) > previous_id
+                    and database.get("watchdog_sample_healthy") is True and self.watchdog_fresh(database)):
+                self.mark(fresh_watchdog_sample_id=database["watchdog_sample_id"])
+                return
+            time.sleep(1)
+        raise RuntimeError("fresh_watchdog_readiness_timeout")
 
     def api(self, path: str, body: dict | None = None) -> dict:
         data = json.dumps(body).encode() if body is not None else None
@@ -112,7 +181,7 @@ class Campaign:
         check(self.api("/health")["version"] == version, "unexpected_production_api_version")
         health = self.api("/v1/automation/execution-health")
         check(health["recovery_worker"]["healthy"], "unhealthy_recovery_worker")
-        for name in ("queued", "claimed", "running", "expired_leases", "failed", "dead_letter", "human_action_required"):
+        for name in UNRESOLVED_STATES:
             check(health.get(name, 0) == 0, "unresolved_execution_work")
         check(self.api("/v1/automation/health-alerts")["status"] == "ok", "automation_health_alert")
         if events:
@@ -120,14 +189,14 @@ class Campaign:
             check(event_health["backlog"] == 0 and event_health["quarantined"] == 0, "unexpected_event_backlog")
         # Open SQLite with the service identity so any transient WAL/SHM files
         # keep the application's ownership and permissions.
-        database = json.loads(self.run([str(PYTHON), str(REPO / "ops/phase4/migrate_db.py"), "--db", str(DB), "--inspect"],
-                                       user="opticable-workflow-api"))
+        database = self.inspect_database()
         check(database["version"] == (2 if events else 1), "production_database_version")
+        # Only completed is a deployable run state. This also rejects future or
+        # unexpected statuses absent from the aggregate execution-health API.
+        check(set(database["run_status_counts"]) <= {"completed"}, "unresolved_execution_work")
         check(database["smoke_policy"]["safe"], "unsafe_production_smoke_routing")
-        sample = database["watchdog_sample_at"]
-        check(sample is not None, "watchdog_sample_missing")
-        check(0 <= (datetime.now(timezone.utc) - datetime.fromisoformat(sample.replace("Z", "+00:00"))).total_seconds() < 600,
-              "watchdog_sample_stale")
+        check(database["watchdog_sample_at"] is not None, "watchdog_sample_missing")
+        check(self.watchdog_fresh(database), "watchdog_sample_stale")
 
     def ready(self, version: str) -> None:
         deadline = time.monotonic() + 45
@@ -142,7 +211,104 @@ class Campaign:
 
     def stage_start(self, name: str) -> None:
         self.stage = name
+        self.mark()
         print("Phase 4 gate: " + name, flush=True)
+
+    def observe_failure_state(self, result: dict) -> dict | None:
+        """Independent bounded probes; a failed probe never fabricates a fact."""
+        errors = result.setdefault("failure_reporting_errors", {})
+        database = None
+        probes = {
+            "production_git_sha": lambda: self.git(PROD, "rev-parse", "HEAD", timeout=10),
+            "production_git_status": lambda: self.git(PROD, "status", "--porcelain", timeout=10),
+            "remote_main_sha": lambda: self.git(PROD, "ls-remote", "origin", "refs/heads/main", timeout=30).split()[0],
+            "production_service_state": self.service_state,
+            "production_database_version": self.inspect_database,
+        }
+        for name, probe in probes.items():
+            try:
+                value = probe()
+                if name in {"production_git_sha", "remote_main_sha"}:
+                    check(bool(re.fullmatch(r"[0-9a-f]{40}", value)), "uninspectable_git_identity")
+                if name == "production_database_version":
+                    check(type(value["version"]) is int, "uninspectable_database_version")
+                    database, value = value, value["version"]
+                result[name] = value
+            except (Exception, KeyboardInterrupt) as error:
+                result[name] = "unknown"
+                errors[name] = type(error).__name__
+        state = result["production_service_state"]
+        result["production_service_active"] = state == "active" if state != "unknown" else "unknown"
+        head, remote = result["production_git_sha"], result["remote_main_sha"]
+        result["production_checkout_advanced"] = False if head == BASELINE else True if head == self.candidate else "unknown"
+        result["remote_main_promoted"] = False if remote == BASELINE else True if remote == self.candidate else "unknown"
+        if result["production_migration_started"] and result["production_migration_completed"] is not True:
+            result["production_migration_completed"] = False if result["production_database_version"] == 1 else "unknown"
+        return database
+
+    def recover_baseline(self, result: dict, database: dict | None) -> None:
+        """The only automatic recovery: proven unchanged baseline code and V1."""
+        if not result["production_service_stop_attempted"]:
+            result.update(recovery_category="before_service_stop_no_recovery", manual_recovery_required=False)
+            return
+        result["manual_recovery_required"] = True
+        if result["production_migration_completed"] is True:
+            result["recovery_category"] = ("verified_candidate_v2_preserved_manual_review"
+                if result["production_git_sha"] == self.candidate and result["production_database_version"] == 2
+                else "verified_migration_current_state_unproven_manual_review")
+            return
+        if result["production_migration_started"]:
+            result["recovery_category"] = {1: "migration_attempt_v1_preserved_manual_review",
+                                          2: "unverified_v2_migration_preserved_manual_review"}.get(
+                                              result["production_database_version"], "migration_state_unknown_preserved_manual_review")
+            return
+        proven = (result["production_service_active_before_campaign"] is True
+                  and result["production_git_sha"] == BASELINE and result["production_git_status"] == EXPECTED_STATUS
+                  and result["production_database_version"] == 1 and database is not None
+                  and set(database["run_status_counts"]) <= {"completed"}
+                  and result["production_service_state"] in {"active", "inactive", "failed"})
+        if not proven:
+            result["recovery_category"] = "unproven_baseline_preserved_manual_review"
+            return
+        # Recheck immediately before start. Neither inspection nor recovery calls
+        # a migration, changes a checkout, replaces a DB, or writes remote main.
+        result["recovery_category"] = "baseline_recovery_in_progress"
+        check(self.git(PROD, "rev-parse", "HEAD", timeout=10) == BASELINE
+              and self.git(PROD, "status", "--porcelain", timeout=10) == EXPECTED_STATUS,
+              "baseline_recovery_checkout_changed")
+        current = self.inspect_database()
+        check(current["version"] == 1 and set(current["run_status_counts"]) <= {"completed"},
+              "baseline_recovery_database_changed")
+        state = self.service_state()
+        check(state in {"active", "inactive", "failed"}, "baseline_recovery_service_transition")
+        if state != "active":
+            result["production_service_restart_attempted"] = True
+            self.mark(production_service_restart_attempted=True, baseline_recovery_restart_attempted=True)
+            self.run(["/usr/bin/systemctl", "start", SERVICE], timeout=60)
+            self.ready("1.8.0")
+            self.wait_watchdog(current["watchdog_sample_id"], 1)
+        else:
+            self.ready("1.8.0")
+        self.healthy("1.8.0", events=False)
+        result.update(production_service_ready=True, recovery_category="baseline_service_recovered",
+                      manual_recovery_required=False)
+
+    def blocked(self, exc: BaseException, blocking_stage: str) -> dict:
+        result = dict(self.result, result="BLOCKED", blocking_stage=blocking_stage,
+                      category=str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__,
+                      manual_recovery_required=True)
+        database = self.observe_failure_state(result)
+        try:
+            self.recover_baseline(result, database)
+        except (Exception, KeyboardInterrupt) as error:
+            result["failure_reporting_errors"]["baseline_recovery"] = type(error).__name__
+            result.update(recovery_category="baseline_recovery_failed_manual_review", manual_recovery_required=True,
+                          production_service_ready=False)
+        # Recovery can itself fail after start. Observe the resulting state again
+        # while retaining the original failure stage and every completed gate.
+        if result["recovery_category"].startswith("baseline_"):
+            self.observe_failure_state(result)
+        return result
 
     def restore_archive(self, archive: Path, digest: str) -> dict:
         # The existing verifier accepts positional arguments and owns its
@@ -163,19 +329,21 @@ class Campaign:
         protected_file(archive, private=True)
         generation = re.fullmatch(r"optibrain-backup-([0-9]{8}T[0-9]{6}Z)\.tar\.gz", archive.name)[1]
         check(generation >= started, "fresh_backup_not_created")
+        self.mark(**{label + "_backup_attempt": {"generation": generation, "archive": str(archive)}})
         sidecar = archive.with_name(archive.name + ".sha256")
         protected_file(sidecar, private=True)
         fields = sidecar.read_text().split()
         check(len(fields) == 2 and fields[1] in {archive.name, str(archive)}, "backup_checksum_sidecar")
         digest = sha(archive)
         check(fields[0] == digest, "backup_checksum_mismatch")
+        self.mark(**{label + "_backup_attempt": {"generation": generation, "archive": str(archive), "archive_sha256": digest}})
         self.run(["/usr/local/lib/optibrain-backup/optibrain-backup.sh", "--verify", str(archive)])
         restored = self.restore_archive(archive, digest)
         with tarfile.open(archive) as tar:
             member = "generation-" + generation + "/manifest.json"
             manifest = json.load(tar.extractfile(member))
         check(manifest["production_git_sha"] == expected_commit, "backup_source_commit_mismatch")
-        self.result[label + "_backup"] = {"generation": generation, "archive_sha256": digest,
+        self.result[label + "_backup"] = {"generation": generation, "archive": str(archive), "archive_sha256": digest,
                                           "verify": "PASS", "isolated_restore": restored}
         return archive, generation, manifest
 
@@ -188,6 +356,7 @@ class Campaign:
         self.result[name.split("/")[-1]] = commit
 
     def execute(self) -> dict:
+        self.stage_start("preflight")
         check(REPO != PROD and self.git(REPO, "rev-parse", "HEAD") == self.candidate, "candidate_identity")
         check(self.git(REPO, "status", "--porcelain") == "", "candidate_worktree_changes")
         check(self.git(PROD, "rev-parse", "HEAD") == BASELINE, "production_head_changed")
@@ -206,6 +375,9 @@ class Campaign:
         space = os.statvfs("/var/backups/optibrain")
         check(space.f_bavail * space.f_frsize > 4 * 1024**3, "backup_headroom_insufficient")
         check(not self.run(["/usr/bin/systemctl", "--failed", "--no-legend", "--no-pager"]), "failed_systemd_units")
+        service_state = self.service_state()
+        self.mark(production_service_active_before_campaign=service_state == "active")
+        check(service_state == "active", "production_service_not_active")
         self.healthy("1.8.0", events=False)
         archive, generation, manifest = self.archive(BASELINE, "predeployment")
         self.stage_start("restored-production-migration-drill")
@@ -241,31 +413,60 @@ class Campaign:
         date = datetime.now(timezone.utc).strftime("%Y%m%d")
         pretag, posttag = "recovery/pre-phase4-durable-events-v1-" + date, "recovery/post-phase4-durable-events-v1-" + date
         self.recovery_tag(pretag, BASELINE)
-        self.stage_start("fast-forward-and-tested-migration")
+        return self.promote(private, protected_meta, pretag, posttag)
+
+    def promote(self, private: Path, protected_meta: os.stat_result, pretag: str, posttag: str) -> dict:
+        self.stage_start("pre-stop-health")
         self.healthy("1.8.0", events=False)
         check(self.git(PROD, "rev-parse", "HEAD") == BASELINE, "production_head_changed_during_drill")
         check(self.git(PROD, "ls-remote", "origin", "refs/heads/main").split()[0] == BASELINE,
               "remote_main_changed_during_drill")
         check(self.git(PROD, "status", "--porcelain") == "?? ops/backup/optibrain-cloudflare-auth-diagnostic.sh"
               and sha(PROTECTED) == PROTECTED_SHA, "production_state_changed_during_drill")
-        self.run(["/usr/bin/systemctl", "stop", SERVICE])
-        stopped = json.loads(self.run([str(PYTHON), str(REPO / "ops/phase4/migrate_db.py"), "--db", str(DB), "--inspect"],
-                                      user="opticable-workflow-api"))
+        self.stage_start("stop-production-service")
+        self.mark(production_service_stop_attempted=True)
+        self.run(["/usr/bin/systemctl", "stop", SERVICE], timeout=60)
+        check(self.service_state() == "inactive", "production_service_not_stopped")
+        self.mark(production_service_stop_completed=True)
+        self.stage_start("inspect-stopped-production")
+        stopped = self.inspect_database()
+        check(stopped["version"] == 1, "stopped_database_not_v1")
         check(set(stopped["run_status_counts"]) <= {"completed"}, "work_arrived_before_stop_preserve_evidence")
         # Freeze one additional consistent V1 rollback snapshot after stopping the
         # service. The source backup and failed-state evidence are retained.
         frozen = private / "pre-migration-frozen-v1.db"
+        self.stage_start("freeze-v1-snapshot")
+        self.mark(frozen_v1_snapshot={"path": str(frozen), "verified": False})
         self.run([str(PYTHON), str(REPO / "ops/phase4/migrate_db.py"), "--db", str(DB), "--snapshot-to", str(frozen)],
                  user="opticable-workflow-api")
+        snapshot = self.inspect_database(frozen)
+        check(snapshot["version"] == 1 and snapshot["counts"] == stopped["counts"] and snapshot["hashes"] == stopped["hashes"],
+              "frozen_snapshot_not_verified")
+        self.mark(frozen_v1_snapshot={"path": str(frozen), "sha256": sha(frozen), "version": 1, "verified": True})
+        self.stage_start("advance-production-checkout")
         self.git(PROD, "merge", "--ff-only", self.candidate)
+        check(self.git(PROD, "rev-parse", "HEAD") == self.candidate, "production_checkout_not_candidate")
+        self.mark(production_checkout_advanced=True)
+        self.stage_start("migrate-production-database")
+        self.mark(production_migration_started=True)
         migration = json.loads(self.run([str(PYTHON), str(REPO / "ops/phase4/migrate_db.py"), "--db", str(DB)], user="opticable-workflow-api"))
-        check(migration["result"] == "PASS", "production_migration_failed_preserve_evidence")
-        self.result["production_migration"] = migration
-        self.run(["/usr/bin/systemctl", "start", SERVICE])
-        self.ready("1.9.0"); self.healthy("1.9.0", events=True)
+        check(migration["result"] == "PASS" and migration["previous_version"] == 1 and migration["new_version"] == 2,
+              "production_migration_failed_preserve_evidence")
+        self.mark(production_migration=migration, production_migration_completed=True)
+        self.stage_start("start-candidate-service")
+        self.mark(production_service_restart_attempted=True)
+        self.run(["/usr/bin/systemctl", "start", SERVICE], timeout=60)
+        self.stage_start("candidate-api-readiness")
+        self.ready("1.9.0")
+        self.mark(production_service_ready=True)
+        self.stage_start("candidate-watchdog-readiness")
+        self.wait_watchdog(stopped["watchdog_sample_id"], 2)
+        self.stage_start("candidate-health")
+        self.healthy("1.9.0", events=True)
         self.stage_start("safe-production-smoke")
         event = {"event_type": "system.automation.smoke_test", "source": "internal", "idempotency_key": "phase4-production-smoke-" + uuid4().hex,
                  "payload": {"requested_via": "phase4-gates"}}
+        self.mark(smoke_attempt={"event_type": event["event_type"], "idempotency_key": event["idempotency_key"]})
         first = self.api("/v1/automation/events", event)
         check(first["accepted"] and len(first["run_ids"]) == 1, "production_smoke_acceptance")
         run = self.api("/v1/automation/runs/" + first["run_ids"][0])
@@ -274,28 +475,73 @@ class Campaign:
         check(duplicate["duplicate"] and duplicate["event_id"] == first["event_id"], "production_smoke_dedupe")
         evidence = self.api("/v1/automation/events/" + first["event_id"])
         check(evidence["status"] == "routed" and evidence["duplicate_count"] >= 1, "production_ledger_evidence")
-        self.result["smoke"] = {"result": "PASS", "run_id": first["run_ids"][0], "event_id": first["event_id"], "idempotency_key": event["idempotency_key"]}
+        self.mark(smoke={"result": "PASS", "run_id": first["run_ids"][0], "event_id": first["event_id"],
+                         "idempotency_key": event["idempotency_key"]}, production_smoke_completed=True)
+        self.stage_start("post-smoke-health")
         self.healthy("1.9.0", events=True)
         post_archive, post_generation, _ = self.archive(self.candidate, "postdeployment")
+        self.mark(postdeployment_backup_completed=True)
         self.stage_start("encrypted-offhost-download-verification")
         self.run(["/usr/bin/systemctl", "start", "optibrain-phase2a-upload.service"], timeout=2800)
-        state = json.loads(Path("/var/lib/optibrain/phase2a/state.json").read_text())
+        state = json.loads(OFFHOST_STATE.read_text())
         check(state["generation"] == post_generation and state["source_sha256"] == sha(post_archive)
               and state["verification_status"] == "download_hash_verified", "offhost_generation_not_verified")
-        self.result["offhost"] = {"generation": post_generation, "verification": "download_hash_verified", "offline_decrypt_restore": "requires_external_private_key"}
-        self.stage_start("final-health-and-fast-forward-main")
+        self.mark(offhost={"generation": post_generation, "verification": "download_hash_verified",
+                           "offline_decrypt_restore": "requires_external_private_key"}, offhost_verification_completed=True)
+        self.stage_start("final-health")
         self.healthy("1.9.0", events=True)
         check(not self.run(["/usr/bin/systemctl", "--failed", "--no-legend", "--no-pager"]), "postdeployment_failed_units")
         check(sha(PROTECTED) == PROTECTED_SHA and (PROTECTED.stat().st_mode, PROTECTED.stat().st_uid, PROTECTED.stat().st_gid)
               == (protected_meta.st_mode, protected_meta.st_uid, protected_meta.st_gid), "protected_diagnostic_changed")
+        self.stage_start("remote-main-preflight")
         check(self.git(PROD, "ls-remote", "origin", "refs/heads/main").split()[0] == BASELINE, "remote_changed_before_promotion")
+        self.stage_start("promote-remote-main")
+        self.mark(remote_main_promotion_attempted=True)
         self.git(REPO, "push", "origin", self.candidate + ":refs/heads/main")
+        self.stage_start("verify-remote-main")
         check(self.git(REPO, "ls-remote", "origin", "refs/heads/main").split()[0] == self.candidate, "remote_promotion_failed")
+        self.mark(remote_main_promoted=True)
+        self.stage_start("postdeployment-recovery-tag")
         self.recovery_tag(posttag, self.candidate)
+        self.stage_start("publish-production-recovery-tags")
         self.git(REPO, "push", "origin", pretag, posttag)
         self.result.update(result="PASS", production_sha=self.candidate, api_version="1.9.0", database_version=2,
                            predeployment_tag=pretag, postdeployment_tag=posttag)
         return self.result
+
+
+def blocked_with_evidence(campaign: Campaign, exc: BaseException, stage: str) -> dict:
+    # Freeze the blocking identity BEFORE any probe/recovery/reporting code.
+    fallback = dict(campaign.result, result="BLOCKED", blocking_stage=stage,
+                    category=str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__,
+                    recovery_workspace=str(campaign.root), manual_recovery_required=True,
+                    recovery_category="failure_reporting_unavailable_manual_review")
+    try:
+        return campaign.blocked(exc, stage)
+    except (Exception, KeyboardInterrupt) as reporting_error:
+        # The handler may have attempted a proven baseline restart before its
+        # own later failure. Preserve its latest markers, not the earlier copy.
+        fallback.update(campaign.result)
+        fallback.update(result="BLOCKED", blocking_stage=stage,
+                        category=str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__,
+                        recovery_workspace=str(campaign.root), manual_recovery_required=True,
+                        recovery_category="failure_reporting_unavailable_manual_review")
+        # Stale pre-failure observations cannot describe a partially applied
+        # operation. Keep verified milestones, but label current facts unknown.
+        for name in ("production_git_sha", "remote_main_sha", "production_service_active",
+                     "production_database_version", "production_checkout_advanced", "remote_main_promoted"):
+            fallback[name] = "unknown"
+        if fallback["production_migration_started"] and fallback["production_migration_completed"] is not True:
+            fallback["production_migration_completed"] = "unknown"
+        fallback["failure_reporting_errors"] = {"handler": type(reporting_error).__name__}
+        return fallback
+
+
+def execute_with_evidence(campaign: Campaign) -> dict:
+    try:
+        return campaign.execute()
+    except (Exception, KeyboardInterrupt) as exc:
+        return blocked_with_evidence(campaign, exc, campaign.stage)
 
 
 def main() -> None:
@@ -326,13 +572,15 @@ def main() -> None:
         workspace = root / (datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8])
         workspace.mkdir(mode=0o700)
         campaign = Campaign(args.candidate, workspace)
+        result = execute_with_evidence(campaign)
         try:
-            result = campaign.execute()
-        except Exception as exc:
-            result = dict(campaign.result, result="BLOCKED", blocking_stage=campaign.stage,
-                          category=str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__,
-                          recovery_workspace=str(workspace), production_database_overwritten=False)
-        (workspace / "result.json").write_text(json.dumps(result, sort_keys=True, indent=2) + "\n")
+            write_record(workspace / "result.json", result)
+        except (Exception, KeyboardInterrupt) as reporting_error:
+            # Still emit the original blocking stage/category to the terminal if
+            # disk failure prevents the final durable report.
+            if result["result"] == "PASS":
+                result = blocked_with_evidence(campaign, RuntimeError("result_persistence_failed"), "final-result-persistence")
+            result.setdefault("failure_reporting_errors", {})["result_persistence"] = type(reporting_error).__name__
         print(json.dumps(result, sort_keys=True))
         raise SystemExit(0 if result["result"] == "PASS" else 1)
     finally:
