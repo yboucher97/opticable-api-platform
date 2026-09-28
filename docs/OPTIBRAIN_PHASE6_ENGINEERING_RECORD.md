@@ -172,3 +172,43 @@ Validation of corrected candidate `820e41dd9c369e645ac8ec71d460fc43bf59c529`:
 - validation logs retained locally under `/var/tmp/optibrain-phase6-validation/`.
 
 Gate C is closed after the correction. Gate D may proceed on the engineering branch only. No production policy, service, database or recovery artifact was changed.
+
+## 2026-09-28 — Gate D draft lifecycle — PASS
+
+Implementation candidate: `2872da4a2727d8ade85e1109efccf79f2a2bd5ee`, following Gate C evidence commit `8f9993bde36458f052ccb5898f6e2892cb636263`.
+
+### Existing mechanism reused
+
+The existing `lifecycle.mail_save_draft` now calls a shared `save_mail_draft` transport. The Phase 6 `lifecycle.sales_draft` action calls the same transport. It permits only the existing Mail POST with `mode: draft`, a numeric account ID and a small payload allowlist; send/scheduling fields cannot pass. The existing lifecycle draft compatibility tests pass.
+
+Provider contract reference: [Zoho Mail Save Draft / Template](https://www.zoho.com/mail/help/api/post-save-draft-template.html). This documents the existing POST endpoint and required draft mode. Gate D has **not** performed a live Mail write or claimed live response-shape verification. A response without an explicit success envelope and provider message ID remains human-required.
+
+### Deterministic policy and durable evidence
+
+- New workflow `opticable.sales-draft` consumes internal `opticable.crm.lead.reviewed` events and has one write attempt.
+- `OPTIBRAIN_SALES_DRAFTS=phase6-sales-v1` is a separate explicit opt-in. Its default and every other value return observe before provider access. Disabling it is rechecked immediately before the POST.
+- The mailbox must be explicitly configured using `OPTIBRAIN_SALES_DRAFT_ACCOUNT_ID` and `OPTIBRAIN_SALES_DRAFT_FROM`; the sender must be a valid Opticable address. No production environment was edited.
+- Fixed French/English templates provide bounded draft content without an AI call. A reviewed decision with unknown language stops for review; this gate does not assume that production CRM exposes a configured language field. Language classification/intake configuration must be established before live enablement.
+- Recipient comes only from a freshly read Lead matching the exact reviewed version. Converted/inactive state, opt-out or unknown consent, missing/invalid/multiple recipients, and internal sender loops produce zero Mail writes.
+- Optional message binding reads the immutable existing event ledger entry using its event ID and exact content hash. Source type, sender, mailbox and Lead correspondence must match; reply headers must be present and valid. Missing headers stop for review, rather than treating a provider message ID as an Internet Message-ID. The current mailbox poller does not guarantee these headers, so message reply binding remains fail-closed until they are available.
+- Journal identity binds the connected Lead identity, optional exact message identity, reviewed version and content hash. Changing notification account metadata cannot bypass dedupe or an unresolved operation.
+- The existing cross-process `DesiredJournal` lock serializes writes. Started intent is durable before POST. Response loss, malformed acknowledgement and a crash after provider acceptance all fence the same source, including newer versions, without another POST. No automatic ambiguous-draft readback/reconciliation is claimed.
+- Reprocessing the same source/version/content returns the stored draft ID across restart. Changed content on the same version requires review. A newer version may create a new draft with `supersedes_draft_id`; earlier drafts are preserved and never sent/deleted.
+- Evidence and action results contain IDs, bounded categories and hashes, not recipients or raw message bodies. Existing captured inbound source events retain their pre-existing intake semantics; their body is not copied into new journal evidence.
+- Lead state, recipient and policy are rechecked immediately before writing. Mail POST cannot atomically condition itself on a CRM version; a later concurrent CRM edit is a cross-provider limitation. This path creates drafts only.
+
+### Validation
+
+- Focused draft lifecycle: **23 tests / 26 subtests**.
+- Existing lifecycle compatibility: **4 tests**, all PASS.
+- Complete regression on exact candidate `2872da4a2727d8ade85e1109efccf79f2a2bd5ee`: **472 tests / 405 subtests, 0 failures, 0 errors, 0 skips**.
+- Compileall and whitespace checks: PASS.
+- Static Phase 6 draft provider boundary: CRM Lead GET plus shared Mail draft POST only; no Account/Contact/Deal, Books, owner, conversion, metadata, customer send or delete operation.
+- Fault coverage includes response loss, malformed/error acknowledgements, missing provider ID, process loss before verified journal commit, concurrent journal locking, source/hash mismatch, changed recipient, stale versions, policy disable during execution, restart dedupe and newer-version supersession.
+- Validation used isolated temporary databases, fake providers, cleared inherited environment and blocked Python socket connections. Real provider writes, customer sends, Books mutations and Lead conversions: **0**.
+- Production and remote main remain `52f11d4fc14d8582c03837e0317f849efe8aa3d7`; live local health remains `ok`, API `1.10.0`.
+- Protected diagnostic SHA-256 unchanged: `7b2a45b141ea8983e761fdc548e25690fe89bf15ee20b994be2bf4855f701000`.
+- Root-owned production runbook SHA-256 unchanged: `cdab559d264fb7a17c469fd10953827a98a24ac4a926939db1055522a6dfc085`.
+- Logs: `/var/tmp/optibrain-phase6-validation/gate-d-focused.log`, `gate-d-compatibility.log`, `gate-d-full.log`.
+
+Gate D engineering is closed. No production policy was enabled, no deployment/reconciliation campaign was run, and no manual VPS validation is needed for this engineering result. Gate E (durable outbound approval envelope) and Gates F/G remain separate, unfinished release gates; automatic sends remain outside this draft workflow.
