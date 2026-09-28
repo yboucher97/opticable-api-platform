@@ -269,11 +269,19 @@ def register_crm_lead_actions(engine, client, store):
         generation = digest([PHASE6_POLICY, identity, decision.next_action, decision.followup_at])[:16]
         subject = ("OptiBrain " + decision.next_action.replace("_", " ") + " " + identity + " " + generation)[:120]
         task_key = "crm-lead-phase6-task:" + identity + ":" + generation
+        due = datetime.fromisoformat(decision.followup_at.replace("Z", "+00:00")).astimezone(TORONTO).date().isoformat()
+
+        def exact_task(task):
+            return (re.fullmatch(r"[0-9]{1,30}", str(task.get("id") or "")) is not None
+                    and task.get("Subject") == subject
+                    and str((task.get("Who_Id") or {}).get("id")) == identity
+                    and task.get("Due_Date") == due
+                    and task.get("Status") in {"Not Started", "In Progress", "Completed"})
 
         def search_exact():
             tasks = records(client.request("zohoapis", "GET", "/crm/v8/Tasks/search",
                 query={"criteria": "(Subject:equals:" + subject + ")", "per_page": 2}), empty=True)
-            if len(tasks) > 1 or (tasks and str((tasks[0].get("Who_Id") or {}).get("id")) != identity):
+            if len(tasks) > 1 or (tasks and not exact_task(tasks[0])):
                 raise ValueError("Phase 6 follow-up task identity collision")
             return tasks
 
@@ -301,12 +309,9 @@ def register_crm_lead_actions(engine, client, store):
                            "phase6-crm-lead-action")
             return task_id
 
-        due = datetime.fromisoformat(decision.followup_at.replace("Z", "+00:00")).astimezone(TORONTO).date().isoformat()
         def verify_task(operation):
             rows = records(client.request("zohoapis", "GET", "/crm/v8/Tasks/" + operation))
-            return (len(rows) == 1 and rows[0].get("Subject") == subject
-                    and str((rows[0].get("Who_Id") or {}).get("id")) == identity
-                    and rows[0].get("Due_Date") == due)
+            return len(rows) == 1 and str(rows[0].get("id")) == operation and exact_task(rows[0])
         return write_once(task_key,
                           {"data": [{"Subject": subject, "Who_Id": identity, "$se_module": "Leads",
                                      "Status": "Not Started", "Due_Date": due}], "trigger": []},

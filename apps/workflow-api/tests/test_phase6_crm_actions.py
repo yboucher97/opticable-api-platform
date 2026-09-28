@@ -300,6 +300,61 @@ class Phase6CrmActionTests(unittest.TestCase):
         self.drain()
         self.assertFalse(self.fake.writes)
 
+    def restart(self):
+        self.store = AutomationStore(self.store.db_path)
+        self.engine = AutomationEngine(self.store, self.definitions)
+        register_crm_lead_actions(self.engine, self.fake, self.store)
+
+    def test_stale_review_has_zero_provider_writes(self):
+        decision = build_sales_decision(self.fake.lead)
+        self.fake.lead["Modified_Time"] = "2026-09-28T15:00:00Z"
+        self.engine.ingest(self.reviewed(decision))
+        self.drain()
+        self.assertFalse(self.fake.writes)
+
+    def test_restart_reconciles_lost_task_without_second_post(self):
+        self.fake.lost_task = True
+        self.engine.ingest(self.hint())
+        self.drain()
+        self.restart()
+        self.fake.lead["Modified_Time"] = "2026-09-28T14:01:00Z"
+        self.engine.ingest(self.hint("restart", "2026-09-28T14:02:00Z"))
+        self.drain()
+        self.assertEqual([call[0] for call in self.fake.writes], ["PUT", "POST"])
+        self.assertTrue(any(row["metadata"].get("reconciled_by_readback")
+                            for row in self.store.recent_audit(limit=100)))
+
+    def test_lost_task_mismatched_readback_remains_unresolved(self):
+        self.fake.lost_task = True
+        self.engine.ingest(self.hint())
+        self.drain()
+        original = copy.deepcopy(self.fake.tasks[0])
+        for index, change in enumerate(({"Subject": "unrelated"},
+                                         {"Due_Date": "2026-12-31"},
+                                         {"Who_Id": {"id": "999"}},
+                                         {"id": ""}, {"Status": "Cancelled"})):
+            with self.subTest(change=change):
+                self.fake.tasks = [{**original, **change}]
+                self.restart()
+                self.fake.lead["Modified_Time"] = f"2026-09-28T14:0{index + 1}:00Z"
+                self.engine.ingest(self.hint(str(index), "2026-09-28T14:10:00Z"))
+                self.drain()
+                self.assertEqual(len(self.fake.writes), 2)
+                key = next(row["target"] for row in self.store.recent_audit(limit=200)
+                           if str(row["target"]).startswith("crm-lead-phase6-task:"))
+                self.assertTrue(DesiredJournal(self.store).unresolved(key))
+
+    def test_lost_task_absent_after_restart_never_reposts(self):
+        self.fake.lost_task = True
+        self.engine.ingest(self.hint())
+        self.drain()
+        self.fake.tasks = []
+        self.restart()
+        self.fake.lead["Modified_Time"] = "2026-09-28T14:01:00Z"
+        self.engine.ingest(self.hint("absent", "2026-09-28T14:02:00Z"))
+        self.drain()
+        self.assertEqual([call[0] for call in self.fake.writes], ["PUT", "POST"])
+
 
 if __name__ == "__main__":
     unittest.main()
