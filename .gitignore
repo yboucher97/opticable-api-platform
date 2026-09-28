@@ -18,3 +18,4 @@ apps/workflow-api/**/__pycache__/
 output/
 
 *.log
+__pycache__/
