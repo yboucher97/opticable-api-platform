@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Scoped to the Phase 5 main-promotion invocation via core.hooksPath.
+# Git sends this advertised old OID in its atomic server-side ref update.
+set -Eeuo pipefail
+[[ ${1:-} == origin ]] || exit 1
+[[ $(git branch --show-current) == hardening/phase5-business-autonomy-v1 ]] || exit 1
+reviewed_candidate=$(git rev-parse --verify 'HEAD^{commit}')
+updates=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [[ ${remote_ref} == refs/heads/main ]] || exit 1
+  [[ ${remote_sha} == 209aac07160e1376381faebd86fb38a18f92582a ]] || exit 1
+  [[ ${local_sha} == "${reviewed_candidate}" ]] || exit 1
+  updates=$((updates + 1))
+done
+[[ ${updates} -eq 1 ]]

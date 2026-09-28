@@ -34,6 +34,9 @@ class InspectionBoundaryTests(unittest.TestCase):
 
     def test_protected_inspection_routes_require_configured_key(self) -> None:
         paths = (
+            "/v1/automation/native-notifications",
+            "/v1/automation/event-health",
+            "/v1/automation/health-alerts",
             "/v1/automation/execution-health",
             "/v1/automation/failed-work",
             f"/v1/automation/runs/{self.run_id}/failures",

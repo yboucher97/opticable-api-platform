@@ -1,4 +1,4 @@
-"""Additive native CRM notification subscription, verified without secret output."""
+"""Exact reviewed CRM notification creation/renewal, without secret output."""
 from datetime import datetime, timedelta, timezone
 import hmac
 import os
@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 
 from ..desired_state import DesiredApplyResult, DesiredChange
 from ..event_schema import digest
+from ..desired_journal import resource_key
 
 
 class ZohoCrmNotificationReconciler:
@@ -16,9 +17,34 @@ class ZohoCrmNotificationReconciler:
                            "credential_env": "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL",
                            "expiry_env": "OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY"}
 
-    def __init__(self, client): self.client = client
+    def __init__(self, client, *, clock=None):
+        self.client, self.journal = client, None
+        self.clock = clock or (lambda: datetime.now(timezone.utc))
+
+    def bind_journal(self, journal):
+        self.journal = journal
+
+    def binding(self, resource):
+        destination, credential, when, channel = self.configuration(resource)
+        return digest([channel, destination, credential, when.isoformat()])
+
+    def verified(self, resource):
+        record = self.journal.last(resource_key(resource), ("native_verified",)) if self.journal else None
+        if record and record["metadata"]["binding"] == self.binding(resource):
+            return record["metadata"]["state"]
+        return None
+
+    def remember(self, resource, state):
+        if self.journal:
+            self.journal.record("native_verified", resource_key(resource),
+                {"binding": self.binding(resource), "state": state, "verified_at": self.clock().isoformat()}, "native-notification-verifier")
+
+    def intent_evidence(self, resource, change):
+        return {"native_expected": change.desired, "native_binding": self.binding(resource)}
 
     def configuration(self, resource):
+        if set(resource.identity) != {"channel_id"}:
+            raise ValueError("Only the exact reviewed notification identity is allowed")
         refs = resource.metadata.get("authentication", {})
         if refs != self.approved_references:
             raise ValueError("Only reviewed native notification authentication references are allowed")
@@ -39,7 +65,8 @@ class ZohoCrmNotificationReconciler:
             raise ValueError("Notification channel identity required")
         if channel != self.approved_channel:
             raise ValueError("Only the reviewed Phase 5 lead notification channel is allowed")
-        if resource.desired.get("events") != ["Leads.create", "Leads.edit"]:
+        if (resource.desired.get("events") != ["Leads.create", "Leads.edit"] or
+                set(resource.desired) - {"events", "renewal_expiry"}):
             raise ValueError("Only lead create/edit subscriptions are approved")
         return destination, credential, when.astimezone(timezone.utc), channel
 
@@ -55,44 +82,90 @@ class ZohoCrmNotificationReconciler:
         if not matches: return None
         if len(matches) != 1: raise ValueError("Notification channel collision")
         record = matches[0]
+        expiry = datetime.fromisoformat(record["channel_expiry"].replace("Z", "+00:00"))
+        if expiry.tzinfo is None:
+            raise ValueError("Provider expiry timezone required")
         return {"channel_id": channel, "events": sorted(record.get("events") or []),
                 "configuration_hash": digest([record.get("notify_url"), record.get("token")]),
-                "expiry": datetime.fromisoformat(record["channel_expiry"].replace("Z", "+00:00")).astimezone(timezone.utc).isoformat(), "authentication_matches": hmac.compare_digest(str(record.get("token", "")).encode(), credential.encode()),
+                "expiry": expiry.astimezone(timezone.utc).isoformat(), "authentication_matches": hmac.compare_digest(str(record.get("token", "")).encode(), credential.encode()),
                 "destination_matches": record.get("notify_url") == destination,
                 "related_actions": record.get("notify_on_related_action"),
-                "field_values": record.get("return_affected_field_values")}
+                "field_values": record.get("return_affected_field_values"),
+                "conditions_absent": not record.get("notification_condition") and not record.get("fields")}
 
     def plan(self, resource):
         destination, credential, when, channel = self.configuration(resource)
         current = self.read(resource)
+        previous = self.verified(resource)
+        if previous:
+            when = datetime.fromisoformat(previous["expiry"])
+        renewal = resource.desired.get("renewal_expiry")
+        if renewal:
+            when = datetime.fromisoformat(renewal)
+            if when.tzinfo is None:
+                raise ValueError("Renewal expiry timezone required")
+            when = when.astimezone(timezone.utc)
         desired = {"channel_id": channel, "events": sorted(resource.desired["events"]), "expiry": when.isoformat(),
                    "configuration_hash": digest([destination, credential]),
-                   "authentication_matches": True, "destination_matches": True, "related_actions": False, "field_values": False}
+                   "authentication_matches": True, "destination_matches": True, "related_actions": False, "field_values": False,
+                   "conditions_absent": True}
         action, reason, risk = "noop", "Native subscription matches", "low"
         if resource.lifecycle.get("ensure", "present") != "present":
             action, reason, risk = "blocked", "Subscription deletion requires separate human approval", "destructive"
         elif current is None:
-            if not datetime.now(timezone.utc) < when <= datetime.now(timezone.utc) + timedelta(days=7):
+            if renewal or previous:
+                action, reason, risk = "manual", "Missing reviewed channel; no automatic channel creation", "medium"
+            elif not self.clock() < when <= self.clock() + timedelta(days=7):
                 action, reason = "blocked", "Native notification expiry must be within seven days"
             else: action, reason = "create", "Add authenticated lead notification subscription"
         elif not current["authentication_matches"] or not current["destination_matches"]:
             action, reason, risk = "blocked", "Existing channel authentication/destination collision", "high"
-        elif current != desired or datetime.fromisoformat(current["expiry"].replace("Z", "+00:00")) <= datetime.now(timezone.utc):
+        elif renewal and current != desired:
+            if (previous == current and self.clock() < when <= self.clock() + timedelta(days=7)
+                    and when > datetime.fromisoformat(current["expiry"])
+                    and datetime.fromisoformat(current["expiry"]) - self.clock() <= timedelta(hours=24)
+                    and {k: v for k, v in current.items() if k != "expiry"} == {k: v for k, v in desired.items() if k != "expiry"}):
+                action, reason, risk = "update", "Renew only the verified Phase 5 channel expiry", "medium"
+            else:
+                action, reason, risk = "manual", "Renewal outside reviewed policy or provider drift", "medium"
+        elif current != desired or datetime.fromisoformat(current["expiry"]) <= self.clock():
             action, reason, risk = "manual", "Subscription drift/expiry requires reviewed renewal; no blind write", "medium"
         return DesiredChange(resource_id=resource.id, provider=resource.provider, kind=resource.kind, name=resource.name,
                              action=action, reason=reason, current=current, desired=desired, risk=risk)
 
     def apply(self, resource, change):
         fresh = self.plan(resource)
-        if change.action != "create" or (fresh.action, fresh.current, fresh.desired) != (change.action, change.current, change.desired):
-            raise ValueError("Subscription creation changed before apply")
+        if change.action not in {"create", "update"} or (fresh.action, fresh.current, fresh.desired) != (change.action, change.current, change.desired):
+            raise ValueError("Subscription plan changed before apply")
         destination, credential, when, channel = self.configuration(resource)
-        response = self.client.request("zohoapis", "POST", "/crm/v8/actions/watch", body={"watch": [{
-            "channel_id": channel, "events": resource.desired["events"], "notify_url": destination,
-            "token": credential, "channel_expiry": when.isoformat(), "notify_on_related_action": False,
-            "return_affected_field_values": False}]}, confirm=True, reason="Phase 5 authenticated lead notification intake")
+        if digest([destination, credential]) != change.desired["configuration_hash"]:
+            raise ValueError("Subscription authentication changed before mutation")
+        if change.action == "update":
+            # PATCH preserves other channel settings. Exact full readback below
+            # verifies that this operation changed only the reviewed expiry.
+            when = datetime.fromisoformat(change.desired["expiry"])
+        response = None
+        exception_type = None
+        try:
+            response = self.client.request("zohoapis", "POST" if change.action == "create" else "PATCH", "/crm/v8/actions/watch", body={"watch": [{
+                "channel_id": channel, "events": resource.desired["events"], "notify_url": destination,
+                "token": credential, "channel_expiry": when.isoformat(), "notify_on_related_action": False,
+                "return_affected_field_values": False}]}, confirm=True, reason="Phase 5 reviewed lead notification subscription/renewal")
+        except Exception as exc:
+            if change.action == "create":
+                raise
+            exception_type = type(exc).__name__
+        response = response or {}
         rows = (response.get("data") or {}).get("watch")
         accepted = response.get("ok") is True and response.get("status") in {200, 201} and isinstance(rows, list) and len(rows) == 1 and rows[0].get("status") == "success"
-        verified = self.plan(resource).action == "noop" if accepted else False
-        return DesiredApplyResult(resource_id=resource.id, action="create", status="completed" if verified else "manual", changed=accepted,
-            result={"request_id": response.get("request_id"), "operation_id": channel if accepted else None, "verification": verified})
+        verified = False
+        if accepted or change.action == "update":
+            try:
+                verified = self.read(resource) == change.desired
+            except Exception as exc:
+                exception_type = type(exc).__name__
+        if verified:
+            self.remember(resource, change.desired)
+        return DesiredApplyResult(resource_id=resource.id, action=change.action, status="completed" if verified else "manual", changed=verified or accepted,
+            result={"request_id": response.get("request_id"), "operation_id": channel if accepted else None, "verification": verified,
+                    "reconciled_by_readback": verified and not accepted, "exception_type": exception_type})

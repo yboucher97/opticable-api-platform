@@ -32,7 +32,7 @@ class Phase5CampaignTests(unittest.TestCase):
         self.assertTrue(value["notification_subscription_verified"])
         self.assertTrue(value["manual_recovery_required"])
         self.assertFalse(value["database_migration_required"])
-        self.assertFalse(value["main_modified"])
+        self.assertEqual(value["main_modified"], "unknown")
 
     def test_provider_exception_message_is_not_reported(self):
         class ProviderError(RuntimeError): pass
@@ -111,10 +111,11 @@ class Phase5CampaignTests(unittest.TestCase):
     def test_root_subscription_lost_response_is_not_retried(self):
         from test_phase5_notification import NativeFake
         fake = NativeFake(); fake.lose = True
-        with self.assertRaisesRegex(RuntimeError, "manual_reconciliation"):
-            self.provider_subscribe(fake)
-        with self.assertRaisesRegex(RuntimeError, "manual_reconciliation"):
-            self.provider_subscribe(fake)
+        for _ in range(2):
+            result = self.provider_subscribe(fake)
+            self.assertEqual(result["result"], "BLOCKED")
+            self.assertEqual(result["category"], "native_subscription_manual_reconciliation")
+            self.assertEqual(result["results"][0]["status"], "manual")
         self.assertEqual(len(fake.writes), 1)
 
 

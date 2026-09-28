@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Pinned Phase 5 deployment using Phase 4 source, backup and recovery guards.
 
-No privilege expansion, production migration, automatic rollback, or main update.
+No privilege expansion, production migration, or automatic rollback.
 Failure evidence preserves the actual service/source/database state for review.
 """
 from __future__ import annotations
@@ -41,6 +41,7 @@ class Phase5Campaign(base.Campaign):
         super().__init__(candidate, root)
         self.environment = {}
         self.result.update(database_migration_required=False, main_modified=False,
+                           final_baseline_sha=BASELINE,
                            notification_subscription_started=False, notification_subscription_verified=False)
 
     def stage_start(self, name):
@@ -65,9 +66,29 @@ class Phase5Campaign(base.Campaign):
 
     def blocked(self, exc, stage):
         result = dict(self.result, result="BLOCKED", blocking_stage=stage,
-                      category=str(exc) if type(exc) is RuntimeError else type(exc).__name__,
+                      category=str(exc) if type(exc) is RuntimeError and re.fullmatch(r"[a-z][a-z0-9_]{0,120}", str(exc)) else type(exc).__name__,
                       manual_recovery_required=True, recovery_category="phase5_preserve_observed_state")
         self.observe_failure_state(result)
+        result["main_modified"] = result["remote_main_promoted"]
+        result["final_baseline_sha"] = result["remote_main_sha"]
+        # Materialization/configuration may have partially succeeded before a
+        # marker was written. Inspect presence/modes, never config/secret values.
+        try:
+            result["phase5_configuration_observed"] = {p: (stat.S_IMODE((CONFIG_DIRECTORY / p).lstat().st_mode)
+                if (CONFIG_DIRECTORY / p).exists() else None) for p in ("webhooks.yaml", "delta-sync.yaml")}
+            result["production_source_modes"] = self.checkout_permissions(result.get("production_git_sha")
+                if re.fullmatch(r"[a-f0-9]{40}", result["production_git_sha"]) else self.candidate, normalize=False)
+        except Exception as error:
+            result.setdefault("failure_reporting_errors", {})["source_or_configuration_modes"] = type(error).__name__
+        if result.get("postdeployment_tag"):
+            try:
+                remote = self.git(REPO, "ls-remote", "origin", "refs/tags/" + result["postdeployment_tag"] + "^{}", timeout=30)
+                result["recovery_tag_sha"] = remote.split()[0] if remote else "absent"
+                result["recovery_tag_published"] = result["recovery_tag_sha"] == self.candidate
+            except Exception as error:
+                result["recovery_tag_sha"] = "unknown"
+                result["recovery_tag_published"] = "unknown"
+                result.setdefault("failure_reporting_errors", {})["recovery_tag_sha"] = type(error).__name__
         # Never restart, overwrite a DB, reverse provider writes, or infer V1
         # recovery eligibility after a partially completed V2 campaign.
         return result
@@ -79,8 +100,9 @@ class Phase5Campaign(base.Campaign):
                 group=self.service_user.pw_gid, extra_groups=[], stdout=subprocess.PIPE, stderr=log,
                 timeout=180, cwd=REPO / "apps/workflow-api")
             log.write(completed.stdout[:65536])
-        check(completed.returncode == 0, "provider_gate_failed_" + mode)
         value = json.loads(completed.stdout)
+        self.mark(**{"provider_" + mode.replace("-", "_") + "_observed": value})
+        check(completed.returncode == 0, "provider_gate_failed_" + mode)
         check(value["result"] == "PASS", "provider_gate_unverified")
         return value
 
@@ -88,6 +110,7 @@ class Phase5Campaign(base.Campaign):
         """Add private callback config inside the existing backed-up /etc tree."""
         import yaml
         directory = CONFIG_DIRECTORY
+        self.mark(runtime_configuration_started=True)
         directory.mkdir(mode=0o750)
         os.chown(directory, 0, self.service_user.pw_gid)
         directory.chmod(0o750)
@@ -129,6 +152,65 @@ class Phase5Campaign(base.Campaign):
         finally: os.close(descriptor)
         self.mark(runtime_configuration_written=True, channel_id=CHANNEL, channel_expiry=expiry,
                   lead_policy="observe; no autonomous customer communication or CRM record writes")
+
+    def promote_main(self):
+        required = ("production_service_ready", "production_smoke_completed", "notification_subscription_verified",
+                    "public_lead_delivery_verified", "crm_delta_fallback_verified", "provider_governance_verified",
+                    "postdeployment_backup_completed", "offhost_verification_completed", "final_recovery_gates_verified")
+        check(all(self.result.get(key) is True for key in required), "main_promotion_before_recovery_gates")
+        self.stage_start("fast-forward-remote-main")
+        remote = self.git(REPO, "ls-remote", "origin", "refs/heads/main").split()[0]
+        self.mark(remote_main_sha=remote, final_baseline_sha=remote)
+        check(remote == BASELINE, "prepromotion_main_mismatch")
+        self.git(REPO, "fetch", "origin", "main")
+        check(self.git(REPO, "rev-parse", "FETCH_HEAD") == BASELINE, "prepromotion_fetched_main_mismatch")
+        check(self.git(REPO, "merge-base", BASELINE, self.candidate) == BASELINE, "main_promotion_not_fast_forward")
+        check(self.git(REPO, "rev-parse", "HEAD") == self.candidate and
+              self.git(REPO, "branch", "--show-current") == BRANCH and not self.git(REPO, "status", "--porcelain"),
+              "candidate_changed_before_main_promotion")
+        self.mark(remote_main_promotion_attempted=True)
+        try:
+            # Normal push performs the server's atomic fast-forward check. No
+            # force/lease/reset and no local main checkout or branch mutation.
+            # The checked-in pre-push hook also requires the remote's advertised
+            # old OID to be BASELINE. Git uses that OID for its atomic update,
+            # closing the preflight/push race without any force option.
+            self.git(REPO, "-c", "core.hooksPath=" + str(REPO / "ops/phase5/git-hooks"),
+                     "push", "origin", self.candidate + ":refs/heads/main")
+        finally:
+            try:
+                observed = self.git(REPO, "ls-remote", "origin", "refs/heads/main").split()[0]
+                check(bool(re.fullmatch(r"[a-f0-9]{40}", observed)), "main_readback_invalid")
+                promoted = True if observed == self.candidate else False if observed == BASELINE else "unknown"
+                self.mark(remote_main_sha=observed, remote_main_promoted=promoted,
+                          main_modified=promoted, final_baseline_sha=observed)
+            except Exception as error:
+                self.mark(remote_main_sha="unknown", remote_main_promoted="unknown", main_modified="unknown",
+                          final_baseline_sha="unknown", main_promotion_readback_error=type(error).__name__)
+        check(self.result["remote_main_sha"] == self.candidate, "main_promotion_unverified")
+
+    def publish_final_recovery_tag(self, pretag):
+        check(self.result["remote_main_promoted"] is True and self.result["remote_main_sha"] == self.candidate,
+              "post_tag_before_main_promotion")
+        self.stage_start("publish-final-phase5-recovery-tag")
+        posttag = "recovery/post-phase5-business-autonomy-v1-" + datetime.now(timezone.utc).strftime("%Y%m%d")
+        self.mark(postdeployment_tag=posttag, recovery_tag_publication_attempted=True)
+        self.recovery_tag(posttag, self.candidate)
+        self.git(REPO, "push", "origin", pretag, posttag)
+        remote = self.git(REPO, "ls-remote", "origin", "refs/tags/" + posttag + "^{}")
+        check(remote.split()[0] == self.candidate, "phase5_recovery_tag_unpublished")
+        self.mark(predeployment_tag=pretag, postdeployment_tag=posttag, recovery_tag_sha=self.candidate,
+                  recovery_tag_published=True)
+        return posttag
+
+    def verify_final_identity(self):
+        self.observe_failure_state(self.result)
+        self.result["final_baseline_sha"] = self.result["remote_main_sha"]
+        tag = self.git(REPO, "ls-remote", "origin", "refs/tags/" + self.result["postdeployment_tag"] + "^{}").split()[0]
+        self.mark(recovery_tag_sha=tag)
+        check(self.result["production_git_sha"] == self.result["remote_main_sha"] == tag == self.candidate and
+              self.result["production_database_version"] == 2 and self.result["production_service_active"] is True and
+              not self.result.get("failure_reporting_errors"), "final_state_unverified")
 
     def restored_drill(self, archive, generation, manifest, label):
         staging = Path("/var/lib/optibrain-phase5-staging")
@@ -177,7 +259,7 @@ class Phase5Campaign(base.Campaign):
         self.healthy("1.9.0", events=True)
         self.stage_start("full-candidate-regression")
         summary = self.run([str(base.PYTHON), str(REPO / "ops/phase4/run_tests.py")], user="optibrain", timeout=300).splitlines()[-1]
-        test = json.loads(summary); check(test["passed"] and test["tests"] >= 386 and test["subtests"] >= 325 and test["skipped"] == 0, "full_suite_failed")
+        test = json.loads(summary); check(test["passed"] and test["tests"] >= 419 and test["subtests"] >= 374 and test["skipped"] == 0, "full_suite_failed")
         self.mark(full_suite=test)
         pre, pregen, manifest = self.archive(BASELINE, "predeployment")
         self.restored_drill(pre, pregen, manifest, "predeployment")
@@ -213,9 +295,15 @@ class Phase5Campaign(base.Campaign):
         self.stage_start("authenticated-public-lead-delivery-drill")
         delivery = self.provider("notification-proof")
         self.mark(lead_delivery=delivery)
-        self.environment["OPTIBRAIN_PHASE5_DELIVERY_DRILL_EVENT_ID"] = delivery["event_id"]
+        check(delivery["delivery_class"] == "synthetic" and delivery["duplicate"] is True and
+              delivery["crm_record_writes"] == 0 and delivery["provider_emitted_event_proven"] is False, "public_delivery_evidence_invalid")
+        self.mark(public_lead_delivery_verified=True)
+        self.stage_start("crm-delta-fallback-verification")
+        self.mark(crm_delta_fallback=self.provider("delta-proof"), crm_delta_fallback_verified=True)
+        self.stage_start("durable-provider-origin-observation")
+        self.mark(native_lead_delivery=self.provider("native-origin-proof"))
         self.stage_start("live-provider-noop-and-health")
-        self.mark(provider_governance_after=self.provider("verify"))
+        self.mark(provider_governance_after=self.provider("verify"), provider_governance_verified=True)
         self.healthy("1.10.0", events=True)
         post, generation, postmanifest = self.archive(self.candidate, "postdeployment")
         self.restored_drill(post, generation, postmanifest, "postdeployment")
@@ -228,27 +316,19 @@ class Phase5Campaign(base.Campaign):
               and state["verification_status"] == "download_hash_verified", "offhost_verification_failed")
         self.mark(offhost={"generation": generation, "verification": "download_hash_verified",
                           "offline_decrypt_restore": "external_private_key_required"}, offhost_verification_completed=True)
-        self.stage_start("final-health-protections-and-recovery-tag")
+        self.stage_start("final-health-protections-before-main-promotion")
         self.healthy("1.10.0", events=True); self.protected_unchanged(); self.checkout_permissions(self.candidate, normalize=False)
         check(not self.run(["/usr/bin/systemctl", "--failed", "--no-legend", "--no-pager"]), "failed_systemd_units")
-        check(self.git(REPO, "ls-remote", "origin", "refs/heads/main").split()[0] == BASELINE, "main_modified")
-        posttag = "recovery/post-phase5-business-autonomy-v1-" + datetime.now(timezone.utc).strftime("%Y%m%d")
-        self.recovery_tag(posttag, self.candidate)
-        self.git(REPO, "push", "origin", pretag, posttag)
-        remote = self.git(REPO, "ls-remote", "origin", "refs/tags/" + posttag + "^{}")
-        check(remote.split()[0] == self.candidate, "phase5_recovery_tag_unpublished")
-        self.mark(predeployment_tag=pretag, postdeployment_tag=posttag, recovery_tag_published=True)
-        self.stage_start("provider-origin-lead-event-verification")
-        self.mark(native_lead_delivery=self.provider("native-origin-proof"))
+        observed = self.inspect_database()
+        check(observed["version"] == 2 and self.git(PROD, "rev-parse", "HEAD") == self.candidate, "candidate_final_source_database")
+        self.mark(final_recovery_gates_verified=True)
+        self.promote_main()
+        posttag = self.publish_final_recovery_tag(pretag)
         self.stage_start("verified-final-production-state")
         self.healthy("1.10.0", events=True)
         self.protected_unchanged()
-        self.observe_failure_state(self.result)
-        check(self.result["production_git_sha"] == self.candidate and
-              self.result["production_database_version"] == 2 and
-              self.result["production_service_active"] is True and
-              self.result["remote_main_sha"] == BASELINE and
-              not self.result.get("failure_reporting_errors"), "final_state_unverified")
+        self.mark(native_lead_delivery=self.provider("native-origin-proof"))
+        self.verify_final_identity()
         self.result.update(result="PASS", api_version="1.10.0", database_version=2,
                            production_sha=self.candidate, predeployment_tag=pretag, postdeployment_tag=posttag,
                            manual_recovery_required=False)
@@ -263,11 +343,12 @@ def main():
     check(re.fullmatch(r"[a-f0-9]{40}", args.candidate), "invalid_candidate")
     if args.plan:
         print(json.dumps({"baseline": BASELINE, "candidate": args.candidate, "branch": BRANCH,
-            "main_modified": False, "migration": False, "gates": ["immutable preflight", "complete regression",
+            "main_promotion": "fast-forward-only after every production/recovery gate", "migration": False, "gates": ["immutable preflight", "complete regression",
                 "fresh backup and restored V2 drill", "live desired-state noops", "source modes", "readiness/authenticated health",
-                "safe smoke", "verified additive subscription", "public authenticated lead path", "post backup/restore",
-                "encrypted offhost download hash", "published recovery tags", "protected files and systemd",
-                "separate authenticated provider-origin lead callback"]}))
+                "safe smoke", "verified additive subscription", "public authenticated lead path/dedupe", "CRM delta fallback",
+                "post backup/restore", "encrypted offhost download hash", "protected files and systemd", "final authenticated health",
+                "exact baseline remote main", "fast-forward main to candidate", "publish final candidate recovery tag"],
+            "provider_origin_delivery": "durable pending -> verified; pending does not block deployment"}))
         return
     check(os.geteuid() == 0, "human_root_authentication_required")
     os.umask(0o077)

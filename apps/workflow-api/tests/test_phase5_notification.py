@@ -27,7 +27,7 @@ class NativeFake:
         if method == "GET":
             if self.error: raise self.error
             return {"ok": True, "status": 200 if self.rows else 204, "data": {"watch": copy.deepcopy(self.rows)}}
-        if method != "POST": raise AssertionError("Unapproved native method")
+        if method not in {"POST", "PATCH"}: raise AssertionError("Unapproved native method")
         row = kwargs["body"]["watch"][0]
         if not self.skip_verify:
             # Zoho may return an equivalent time in its configured timezone.

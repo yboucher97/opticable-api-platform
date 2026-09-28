@@ -221,6 +221,8 @@ class DesiredStateController:
                 continue
 
             try:
+                if hasattr(adapter, "bind_journal"):
+                    adapter.bind_journal(self.journal)
                 change = adapter.plan(resource)
             except Exception as exc:
                 change = DesiredChange(resource_id=resource.id, provider=resource.provider, kind=resource.kind,
@@ -294,6 +296,8 @@ class DesiredStateController:
                                 "resource_id": resource.id, "provider": resource.provider, "kind": resource.kind,
                                 "before_hash": digest(change.current), "desired_hash": digest(change.desired),
                                 "action": change.action, "risk": change.risk}
+                    if hasattr(adapter, "intent_evidence"):
+                        evidence.update(adapter.intent_evidence(resource, change))
                     # This durable intent is committed BEFORE the network call. A
                     # crash leaves manual evidence even if the provider accepted it.
                     self.journal.record("started", key, evidence, actor)

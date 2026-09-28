@@ -212,12 +212,16 @@ def verify_delivery(endpoint: WebhookEndpoint, headers: dict[str, str], raw: byt
 
 
 def accept_delivery(ledger: EventLedger, endpoint: WebhookEndpoint, headers: dict[str, str], raw: bytes) -> dict[str, Any]:
+    from .native_notifications import effective_endpoint, capture_origin
+    endpoint = effective_endpoint(ledger.store, endpoint)
     event, quarantine = verify_delivery(endpoint, headers, raw)
     with ledger.store._connect() as conn:
         conn.execute("BEGIN IMMEDIATE")
         accepted, event_id, correlation_id = ledger._capture(conn, event)
         if accepted and quarantine:
             ledger._quarantine(conn, event_id, event.source, quarantine)
+        if accepted and not quarantine:
+            capture_origin(conn, endpoint, event, event_id)
         if accepted and not quarantine and endpoint.sync_stream and event.source in {"google.calendar", "google.drive"}:
             # A durable dirty generation prevents a push received during a delta
             # page read from being lost when that read finishes. Backoff remains

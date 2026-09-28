@@ -69,6 +69,7 @@ from .automation.reconcilers.zoho_notification import ZohoCrmNotificationReconci
 from .automation.crm_inventory import CrmInventoryCollector
 from .automation.desired_journal import ApplyConflict
 from .automation.desired_drift import DesiredDriftObserver
+from .automation.native_notifications import NativeNotificationWorker, native_health
 
 
 settings = load_settings()
@@ -96,8 +97,11 @@ apollo_api_client = ApolloApiClient(settings.apollo)
 desired_state_registry.register("zoho_crm", "field", ZohoCrmFieldReconciler(zoho_gateway_client))
 register_crm_metadata(desired_state_registry, zoho_gateway_client)
 desired_state_registry.register("zoho_crm", "notification", ZohoCrmNotificationReconciler(zoho_gateway_client))
+native_notification_worker = None
 if os.getenv("OPTIBRAIN_CRM_DRIFT_ENABLED") == "true":
     delta_sync_worker.observer = DesiredDriftObserver(desired_state_controller, Path(__file__).resolve().parents[1] / "config/automation/desired-state")
+    native_notification_worker = NativeNotificationWorker(desired_state_controller,
+        Path(__file__).resolve().parents[1] / "config/automation/desired-state/zoho-crm-notification.template.json")
 register_google_actions(automation_engine, google_api_client, automation_store)
 register_zoho_actions(automation_engine, zoho_gateway_client, automation_store)
 register_crm_lead_actions(automation_engine, zoho_gateway_client, automation_store)
@@ -629,6 +633,8 @@ async def lifespan(app: FastAPI):
             loaded_workflows = automation_engine.sync_definitions()
             sync_jobs = initialize_jobs(automation_store)
             delta_sync_worker.start(sync_jobs)
+            if native_notification_worker is not None:
+                native_notification_worker.start()
             logger.info(
                 "Automation kernel loaded %d workflow definition(s): %s",
                 len(loaded_workflows),
@@ -798,6 +804,8 @@ async def lifespan(app: FastAPI):
         if recovery_thread is not None:
             recovery_thread.join(timeout=5)
         delta_sync_worker.stop()
+        if native_notification_worker is not None:
+            native_notification_worker.stop()
         if health_thread is not None:
             health_thread.join(timeout=5)
         if settings.automation.enabled:
@@ -1403,8 +1411,14 @@ async def automation_health_alerts(
 ) -> dict[str, Any]:
     _validate_inspection_api_key(x_api_key)
     # A fresh inspector ensures tests and future store swaps use the current store.
-    monitor = AutomationHealthMonitor(automation_store)
+    monitor = AutomationHealthMonitor(automation_store, sync_health=lambda: delta_sync_worker.health())
     return monitor.inspect(_automation_recovery_health())
+
+
+@app.get("/v1/automation/native-notifications", tags=["automation"])
+async def automation_native_notifications(x_api_key: str | None = Header(default=None, alias="X-API-Key")) -> dict[str, Any]:
+    _validate_inspection_api_key(x_api_key)
+    return native_health(automation_store)
 
 
 @app.get("/v1/automation/failed-work", tags=["automation"])

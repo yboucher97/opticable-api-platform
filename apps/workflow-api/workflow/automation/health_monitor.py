@@ -156,6 +156,15 @@ class AutomationHealthMonitor:
                 ))
 
         event_health = EventLedger(self.store).health()
+        from .native_notifications import native_health
+        event_health["native_notifications"] = native_health(self.store)
+        native = event_health["native_notifications"]
+        if native["native_subscription_status"] in {"degraded", "expired", "human_action_required", "configuration_drift", "verification_stale"}:
+            alerts.append(self._alert("native_subscription_degraded", "warning", 1,
+                "Native CRM notification subscription requires review; delta reconciliation remains independent."))
+        elif native["native_subscription_renewal_required"]:
+            alerts.append(self._alert("native_subscription_renewal_due", "warning", 1,
+                "Native CRM notification renewal is due before expiry."))
         if self.sync_health:
             event_health["sync_worker"] = self.sync_health()
             if not event_health["sync_worker"]["healthy"]:

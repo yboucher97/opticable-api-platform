@@ -48,6 +48,8 @@ def install_event_routes(app: FastAPI, get_store: Callable[[], AutomationStore],
     @app.get("/v1/automation/event-health", tags=["automation"])
     async def event_health(x_api_key: str | None = Header(None, alias="X-API-Key")) -> dict:
         result = await run_in_threadpool(ledger(x_api_key).health)
+        from .native_notifications import native_health
+        result["native_notifications"] = await run_in_threadpool(native_health, get_store())
         if sync_health:
             result["sync_worker"] = sync_health()
         return result
