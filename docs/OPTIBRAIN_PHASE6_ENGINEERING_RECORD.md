@@ -66,14 +66,84 @@ Commit `12efc71197b1604bde7a956d0c8cd2b67167307d` added `apps/workflow-api/tests
 - deterministic decision hashing;
 - invalid IDs and naive timestamps fail closed.
 
-### Validation state
+### Gate B validation — PASS
 
-GitHub has no automatic workflow run for commit `12efc71197b1604bde7a956d0c8cd2b67167307d`. Focused and complete regression validation therefore remains a required gate before any provider-facing Phase 6 code is added.
+The isolated VPS worktree validation completed against candidate `268332bac72295cc57e683524553fe8f915984cc`.
 
-### Production impact
+- pure import/provider boundary: PASS;
+- focused Phase 6 tests: 10/10 PASS;
+- complete inherited regression: 434 tests, 374 subtests, 0 failures, 0 errors, 0 skips;
+- compileall: PASS;
+- production remained `52f11d4fc14d8582c03837e0317f849efe8aa3d7`;
+- remote `main` remained `52f11d4fc14d8582c03837e0317f849efe8aa3d7`;
+- provider writes: 0;
+- production changes: 0.
 
-Zero. At this point Phase 6 exists only on `phase6/sales-autonomy-v1`; `main` and production remain at the Phase 5 baseline.
+This closes Gate B.
 
-### Next gate
+## 2026-09-28 — Gate C internal CRM action hardening
 
-Run the focused Phase 6 tests, complete inherited regression suite and compile checks in an isolated engineering worktree. If all pass, record exact counts and proceed to Gate C design for the existing Lead reconciler. Do not enable sales writes or drafts before that validation.
+### Decision-envelope hardening
+
+Commit `9a02c970c371b94e4ae74bba66582ed7a6f1b317` strengthened the pure Phase 6 decision contract before provider wiring:
+
+- existing future `Next_Followup_At` is preserved for any active Lead so repeated notifications do not continually shift the SLA;
+- `Service_Types` trusted fill is separated from AI hints and accepts only an exact bounded service value plus a reviewed non-AI evidence category (`explicit_customer_selection` or `validated_intake`);
+- the decision now records whether service type came from existing provider state or a trusted hint;
+- a full decision-envelope hash validator rejects tampered policy/version/decision fields.
+
+Commit `b517090750e42efed0e10e06727ac412d755631b` expanded pure decision tests for stable future follow-up, trusted-service separation and tamper rejection.
+
+### Existing Lead writer extended, not duplicated
+
+Commit `438a7573231511ec532fd71bd88f2d75606ed99f` extends `workflow/automation/providers/crm_leads.py` under the separate opt-in policy `phase6-sales-v1` while preserving legacy `phase5-lead-v1` behavior.
+
+Phase 6 automatic Lead writes are allowlisted to exactly:
+
+- `Normalized_Email`;
+- `Normalized_Phone`;
+- `Next_Followup_At`;
+- `Service_Types` only when empty and backed by the trusted non-AI decision source.
+
+Other properties:
+
+- the exact reviewed Lead version is required before any mutation;
+- writes keep `If-Unmodified-Since`, `trigger: []` and cadence suppression;
+- no conversion, owner reassignment, Account/Contact/Deal creation, customer communication or Books mutation is introduced;
+- reviewed events now carry a payload-safe hashed `SalesDecision` envelope;
+- audit metadata stores categories, timestamps and hashes, not normalized email/phone values;
+- future follow-up timestamps remain stable across self-induced/new notifications;
+- task generation identity is derived from policy + Lead + internal action + follow-up timestamp, avoiding duplicate tasks for repeated versions of the same schedule;
+- one exact task identity is searched/read back before creation.
+
+### Lost-response reconciliation without retry
+
+Phase 6 records a hash of the exact intended bounded Lead-field subset before the provider call. If the response is lost:
+
+- the operation is still recorded `manual`/human-required;
+- no second provider write is issued;
+- a later Lead event may close the ambiguity only when exact readback of those same fields hashes to the prior intended hash;
+- any mismatch remains human-required.
+
+Task creation follows the same no-blind-retry rule. A lost Task response is reconciled only by an exact deterministic subject + Lead linkage readback; absence/collision does not authorize a second POST.
+
+This improves recoverability without storing raw email/phone values in journal evidence.
+
+### Gate C tests prepared
+
+Commit `43b2eb3431aa1198762ec3849472a9184187cf4e` added focused fake-provider tests for:
+
+- normalization + `Next_Followup_At` + one internal Task;
+- stable follow-up/task identity across newer Lead versions;
+- accepted-but-response-lost Lead update reconciled by exact hash with no second PUT;
+- mismatch after a lost response remaining manual with no retry;
+- accepted-but-response-lost Task reconciled by deterministic identity with no second POST;
+- trusted empty `Service_Types` fill from a hashed reviewed decision;
+- tampered decision failing before provider writes;
+- converted Lead performing zero Phase 6 provider writes.
+
+Commit `b05cffd4a1920a744f872c3bb8b2a00c9b7ca1dd` versions the internal reconciliation workflow description for Phase 6. No provider workflow is modified by this source change.
+
+### Gate C validation state
+
+Gate C code is engineering-only on `phase6/sales-autonomy-v1`. It has not been deployed and `OPTIBRAIN_CRM_LEAD_WRITES` has not been changed in production. Focused Phase 6 tests, complete regression and compile checks must pass before any live/read-only Phase 6 provider validation or draft-lifecycle work begins.
