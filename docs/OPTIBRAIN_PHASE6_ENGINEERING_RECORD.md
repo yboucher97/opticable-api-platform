@@ -212,3 +212,88 @@ Provider contract reference: [Zoho Mail Save Draft / Template](https://www.zoho.
 - Logs: `/var/tmp/optibrain-phase6-validation/gate-d-focused.log`, `gate-d-compatibility.log`, `gate-d-full.log`.
 
 Gate D engineering is closed. No production policy was enabled, no deployment/reconciliation campaign was run, and no manual VPS validation is needed for this engineering result. Gate E (durable outbound approval envelope) and Gates F/G remain separate, unfinished release gates; automatic sends remain outside this draft workflow.
+
+## 2026-09-28 — Gate E durable outbound approval envelope — PASS
+
+### Exact engineering identities and scope
+
+- Last fully validated Gate D evidence: `0114b536699746b74854b24ed7c5fced2d3e0a5d`.
+- Existing WIP inspected and retained: ledger commit `0a25cbddc8c47fb12607c29ba18f871b15d70a0f`, consumption commit `d70a9248d1e18d6e448e1970152728210d389cae`.
+- Gate E hardened implementation and test candidate: **`c0109c043392830f8fbd53e097d2c7e2261616e9`**.
+- Engineering branch: `phase6/sales-autonomy-v1` only. The initially clean local checkout was fast-forwarded from Gate D evidence to the exact remote WIP before editing.
+- Gate E changes comprise `workflow/automation/outbound_approval.py`, `workflow/automation/providers/outbound_mail.py`, `workflow/automation/providers/lifecycle_mailbox.py`, `config/automation/workflows/customer-lifecycle-approved-email-reply.yaml`, `tests/test_phase6_outbound_approval.py`, and `tests/test_lifecycle_mailbox.py` under `apps/workflow-api/`, plus this engineering record. No schema migration, startup registration or issuance endpoint was added.
+
+### Envelope validation and human authority
+
+Issuance is an explicit library operation, never an automation action. The actor uses the bounded `human:<subject>` namespace; missing actors and machine/system/automation actors are rejected. **This string is not authentication**: Gate F must derive it from an authenticated, authorized human session, never from workflow/AI inputs. No approval issuance endpoint is production-exposed.
+
+The immutable envelope binds the approval ID, human actor, approved timestamp, expiry, action type, source type/ID/version, mailbox account, reply message ID where applicable, recipient, sender, subject hash, content hash and exact `phase6-sales-v1` policy. Model validation is repeated on consumption, not only at issuance.
+
+- IDs are validated at issuance, model loading and inspection; duplicate approval IDs cannot be issued again, including after consumption.
+- Approval timestamps and caller-supplied test clocks must be timezone-aware. Lifetime must be positive and at most 24 hours. Future-issued or expired approvals cannot send.
+- Lead source versions require strict timezone-bearing timestamps. `2026-09-28T18:00:00+00:00`, the corresponding `Z` form and equivalent offsets normalize to the same UTC instant. Naive timestamps and malformed offsets fail. Message/draft opaque revisions retain bounded exact identity; timestamp-shaped revisions must also validate as timestamps. Source IDs are not trimmed or broadly relaxed.
+- Sender must be a single address in `opticable.ca` or `opti-plex.ca`. Customer recipients cannot use those domains or their subdomains. Multiple addresses, header injection and malformed addresses are rejected. Email domains are canonicalized; local-part case is preserved.
+- Subject is bounded to 500 characters and content to 12,000. Subject control characters and unsafe body controls are rejected. Hashing and transmission preserve exact strings, including whitespace.
+- Reply requires a numeric message ID; new-email approvals forbid one. Gate E sends are plaintext only. Unknown fields, CC/BCC, attachments, scheduling, and boolean approval flags are rejected.
+- Approval audit evidence contains exact identity/address bindings and hashes, not raw subject/body text, credentials or provider error bodies. Provider request IDs are hashed before storage; provider message IDs must be numeric. Only bounded error categories are journaled.
+
+### Durable failure semantics
+
+The existing `automation_audit` table is the ledger. A dedicated file lock, canonicalized to the database path, serializes consumers across processes. Symlink/unsafe lock files are refused. State transitions require ownership of that lock and equality with the exact stored envelope; partial binding dictionaries and unchecked modified models cannot authorize consumption.
+
+Normal transition: `issued -> consuming -> consumed`. A known exception or unconfirmed provider acknowledgement becomes `manual`. `manual` and `consumed` are permanently non-reusable. A crash can leave `consuming`, which is also permanently unavailable to automatic consumption and requires human investigation.
+
+The consumer rereads the issued envelope, checks expiry and bindings, and commits `consuming` **before** any provider call. It rechecks the consuming envelope/expiry and disable policy before the POST. Disable before consumption leaves the approval issued; disable after the durable marker cancels the send and records manual. An already in-flight request cannot be recalled by changing policy.
+
+A failure to persist intent produces zero provider calls. Process exit after intent, process exit after provider acceptance, timeout, response loss, 4xx/5xx or unexpected status, malformed acknowledgement, and missing message ID never authorize a second automatic send. If finalization/manual journaling itself fails, the durable consuming marker remains a fence and the action still reports an unconfirmed outcome. There is no automatic reset/reissue/reconciliation operation.
+
+`lifecycle.mail_send_approved_v2` is deliberately not retry-safe; even a test workflow requesting five attempts produces at most one fake provider call. Its separate opt-in is `OPTIBRAIN_OUTBOUND_SENDS=phase6-sales-v1`; every other value returns observe before provider access.
+
+### Zoho provider contract and exposure
+
+Verified against official documentation, without any live provider request:
+
+- [Send an Email](https://www.zoho.com/mail/help/api/post-send-an-email.html): POST `/api/accounts/{accountId}/messages`.
+- [Send Reply to an Email](https://www.zoho.com/mail/help/api/post-reply-to-an-email.html): POST `/api/accounts/{accountId}/messages/{messageId}` with `action: reply`.
+
+The implementation builds these two paths and a fixed plaintext payload. No Books, CRM, conversion, Account/Contact/Deal, deletion, metadata, SMS or phone mutation occurs in this path. The current acknowledgement contract requires HTTP success, an explicit provider success status and `data.messageId`; generic IDs/partial responses remain manual. These request documentation checks do not establish a live acknowledgement-shape proof.
+
+**The new outbound action is registered only by explicit test setup.** The production startup source does not import/call its registration helper; no active shipped workflow references it. No issuance API/UI exists. No live email send occurred and no production outbound opt-in was configured.
+
+### Legacy boolean reply path — option B
+
+`customer.lifecycle.approved-email-reply` is now definition version 2, **disabled**, with one attempt. It is not migrated to the new action during Gate E.
+
+The legacy `lifecycle.mail_reply_approved` handler rejects execution by default, including an already-queued V1 definition with `approved_to_send=true` and two attempts. This prevents disabled workflow configuration from being bypassed by an old queued snapshot. Compatibility is retained only through an explicit code-level `allow_legacy_reply=True` hook; no runtime startup caller uses that hook. The inherited successful-reply test invokes it explicitly to prove preserved compatibility. Any eventual use outside tests requires separate reviewed authorization; it is unavailable in the Phase 6 release's default runtime.
+
+Tests also inspect all active shipped workflows and startup source for a legacy-send route or new outbound registration. The old boolean-only path cannot silently coexist as an active Phase 6 workflow.
+
+### Validation on exact candidate c0109c043392830f8fbd53e097d2c7e2261616e9
+
+| Suite | Tests | Subtests | Result |
+| --- | ---: | ---: | --- |
+| Gate E outbound approval | 55 | 75 | PASS |
+| Existing lifecycle mailbox | 3 | 0 | PASS |
+| Gate D sales drafts | 23 | 26 | PASS |
+| Gate C CRM actions | 12 | 5 | PASS |
+| Phase 6 sales decisions | 13 | 0 | PASS |
+| Complete inherited regression | **527** | **480** | **PASS** |
+
+All suites: **0 failures, 0 errors, 0 skips**. Compileall and `git diff --check`: PASS. Full-suite duration: 32.007 seconds. The previous 472-test / 405-subtest baseline is exceeded.
+
+Validation used temporary databases, fake providers, cleared inherited environment and blocked Python socket connections. It includes real child-process exit after the consuming marker and after fake-provider acceptance, plus two concurrent processes sharing the same approval database. Fake-provider calls are assertions only; **real provider writes = 0, customer sends = 0, Books mutations = 0, Lead conversions = 0**.
+
+Production, remote `main`, and the local/remote peeled Phase 5 recovery tag remain exactly `52f11d4fc14d8582c03837e0317f849efe8aa3d7`. Production environment, service, database and policy were not modified. Protected diagnostic SHA-256 remains `7b2a45b141ea8983e761fdc548e25690fe89bf15ee20b994be2bf4855f701000`. The root-owned production runbook remains root-owned and its SHA-256 remains `cdab559d264fb7a17c469fd10953827a98a24ac4a926939db1055522a6dfc085`.
+
+Logs are under `/var/tmp/optibrain-phase6-validation/`: `gate-e-test_phase6_outbound_approval.py.log`, `gate-e-test_lifecycle_mailbox.py.log`, `gate-e-test_phase6_sales_drafts.py.log`, `gate-e-test_phase6_crm_actions.py.log`, `gate-e-test_phase6_sales_decision.py.log`, and `gate-e-full.log`.
+
+### Remaining Gate F requirements; Gate E does not authorize them
+
+1. Build/review the human issuance and inspection UI/API with authentication, authorization, server-derived human actor, and explicit display of the exact source, sender, recipient, action, content and expiry. Do not expose issuance to automation or accept a claimed human actor from workflow inputs.
+2. Resolve and revalidate the authoritative source version, current recipient/contactability/opt-out, and current draft content at the integration boundary immediately before consumption. Gate E compares the supplied exact envelope; it does not independently hydrate a live Lead/message/draft. Plan handling of source drift and the unavoidable cross-provider timing gap.
+3. Verify mailbox identity, authorized sender alias, provider read scopes and the response contract using a separately reviewed live-safe plan. Request paths are documented; live acknowledgement shape remains unproven. No real customer send is part of default validation. Any send canary needs explicit human approval tied to its exact recipient/content/source.
+4. Review any new action registration, one-attempt workflow routing and issuance exposure separately. Preserve the disabled legacy path, audit existing queued/custom workflow definitions read-only before promotion, and prove they cannot restore a boolean-only bypass. Leave outbound policy disabled until its specific enablement gate is approved.
+5. Carry forward Gate D's unresolved live prerequisites: reviewed language classification, explicit draft mailbox configuration, and validated Internet Message-ID availability for message-bound replies. Preserve no-blind-retry investigation of manual/consuming operations, without resets or automatic resends.
+6. Perform the contract's live read-only validation and approved internal smoke/canary work, then the distinct Gate G backup, restored recovery, off-host verification, protected-file and promotion gates. Gate E supplies no production deployment or main-promotion authorization.
+
+Gate E engineering is complete. No manual VPS command is required for this completed fake-provider validation.
