@@ -186,6 +186,23 @@ class CampaignFailureTests(unittest.TestCase):
         self.assertEqual(result["production_database_version"], 1)
         self.assertEqual(self.starts(), [])
 
+    def test_before_stop_unknown_db_requires_review_without_restart(self):
+        self.driver.reporting_failure = True
+        result = self.run_failure("pre-stop-health")
+        self.assertEqual(result["production_database_version"], "unknown")
+        self.assertTrue(result["manual_recovery_required"])
+        self.assertEqual(result["recovery_category"], "before_service_stop_unverified_manual_review")
+        self.assertFalse(result["production_service_stop_attempted"])
+        self.assertEqual(self.starts(), [])
+
+    def test_before_stop_already_inactive_service_requires_review_without_restart(self):
+        self.driver.service = "inactive"
+        result = self.run_failure("pre-stop-health")
+        self.assertFalse(result["production_service_active"])
+        self.assertTrue(result["manual_recovery_required"])
+        self.assertFalse(result["production_service_stop_attempted"])
+        self.assertEqual(self.starts(), [])
+
     def test_failure_after_stop_recovers_proven_baseline_v1(self):
         result = self.run_failure("inspect-stopped-production")
         self.assertEqual(len(self.starts()), 1)

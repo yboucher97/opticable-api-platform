@@ -249,7 +249,13 @@ class Campaign:
     def recover_baseline(self, result: dict, database: dict | None) -> None:
         """The only automatic recovery: proven unchanged baseline code and V1."""
         if not result["production_service_stop_attempted"]:
-            result.update(recovery_category="before_service_stop_no_recovery", manual_recovery_required=False)
+            baseline_observed = (result["production_git_sha"] == BASELINE
+                                 and result["production_git_status"] == EXPECTED_STATUS
+                                 and result["production_database_version"] == 1
+                                 and result["production_service_active"] is True)
+            result.update(recovery_category="before_service_stop_no_recovery" if baseline_observed
+                          else "before_service_stop_unverified_manual_review",
+                          manual_recovery_required=not baseline_observed)
             return
         result["manual_recovery_required"] = True
         if result["production_migration_completed"] is True:

@@ -30,10 +30,10 @@ is the release manifest, generated after the final commit to avoid a self-refere
 commit hash. A local copy is `release-evidence.json` in the private evidence
 directory. Resolve with `git rev-parse <tag>^{}` and inspect with `git show <tag>`.
 The first and V2 candidate tags remain preserved. The new annotated tag
-`recovery/phase4-candidate-v3-20260928` supersedes V2 after the privileged-campaign
-hardening below. Its annotation records the new exact SHA, cumulative binary
+`recovery/phase4-candidate-v4-20260928` supersedes V2 and the preserved intermediate
+V3 tag after the privileged-campaign hardening below. Its annotation records the new exact SHA, cumulative binary
 diff SHA-256 and executed validation results; its separate manifest is
-`hardening-v3/release-evidence.json`. No existing commit or tag was rewritten.
+`hardening-v4/release-evidence.json`. No existing commit or tag was rewritten.
 No development candidate was deployed. Databases from the
 superseded candidate are not an upgrade source for this release: the final
 production path starts with the immutable Phase 3 V1 database and validates
@@ -345,6 +345,11 @@ intact. No privileged campaign was executed during this hardening pass.
 ### Automatic recovery boundary
 
 Before a stop attempt, the handler only observes and leaves production alone.
+It reports no recovery required only when baseline checkout, clean status, V1
+and an active service are actually observed. An already inactive or incompatible
+production state, or unknown inspection, requires manual review without any
+automatic stop/start. This last evidence refinement supersedes the intermediate
+V3 tag; that tag and its tested bundle remain preserved.
 After a stop attempt, automatic baseline startup requires proof of all of:
 original service active; HEAD exactly the immutable Phase 3 baseline; unchanged
 tracked checkout with only the protected untracked diagnostic; intact V1 DB;
@@ -493,6 +498,40 @@ root-owned master runbook remains SHA-256
 `cdab559d264fb7a17c469fd10953827a98a24ac4a926939db1055522a6dfc085`,
 root:root, mode 0644, mtime 1790525656. No actual privileged campaign, stop,
 migration, service restart or main promotion was performed during this pass.
+
+### Final V4 evidence refinement and revalidation
+
+The final audit tightened before-stop reporting: production remains untouched,
+but an already inactive service or uninspectable/incompatible baseline now
+requires manual review. Only actually observed baseline/V1/active/clean state
+reports no recovery required. Two new fake-state tests cover those windows.
+The intermediate V3 commit/tag/bundle remain preserved; the V3 cold bundle
+passed 283 tests + 231 subtests and its isolated restart/migration drill passed.
+
+The same complete revalidation was repeated after this refinement, with isolated
+output roots and logs under `hardening-v4`:
+
+| Scope | Final exact result |
+|---|---|
+| Campaign failure windows | **33 tests + 24 subtests**, passed (4.185s). |
+| Phase 4 operations | **11 tests + 9 subtests**, passed (5.812s). |
+| All Phase 4 | **146 tests + 132 subtests**, passed (15.971s). |
+| Migration / ledger / WAL | **55 tests + 10 subtests**, passed (5.773s). |
+| Execution controls | **28 tests + 9 subtests**, passed (3.649s). |
+| Zoho safety | **8 tests**, passed (0.166s). |
+| Inspection boundaries | **6 tests + 36 subtests**, passed (0.947s). |
+| Entire workflow API | **285 tests + 231 subtests**, passed (22.671s). |
+| Existing helper tests | **37 tests**, passed (1.964s). |
+| Existing backup tests | **11 tests**, passed (0.090s). |
+
+Every result has zero failures, errors and skips. Relative to the reviewed V2
+candidate, the final hardening adds **39 test methods and 32 subtests**.
+The repeated V1 → V2 / restart / rollback-snapshot / V2-backup-restore / ambiguity
+drill passed, port 52137, run `dc8f29f7f58841eaa66a37d0a370fccd`, event
+`359a3f6ae06943a29d67257d0e142c74`. Source fixture and legacy rows were preserved;
+the ambiguous handler still dispatched exactly once and replay remained denied.
+All tests and drills used mocks or disposable databases/ports. Production gates
+remain unexecuted, and deployment remains explicitly withheld.
 
 Recovery tags created only after applicable production verification:
 
