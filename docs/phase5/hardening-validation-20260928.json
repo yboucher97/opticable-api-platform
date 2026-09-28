@@ -1,0 +1,193 @@
+{
+  "admin_security_recovery_suite": {
+    "log_sha256": "1ca4ef8e50b6331f8e7efe09138d33873c4b5cf5ca12ad0f883da4c02fcc8991",
+    "result": "PASS",
+    "tests": 37
+  },
+  "backup_offhost_python_suite": {
+    "log_sha256": "472b77ce39d1431f129aa4d2a351e7956a2b6d57c32443480677b80c61123dba",
+    "result": "PASS",
+    "tests": 11
+  },
+  "backup_shell": {
+    "log_sha256": "be8d11852c802d4bdd8444e0056a611a8ebd6f52c3d0544df258d98aa67abe6d",
+    "result": "PASS",
+    "scope": "Unprivileged ownership variant; production root variant pending."
+  },
+  "baseline": "209aac07160e1376381faebd86fb38a18f92582a",
+  "books_mutations_during_hardening": 0,
+  "branch": "hardening/phase5-business-autonomy-v1",
+  "bucket_listing_shell": {
+    "log_sha256": "5e4a32470225566769cf92aeace556a280d42710865b989fccd650276843e9a5",
+    "result": "PASS"
+  },
+  "candidate_tag": "recovery/phase5-business-autonomy-v1-candidate-hardening-20260928",
+  "cold_git_bundle_restoration": {
+    "bundle_sha256": "d96bd7787769295b8b73b884d79848b58bc2f0c854c9380c62ca0c7307138292",
+    "final_release_bundle": "Final candidate/tag bundle verification is recorded in the release evidence beside the pinned candidate manifest.",
+    "prerequisites": 0,
+    "restored_implementation_commit": "0ce2612f6b3d227100865762bd7cce9e567bf550",
+    "result": "PASS"
+  },
+  "cold_workflow_suite": {
+    "errors": 0,
+    "failures": 0,
+    "log_sha256": "dc935de7205b355a245dd0a1cda307cd55bcffd5265ca3787ad5ac6133532906",
+    "passed": true,
+    "result": "PASS",
+    "skipped": 0,
+    "subtests": 374,
+    "tests": 419
+  },
+  "compileall": "PASS",
+  "credential_pattern_scan": {
+    "changed_files": 46,
+    "findings": 0
+  },
+  "existing_active_workflows": [
+    "5062683000006639142",
+    "5062683000006841055",
+    "5062683000007022006"
+  ],
+  "git_diff_check": "PASS",
+  "implementation_commit": "0ce2612f6b3d227100865762bd7cce9e567bf550",
+  "independent_self_review": {
+    "method": "Separate requirements/security/failure-state review pass and cold-restored suite, without claiming independent human approval.",
+    "result": "PASS"
+  },
+  "isolated_restored_v2_fixture_drill": {
+    "ambiguous_external_attempts": 1,
+    "ambiguous_replay_denied": "PASS",
+    "api_restart": "PASS",
+    "api_startup": "PASS",
+    "backup_restore": "PASS",
+    "candidate_version": 2,
+    "dedupe_after_restart": "PASS",
+    "event_id": "06853dc43c614a4281c90cb5e0247598",
+    "legacy_evidence_preserved": true,
+    "migration_performed": false,
+    "result": "PASS",
+    "run_id": "a50109c05aad49549cee7d6e3bc9e5b0",
+    "safe_smoke": "PASS",
+    "source_unchanged": true,
+    "source_version": 2,
+    "temporary_port": 42961,
+    "worker_restart": "PASS"
+  },
+  "limits": [
+    "Backup shell root ownership variant is pending actual root gates.",
+    "Offline off-host decrypt/restore requires the existing external private key; encrypted download-hash verification remains the deployment gate."
+  ],
+  "live_crm_mutations_during_hardening": 0,
+  "live_optional_lead_fields": {
+    "changes": [
+      {
+        "action": "noop",
+        "adapter": "zoho_crm.field.v1",
+        "current": {
+          "api_name": "Service_Types",
+          "data_type": "text",
+          "field_label": "Service Types",
+          "id": "5062683000007833001",
+          "length": 255
+        },
+        "dependencies": [],
+        "desired": {
+          "api_name": "Service_Types",
+          "data_type": "text",
+          "field_label": "Service Types",
+          "length": 255
+        },
+        "kind": "field",
+        "name": "Service Types",
+        "provider": "zoho_crm",
+        "reason": "CRM field matches desired state.",
+        "requires_confirmation": false,
+        "resource_id": "crm.field.leads.service_types",
+        "risk": "low"
+      },
+      {
+        "action": "noop",
+        "adapter": "zoho_crm.field.v1",
+        "current": {
+          "api_name": "Next_Followup_At",
+          "data_type": "datetime",
+          "field_label": "Next Followup At",
+          "id": "5062683000007832003"
+        },
+        "dependencies": [],
+        "desired": {
+          "api_name": "Next_Followup_At",
+          "data_type": "datetime",
+          "field_label": "Next Followup At"
+        },
+        "kind": "field",
+        "name": "Next Followup At",
+        "provider": "zoho_crm",
+        "reason": "CRM field matches desired state.",
+        "requires_confirmation": false,
+        "resource_id": "crm.field.leads.next_followup_at",
+        "risk": "low"
+      }
+    ],
+    "document_hash": "77b5b8354f2d71fb5ccb485cba2dae89ac112cbfce0326836e7b0e3f6b7ad669",
+    "document_name": "opticable-lead-additions",
+    "document_version": 1,
+    "plan_hash": "71040e826d661c7e7f5f9bed85876eed09e4f314a32fabcdd1d9af1d85ce2778",
+    "summary": {
+      "noop": 2
+    }
+  },
+  "main_promotion": "All production/recovery gates before guarded atomic normal fast-forward push; main readback before post-tag; final candidate/production/main/tag equality required",
+  "offhost_shell": {
+    "log_sha256": "4b003cd710056997618a9347326df5d874ea8ad00dd4b0fd18b2dd8ad7de2e02",
+    "result": "PASS"
+  },
+  "origin_main_sha": "209aac07160e1376381faebd86fb38a18f92582a",
+  "phase5_suite": {
+    "errors": 0,
+    "failures": 0,
+    "log_sha256": "e3ccfeeb75fd447653838ace6ba8f02acbd98b62f73990f822f59be19433b747",
+    "passed": true,
+    "result": "PASS",
+    "skipped": 0,
+    "subtests": 70,
+    "tests": 94
+  },
+  "preserved_unassociated_legacy_hooks": [
+    "5062683000000410523",
+    "5062683000000554026"
+  ],
+  "previous_candidate": "5a3364d74510786de56f30731e47f3c2546c0331",
+  "production_api_version": "1.9.0",
+  "production_pending": [
+    "human root deployment",
+    "actual restored production V2 pre/post drills",
+    "fresh production backups/restores",
+    "native subscription and authenticated public intake/delta proof",
+    "encrypted offhost download-hash generation verification",
+    "final authenticated health and protected sources",
+    "guarded main promotion and post-Phase-5 recovery tag"
+  ],
+  "production_sha": "209aac07160e1376381faebd86fb38a18f92582a",
+  "protected_diagnostic_sha256": "7b2a45b141ea8983e761fdc548e25690fe89bf15ee20b994be2bf4855f701000",
+  "provider_origin_delivery": "durable pending -> verified, synthetic intents excluded before HTTP; pending does not fail deployment",
+  "r2_health_shell": {
+    "log_sha256": "3bc35003d7e977b8e8980f27523c6d6c70492f4414a76b8d08aedb7f5f836354",
+    "result": "PASS"
+  },
+  "release_identity": "Exact final candidate and cumulative binary diff SHA256 are in the annotated candidate tag manifest.",
+  "renewal": "300-second independent worker, exact reviewed channel/refs/events only, <=24h due, +6d expiry; durable intent/one PATCH/exact readback/manual ambiguity; delta independent",
+  "root_runbook_sha256": "cdab559d264fb7a17c469fd10953827a98a24ac4a926939db1055522a6dfc085",
+  "status": "ENGINEERING_PASS_PRODUCTION_NOT_DEPLOYED",
+  "workflow_suite": {
+    "errors": 0,
+    "failures": 0,
+    "log_sha256": "e41658ff68ff46893369640e01cfbd887a642e2718f6bdfe4fbb627a5027d050",
+    "passed": true,
+    "result": "PASS",
+    "skipped": 0,
+    "subtests": 374,
+    "tests": 419
+  }
+}
