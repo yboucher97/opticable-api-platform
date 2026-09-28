@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import hmac
 import threading
 import time
 from contextlib import asynccontextmanager
@@ -46,6 +47,10 @@ from .automation import (
 from .automation.capabilities import capability_summary, load_capabilities
 from .automation.health_monitor import AutomationHealthMonitor
 from .automation.maintenance import AutomationMaintenance
+from .automation.events import EventLedger
+from .automation.sync_runtime import DeltaWorker, initialize_jobs
+from .automation.event_api import install_event_routes
+from .automation.event_body_limit import EventBodyLimit
 from .automation.models import EventIngestResponse
 from .automation.providers.google import register_google_actions
 from .automation.providers.zoho import register_zoho_actions
@@ -69,11 +74,12 @@ automation_engine = AutomationEngine(
     settings.automation.workflows_dir,
     max_event_depth=settings.automation.max_event_depth,
 )
-automation_health_monitor = AutomationHealthMonitor(automation_store)
+automation_health_monitor = AutomationHealthMonitor(automation_store, sync_health=lambda: delta_sync_worker.health())
 desired_state_registry = DesiredStateRegistry()
 desired_state_controller = DesiredStateController(desired_state_registry)
 google_oauth_manager = GoogleOAuthManager(settings.google_oauth)
 google_api_client = GoogleApiClient(google_oauth_manager)
+delta_sync_worker = DeltaWorker(automation_store, google_oauth_manager.access_token)
 zoho_gateway_client = ZohoGatewayClient(settings.zoho_gateway, ZohoOAuthManager(settings.zoho_oauth))
 windsor_api_client = WindsorApiClient(settings.windsor)
 ovh_api_client = OvhApiClient(settings.ovh)
@@ -92,7 +98,7 @@ register_lifecycle_actions(automation_engine, zoho_gateway_client, automation_st
 register_lifecycle_extended_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_phase2_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_mailbox_actions(automation_engine, zoho_gateway_client, automation_store)
-API_VERSION = "1.8.0"
+API_VERSION = "1.9.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
 PRIMARY_JOB_STATUS_PATH = "/v1/site-and-password/jobs/{job_id}"
@@ -610,6 +616,8 @@ async def lifespan(app: FastAPI):
 
         try:
             loaded_workflows = automation_engine.sync_definitions()
+            sync_jobs = initialize_jobs(automation_store)
+            delta_sync_worker.start(sync_jobs)
             logger.info(
                 "Automation kernel loaded %d workflow definition(s): %s",
                 len(loaded_workflows),
@@ -687,6 +695,7 @@ async def lifespan(app: FastAPI):
                             actor="automation-maintenance",
                             reason="Automatic bounded terminal claim retention cleanup",
                         )
+                        EventLedger(automation_store).cleanup()
                         if cleanup["deleted_claims"]:
                             logger.info(
                                 "Automation maintenance removed %d old terminal claim(s)",
@@ -777,6 +786,7 @@ async def lifespan(app: FastAPI):
         recovery_stop.set()
         if recovery_thread is not None:
             recovery_thread.join(timeout=5)
+        delta_sync_worker.stop()
         if health_thread is not None:
             health_thread.join(timeout=5)
         if settings.automation.enabled:
@@ -812,7 +822,7 @@ app = FastAPI(
 
 def _validate_api_key(provided_api_key: str | None) -> None:
     expected_api_key = os.getenv(settings.api.api_key_env)
-    if expected_api_key and provided_api_key != expected_api_key:
+    if expected_api_key and (provided_api_key is None or not hmac.compare_digest(provided_api_key.encode(), expected_api_key.encode())):
         raise HTTPException(status_code=401, detail="Invalid X-API-Key")
 
 
@@ -822,6 +832,11 @@ def _validate_inspection_api_key(provided_api_key: str | None) -> None:
     if not expected_api_key or not expected_api_key.strip():
         raise HTTPException(status_code=503, detail="Inspection authentication is unavailable.")
     _validate_api_key(provided_api_key)
+
+
+app.add_middleware(EventBodyLimit)
+install_event_routes(app, lambda: automation_store, _validate_inspection_api_key, lambda: settings.automation.enabled,
+                     delta_sync_worker.health)
 
 
 def _validate_browser_or_header_api_key(
@@ -1195,7 +1210,7 @@ async def automation_ingest_event(
     event: AutomationEvent,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> EventIngestResponse:
-    _validate_api_key(x_api_key)
+    _validate_inspection_api_key(x_api_key)
     if not settings.automation.enabled:
         raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
     try:

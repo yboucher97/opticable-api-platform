@@ -1,0 +1,33 @@
+# Copy to a private operator-managed path and set OPTIBRAIN_WEBHOOK_CONFIG.
+# Secret values belong in the service environment, never in this file or Git.
+github-opticable:
+  provider: github
+  source_account: yboucher97
+  resource_id: "REPLACE_WITH_NUMERIC_REPOSITORY_ID"
+  secret_env: OPTIBRAIN_GITHUB_WEBHOOK_SECRET
+  allowed_event_types: [github.push, github.pull_request, github.issues, github.ping]
+  enabled: false
+zoho-crm:
+  provider: zoho_crm
+  source_account: REPLACE_WITH_ZOHO_ORG_ID
+  secret_env: OPTIBRAIN_ZOHO_CRM_NOTIFICATION_TOKEN
+  channel_id: REPLACE_WITH_CHANNEL_ID
+  expires_at: "2099-01-01T00:00:00Z" # Replace with actual registered channel expiry.
+  allowed_event_types: [zoho.crm.Leads.insert, zoho.crm.Leads.update, zoho.crm.Leads.delete]
+  enabled: false
+calendar-opticable:
+  provider: google_calendar
+  source_account: REPLACE_WITH_AUTHORIZED_GOOGLE_PRINCIPAL
+  secret_env: OPTIBRAIN_CALENDAR_CHANNEL_TOKEN
+  channel_id: REPLACE_WITH_CHANNEL_ID
+  resource_id: REPLACE_WITH_WATCH_RESOURCE_ID
+  sync_stream: REPLACE_WITH_CALENDAR_ID
+  expires_at: "2099-01-01T00:00:00Z" # Replace with actual registered watch expiry.
+  allowed_event_types: [google.calendar.notification]
+  enabled: false
+cloudflare-opticable:
+  provider: cloudflare
+  source_account: REPLACE_WITH_CLOUDFLARE_ACCOUNT_ID
+  secret_env: OPTIBRAIN_CLOUDFLARE_WEBHOOK_SECRET
+  allowed_event_types: [cloudflare.notification]
+  enabled: false

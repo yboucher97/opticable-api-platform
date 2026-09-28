@@ -1,0 +1,24 @@
+# Explicit initial cursors establish the requested starting point.
+# Copy to an operator-managed file and set OPTIBRAIN_SYNC_CONFIG.
+# Incremental jobs never perform implicit backfill or resource discovery.
+- provider: google.calendar
+  source_account: REPLACE_WITH_AUTHORIZED_GOOGLE_PRINCIPAL
+  stream: REPLACE_WITH_CALENDAR_ID
+  initial_cursor: REPLACE_WITH_EXISTING_SYNC_TOKEN
+  poll_interval_seconds: 3600
+  page_limit: 100
+  enabled: false
+- provider: google.drive
+  source_account: REPLACE_WITH_AUTHORIZED_GOOGLE_PRINCIPAL
+  stream: my-drive
+  initial_cursor: REPLACE_WITH_EXISTING_START_PAGE_TOKEN
+  poll_interval_seconds: 3600
+  page_limit: 100
+  enabled: false
+- provider: google.gmail
+  source_account: REPLACE_WITH_AUTHORIZED_GOOGLE_PRINCIPAL
+  stream: mailbox
+  initial_cursor: REPLACE_WITH_EXISTING_HISTORY_ID
+  poll_interval_seconds: 3600
+  page_limit: 100
+  enabled: false
