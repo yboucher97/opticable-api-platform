@@ -10,6 +10,8 @@ from ...zoho_gateway import ZohoGatewayClient
 from ..engine import AutomationEngine
 from ..models import WorkflowStep
 from ..store import AutomationStore
+from .mail_drafts import save_mail_draft
+from .sales_drafts import register_sales_draft_action
 
 
 _JSON_FENCE_RE = re.compile(r"^\s*```(?:json)?\s*|\s*```\s*$", re.IGNORECASE)
@@ -481,12 +483,7 @@ def register_lifecycle_extended_actions(
         if internet_message_id:
             payload["inReplyTo"] = internet_message_id
 
-        response = client.request(
-            "mail", "POST", f"/api/accounts/{account_id}/messages",
-            body=payload,
-            reason="Customer lifecycle: save AI-prepared reply as Zoho Mail draft",
-            confirm=True,
-        )
+        response = save_mail_draft(client, account_id, payload)
         event = context.get("event") or {}
         store.audit(
             category="customer_lifecycle",
@@ -542,4 +539,5 @@ def register_lifecycle_extended_actions(
     engine.register_action("lifecycle.crm_resolve_email_party", resolve_email_party)
     engine.register_action("lifecycle.analyze_email", analyze_email)
     engine.register_action("lifecycle.mail_save_draft", save_email_draft)
+    register_sales_draft_action(engine, client, store)
     engine.register_action("lifecycle.crm_create_meeting", create_meeting)

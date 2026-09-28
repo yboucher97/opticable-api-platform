@@ -1,0 +1,12 @@
+id: opticable.sales-draft
+name: Opticable reviewed sales draft
+version: 1
+enabled: true
+description: Observe unless OPTIBRAIN_SALES_DRAFTS explicitly selects phase6-sales-v1. Exact reviewed Lead version, bounded language, durable draft dedupe. Never sends.
+trigger:
+  event_types: [opticable.crm.lead.reviewed]
+  sources: [crm-lead-observer]
+steps:
+  - id: draft
+    action: lifecycle.sales_draft
+    retry: {max_attempts: 1, backoff_seconds: 0}
