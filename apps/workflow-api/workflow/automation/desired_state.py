@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from contextlib import ExitStack
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from .event_schema import digest
+from .desired_journal import DesiredJournal, resource_key
+from .crm_inventory import normalize
 
 
 class DesiredResource(BaseModel):
@@ -33,12 +38,12 @@ class DesiredResource(BaseModel):
 class DesiredStateDocument(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    api_version: str = "opticable.io/v1alpha1"
-    kind: str = "DesiredState"
+    api_version: Literal["opticable.io/v1alpha1"] = "opticable.io/v1alpha1"
+    kind: Literal["DesiredState"] = "DesiredState"
     name: str = Field(min_length=1, max_length=200)
     version: int = Field(default=1, ge=1)
     description: str | None = None
-    resources: list[DesiredResource] = Field(default_factory=list)
+    resources: list[DesiredResource] = Field(default_factory=list, max_length=200)
 
     @field_validator("resources")
     @classmethod
@@ -76,6 +81,8 @@ class DesiredPlan(BaseModel):
 
     document_name: str
     document_version: int
+    document_hash: str
+    plan_hash: str = ""
     changes: list[DesiredChange]
     summary: dict[str, int]
 
@@ -136,8 +143,9 @@ class DesiredStateRegistry:
 
 
 class DesiredStateController:
-    def __init__(self, registry: DesiredStateRegistry) -> None:
+    def __init__(self, registry: DesiredStateRegistry, store=None) -> None:
         self.registry = registry
+        self.journal = DesiredJournal(store)
 
     @staticmethod
     def load(path: Path) -> DesiredStateDocument:
@@ -145,6 +153,30 @@ class DesiredStateController:
         return DesiredStateDocument.model_validate(raw)
 
     def plan(self, document: DesiredStateDocument) -> DesiredPlan:
+        with ExitStack() as stack:
+            adapters = {id(a): a for a in self.registry._adapters.values()}
+            for adapter in adapters.values():
+                if hasattr(adapter, "plan_context"):
+                    stack.enter_context(adapter.plan_context())
+            return self._plan(document)
+
+    @classmethod
+    def validate_document(cls, document: DesiredStateDocument, *, require_dependencies: bool = True) -> str:
+        raw = document.model_dump(mode="json")
+        if len(str(raw)) > 1_048_576 or normalize(raw) != raw:
+            raise ValueError("Desired-state document contains secret/URL material or exceeds bounds; use environment references")
+        keys = [resource_key(r) for r in document.resources if r.enabled]
+        if len(keys) != len(set(keys)):
+            raise ValueError("Duplicate provider resource identities")
+        enabled = {r.id for r in document.resources if r.enabled}
+        if require_dependencies and any(set(r.depends_on) - enabled for r in document.resources if r.enabled):
+            raise ValueError("Missing enabled dependency")
+        cls._dependency_order(document, [DesiredChange(resource_id=r.id, provider=r.provider,
+            kind=r.kind, name=r.name, action="noop", reason="validation") for r in document.resources if r.enabled])
+        return digest(raw)
+
+    def _plan(self, document: DesiredStateDocument) -> DesiredPlan:
+        self.validate_document(document, require_dependencies=False)
         changes: list[DesiredChange] = []
         enabled_ids = {r.id for r in document.resources if r.enabled}
 
@@ -188,7 +220,14 @@ class DesiredStateController:
                 )
                 continue
 
-            change = adapter.plan(resource)
+            try:
+                change = adapter.plan(resource)
+            except Exception as exc:
+                change = DesiredChange(resource_id=resource.id, provider=resource.provider, kind=resource.kind,
+                                       name=resource.name, action="blocked", reason="Provider read failed: " + type(exc).__name__,
+                                       risk="high")
+            change.current = normalize(change.current)
+            change.desired = normalize(change.desired)
             change.adapter = getattr(adapter, "name", adapter.__class__.__name__)
             change.dependencies = resource.depends_on
             changes.append(change)
@@ -198,131 +237,88 @@ class DesiredStateController:
         for change in ordered:
             counts[change.action] = counts.get(change.action, 0) + 1
 
-        return DesiredPlan(
+        plan = DesiredPlan(
             document_name=document.name,
             document_version=document.version,
+            document_hash=digest(document.model_dump(mode="json")),
             changes=ordered,
             summary=counts,
         )
+        plan.plan_hash = digest(plan.model_dump(exclude={"plan_hash"}, mode="json"))
+        return plan
 
     def apply(
-        self,
-        document: DesiredStateDocument,
-        plan: DesiredPlan,
-        *,
-        allow_destructive: bool = False,
-        allow_high_risk: bool = False,
+        self, document: DesiredStateDocument, plan: DesiredPlan, *,
+        allow_destructive: bool = False, allow_high_risk: bool = False,
+        low_risk_additive_only: bool = False, actor: str = "controller",
     ) -> list[DesiredApplyResult]:
-        resources = {resource.id: resource for resource in document.resources}
-        results: list[DesiredApplyResult] = []
-        failed: set[str] = set()
-
-        for change in plan.changes:
-            resource = resources.get(change.resource_id)
-            if resource is None:
-                results.append(
-                    DesiredApplyResult(
-                        resource_id=change.resource_id,
-                        action=change.action,
-                        status="failed",
-                        changed=False,
-                        error="Resource is absent from the desired-state document.",
-                    )
-                )
-                failed.add(change.resource_id)
-                continue
-
-            if any(dep in failed for dep in change.dependencies):
-                results.append(
-                    DesiredApplyResult(
-                        resource_id=change.resource_id,
-                        action=change.action,
-                        status="blocked",
-                        changed=False,
-                        error="A dependency failed earlier in the apply.",
-                    )
-                )
-                failed.add(change.resource_id)
-                continue
-
-            if change.action == "noop":
-                results.append(
-                    DesiredApplyResult(
-                        resource_id=change.resource_id,
-                        action="noop",
-                        status="completed",
-                        changed=False,
-                    )
-                )
-                continue
-
-            if change.action in {"manual", "blocked"}:
-                results.append(
-                    DesiredApplyResult(
-                        resource_id=change.resource_id,
-                        action=change.action,
-                        status=change.action,
-                        changed=False,
-                        error=change.reason if change.action == "blocked" else None,
-                    )
-                )
-                if change.action == "blocked":
-                    failed.add(change.resource_id)
-                continue
-
-            if change.risk == "destructive" and not allow_destructive:
-                results.append(
-                    DesiredApplyResult(
-                        resource_id=change.resource_id,
-                        action=change.action,
-                        status="blocked",
-                        changed=False,
-                        error="Destructive change requires allow_destructive=true.",
-                    )
-                )
-                failed.add(change.resource_id)
-                continue
-
-            if change.risk == "high" and not allow_high_risk:
-                results.append(
-                    DesiredApplyResult(
-                        resource_id=change.resource_id,
-                        action=change.action,
-                        status="blocked",
-                        changed=False,
-                        error="High-risk change requires allow_high_risk=true.",
-                    )
-                )
-                failed.add(change.resource_id)
-                continue
-
-            adapter = self.registry.resolve(resource)
-            if adapter is None:
-                results.append(
-                    DesiredApplyResult(
-                        resource_id=change.resource_id,
-                        action=change.action,
-                        status="manual",
-                        changed=False,
-                    )
-                )
-                continue
-
-            try:
-                result = adapter.apply(resource, change)
-            except Exception as exc:
-                result = DesiredApplyResult(
-                    resource_id=change.resource_id,
-                    action=change.action,
-                    status="failed",
-                    changed=False,
-                    error=str(exc),
-                )
-            results.append(result)
-            if result.status != "completed":
-                failed.add(change.resource_id)
-
-        return results
+        if plan.plan_hash != digest(plan.model_dump(exclude={"plan_hash"}, mode="json")):
+            raise ValueError("Invalid plan digest")
+        if plan.document_hash != digest(document.model_dump(mode="json")):
+            raise ValueError("Desired document changed since planning")
+        with self.journal.lock():
+            fresh = self.plan(document)
+            if fresh.plan_hash != plan.plan_hash:
+                raise ValueError("Stale plan: provider state changed")
+            resources = {r.id: r for r in document.resources if r.enabled}
+            results, failed = [], set()
+            for change in fresh.changes:
+                resource = resources[change.resource_id]
+                key = resource_key(resource)
+                error = None
+                status = "completed"
+                if self.journal.unresolved(key):
+                    status, error = "manual", "Previous provider operation unresolved; human reconciliation required"
+                elif any(dep in failed for dep in change.dependencies):
+                    status, error = "blocked", "A dependency did not complete"
+                elif change.action in {"manual", "blocked"}:
+                    status, error = change.action, change.reason
+                elif change.risk == "destructive" and not allow_destructive:
+                    status, error = "blocked", "Destructive change requires explicit human approval"
+                elif change.risk == "high" and not allow_high_risk:
+                    status, error = "blocked", "High-risk change requires explicit human approval"
+                elif low_risk_additive_only and change.action != "noop" and (change.action != "create" or change.risk != "low"):
+                    status, error = "blocked", "API applies only additive low-risk resources"
+                if error or change.action == "noop":
+                    result = DesiredApplyResult(resource_id=resource.id, action=change.action,
+                                                status=status, changed=False, error=error)
+                else:
+                    adapter = self.registry.resolve(resource)
+                    # Re-read immediately before each mutation, including identity.
+                    again = adapter.plan(resource)
+                    again.adapter, again.dependencies = change.adapter, change.dependencies
+                    if digest(again.model_dump()) != digest(change.model_dump()):
+                        raise ValueError("Stale plan: resource drift immediately before write")
+                    evidence = {"document_name": document.name, "document_version": document.version,
+                                "document_hash": plan.document_hash, "plan_hash": plan.plan_hash,
+                                "resource_id": resource.id, "provider": resource.provider, "kind": resource.kind,
+                                "before_hash": digest(change.current), "desired_hash": digest(change.desired),
+                                "action": change.action, "risk": change.risk}
+                    # This durable intent is committed BEFORE the network call. A
+                    # crash leaves manual evidence even if the provider accepted it.
+                    self.journal.record("started", key, evidence, actor)
+                    try:
+                        result = adapter.apply(resource, change)
+                        if result.status == "completed":
+                            verified = adapter.plan(resource)
+                            if verified.action != "noop":
+                                result = DesiredApplyResult(resource_id=resource.id, action=change.action,
+                                    status="manual", changed=result.changed, result=result.result,
+                                    error="Post-apply verification failed; human reconciliation required")
+                    except Exception as exc:
+                        result = DesiredApplyResult(resource_id=resource.id, action=change.action,
+                            status="manual", changed=False, error="Provider outcome requires reconciliation: " + type(exc).__name__)
+                    result.result = normalize(result.result)
+                    result.error = normalize(result.error)
+                    evidence.update(result=result.model_dump(mode="json"), verification=result.status == "completed")
+                    self.journal.record("verified" if result.status == "completed" else "manual", key, evidence, actor)
+                results.append(result)
+                if result.status != "completed":
+                    failed.add(resource.id)
+            self.journal.record("apply_result", document.name,
+                {"document_hash": plan.document_hash, "plan_hash": plan.plan_hash,
+                 "version": document.version, "results": [r.model_dump(mode="json") for r in results]}, actor)
+            return results
 
     @staticmethod
     def _dependency_order(document: DesiredStateDocument, changes: list[DesiredChange]) -> list[DesiredChange]:

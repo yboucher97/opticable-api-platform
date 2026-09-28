@@ -54,6 +54,7 @@ from .automation.event_body_limit import EventBodyLimit
 from .automation.models import EventIngestResponse
 from .automation.providers.google import register_google_actions
 from .automation.providers.zoho import register_zoho_actions
+from .automation.providers.crm_leads import register_crm_lead_actions
 from .automation.providers.windsor import register_windsor_actions
 from .automation.providers.ovh import register_ovh_actions
 from .automation.providers.ai import register_ai_actions
@@ -63,6 +64,11 @@ from .automation.providers.lifecycle_extended import register_lifecycle_extended
 from .automation.providers.lifecycle_phase2 import register_lifecycle_phase2_actions
 from .automation.providers.lifecycle_mailbox import register_lifecycle_mailbox_actions
 from .automation.reconcilers.zoho_crm import ZohoCrmFieldReconciler
+from .automation.reconcilers.zoho_metadata import register_crm_metadata
+from .automation.reconcilers.zoho_notification import ZohoCrmNotificationReconciler
+from .automation.crm_inventory import CrmInventoryCollector
+from .automation.desired_journal import ApplyConflict
+from .automation.desired_drift import DesiredDriftObserver
 
 
 settings = load_settings()
@@ -76,11 +82,11 @@ automation_engine = AutomationEngine(
 )
 automation_health_monitor = AutomationHealthMonitor(automation_store, sync_health=lambda: delta_sync_worker.health())
 desired_state_registry = DesiredStateRegistry()
-desired_state_controller = DesiredStateController(desired_state_registry)
+desired_state_controller = DesiredStateController(desired_state_registry, automation_store)
 google_oauth_manager = GoogleOAuthManager(settings.google_oauth)
 google_api_client = GoogleApiClient(google_oauth_manager)
-delta_sync_worker = DeltaWorker(automation_store, google_oauth_manager.access_token)
 zoho_gateway_client = ZohoGatewayClient(settings.zoho_gateway, ZohoOAuthManager(settings.zoho_oauth))
+delta_sync_worker = DeltaWorker(automation_store, google_oauth_manager.access_token, zoho_gateway_client)
 windsor_api_client = WindsorApiClient(settings.windsor)
 ovh_api_client = OvhApiClient(settings.ovh)
 ai_router = AiRouter(settings.ai)
@@ -88,8 +94,13 @@ cloudflare_api_client = CloudflareApiClient(settings.cloudflare)
 github_api_client = GithubApiClient(settings.github)
 apollo_api_client = ApolloApiClient(settings.apollo)
 desired_state_registry.register("zoho_crm", "field", ZohoCrmFieldReconciler(zoho_gateway_client))
+register_crm_metadata(desired_state_registry, zoho_gateway_client)
+desired_state_registry.register("zoho_crm", "notification", ZohoCrmNotificationReconciler(zoho_gateway_client))
+if os.getenv("OPTIBRAIN_CRM_DRIFT_ENABLED") == "true":
+    delta_sync_worker.observer = DesiredDriftObserver(desired_state_controller, Path(__file__).resolve().parents[1] / "config/automation/desired-state")
 register_google_actions(automation_engine, google_api_client, automation_store)
 register_zoho_actions(automation_engine, zoho_gateway_client, automation_store)
+register_crm_lead_actions(automation_engine, zoho_gateway_client, automation_store)
 register_windsor_actions(automation_engine, windsor_api_client, automation_store)
 register_ovh_actions(automation_engine, ovh_api_client, automation_store)
 register_ai_actions(automation_engine, ai_router, automation_store)
@@ -98,7 +109,7 @@ register_lifecycle_actions(automation_engine, zoho_gateway_client, automation_st
 register_lifecycle_extended_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_phase2_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_mailbox_actions(automation_engine, zoho_gateway_client, automation_store)
-API_VERSION = "1.9.0"
+API_VERSION = "1.10.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
 PRIMARY_JOB_STATUS_PATH = "/v1/site-and-password/jobs/{job_id}"
@@ -1299,90 +1310,72 @@ async def automation_smoke_test(
 
 
 class DesiredStateApplyRequest(BaseModel):
+    model_config = {"extra": "forbid"}
     document: DesiredStateDocument
-    allow_high_risk: bool = False
-    allow_destructive: bool = False
+    plan_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
     reason: str = Field(min_length=3, max_length=500)
 
 
 @app.get("/v1/automation/desired-state/adapters", tags=["automation"])
-async def automation_desired_state_adapters(
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
-) -> dict[str, Any]:
+async def automation_desired_state_adapters(x_api_key: str | None = Header(default=None, alias="X-API-Key")):
     _validate_inspection_api_key(x_api_key)
     return {"adapters": desired_state_registry.list_adapters()}
 
 
-@app.post("/v1/automation/desired-state/plan", response_model=DesiredPlan, tags=["automation"])
-async def automation_desired_state_plan(
-    document: DesiredStateDocument,
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
-) -> DesiredPlan:
-    _validate_api_key(x_api_key)
+@app.post("/v1/automation/desired-state/validate", tags=["automation"])
+async def automation_desired_state_validate(document: DesiredStateDocument,
+        x_api_key: str | None = Header(default=None, alias="X-API-Key")):
+    _validate_inspection_api_key(x_api_key)
+    # Validation is local, without provider calls.
     try:
-        plan = desired_state_controller.plan(document)
+        return {"valid": True, "document_hash": desired_state_controller.validate_document(document)}
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+        raise HTTPException(status_code=422, detail=str(exc)) from None
 
-    automation_store.audit(
-        category="desired_state",
-        action="plan",
-        actor="api",
-        success=True,
-        target=document.name,
-        metadata={
-            "version": document.version,
-            "resource_count": len(document.resources),
-            "summary": plan.summary,
-        },
-    )
-    return plan
+
+@app.post("/v1/automation/desired-state/plan", response_model=DesiredPlan, tags=["automation"])
+@app.post("/v1/automation/desired-state/drift", response_model=DesiredPlan, tags=["automation"])
+async def automation_desired_state_plan(document: DesiredStateDocument,
+        x_api_key: str | None = Header(default=None, alias="X-API-Key")):
+    _validate_inspection_api_key(x_api_key)
+    try:
+        return await run_in_threadpool(desired_state_controller.plan, document)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
 
 
 @app.post("/v1/automation/desired-state/apply", tags=["automation"])
-async def automation_desired_state_apply(
-    payload: DesiredStateApplyRequest,
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
-) -> dict[str, Any]:
-    _validate_api_key(x_api_key)
-
+async def automation_desired_state_apply(payload: DesiredStateApplyRequest,
+        x_api_key: str | None = Header(default=None, alias="X-API-Key")):
+    _validate_inspection_api_key(x_api_key)
+    if not settings.automation.enabled:
+        raise HTTPException(status_code=503, detail="Automation kernel is disabled")
     try:
-        plan = desired_state_controller.plan(payload.document)
-        results = desired_state_controller.apply(
-            payload.document,
-            plan,
-            allow_high_risk=payload.allow_high_risk,
-            allow_destructive=payload.allow_destructive,
-        )
+        plan = await run_in_threadpool(desired_state_controller.plan, payload.document)
+        if plan.plan_hash != payload.plan_hash:
+            raise HTTPException(status_code=409, detail="Stale plan digest; review a fresh plan")
+        results = await run_in_threadpool(desired_state_controller.apply, payload.document, plan,
+                                        low_risk_additive_only=True, actor="authenticated-api")
+    except ApplyConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+    return {"document": payload.document.name, "plan_hash": plan.plan_hash,
+            "results": [r.model_dump() for r in results], "changed": sum(r.changed for r in results),
+            "failed_or_blocked": sum(r.status != "completed" for r in results)}
 
-    failed = [item for item in results if item.status in {"failed", "blocked"}]
-    changed = [item for item in results if item.changed]
-    automation_store.audit(
-        category="desired_state",
-        action="apply",
-        actor="api",
-        success=not failed,
-        target=payload.document.name,
-        metadata={
-            "reason": payload.reason,
-            "version": payload.document.version,
-            "plan_summary": plan.summary,
-            "changed": len(changed),
-            "failed_or_blocked": len(failed),
-            "allow_high_risk": payload.allow_high_risk,
-            "allow_destructive": payload.allow_destructive,
-        },
-    )
-    return {
-        "document": payload.document.name,
-        "version": payload.document.version,
-        "plan": plan.model_dump(),
-        "results": [item.model_dump() for item in results],
-        "changed": len(changed),
-        "failed_or_blocked": len(failed),
-    }
+
+@app.get("/v1/automation/desired-state/last-apply", tags=["automation"])
+async def automation_desired_state_last_apply(document: str = Query(min_length=1, max_length=200),
+        x_api_key: str | None = Header(default=None, alias="X-API-Key")):
+    _validate_inspection_api_key(x_api_key)
+    return {"last_apply": desired_state_controller.journal.last(document, ("apply_result",))}
+
+
+@app.get("/v1/automation/desired-state/inventory", tags=["automation"])
+async def automation_desired_state_inventory(x_api_key: str | None = Header(default=None, alias="X-API-Key")):
+    _validate_inspection_api_key(x_api_key)
+    return await run_in_threadpool(CrmInventoryCollector(zoho_gateway_client).collect)
 
 
 @app.get("/v1/automation/runs", tags=["automation"])

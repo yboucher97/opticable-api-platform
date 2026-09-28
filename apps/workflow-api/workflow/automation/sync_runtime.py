@@ -12,12 +12,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .delta_sync import DeltaSync
 from .google_delta import GoogleDeltaAdapter
+from .crm_delta import CrmLeadDeltaAdapter
 from .store import AutomationStore
 
 
 class SyncJob(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    provider: Literal["google.calendar", "google.drive", "google.gmail"]
+    provider: Literal["google.calendar", "google.drive", "google.gmail", "zoho_crm"]
     source_account: str = Field(min_length=1, max_length=255)
     stream: str = Field(min_length=1, max_length=255)
     mode: Literal["incremental", "backfill"] = "incremental"
@@ -53,7 +54,7 @@ def initialize_jobs(store: AutomationStore) -> list[SyncJob]:
     return jobs
 
 
-def sync_one_due(store: AutomationStore, jobs: list[SyncJob], access_token: Callable[[], str]) -> None:
+def sync_one_due(store: AutomationStore, jobs: list[SyncJob], access_token: Callable[[], str], crm_client=None) -> None:
     sync = DeltaSync(store)
     due = []
     for job in jobs:
@@ -62,8 +63,14 @@ def sync_one_due(store: AutomationStore, jobs: list[SyncJob], access_token: Call
             due.append((state["updated_at"], job))
     if due:
         job = min(due, key=lambda pair: pair[0])[1]
+        if job.provider == "zoho_crm":
+            if crm_client is None or job.stream != "Leads":
+                raise ValueError("CRM delta adapter is unconfigured")
+            adapter = CrmLeadDeltaAdapter(crm_client, job.source_account)
+        else:
+            adapter = GoogleDeltaAdapter(job.provider, job.source_account, job.stream, access_token)
         sync.cycle(job.provider, job.source_account, job.stream,
-                   GoogleDeltaAdapter(job.provider, job.source_account, job.stream, access_token),
+                   adapter,
                    mode=job.mode, page_limit=job.page_limit, max_pages=1,
                    poll_interval=job.poll_interval_seconds)
 
@@ -71,9 +78,10 @@ def sync_one_due(store: AutomationStore, jobs: list[SyncJob], access_token: Call
 class DeltaWorker:
     """One bounded polling thread, independently observable from run recovery."""
 
-    def __init__(self, store: AutomationStore, access_token: Callable[[], str]) -> None:
-        self.store, self.access_token = store, access_token
+    def __init__(self, store: AutomationStore, access_token: Callable[[], str], crm_client=None) -> None:
+        self.store, self.access_token, self.crm_client = store, access_token, crm_client
         self.jobs: list[SyncJob] = []
+        self.observer = None
         self._stop = threading.Event()
         self._lock = threading.Lock()
         self._thread: threading.Thread | None = None
@@ -84,7 +92,7 @@ class DeltaWorker:
         if self._thread and self._thread.is_alive():
             raise RuntimeError("delta worker is already running")
         self.jobs = list(jobs)
-        if not self.jobs:
+        if not self.jobs and self.observer is None:
             return
         self._stop.clear()
         self._last_progress = time.monotonic()
@@ -94,7 +102,9 @@ class DeltaWorker:
     def _run(self) -> None:
         while not self._stop.is_set():
             try:
-                sync_one_due(self.store, self.jobs, self.access_token)
+                sync_one_due(self.store, self.jobs, self.access_token, self.crm_client)
+                if self.observer is not None:
+                    self.observer.poll()
                 with self._lock:
                     self._failures = 0
             except Exception as exc:
@@ -119,7 +129,7 @@ class DeltaWorker:
         with self._lock:
             alive = bool(self._thread and self._thread.is_alive())
             age = int(time.monotonic() - self._last_progress)
-            enabled = bool(self.jobs)
+            enabled = bool(self.jobs) or self.observer is not None
             return {"enabled": enabled, "thread_alive": alive, "heartbeat_age_seconds": age,
                     "consecutive_failures": self._failures,
                     "healthy": not enabled or (alive and age < 180 and self._failures == 0)}

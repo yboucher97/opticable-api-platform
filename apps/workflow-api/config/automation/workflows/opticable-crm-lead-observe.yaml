@@ -1,0 +1,12 @@
+id: opticable.crm.lead-observe
+name: Opticable CRM lead review
+version: 1
+enabled: true
+description: Hydrate authenticated CRM notification hints and capture record-version reviews and internal follow-up alerts.
+trigger:
+  event_types: [zoho.crm.Leads.insert, zoho.crm.Leads.update]
+  sources: [zoho.crm, zoho_crm]
+steps:
+  - id: review
+    action: crm.lead.observe
+    retry: {max_attempts: 3, backoff_seconds: 2}

@@ -15,7 +15,9 @@ class FakeGateway:
         self.calls.append((service, method, path, kwargs))
         if method == "GET":
             return {"ok": True, "status": 200, "data": {"fields": self.fields}}
-        return {"ok": True, "status": 200, "request_id": "req-1", "data": {}}
+        if method == "POST":
+            self.fields.append({"id": "124", "custom_field": True, **kwargs["body"]["fields"][0]})
+        return {"ok": True, "status": 200, "request_id": "req-1", "data": {"fields": [{"status": "success", "details": {"id": "124"}}]}}
 
 
 class ZohoCrmFieldReconcilerTests(unittest.TestCase):
@@ -138,7 +140,7 @@ class ZohoCrmFieldReconcilerTests(unittest.TestCase):
         change = reconciler.plan(resource)
         result = reconciler.apply(resource, change)
         self.assertTrue(result.changed)
-        service, method, path, kwargs = gateway.calls[-1]
+        service, method, path, kwargs = next(c for c in gateway.calls if c[1] == "POST")
         self.assertEqual((service, method, path), ("zohoapis", "POST", "/crm/v8/settings/fields"))
         self.assertEqual(kwargs["query"]["module"], "Leads")
         self.assertTrue(kwargs["confirm"])

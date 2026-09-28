@@ -1,0 +1,12 @@
+id: opticable.crm.lead-reconcile
+name: Opticable bounded CRM lead follow-up
+version: 1
+enabled: true
+description: Observe by default. Explicit phase5-lead-v1 service policy permits normalization and one verified internal task per lead.
+trigger:
+  event_types: [opticable.crm.lead.reviewed]
+  sources: [crm-lead-observer]
+steps:
+  - id: reconcile
+    action: crm.lead.reconcile
+    retry: {max_attempts: 1, backoff_seconds: 0}
