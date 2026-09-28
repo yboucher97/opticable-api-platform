@@ -1,6 +1,6 @@
 # OptiBrain Phase 6 Gate F — identity-aware approval control plane
 
-Status: design gate only. This document does not authorize production enablement, customer sends, environment changes, or main-branch promotion.
+Status: isolated engineering validation PASS on exact candidate `5921473c06470aafae2003607b0a8c85c25f0caf` (84 focused tests / 90 subtests; 556 full-regression tests / 495 subtests; zero failures/errors/skips). Operator routes and outbound sends remain unregistered/disabled. Live identity/mailbox/readiness and send acknowledgement proofs remain separate prerequisites. This document does not authorize production enablement, customer sends, environment changes, or main-branch promotion.
 
 Gate E evidence baseline: `d365d9e862280b7322a7b25b3e7adf2f3a535255`.
 Production/main/recovery baseline remains `52f11d4fc14d8582c03837e0317f849efe8aa3d7` until a later reviewed deployment gate.

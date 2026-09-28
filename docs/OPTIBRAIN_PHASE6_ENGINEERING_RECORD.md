@@ -297,3 +297,47 @@ Logs are under `/var/tmp/optibrain-phase6-validation/`: `gate-e-test_phase6_outb
 6. Perform the contract's live read-only validation and approved internal smoke/canary work, then the distinct Gate G backup, restored recovery, off-host verification, protected-file and promotion gates. Gate E supplies no production deployment or main-promotion authorization.
 
 Gate E engineering is complete. No manual VPS command is required for this completed fake-provider validation.
+
+
+## 2026-09-28 — Gate F isolated engineering validation — PASS
+
+Exact tested candidate: **`5921473c06470aafae2003607b0a8c85c25f0caf`**. The complete candidate remained clean and detached in `/var/tmp/optibrain-phase6-validation/gate-f-5921473/worktree`. This documentation update is made separately on `phase6/sales-autonomy-v1`; no tested implementation or test file was changed.
+
+### Resolved failure and protected cleanliness interpretation
+
+The earlier candidate `4c28f4c4ad2c17c3947caeb381d9f65ba1fd4597` had one failing Content-Type assertion and an independently reproduced terminal-approval inspection defect. The exact new candidate contains the dependency-based mutation guard and terminal envelope/evidence separation. Focused tests now explicitly prove wrong Content-Type returns **415**, consumed/manual inspection returns **200** without 500, and terminal consumption returns **409** before source/provider access. Durable single-use, expiry, exact content/source binding and no-blind-retry protections remain intact.
+
+The first preflight attempt for 5921473 stopped before any tests because a strict empty Git-status interpretation rejected the existing protected untracked diagnostic. This was a **conservative preflight false stop, not a Phase 6 code/test failure**. Original evidence is preserved under `initial-preflight-stop/` in the evidence directory. The user explicitly authorized the following exact cleanliness exception for resumed validation:
+
+1. `git diff --exit-code` and `git diff --cached --exit-code` both pass.
+2. No tracked file is changed, deleted or added.
+3. The only untracked path is `ops/backup/optibrain-cloudflare-auth-diagnostic.sh`.
+4. Its SHA-256 is exactly `7b2a45b141ea8983e761fdc548e25690fe89bf15ee20b994be2bf4855f701000`.
+5. Any additional tracked/untracked change or hash mismatch stops validation.
+
+The exception changes validation interpretation only. The diagnostic was not deleted, moved, committed, modified or chmod-changed. `.gitignore` was not changed. Before/after protected-file mode, ownership, size and mtime checks match as well as hashes. The root-owned production runbook remains untouched with SHA-256 `cdab559d264fb7a17c469fd10953827a98a24ac4a926939db1055522a6dfc085`.
+
+### Exact validation results
+
+- Focused modules: `test_phase6_gate_f_operator.py`, `test_phase6_gate_f_mailbox.py`, `test_phase6_gate_f_terminal_regression.py`, `test_phase6_outbound_approval.py`.
+- Focused validation: **84 tests / 90 subtests; 0 failures, 0 errors, 0 skips**.
+- Complete inherited regression: **556 tests / 495 subtests; 0 failures, 0 errors, 0 skips**.
+- No tests were weakened, skipped, deleted, xfailed or modified for validation.
+- The existing production virtualenv interpreter and dependencies were used with the same VPS prerequisites as prior authoritative validations. Test processes cleared inherited environment, used the isolated checkout and temporary databases, and blocked Python socket connects, DNS resolution and datagram sends. **Blocked network attempts: 0** in both focused and full runs; providers were fakes.
+- Compileall over workflow, tests, `ops/phase4` and `ops/phase5`: **PASS**, with compiled bytecode directed outside the checkout.
+- `git diff --check` from Gate E evidence through the tested candidate: **PASS**.
+- Static Gate F provider calls: **GET only**. No Books, CRM mutation/conversion, Account/Contact/Deal, deletion, metadata, SMS or phone mutation path was introduced by Gate F.
+- Operator routes and the new outbound action are still absent from production startup registration and shipped workflows. The legacy boolean-send workflow remains disabled with one attempt; its default handler refusal remains covered by inherited tests.
+- Candidate and remote engineering branch matched before/after validation. Production, remote `main`, and the peeled local/remote Phase 5 recovery tag remained **`52f11d4fc14d8582c03837e0317f849efe8aa3d7`**.
+- Production health before/after: **`ok`, API `1.10.0`**.
+- **Real provider writes = 0; customer sends = 0; Books mutations = 0; Lead conversions = 0; production changes = 0**.
+
+Evidence directory: `/var/tmp/optibrain-phase6-validation/gate-f-5921473/`.
+
+Required artifacts: `summary.json`, `findings.md`, `focused-tests.log`, `full-regression.log`, `compile-static.log`, `before-after-state.txt`. Additional artifacts preserve per-suite counts, network-isolated runner, resumed-validation driver/log, original preflight-stop evidence and the final documentation publication checks.
+
+### Engineering result and remaining release boundary
+
+**Gate F isolated engineering validation is PASS.** This result does not claim live Cloudflare operator configuration, live provider mailbox readiness, or live send acknowledgement proof. Those prerequisites and any canary remain subject to their separately reviewed read-only/live-safe procedures. Production routes, services, environment and outbound policy were not changed. No real provider send was attempted.
+
+No deployment, `main` merge, recovery-tag change or Gate G promotion was performed. Gate G deployment/recovery/promotion must not start without explicit subsequent instructions. The next safe action is to review the preserved evidence and remaining live-readiness prerequisites; outbound sends remain disabled.
