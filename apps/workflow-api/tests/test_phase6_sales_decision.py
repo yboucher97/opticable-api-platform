@@ -5,6 +5,7 @@ from workflow.automation.sales_decision import (
     POLICY_VERSION,
     build_sales_decision,
     business_due,
+    validate_sales_decision,
 )
 
 
@@ -96,6 +97,57 @@ class Phase6SalesDecisionTests(unittest.TestCase):
             decision.followup_at,
             "2026-10-05T13:30:00+00:00",
         )
+
+    def test_future_followup_is_stable_for_active_non_wait_lead(self):
+        decision = build_sales_decision(
+            self.lead(
+                Lead_Status="Not Contacted",
+                Next_Followup_At="2026-10-05T09:30:00-04:00",
+            ),
+            now=datetime(2026, 9, 28, 14, tzinfo=timezone.utc),
+        )
+        self.assertEqual(decision.next_action, "draft_reply")
+        self.assertEqual(decision.followup_at, "2026-10-05T13:30:00+00:00")
+
+    def test_trusted_service_hint_is_separate_from_ai(self):
+        record = self.lead(Service_Types=None)
+        ai_only = build_sales_decision(
+            record,
+            now=datetime(2026, 9, 28, 14, tzinfo=timezone.utc),
+            ai_hint={"service_type": "Structured Cabling", "confidence": 1.0},
+        )
+        self.assertIsNone(ai_only.service_type)
+        self.assertIsNone(ai_only.service_type_source)
+
+        invalid_evidence = build_sales_decision(
+            record,
+            now=datetime(2026, 9, 28, 14, tzinfo=timezone.utc),
+            trusted_service_hint={
+                "value": "Structured Cabling",
+                "evidence": "ai_confidence",
+            },
+        )
+        self.assertIsNone(invalid_evidence.service_type)
+
+        trusted = build_sales_decision(
+            record,
+            now=datetime(2026, 9, 28, 14, tzinfo=timezone.utc),
+            trusted_service_hint={
+                "value": "Structured Cabling",
+                "evidence": "explicit_customer_selection",
+            },
+        )
+        self.assertEqual(trusted.service_type, "Structured Cabling")
+        self.assertEqual(trusted.service_type_source, "trusted_hint")
+
+    def test_tampered_decision_hash_is_rejected(self):
+        decision = build_sales_decision(
+            self.lead(),
+            now=datetime(2026, 9, 28, 14, tzinfo=timezone.utc),
+        ).model_dump()
+        decision["priority"] = "urgent"
+        with self.assertRaisesRegex(ValueError, "hash mismatch"):
+            validate_sales_decision(decision)
 
     def test_two_business_days_from_friday_lands_tuesday(self):
         # 2026-10-02 is Friday. Toronto is UTC-4 on this date.
