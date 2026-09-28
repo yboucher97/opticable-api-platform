@@ -14,6 +14,7 @@ from unittest.mock import patch
 import httpx
 
 from workflow.automation.delta_sync import DeltaSync, SyncFailure, SyncPage, retry_after_seconds
+from workflow.automation.crm_delta import CrmLeadDeltaAdapter
 from workflow.automation.events import EventLedger
 from workflow.automation.google_delta import GoogleDeltaAdapter
 from workflow.automation.models import AutomationEvent
@@ -258,6 +259,56 @@ class GoogleDeltaTests(unittest.TestCase):
         for provider in ("google.drive", "google.gmail"):
             with self.subTest(provider=provider), self.assertRaises(SyncFailure):
                 self.adapter(provider, {}).fetch(None, None, mode="backfill", limit=10)
+
+
+class CrmDeltaAdapterTests(unittest.TestCase):
+    def test_zoho_304_is_empty_successful_delta_window(self):
+        calls = []
+
+        class Gateway:
+            def request(inner, service, method, path, **kwargs):
+                calls.append(
+                    (service, method, path, kwargs)
+                )
+                return {
+                    "ok": True,
+                    "status": 304,
+                    "data": "",
+                    "provider_path": "local",
+                }
+
+        adapter = CrmLeadDeltaAdapter(
+            Gateway(),
+            "5062683000000020005",
+        )
+
+        cursor = (
+            datetime.now(timezone.utc)
+            - timedelta(minutes=10)
+        ).isoformat()
+
+        page = adapter.fetch(
+            cursor,
+            None,
+            mode="incremental",
+            limit=100,
+        )
+
+        self.assertEqual(page.events, ())
+        self.assertEqual(page.fetched_items, 0)
+        self.assertIsNone(page.next_page)
+        self.assertIsNotNone(page.next_cursor)
+
+        self.assertEqual(len(calls), 1)
+        service, method, path, kwargs = calls[0]
+
+        self.assertEqual(service, "zohoapis")
+        self.assertEqual(method, "GET")
+        self.assertEqual(path, "/crm/v8/Leads")
+        self.assertIn("If-Modified-Since", kwargs["headers"])
+        self.assertEqual(kwargs["query"]["sort_by"], "Modified_Time")
+        self.assertEqual(kwargs["query"]["sort_order"], "asc")
+
 
 
 class DeltaWorkerTests(unittest.TestCase):

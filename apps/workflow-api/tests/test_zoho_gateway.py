@@ -81,6 +81,48 @@ class ZohoGatewayTests(unittest.TestCase):
         self.assertEqual(captured["headers"]["environment"], "stage")
         self.assertEqual(captured["headers"]["Authorization"], "Zoho-oauthtoken local-token")
 
+    def test_conditional_get_304_is_valid_local_response(self) -> None:
+        client = self.standby_client()
+        response = httpx.Response(
+            304,
+            content=b"",
+            request=httpx.Request(
+                "GET",
+                "https://www.zohoapis.com/crm/v8/Leads",
+            ),
+        )
+
+        with (
+            patch(
+                "workflow.zoho_gateway.httpx.request",
+                return_value=response,
+            ) as local_request,
+            patch.object(
+                client,
+                "_standby_request",
+            ) as standby,
+        ):
+            result = client.request(
+                "zohoapis",
+                "GET",
+                "/crm/v8/Leads",
+                headers={
+                    "If-Modified-Since":
+                        "2026-09-28T18:02:17+00:00",
+                },
+                query={
+                    "fields": "id,Modified_Time",
+                    "per_page": 100,
+                },
+            )
+
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["status"], 304)
+        self.assertEqual(result["data"], "")
+        self.assertEqual(result["provider_path"], "local")
+        self.assertEqual(local_request.call_count, 1)
+        standby.assert_not_called()
+
     def test_connect_standby_is_off_by_default(self) -> None:
         class BrokenOAuth:
             def status(self):

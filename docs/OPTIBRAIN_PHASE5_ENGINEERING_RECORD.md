@@ -131,3 +131,33 @@ performs zero CRM record writes.
 No Zoho subscription retry, CRM record mutation, Books mutation, or main-branch
 promotion was performed as part of this correction. Production remained on the
 previous Phase 5 candidate while the corrected candidate was validated.
+
+### CRM delta HTTP 304 correction — 2026-09-28
+
+During resumed Phase 5 production closeout, the authenticated public webhook
+and duplicate-delivery gate passed, but the read-only CRM delta fallback gate
+blocked with `SyncFailure`.
+
+Read-only production diagnostics proved the configured Leads checkpoint
+remained at revision 0 with its original cursor and no successful advancement.
+The apparent `network_timeout` was not a network failure: Zoho returned HTTP
+304 Not Modified to the conditional `If-Modified-Since` Get Records request.
+
+`CrmLeadDeltaAdapter` already defines HTTP 204/304 as a valid empty incremental
+window. The incompatibility was in `ZohoGatewayClient`, which treated every
+non-2xx response as an error before the adapter could inspect status 304.
+
+The gateway was corrected narrowly so only HTTP 304 on GET is considered a
+valid local provider response. Mutations and all other non-2xx responses remain
+fail-closed. A gateway regression proves a 304 conditional GET returns locally
+with `ok=True` and never invokes standby. A CRM-delta regression proves the
+same response becomes an empty successful page with an advanced observation
+cursor.
+
+No Zoho write, CRM record mutation, Books mutation, notification subscription
+retry, checkpoint cursor advancement, or main-branch promotion was performed
+as part of diagnosing or engineering this correction.
+
+At the time of this correction production was running the superseded Phase 5
+candidate `16bcf566562b08c316b2984565079f7bd3c25841`, while `origin/main`
+remained the Phase 4 baseline `209aac07160e1376381faebd86fb38a18f92582a`.

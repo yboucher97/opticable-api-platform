@@ -165,8 +165,14 @@ class ZohoGatewayClient:
             data: Any = response.json()
         except json.JSONDecodeError:
             data = response.text
+        # HTTP 304 is the successful outcome of a conditional GET when
+        # the provider has no records modified since the supplied validator.
+        # Mutations and all other non-2xx responses retain fail-closed behavior.
+        acceptable = response.is_success or (
+            method == "GET" and response.status_code == 304
+        )
         result = {
-            "ok": response.is_success,
+            "ok": acceptable,
             "status": response.status_code,
             "content_type": content_type_response or None,
             "request_id": response.headers.get("x-request-id")
@@ -174,7 +180,7 @@ class ZohoGatewayClient:
             "data": data,
             "provider_path": "local",
         }
-        if not response.is_success:
+        if not acceptable:
             raise ZohoGatewayError(
                 f"Zoho {service} API returned HTTP {response.status_code}: {json.dumps(data)[:2000]}",
                 response=response,
