@@ -53,6 +53,7 @@
     "verified_noop": 2,
     "writes": 2
   },
+  "native_authentication_policy": "exact reviewed channel/environment references only; resolved settings pinned by one-way hash; unrelated credentials rejected before provider calls",
   "offhost_shell": "PASS",
   "production_pending": [
     "human root authentication",
@@ -70,10 +71,10 @@
   "workflow_suite": {
     "errors": 0,
     "failures": 0,
-    "log_sha256": "2b06010bf4cf53b04c991c58d4f8caacc28f0cf486a9f0d5b89288f167d8042b",
+    "log_sha256": "694d4ab26f4aa563cbec23b9cc882dbb626ff060c73ceecc7dd1afbd399860bf",
     "passed": true,
     "skipped": 0,
     "subtests": 325,
-    "tests": 384
+    "tests": 386
   }
 }

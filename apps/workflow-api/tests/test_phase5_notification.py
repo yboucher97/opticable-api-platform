@@ -48,11 +48,11 @@ class NativeSubscriptionTests(unittest.TestCase):
         self.registry.register("zoho_crm", "notification", ZohoCrmNotificationReconciler(self.fake))
         self.controller = DesiredStateController(self.registry, self.store)
         self.resource = DesiredResource(id="fixture.crm.notification", provider="zoho_crm", kind="notification", name="Lead notification",
-            identity={"channel_id": "123"}, desired={"events": ["Leads.create", "Leads.edit"]},
-            metadata={"authentication": {"destination_env": "TEST_NOTIFY_DEST", "credential_env": "TEST_NOTIFY_SECRET", "expiry_env": "TEST_NOTIFY_EXPIRY"}})
+            identity={"channel_id": "5062683202609281"}, desired={"events": ["Leads.create", "Leads.edit"]},
+            metadata={"authentication": {"destination_env": "OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT", "credential_env": "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL", "expiry_env": "OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY"}})
         self.document = DesiredStateDocument(name="fixture-native", resources=[self.resource])
-        self.env = patch.dict(os.environ, {"TEST_NOTIFY_DEST": "https://example.test/crm/notify",
-            "TEST_NOTIFY_SECRET": "native-fixture-credential-32bytes-long", "TEST_NOTIFY_EXPIRY": (datetime.now(timezone.utc) + timedelta(days=6)).replace(microsecond=0).isoformat()})
+        self.env = patch.dict(os.environ, {"OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT": "https://example.test/crm/notify",
+            "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL": "native-fixture-credential-32bytes-long", "OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY": (datetime.now(timezone.utc) + timedelta(days=6)).replace(microsecond=0).isoformat()})
         self.env.start(); self.addCleanup(self.env.stop)
 
     def test_additive_native_subscription_is_verified_and_duplicate_is_noop(self):
@@ -64,8 +64,8 @@ class NativeSubscriptionTests(unittest.TestCase):
         self.controller.apply(self.document, self.controller.plan(self.document))
         self.assertEqual(len(self.fake.writes), 1)
         saved = json.dumps(self.store.recent_audit())
-        self.assertNotIn(os.environ["TEST_NOTIFY_SECRET"], saved)
-        self.assertNotIn(os.environ["TEST_NOTIFY_DEST"], saved)
+        self.assertNotIn(os.environ["OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL"], saved)
+        self.assertNotIn(os.environ["OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT"], saved)
         self.assertIn("native-evidence-only", saved)
 
     def test_secret_env_references_are_allowed_but_plain_credentials_are_rejected(self):
@@ -76,16 +76,35 @@ class NativeSubscriptionTests(unittest.TestCase):
             DesiredStateController.validate_document(self.document)
         self.assertFalse(self.fake.writes)
 
+    def test_changed_environment_authentication_invalidates_reviewed_plan(self):
+        before = self.controller.plan(self.document)
+        with patch.dict(os.environ, {"OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL": "changed-fixture-credential-32bytes-long"}):
+            self.assertNotEqual(before.plan_hash, self.controller.plan(self.document).plan_hash)
+            with self.assertRaisesRegex(ValueError, "Stale plan"):
+                self.controller.apply(self.document, before)
+        self.assertFalse(self.fake.writes)
+        self.assertNotIn(os.environ["OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL"], before.model_dump_json())
+
+    def test_unrelated_environment_credentials_and_unconfigured_channels_are_denied(self):
+        self.resource.metadata["authentication"]["credential_env"] = "SITE_WORKFLOW_API_KEY"
+        with patch.dict(os.environ, {"SITE_WORKFLOW_API_KEY": "unrelated-fixture-inspection-key-32bytes"}):
+            self.assertEqual(self.controller.plan(self.document).summary, {"blocked": 1})
+        self.assertFalse(self.fake.calls)
+        self.resource.metadata["authentication"]["credential_env"] = "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL"
+        self.resource.identity["channel_id"] = "999"
+        self.assertEqual(self.controller.plan(self.document).summary, {"blocked": 1})
+        self.assertFalse(self.fake.calls)
+
     def test_bad_destination_token_expiry_channel_and_module_fail_closed(self):
-        for key, value in (("TEST_NOTIFY_DEST", "http://example.test"), ("TEST_NOTIFY_DEST", "https://user:password@example.test"),
-                           ("TEST_NOTIFY_DEST", "https://example.test?token=secret"), ("TEST_NOTIFY_SECRET", "short"),
-                           ("TEST_NOTIFY_SECRET", "x" * 51), ("TEST_NOTIFY_EXPIRY", "2026-01-01T00:00:00Z"),
-                           ("TEST_NOTIFY_EXPIRY", (datetime.now(timezone.utc) + timedelta(days=8)).isoformat())):
+        for key, value in (("OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT", "http://example.test"), ("OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT", "https://user:password@example.test"),
+                           ("OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT", "https://example.test?token=secret"), ("OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL", "short"),
+                           ("OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL", "x" * 51), ("OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY", "2026-01-01T00:00:00Z"),
+                           ("OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY", (datetime.now(timezone.utc) + timedelta(days=8)).isoformat())):
             with self.subTest(key=key, value=value), patch.dict(os.environ, {key: value}):
                 self.assertEqual(self.controller.plan(self.document).summary, {"blocked": 1})
         self.resource.identity["channel_id"] = "9" * 30
         self.assertEqual(self.controller.plan(self.document).summary, {"blocked": 1})
-        self.resource.identity["channel_id"] = "123"
+        self.resource.identity["channel_id"] = "5062683202609281"
         self.resource.desired["events"] = ["Deals.create"]
         self.assertEqual(self.controller.plan(self.document).summary, {"blocked": 1})
         self.assertFalse(self.fake.writes)

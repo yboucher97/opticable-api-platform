@@ -177,7 +177,7 @@ class Phase5Campaign(base.Campaign):
         self.healthy("1.9.0", events=True)
         self.stage_start("full-candidate-regression")
         summary = self.run([str(base.PYTHON), str(REPO / "ops/phase4/run_tests.py")], user="optibrain", timeout=300).splitlines()[-1]
-        test = json.loads(summary); check(test["passed"] and test["tests"] >= 384 and test["subtests"] >= 325 and test["skipped"] == 0, "full_suite_failed")
+        test = json.loads(summary); check(test["passed"] and test["tests"] >= 386 and test["subtests"] >= 325 and test["skipped"] == 0, "full_suite_failed")
         self.mark(full_suite=test)
         pre, pregen, manifest = self.archive(BASELINE, "predeployment")
         self.restored_drill(pre, pregen, manifest, "predeployment")

@@ -6,15 +6,22 @@ import re
 from urllib.parse import urlsplit
 
 from ..desired_state import DesiredApplyResult, DesiredChange
+from ..event_schema import digest
 
 
 class ZohoCrmNotificationReconciler:
     name = "zoho_crm.notification.v1"
+    approved_channel = "5062683202609281"
+    approved_references = {"destination_env": "OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT",
+                           "credential_env": "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL",
+                           "expiry_env": "OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY"}
 
     def __init__(self, client): self.client = client
 
     def configuration(self, resource):
         refs = resource.metadata.get("authentication", {})
+        if refs != self.approved_references:
+            raise ValueError("Only reviewed native notification authentication references are allowed")
         if set(refs) != {"destination_env", "credential_env", "expiry_env"} or any(
                 not isinstance(v, str) or not re.fullmatch(r"[A-Z][A-Z0-9_]{1,127}", v) for v in refs.values()):
             raise ValueError("Notification authentication environment references required")
@@ -30,6 +37,8 @@ class ZohoCrmNotificationReconciler:
         channel = resource.identity.get("channel_id")
         if not isinstance(channel, str) or not channel.isdigit() or not 1 <= int(channel) <= 2**63 - 1:
             raise ValueError("Notification channel identity required")
+        if channel != self.approved_channel:
+            raise ValueError("Only the reviewed Phase 5 lead notification channel is allowed")
         if resource.desired.get("events") != ["Leads.create", "Leads.edit"]:
             raise ValueError("Only lead create/edit subscriptions are approved")
         return destination, credential, when.astimezone(timezone.utc), channel
@@ -47,15 +56,17 @@ class ZohoCrmNotificationReconciler:
         if len(matches) != 1: raise ValueError("Notification channel collision")
         record = matches[0]
         return {"channel_id": channel, "events": sorted(record.get("events") or []),
+                "configuration_hash": digest([record.get("notify_url"), record.get("token")]),
                 "expiry": datetime.fromisoformat(record["channel_expiry"].replace("Z", "+00:00")).astimezone(timezone.utc).isoformat(), "authentication_matches": hmac.compare_digest(str(record.get("token", "")).encode(), credential.encode()),
                 "destination_matches": record.get("notify_url") == destination,
                 "related_actions": record.get("notify_on_related_action"),
                 "field_values": record.get("return_affected_field_values")}
 
     def plan(self, resource):
-        _, _, when, channel = self.configuration(resource)
+        destination, credential, when, channel = self.configuration(resource)
         current = self.read(resource)
         desired = {"channel_id": channel, "events": sorted(resource.desired["events"]), "expiry": when.isoformat(),
+                   "configuration_hash": digest([destination, credential]),
                    "authentication_matches": True, "destination_matches": True, "related_actions": False, "field_values": False}
         action, reason, risk = "noop", "Native subscription matches", "low"
         if resource.lifecycle.get("ensure", "present") != "present":

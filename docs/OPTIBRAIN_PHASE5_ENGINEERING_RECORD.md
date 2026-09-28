@@ -50,6 +50,7 @@ Failures found and corrected:
 6. Live pinned workflow/webhook reads rejected a `module` query. The first live governance plan safely blocked five resources without writes. Correct requests subsequently verified 93 noops.
 7. A legacy off-host test used a fixed old backup filename that aged out of the 36-hour rule. Fixtures now use the current generation with explicit stale/future comparisons; the production freshness check is unchanged.
 8. Root umask `077` can remove directory traversal bits even when `mkdir` requests them. The new configuration/staging directories explicitly receive their intended modes, and configuration is tested under `077`.
+9. Native reconciliation accepts only the reviewed Phase 5 channel and its exact authentication references, preventing use of this adapter to read or forward unrelated service secrets. Resolved native authentication references now contribute a one-way configuration hash to the immutable plan. A credential change after review rejects apply before any network mutation; plaintext credential values remain absent from plans/audits.
 
 Failure drills cover accepted mutation/response loss, before-send timeout, unknown after-send outcome, duplicate/stale apply, concurrent controllers, failed readback, 401/429/5xx, native duplicate/collision/expiry, capture-before-routing restart, child/alert transaction failure, event replay, task dedupe and persistent manual state. Existing Phase 3/4 tests continue to cover accounting approval, worker ownership/leases, unsafe replay, quarantine, watchdog, migration discipline and source materialization guards.
 
@@ -85,7 +86,7 @@ The final documentation commit is included in the clean candidate SHA supplied t
 
 ## Completion status
 
-Final candidate validation: 384 workflow API tests, 325 subtests, zero failures/errors/skips; six deployment-driver tests are included. Administrator security/recovery: 37 tests PASS. Backup/off-host Python regression: 11 tests PASS. Backup, uploader/unit, bucket-listing and R2-health shell regressions PASS. The unprivileged backup shell run intentionally does not claim its root ownership variant; production gates execute under the required identities.
+Final candidate validation: 386 workflow API tests, 325 subtests, zero failures/errors/skips; six deployment-driver tests are included. Administrator security/recovery: 37 tests PASS. Backup/off-host Python regression: 11 tests PASS. Backup, uploader/unit, bucket-listing and R2-health shell regressions PASS. The unprivileged backup shell run intentionally does not claim its root ownership variant; production gates execute under the required identities.
 
 Candidate validation results and exact safe evidence are in [validation](phase5/candidate-validation.json). Unprivileged isolated schema-v2 startup, process/worker restart, dedupe, backup/restore and ambiguity drills passed on a fixture copy. This is explicitly distinct from the root gate against an actual restored production archive.
 
