@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from _phase4_fixtures import make_v1
 from workflow.automation import event_schema
@@ -17,6 +17,56 @@ from workflow.automation.events import EventConflict, EventLedger, count
 from workflow.automation.health_monitor import AutomationHealthMonitor
 from workflow.automation.models import AutomationEvent, WorkflowDefinition
 from workflow.automation.store import AutomationStore
+
+
+class WalConnectionTests(unittest.TestCase):
+    def test_already_wal_does_not_request_a_journal_mode_change(self):
+        connection = Mock()
+        connection.execute.return_value.fetchone.return_value = ("wal",)
+        AutomationStore._enable_wal(connection)
+        connection.execute.assert_called_once_with("PRAGMA journal_mode")
+
+    def test_journal_mode_busy_retry_is_bounded_and_setup_only(self):
+        for code in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED, sqlite3.SQLITE_BUSY | (2 << 8)):
+            with self.subTest(code=code):
+                error = sqlite3.OperationalError("fixture database is locked")
+                error.sqlite_errorcode = code
+                connection = Mock()
+                connection.execute.side_effect = [Mock(fetchone=Mock(return_value=("delete",))), error,
+                                                  Mock(fetchone=Mock(return_value=("wal",)))]
+                with patch("workflow.automation.store.time.sleep") as slept:
+                    AutomationStore._enable_wal(connection)
+                slept.assert_called_once_with(0.05)
+                self.assertEqual([call.args[0] for call in connection.execute.call_args_list],
+                                 ["PRAGMA journal_mode", "PRAGMA journal_mode=WAL", "PRAGMA journal_mode"])
+
+    def test_journal_mode_lock_timeout_closes_failed_connection(self):
+        error = sqlite3.OperationalError("fixture database is locked")
+        error.sqlite_errorcode = sqlite3.SQLITE_BUSY
+        connection = Mock()
+        connection.execute.side_effect = [Mock(fetchone=Mock(return_value=(2,))), error]
+        store = object.__new__(AutomationStore)
+        store.db_path = Path("/fixture-only/never-opened.db")
+        with patch("workflow.automation.store.sqlite3.connect", return_value=connection), \
+                patch("workflow.automation.store.time.monotonic", side_effect=[0, 30]), \
+                self.assertRaises(sqlite3.OperationalError):
+            store._connect()
+        connection.close.assert_called_once()
+
+    def test_non_lock_database_error_is_never_retried(self):
+        error = sqlite3.OperationalError("fixture IO failure")
+        error.sqlite_errorcode = sqlite3.SQLITE_IOERR
+        connection = Mock()
+        connection.execute.side_effect = error
+        with patch("workflow.automation.store.time.sleep") as slept, self.assertRaises(sqlite3.OperationalError):
+            AutomationStore._enable_wal(connection)
+        slept.assert_not_called()
+
+    def test_database_refusing_wal_fails_closed(self):
+        connection = Mock()
+        connection.execute.return_value.fetchone.return_value = ("delete",)
+        with self.assertRaisesRegex(RuntimeError, "database requires WAL"):
+            AutomationStore._enable_wal(connection)
 
 
 def process_capture(path: str, barrier, output) -> None:

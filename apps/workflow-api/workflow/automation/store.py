@@ -4,6 +4,7 @@ import json
 import re
 import sqlite3
 import threading
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -25,18 +26,41 @@ class AutomationStore:
 
     def _connect(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.db_path, timeout=30, check_same_thread=False)
-        conn.row_factory = sqlite3.Row
-        # Inspect the version before WAL configuration or any schema statement.
-        # Even a connection opened solely to reject a future schema must not
-        # change database metadata.
-        version = conn.execute("PRAGMA user_version").fetchone()[0]
-        if version not in (0, 1, 2):
+        try:
+            conn.row_factory = sqlite3.Row
+            # Inspect the version before WAL configuration or any schema statement.
+            # Even a connection opened solely to reject a future schema must not
+            # change database metadata.
+            version = conn.execute("PRAGMA user_version").fetchone()[0]
+            if version not in (0, 1, 2):
+                raise RuntimeError(f"unknown automation schema version: {version}")
+            self._enable_wal(conn)
+            conn.execute("PRAGMA foreign_keys=ON")
+            conn.execute("PRAGMA busy_timeout=30000")
+            return conn
+        except BaseException:
             conn.close()
-            raise RuntimeError(f"unknown automation schema version: {version}")
-        conn.execute("PRAGMA journal_mode=WAL")
-        conn.execute("PRAGMA foreign_keys=ON")
-        conn.execute("PRAGMA busy_timeout=30000")
-        return conn
+            raise
+
+    @staticmethod
+    def _enable_wal(conn: sqlite3.Connection) -> None:
+        # Changing journal mode can return SQLITE_BUSY immediately despite the
+        # connection busy timeout during concurrent fresh startup. Retry only
+        # this connection setup, never a migration transaction or action handler.
+        deadline = time.monotonic() + 30
+        while True:
+            try:
+                mode = conn.execute("PRAGMA journal_mode").fetchone()[0]
+                if mode != "wal":
+                    mode = conn.execute("PRAGMA journal_mode=WAL").fetchone()[0]
+                if mode != "wal":
+                    raise RuntimeError("automation database requires WAL")
+                return
+            except sqlite3.OperationalError as error:
+                code = getattr(error, "sqlite_errorcode", 0) or 0
+                if (code & 0xff) not in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED} or time.monotonic() >= deadline:
+                    raise
+                time.sleep(0.05)
 
     def _initialize(self) -> None:
         with self._connect() as conn:
