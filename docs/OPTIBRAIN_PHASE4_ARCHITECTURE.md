@@ -78,6 +78,11 @@ must include a timezone and normalize to UTC. Child events inherit correlation
 and name their parent as causation. Recovery loads the complete durable envelope,
 including provider fields. Self-causes, discovered cycles and excessive lineage
 are rejected.
+Receipt timestamps use a database-checked fixed-width UTC representation with
+six fractional digits. Time-window queries compare that text directly through
+the receipt index; SQLite Julian-day conversion would lose sub-millisecond
+precision. Legacy receipt copies normalize the same instant without changing
+the original event row.
 
 ## Webhook security and provider support
 

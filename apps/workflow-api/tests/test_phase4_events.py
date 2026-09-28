@@ -59,7 +59,7 @@ class EventMigrationTests(EventFixture):
                                                        "steps": [{"id": "one", "action": "core.noop"}]})
         snapshot = json.dumps({"queued_definition": definition.model_dump(by_alias=True)})
         with sqlite3.connect(path) as conn:
-            conn.execute("INSERT INTO automation_events VALUES('old','old','old','2026-01-01T00:00:00Z','old',NULL,'old-key',0,'{}','2026-01-01T00:00:00Z')")
+            conn.execute("INSERT INTO automation_events VALUES('old','old','old','2026-01-01T00:00:00Z','old',NULL,'old-key',0,'{}','2026-01-01T02:00:00+02:00')")
             conn.execute("INSERT INTO automation_workflows VALUES('old','Old',1,1,?,NULL,'2026-01-01T00:00:00Z')", (json.dumps(definition.model_dump()),))
             conn.execute("INSERT INTO automation_runs(run_id,workflow_id,event_id,correlation_id,status,created_at,context_json) VALUES('old-run','old','old','old','queued','2026-01-01T00:00:00Z',?)", (snapshot,))
             before = conn.execute("SELECT * FROM automation_events").fetchall()
@@ -69,6 +69,9 @@ class EventMigrationTests(EventFixture):
             self.assertEqual(conn.execute("SELECT context_json FROM automation_runs").fetchone()[0], snapshot)
             self.assertEqual(conn.execute("PRAGMA user_version").fetchone()[0], 2)
         self.assertEqual(EventLedger(migrated).process_pending(), 0)
+        self.assertEqual(EventLedger(migrated).inspect('old')["received_at"], "2026-01-01T00:00:00.000000Z")
+        self.assertEqual([row["event_id"] for row in EventLedger(migrated).list_events(
+            start="2026-01-01T00:00:00Z", end="2026-01-01T00:00:00Z")], ['old'])
         self.assertEqual(len(migrated.queued_envelopes()), 1)
         self.assertFalse(migrated.ingest_event(self.event(idempotency_key="old-key"))[0])
 
@@ -277,6 +280,28 @@ class EventLedgerTests(EventFixture):
         for stamp in ("invalid", "2026-09-28T12:00:00"):
             with self.subTest(stamp=stamp), self.assertRaises(ValueError):
                 self.event(provider_timestamp=stamp)
+
+    def test_time_window_preserves_microsecond_precision_and_timezone(self) -> None:
+        with patch("workflow.automation.events.utc_now_iso", return_value="2026-09-28T00:00:00.000100Z"):
+            first = self.ledger.capture(self.event(provider_event_id="precision-one"))[1]
+        with patch("workflow.automation.events.utc_now_iso", return_value="2026-09-28T00:00:00.000200Z"):
+            second = self.ledger.capture(self.event(provider_event_id="precision-two"))[1]
+        rows = self.ledger.list_events(start="2026-09-28T01:00:00.000100+01:00",
+                                      end="2026-09-28T00:00:00.000100Z")
+        self.assertEqual([row["event_id"] for row in rows], [first])
+        self.assertEqual([row["event_id"] for row in self.ledger.list_events(
+            start="2026-09-28T00:00:00.000200Z")], [second])
+
+    def test_receipt_clock_constraint_rejects_noncanonical_storage(self) -> None:
+        self.ledger.capture(self.event(provider_event_id="clock-fixture"))
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "CHECK constraint"), self.store._connect() as conn:
+            conn.execute("INSERT INTO automation_events SELECT 'bad-clock',event_type,source,occurred_at,"
+                         "correlation_id,causation_id,NULL,depth,payload_json,created_at FROM automation_events LIMIT 1")
+            conn.execute("INSERT INTO automation_event_ledger SELECT 'bad-clock',source_account,NULL,'bad-clock',"
+                         "content_hash,envelope_json,'2026-09-28T00:00:00Z',NULL,'bad-clock' "
+                         "FROM automation_event_ledger LIMIT 1")
+        with self.store._connect() as conn:
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM automation_events").fetchone()[0], 1)
 
     def test_bounds_and_self_causation(self) -> None:
         with self.assertRaises(ValueError):

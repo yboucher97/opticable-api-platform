@@ -333,8 +333,8 @@ class EventLedger:
                 parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
                 if parsed.tzinfo is None:
                     raise ValueError("query timestamp must include timezone")
-                conditions.append(f"julianday(l.received_at){op}julianday(?)")
-                params.append(parsed.astimezone(timezone.utc).isoformat())
+                conditions.append(f"l.received_at{op}?")
+                params.append(parsed.astimezone(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z"))
         if status is not None:
             if status not in {"accepted", "normalized", "routed", "quarantined"}:
                 raise ValueError("invalid event status")

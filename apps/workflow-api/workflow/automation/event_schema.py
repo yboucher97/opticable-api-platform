@@ -6,6 +6,8 @@ import json
 import re
 import sqlite3
 
+from .models import AutomationEvent
+
 SCHEMA_VERSION = 2
 
 DDL = (
@@ -16,7 +18,7 @@ DDL = (
         dedupe_identity TEXT NOT NULL,
         content_hash TEXT NOT NULL CHECK(length(content_hash)=64),
         envelope_json TEXT NOT NULL,
-        received_at TEXT NOT NULL,
+        received_at TEXT NOT NULL CHECK(received_at GLOB '????-??-??T??:??:??.??????Z'),
         replay_of TEXT REFERENCES automation_event_ledger(event_id),
         root_event_id TEXT NOT NULL REFERENCES automation_events(event_id)
     )""",
@@ -131,14 +133,15 @@ def migrate_events(conn: sqlite3.Connection) -> None:
                 "SELECT 1 FROM automation_runs WHERE event_id=? AND status IN ('queued','claimed','running') LIMIT 1",
                 (row["event_id"],)).fetchone():
             raise RuntimeError("legacy sensitive unresolved event requires review before migration")
+        received_at = AutomationEvent.normalize_timestamp(row["created_at"])
         identity = "legacy:" + digest(row["idempotency_key"] or row["event_id"])
         conn.execute("INSERT INTO automation_event_ledger VALUES(?,?,?,?,?,?,?,?,?)",
                      (row["event_id"], "", None, identity, digest(original_payload), canonical(envelope),
-                      row["created_at"], None, row["event_id"]))
+                      received_at, None, row["event_id"]))
         conn.execute("INSERT INTO automation_event_dedupe VALUES(?,?,?,?)",
                      (row["source"], "", identity, row["event_id"]))
         conn.execute("INSERT INTO automation_event_processing(event_id,status,first_seen_at,last_seen_at,updated_at) "
-                     "VALUES(?,'routed',?,?,?)", (row["event_id"], row["created_at"], row["created_at"], row["created_at"]))
+                     "VALUES(?,'routed',?,?,?)", (row["event_id"], received_at, received_at, received_at))
     conn.execute("INSERT INTO automation_event_routes SELECT event_id,workflow_id,event_id,MIN(run_id) "
                  "FROM automation_runs GROUP BY event_id,workflow_id")
     if conn.execute("PRAGMA foreign_key_check").fetchone() is not None:

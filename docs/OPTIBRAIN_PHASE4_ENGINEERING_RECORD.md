@@ -21,12 +21,17 @@ main during this engineering campaign.
 - Expected baseline DB: `/var/lib/opticable-workflow-api/output/automation/automation.db`.
   Direct access is protected; the actual production DB was not read or changed.
 
-The final annotated tag `recovery/phase4-candidate-v1-20260928` stores the exact
+The final annotated tag `recovery/phase4-candidate-v2-20260928` stores the exact
 candidate SHA, merge base, cumulative binary diff SHA-256, changed-file inventory,
 test results and drill evidence. Its target is the final candidate; its annotation
 is the release manifest, generated after the final commit to avoid a self-referential
 commit hash. A local copy is `release-evidence.json` in the private evidence
 directory. Resolve with `git rev-parse <tag>^{}` and inspect with `git show <tag>`.
+The first candidate tag remains preserved; V2 supersedes it after the exact
+time-window review. No development candidate was deployed. Databases from the
+superseded candidate are not an upgrade source for this release: the final
+production path starts with the immutable Phase 3 V1 database and validates
+the complete final V2 definition.
 
 The protected untracked file remains:
 `ops/backup/optibrain-cloudflare-auth-diagnostic.sh`.
@@ -90,7 +95,8 @@ result below has zero failures/errors/skips.
 | Scope | Command (after Python executable) | Result |
 |---|---|---|
 | Baseline, independently counted archive | `/var/tmp/optibrain-phase4-artifacts/immutable-baseline-source/ops/phase4/run_tests.py` | 139 tests + 99 subtests, passed (6.002s). Only the standalone counted runner was copied into the archive; product/test source is the exact baseline. |
-| Phase 4 focused | `ops/phase4/run_tests.py --pattern 'test_phase4*.py'` | 101 tests + 100 subtests, passed (8.056s). |
+| Phase 4 focused | `ops/phase4/run_tests.py --pattern 'test_phase4*.py'` | 103 tests + 100 subtests, passed (9.741s). |
+| Ledger / migration / precision | `ops/phase4/run_tests.py --pattern test_phase4_events.py` | 50 tests + 7 subtests, passed (4.865s). |
 | Webhook focused | `ops/phase4/run_tests.py --pattern test_phase4_webhooks.py` | 21 tests + 61 subtests, passed. |
 | Execution controls | `ops/phase4/run_tests.py --pattern test_execution_control.py` | 28 tests + 9 subtests, passed (1.900s). |
 | Zoho mutation safety | `ops/phase4/run_tests.py --pattern test_zoho_gateway.py` | 8 tests, passed (0.055s). |
@@ -99,17 +105,18 @@ result below has zero failures/errors/skips.
 | Phase 3 API controls | `ops/phase4/run_tests.py --pattern test_phase3_api_controls.py` | 5 tests, passed (0.323s). |
 | Conservative retries | `ops/phase4/run_tests.py --pattern test_retry_control.py` | 5 tests, passed (0.001s). |
 | External provider controls | `ops/phase4/run_tests.py --pattern test_core_external_providers.py` | 4 tests, passed (0.002s). |
-| Entire workflow API | `ops/phase4/run_tests.py` | **240 tests + 199 subtests, passed (14.377s)**. |
+| Entire workflow API | `ops/phase4/run_tests.py` | **242 tests + 199 subtests, passed (15.654s)**. |
 | Existing privileged-helper tests | `python3 -m unittest discover -s tests/ops -v` | 37 tests, passed (1.756s). |
 | Existing backup / restore / off-host tests | `python3 -m unittest discover -s tests -p 'test_optibrain*.py' -v` | 11 tests, passed (0.091s). |
 
 The supplied Phase 3 report described 153 tests + 99 subtests. Direct discovery
 at the exact provided baseline found 139 workflow test methods. All 139 remain
-in the full suite; the additional 101 Phase 4 methods account for 240. The
+in the full suite; the additional 103 Phase 4 methods account for 242. The
 existing regression portion contributes 99 subtests. Counts are reported from
 executed commands rather than assumed from the earlier report.
 
-Final logs are `checked-full-tests.log`, `checked-focused-tests.log`,
+Final logs are `final2-full-tests.log`, `final2-focused-tests.log`,
+`final2-events-tests.log`,
 `checked-webhook-tests.log`, `counted-baseline-tests.log`,
 `execution-focused-tests.log`, `zoho-focused-tests.log`,
 `inspection-focused-tests.log`, `release-ops-tests.log` and
@@ -147,15 +154,15 @@ safe internal smoke runs: 20 events, 1 workflow, 10 runs, 20 steps, 10 claims,
 Final drill command:
 
 ```bash
-SITE_WORKFLOW_OUTPUT_ROOT=/var/tmp/optibrain-phase4-artifacts/release-drill-output \
+SITE_WORKFLOW_OUTPUT_ROOT=/var/tmp/optibrain-phase4-artifacts/final2-drill-output \
 /opt/opticable-api-platform/apps/workflow-api/.venv/bin/python ops/phase4/isolated_drill.py \
   --source-db /var/tmp/optibrain-phase4-artifacts/populated-v1.db \
-  --workspace /var/tmp/optibrain-phase4-artifacts/final-populated-drill
+  --workspace /var/tmp/optibrain-phase4-artifacts/final2-populated-drill
 ```
 
-Result: **PASS**. Temporary API port: 41843. Internal smoke run:
-`48ad0a87cb3942a1b748d35181338734`; event:
-`07d1c93b5f074416b1342ae5f91134c0`.
+Result: **PASS**. Temporary API port: 53583. Internal smoke run:
+`069b4d30aace42909e581f2d3647fb88`; event:
+`3efb1b5aa3e1477ead81b1de4c29475c`.
 
 Verified: exact legacy counts and row hashes preserved; V1 → V2; integrity and
 foreign keys; WAL; source unchanged; V1 rollback snapshot; candidate API startup;
@@ -210,6 +217,12 @@ Provider transport responses are simulated; no real provider write was used.
 12. Google push hints shared the delta resource-change event type. They now use
     explicit notification types, with a test proving a resource-change workflow
     receives only the fetched change record.
+13. A final boundary test proved SQLite Julian-day comparison merged timestamps
+    100 microseconds apart. Receipt timestamps now have a fixed-width UTC
+    constraint; range comparisons preserve microseconds and use the receipt
+    index. Legacy copies normalize their instant while original rows remain
+    exact. The regression first failed on the old comparison, then passed after
+    the product fix and migration/restore reruns.
 
 Independent self-review examined unique-index scope, insert races, replay
 preflight, cursor commits, expired leases, retained evidence, timezone handling,
