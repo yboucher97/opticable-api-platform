@@ -45,7 +45,9 @@ class UploadTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
-        self.archive = self.root / 'optibrain-backup-20260927T010000Z.tar.gz'
+        self.generation_time = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+        self.generation = self.generation_time.strftime('%Y%m%dT%H%M%SZ')
+        self.archive = self.root / ('optibrain-backup-' + self.generation + '.tar.gz')
         self.archive.write_bytes(b'sensitive fixture')
         self.archive.with_name(self.archive.name + '.sha256').write_text(u.sha(self.archive) + ' archive\n')
         self.client = S3()
@@ -82,16 +84,16 @@ class UploadTests(unittest.TestCase):
         with self.assertRaises(RuntimeError): self.run_upload()
         self.assertEqual(self.client.puts, 2)
     def test_stale_generation_is_refused(self):
-        now = datetime.datetime(2026, 9, 29, tzinfo=datetime.timezone.utc)
+        now = self.generation_time + datetime.timedelta(hours=37)
         with self.assertRaises(RuntimeError):
             u.validate_generation_freshness(self.archive.name, now)
     def test_future_generation_beyond_clock_skew_is_refused(self):
-        now = datetime.datetime(2026, 9, 26, tzinfo=datetime.timezone.utc)
+        now = self.generation_time - datetime.timedelta(minutes=6)
         with self.assertRaises(RuntimeError):
             u.validate_generation_freshness(self.archive.name, now)
     def test_fresh_generation_is_allowed(self):
-        now = datetime.datetime(2026, 9, 27, 2, tzinfo=datetime.timezone.utc)
-        self.assertEqual(u.validate_generation_freshness(self.archive.name, now), '20260927T010000Z')
+        now = self.generation_time + datetime.timedelta(hours=1)
+        self.assertEqual(u.validate_generation_freshness(self.archive.name, now), self.generation)
     def test_conditional_put_header(self):
         params={'headers':{}}
         u.create_only_header(params)
