@@ -119,4 +119,136 @@ class Phase5CampaignTests(unittest.TestCase):
         self.assertEqual(len(fake.writes), 1)
 
 
+    def test_notification_proof_accepts_public_202_contract(self):
+        """The FastAPI webhook contract is 202 Accepted, not 200 OK."""
+
+        class FakeClient:
+            def request(inner, service, method, path, **kwargs):
+                self.assertEqual(service, "zohoapis")
+                self.assertEqual(method, "GET")
+                self.assertEqual(path, "/crm/v8/Leads")
+                return {
+                    "ok": True,
+                    "data": {
+                        "data": [{
+                            "id": "5062683000000000001",
+                            "Modified_Time": "2026-09-28T12:00:00-04:00",
+                        }]
+                    },
+                }
+
+        class FakeStore:
+            def __init__(inner):
+                inner.db_path = self.root / "notification-proof.db"
+
+            def get_run(inner, run_id):
+                return {
+                    "run_id": run_id,
+                    "status": "completed",
+                }
+
+        class Response:
+            def __init__(inner, status_code, payload):
+                inner.status_code = status_code
+                inner._payload = payload
+
+            def json(inner):
+                return inner._payload
+
+        store = FakeStore()
+
+        settings = types.SimpleNamespace(
+            zoho_gateway=None,
+            zoho_oauth=None,
+            automation=types.SimpleNamespace(
+                db_path=store.db_path,
+            ),
+            api=types.SimpleNamespace(
+                api_key_env="SITE_WORKFLOW_API_KEY",
+            ),
+        )
+
+        posts = [
+            Response(
+                202,
+                {
+                    "accepted": True,
+                    "duplicate": False,
+                    "event_id": "event-fixture",
+                },
+            ),
+            Response(
+                202,
+                {
+                    "accepted": False,
+                    "duplicate": True,
+                    "event_id": "event-fixture",
+                },
+            ),
+        ]
+
+        routed = Response(
+            200,
+            {
+                "status": "routed",
+                "routes": [{"run_id": "run-fixture"}],
+            },
+        )
+
+        environment = {
+            "SITE_WORKFLOW_API_KEY": "phase5-fixture-api-key",
+            "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL":
+                "phase5-fixture-channel-credential-32bytes",
+            "OPTIBRAIN_CRM_LEAD_WRITES": "",
+        }
+
+        with (
+            patch.object(
+                provider,
+                "load_settings",
+                return_value=settings,
+            ),
+            patch.object(provider, "ZohoOAuthManager"),
+            patch.object(
+                provider,
+                "ZohoGatewayClient",
+                return_value=FakeClient(),
+            ),
+            patch.object(
+                provider,
+                "AutomationStore",
+                return_value=store,
+            ),
+            patch.object(
+                provider,
+                "mark_synthetic",
+            ) as synthetic,
+            patch.object(
+                provider.httpx,
+                "post",
+                side_effect=posts,
+            ) as post,
+            patch.object(
+                provider.httpx,
+                "get",
+                return_value=routed,
+            ),
+            patch.dict(
+                os.environ,
+                environment,
+                clear=False,
+            ),
+        ):
+            result = provider.run("notification-proof")
+
+        self.assertEqual(result["result"], "PASS")
+        self.assertEqual(result["delivery_class"], "synthetic")
+        self.assertTrue(result["duplicate"])
+        self.assertFalse(result["provider_emitted_event_proven"])
+        self.assertEqual(result["crm_record_writes"], 0)
+        self.assertEqual(post.call_count, 2)
+        synthetic.assert_called_once()
+
+
+
 if __name__ == "__main__": unittest.main()

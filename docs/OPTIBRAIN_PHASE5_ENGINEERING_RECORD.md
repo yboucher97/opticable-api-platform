@@ -109,3 +109,25 @@ Validation: **419 workflow API tests and 374 subtests**, zero failures/errors/sk
 Live read-only revalidation confirmed `Leads.Service_Types` (`5062683000007833001`, text 255) and `Leads.Next_Followup_At` (`5062683000007832003`, datetime) as two canonical Desired State noops; plan hash `71040e826d661c7e7f5f9bed85876eed09e4f314a32fabcdd1d9af1d85ce2778`. All three existing workflows remain active, and both legacy hooks remain present/unassociated. **No live CRM/Books mutation occurred during this hardening.** The two field additions from the earlier campaign remain unchanged.
 
 Production remains detached Phase 4 `209aac07160e1376381faebd86fb38a18f92582a`, active API 1.9.0; remote main remains that exact baseline. The fixed authenticated helper health check passed. Protected diagnostic hash/mode/owner/mtime and root recovery runbook hash/mode/owner/mtime remain unchanged. No root deployment was attempted. The final pinned command is supplied only after engineering verification; production PASS is not claimed here.
+
+### Production callback-gate correction — 2026-09-28
+
+During the first resumed Phase 5 production closeout, the
+`authenticated-public-lead-delivery-drill` blocked even though the production
+API, DB V2, native subscription readback, governance noops and safe production
+smoke were healthy.
+
+Root cause: `/v1/automation/webhooks/{endpoint_name}` intentionally returns
+HTTP 202 after durable webhook capture, while
+`ops/phase5/production_provider.py --mode notification-proof` incorrectly
+required HTTP 200 for both the accepted delivery and the duplicate delivery.
+
+The gate was corrected to require the actual HTTP 202 API contract. A focused
+regression test now proves that a 202 accepted response followed by a 202
+duplicate response completes the synthetic notification proof, remains
+classified as synthetic, does not promote provider-origin evidence, and
+performs zero CRM record writes.
+
+No Zoho subscription retry, CRM record mutation, Books mutation, or main-branch
+promotion was performed as part of this correction. Production remained on the
+previous Phase 5 candidate while the corrected candidate was validated.

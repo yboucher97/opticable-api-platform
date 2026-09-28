@@ -96,9 +96,9 @@ def run(mode):
         url = "https://optibrain.opticable.ca/v1/automation/webhooks/phase5-crm-leads"
         mark_synthetic(store, raw)
         one = httpx.post(url, json=raw, timeout=20)
-        check(one.status_code == 200 and one.json()["accepted"], "authenticated_public_notification_intake")
+        check(one.status_code == 202 and one.json()["accepted"], "authenticated_public_notification_intake")
         two = httpx.post(url, json=raw, timeout=20)
-        check(two.status_code == 200 and two.json()["duplicate"], "notification_delivery_dedupe")
+        check(two.status_code == 202 and two.json()["duplicate"], "notification_delivery_dedupe")
         event_id = one.json()["event_id"]
         deadline = time.monotonic() + 45
         while time.monotonic() < deadline:
