@@ -2,11 +2,18 @@
 
 Date: **2026-09-28 UTC**.
 
-Status: **candidate hardened; production deployment explicitly withheld**.
-The user requested a final privileged-campaign review on top of candidate
-`db24573247ff586ea68a7d9a9f125c9d591f829a` and instructed that production must
-not be deployed yet. Production was not migrated, restarted, deployed or
-promoted to main during this engineering campaign.
+Status: **live intermediate Phase 4 deployment; V5 permission fix and safe V2
+closeout prepared; root-authenticated closeout pending**.
+The privileged V4 campaign subsequently migrated production successfully and
+fast-forwarded its checkout to `e294064f9ebe40ee615842ec875a605d6b9f4b08`.
+Its candidate-readiness gate failed on source permissions. After a controlled
+human repair, API 1.9.0 is active with a V2 database; remote main remains the
+immutable Phase 3 baseline. The V5 engineering pass does not stop/restart the
+production service, migrate/restore production, or promote main.
+
+Earlier validation and production statements below describe the **historical
+pre-deployment V2–V4 engineering passes**. The current state, incident, and
+remaining closeout gates are recorded in **V5 live-state continuation** below.
 
 ## Baseline and isolated environment
 
@@ -19,9 +26,10 @@ promoted to main during this engineering campaign.
 - Private evidence: `/var/tmp/optibrain-phase4-artifacts` (0700).
 - Production checkout: `/opt/opticable-api-platform`; implementation was never
   written into it.
-- Candidate API: 1.9.0. Baseline production API: 1.8.0.
+- Candidate/current production API: 1.9.0. Historical baseline API: 1.8.0.
 - Expected baseline DB: `/var/lib/opticable-workflow-api/output/automation/automation.db`.
-  Direct access is protected; the actual production DB was not read or changed.
+  Direct access is protected. The original engineering passes did not change it;
+  the subsequent privileged campaign completed its V1 → V2 migration.
 
 The reviewed annotated tag `recovery/phase4-candidate-v2-20260928` stores its exact
 candidate SHA, merge base, cumulative binary diff SHA-256, changed-file inventory,
@@ -34,10 +42,14 @@ The first and V2 candidate tags remain preserved. The new annotated tag
 V3 tag after the privileged-campaign hardening below. Its annotation records the new exact SHA, cumulative binary
 diff SHA-256 and executed validation results; its separate manifest is
 `hardening-v4/release-evidence.json`. No existing commit or tag was rewritten.
-No development candidate was deployed. Databases from the
+At that historical validation point no development candidate was deployed. Databases from the
 superseded candidate are not an upgrade source for this release: the final
-production path starts with the immutable Phase 3 V1 database and validates
-the complete final V2 definition.
+original production path started with the immutable Phase 3 V1 database and
+validated the complete final V2 definition. **That migration has now succeeded;
+do not rerun the original production driver.** The superseding V5 tag
+`recovery/phase4-candidate-v5-20260928` records the new exact candidate identity,
+cumulative binary diff SHA-256, test counts and recovery artifact identity in its
+annotation; `hardening-v5/release-evidence.json` is the separate release manifest.
 
 The protected untracked file remains:
 `ops/backup/optibrain-cloudflare-auth-diagnostic.sh`.
@@ -575,3 +587,242 @@ claimed by this candidate campaign.
 - Core immutable evidence grows with event volume. Add a reviewed archive/retention
   policy before deleting reconciliation evidence; transient accounting is bounded.
 - Root production gates must execute successfully before declaring Phase 4 complete.
+
+
+## V5 live-state continuation — permission incident and safe closeout
+
+### Incident, repair and current evidence
+
+Previous deployed candidate: `e294064f9ebe40ee615842ec875a605d6b9f4b08`
+(V4). The original privileged campaign completed preflight, fresh predeployment
+backup, isolated archive restore, restored-production migration drill, service
+stop, stopped DB inspection, frozen V1 snapshot, source fast-forward, and the
+actual V1 → V2 migration. Its migration result verified legacy row hashes,
+SQLite integrity and foreign keys. It then failed at `candidate-api-readiness`.
+
+Root cause: root umask 077 was inherited by Git materialization running as
+optibrain. All 31 Phase 4 changed tracked files became 0600, and the service
+reported PermissionError reading `apps/workflow-api/workflow/api.py`. A controlled
+repair restored changed tracked non-executable files to their Git mode 0644.
+The protected diagnostic was excluded. This unsuccessful production attempt
+remains part of recovery history; its workspace and V1 evidence are preserved.
+
+User-verified repaired state: API 1.9.0; DB user_version 2; 178 completed runs;
+280 events, all routed; zero queue/claims/running/expired leases/failed/partial/
+dead-letter/human-action-required/stale work; healthy recovery thread, heartbeat
+and scan; zero backlog/quarantine; alerts ok; safe_internal_smoke policy. During
+V5 engineering, read-only public health, systemd and Git checks independently
+confirmed API 1.9.0, active/running service, exact e294064 production HEAD, remote
+main at baseline, and only the protected diagnostic untracked. The existing
+permitted queue-status helper independently confirmed 178 completed runs only.
+Direct authenticated health/DB/recovery-archive inspection awaits root and is
+not claimed as performed by this unprivileged pass.
+
+Preserved original evidence (never replaced):
+
+- Workspace: `/var/lib/optibrain/phase4/20260928T115756Z-09efc73c`.
+- Service staging: `/var/lib/optibrain-phase4-staging/20260928T115756Z-09efc73c`.
+- Predeployment archive: `/var/backups/optibrain/optibrain-backup-20260928T115757Z.tar.gz`.
+- Frozen V1 snapshot: `/var/lib/optibrain-phase4-staging/20260928T115756Z-09efc73c/pre-migration-frozen-v1.db`.
+- Predeployment recovery tag: `recovery/pre-phase4-durable-events-v1-20260928`.
+
+### Permission invariants
+
+`production_campaign.py` sets umask 022 only in the Git child that materializes
+production source. The root process remains at 077 for recovery files. It checks
+the production HEAD/index, limits mode normalization to baseline-to-candidate
+changed paths still indexed, and derives 0644/0755 from Git 100644/100755.
+Only the expected mode or its known 077-restricted equivalent (0600/0700) is
+accepted. No group/other write permission is added. Unexpected modes, ownership,
+unmerged entries, symlinks, non-regular files and hardlinks fail closed.
+
+Directory descriptors and O_NOFOLLOW protect every path component; fchmod uses
+an already validated descriptor and inode replacement is detected. All scoped
+files are validated before any chmod. Deleted paths and arbitrary untracked
+files are ignored. The diagnostic and root runbook are forbidden candidate paths
+and are rejected before the original driver stops/materializes production.
+There is no recursive/global chmod, and existing directory boundaries are not
+changed. The Git child creates new directories with traversal bits; a bounded
+probe running as the actual service UID/GID (without supplementary groups)
+reads and compiles runtime Python and reads automation configuration before
+service startup. The probe does not import/execute the API or instantiate a
+store, preventing a hidden migration during permission verification.
+
+### Commit-pinned V2 closeout
+
+Use only `ops/phase4/resume_production_closeout.py --candidate <V5 full SHA>`
+from the isolated clean worktree. The original `production_campaign.py` is not
+a continuation command. The closeout driver acquires the existing deployment
+lock, creates a new root-private recovery workspace, and retains the original
+result, backup and frozen snapshot identities. Its failure handler performs
+read-only state probes; it never starts/stops/restarts the workflow service,
+migrates, restores V1, retries a promotion, or changes remote main. Runtime
+defensive guards reject workflow lifecycle commands and migration commands
+without --inspect. All BLOCKED results retain the original stage/category and
+completed gates, independently observed checkout/main/service/DB state, and
+explicit manual recovery. Uninspectable state is unknown.
+
+Before production writes it proves candidate ancestry from e294064 and baseline;
+its exact clean HEAD; production HEAD e294064 or the new candidate; remote main
+baseline; clean production status except the diagnostic; and a strictly allowed
+ops/tests/documentation diff. Runtime workflow/config tree IDs must be identical.
+It verifies API 1.9.0, active/running service, only completed runs, all unresolved
+execution counters zero including partial, healthy recovery thread/heartbeat/
+scan, fresh healthy watchdog sample, event backlog/quarantine zero, routed-only
+events, alerts ok/empty, safe internal smoke policy, integrity, DB V2, zero failed
+systemd units, and exact diagnostic/runbook hash/mode/owner/mtime.
+
+Original result must prove the exact e294064 migration/drill PASS and the original
+readiness failure. The existing prebackup is hash/sidecar/archive-verified with
+its baseline manifest; previous isolated restore evidence must be PASS. The
+frozen snapshot must match its recorded hash, service ownership/private mode,
+V1 and migration row counts. Read-only SQLite comparison verifies every frozen
+event, completed run and run step still exists with identical legacy columns,
+allowing new V2 rows. Startup-updated workflows, retained health audit and cleaned
+terminal claims are covered by the original migration proof rather than an
+incorrect whole-live-DB hash requirement. The fresh post-start watchdog ID must
+exceed the frozen V1 ID; the existing 600-second stale policy remains strict,
+with a bounded 90-second telemetry wait.
+
+Only after these checks can it fast-forward production e294064 → V5 under safe
+Git permissions with the service running. It checks indexed source modes and
+service readability before continuing, then rechecks live health, worktree,
+V2 integrity and immutable legacy evidence. Runtime source and schema are
+unchanged; no workflow service restart occurs. It submits the existing internal
+smoke, proves exactly one platform.smoke-test run with core.set/event.emit,
+completed status and matching event ID, then resubmits the same identity and
+proves duplicate suppression, same event ID, routed state and duplicate count.
+
+Remaining gates execute in order: post-smoke health/integrity; fresh V2 backup;
+checksum/archive verification and isolated restore; existing encrypted off-host
+upload and exact-generation download-hash verification; final authenticated
+health, zero failed units, preserved V1 evidence and diagnostic/runbook; remote
+main baseline preflight; normal fast-forward push to the new candidate; exact
+remote main check; final post-Phase-4 annotated tag and publication of pre/post
+tags with exact remote peeled-target checks; durable private final result.
+The VPS never obtains the external AGE private key. No provider write is added.
+
+### Closeout failure boundaries reviewed
+
+| Boundary | Possible state and response |
+|---|---|
+| Pin/diff/live/prebackup/frozen/legacy/telemetry checks | e294064 or previously proven V5 / V2 / existing service. No production write; fail with observed evidence. |
+| Ops-only Git fast-forward or lost result | e294064, V5, or unknown checkout / V2 / existing service. Probe HEAD/index/status; no restart/migration/undo/push in handler. |
+| Mode/readability verification | V5 or unknown checkout / V2 / existing running runtime unchanged. Fail closed on unexpected type/mode; retain available permission proof, preserve evidence. |
+| Post-hotfix health/legacy checks | V5 / V2 or observed unknown / existing service. No smoke or main promotion on failure. |
+| Smoke submission/run/duplicate/ledger checks | V5 / V2; smoke may already be durable. Persist idempotency attempt before submission; mark completion only after all evidence verifies. No automatic ambiguous external execution. |
+| Post-smoke health/backup/checksum/archive/isolated restore | V5 / V2 / existing service; accepted smoke and backup attempt preserved. Main remains baseline. |
+| Encrypted upload/download-hash check | V5 / V2; smoke and local backup/restore completed. Main remains baseline; off-host completion remains false until exact generation verifies. |
+| Final health/evidence/main preflight | V5 / V2; recovery verification completed. Recheck actual main; no push if any gate fails. |
+| Main push or lost response | V5 / V2; remote baseline, new candidate, or unknown. Observe main, never retry/reset/push in recovery. |
+| Tag creation/publication/remote tag verification | V5 / V2; main may already be new candidate, tags may be local/remote. Preserve exact state and require manual metadata completion on failure. |
+| Result persistence/reporting failure | Observe actual state where possible. Preserve original failure stage; current facts become unknown if reporting fails. Never claim DB was unchanged. |
+
+The original driver's new post-stop source-permissions boundary leaves candidate
+checkout + V1 + stopped service if it fails before migration. Its conservative
+handler preserves that state and does not start code that could auto-migrate.
+All original Phase 3 execution fences, replay/redrive conservatism, Zoho Books
+approval and Zoho transport-ambiguity protection remain unchanged.
+
+### V5 scope, validation and release
+
+Changed paths relative to e294064 are limited to:
+
+- `ops/phase4/production_campaign.py`.
+- `ops/phase4/resume_production_closeout.py`.
+- `apps/workflow-api/tests/test_phase4_campaign.py`.
+- `apps/workflow-api/tests/test_phase4_resume.py`.
+- `docs/OPTIBRAIN_PHASE4_ENGINEERING_RECORD.md`.
+
+The new regression reproduces a real Git fast-forward under process umask 077,
+checks 0600/0700 before repair, 0644/0755 after repair, readable/compilable source,
+private 0600 recovery records and unchanged caller umask. It also verifies child
+022/new-directory traversal, deleted-file replacements untouched, exact protected
+fixture content/hash/mode/owner/inode/mtime/ctime unchanged, symlink/hardlink/mode/
+owner rejection, and actual service-identity subprocess arguments. Privileged
+service-identity readability is deferred to the real closeout gate.
+
+One initial fixture expected a RuntimeError for mode 000; the unprivileged kernel
+correctly raised PermissionError before mode validation. The assertion now
+accepts that safe rejection. No product boundary was relaxed to satisfy the test.
+Fake V2 closeout tests exercise every stage and lost-response/reporting windows,
+backup/offhost failures, completed-gate evidence, runtime-change rejection,
+partial/unknown execution states, queue/events/worker/alerts, immutable evidence,
+and ordering that forbids main promotion before recovery verification. They use
+no production DB, real systemctl/Git mutations or provider writes.
+
+Final validation counts and drill results are appended after execution. The
+annotated V5 tag/release manifest records final SHA, merge base, binary cumulative
+diff SHA-256, complete changed-file inventory, commands/results and recovery
+bundle hash without a self-referential source commit. V2/V3/V4 tags remain fixed.
+
+Current root boundary: sudo -n for unrestricted normal root execution requires
+human authentication. No sudoers/account/permission expansion is attempted.
+After all unprivileged engineering, one pinned sudo closeout command completes
+all remaining independent production gates. Phase 4 completion is withheld
+until that actual closeout result is PASS and production/main/recovery evidence
+is independently checked.
+
+### Executed V5 final validation
+
+All commands ran from `/var/tmp/optibrain-phase4-durable-events-v1`, using the
+existing production virtualenv interpreter with distinct disposable output roots
+under `/var/tmp/optibrain-phase4-artifacts/hardening-v5`. For each focused scope,
+`ops/phase4/run_tests.py --pattern <pattern>` used the pattern in its test filename;
+all Phase 4 used `test_phase4*.py`, and the entire suite omitted --pattern.
+`validation-results.json` contains every exact command, log path and counted result.
+
+| Scope | Exact count | Result |
+|---|---|---|
+| Campaign failure windows | 33 tests + 25 subtests | PASS; 3.764s |
+| New permission / V2 closeout | 40 tests + 54 subtests | PASS; 5.046s |
+| Phase 4 operations | 11 tests + 9 subtests | PASS; 5.674s |
+| All Phase 4 | 186 tests + 187 subtests | PASS; 14.562s |
+| Migration / ledger / WAL | 55 tests + 10 subtests | PASS; 5.034s |
+| Execution controls | 28 tests + 9 subtests | PASS; 3.171s |
+| Zoho safety | 8 tests + 0 subtests | PASS; 0.141s |
+| Inspection boundaries | 6 tests + 36 subtests | PASS; 0.785s |
+| Entire workflow API | 325 tests + 286 subtests | PASS; 22.592s |
+
+Zero failures, errors or skips in every final run. V5 adds **40 test methods and
+55 subtests** relative to e294064 (54 new closeout subtests plus the original
+campaign's new permissions failure boundary). The initial full run passed
+322 tests + 283 subtests; after self-review refinements, the final full result is
+325 tests + 286 subtests. The original 285-test regression set remains passing.
+
+Final isolated drill command (source is a disposable production-style fixture,
+not the live production database):
+
+```bash
+SITE_WORKFLOW_OUTPUT_ROOT=/var/tmp/optibrain-phase4-artifacts/hardening-v5/drill-sealed-output \
+/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python ops/phase4/isolated_drill.py \
+  --source-db /var/tmp/optibrain-phase4-artifacts/populated-v1.db \
+  --workspace /var/tmp/optibrain-phase4-artifacts/hardening-v5/isolated-drill-sealed
+```
+
+Result: PASS. Temporary port 37015; run `dcf155a795594071a46ac32f3b4b0d48`;
+event `9907523000054348a649115bf20e3029`. V1 source unchanged, V2 migration and
+legacy-row hashes preserved, integrity/WAL, API/worker restart, duplicate
+suppression, internal smoke, V2 backup/isolated restore and recovery snapshot
+all passed. The ambiguous external handler dispatched exactly once and event
+replay remained denied. No actual provider write occurred. The closeout's final
+read-only legacy verifier separately passed against that migrated populated
+fixture; evidence is `real-schema-legacy-proof-sealed.json`.
+
+Independent self-review found two refinements: smoke must prove an increased
+duplicate count, and immutable frozen reads must reject nonempty/symlink WAL
+evidence. Both were fixed, covered and included in final revalidation. The
+original prebackup is also rehashed before promotion so backup retention cannot
+silently remove it. No runtime/schema/provider code changed. `git diff --check`,
+`python -m compileall -q apps/workflow-api/workflow apps/workflow-api/tests ops/phase4`,
+changed-path review, introduced TODO/FIXME scan, and secret-pattern review passed.
+
+Final read-only production check: exact e294064 HEAD; local origin/main and live
+remote main exact Phase 3 baseline; API 1.9.0/status ok; ActiveState active,
+SubState running, unchanged MainPID 80315; zero failed units; only the protected
+diagnostic untracked; its hash/mode/owner/mtime unchanged; root runbook
+hash/mode/root ownership/mtime unchanged. Queue-status remains 178 completed
+runs only. `sudo -n /usr/bin/true` returned password required, so no privileged
+closeout, production hotfix fast-forward, new production smoke, postdeployment
+backup/restore/offhost verification, main promotion or final recovery tag was
+executed during V5 engineering. Those gates remain mandatory, not waived.

@@ -49,6 +49,14 @@ class FakeCampaign(campaign.Campaign):
     def execute(self):
         return self.promote(self.private, campaign.PROTECTED.stat(), "fixture-pretag", "fixture-posttag")
 
+    def checkout_permissions(self, candidate=None, *, normalize=True):
+        self.calls.append(("checkout_permissions", candidate, normalize))
+        return {"result": "PASS"}
+
+    def service_source_readability(self):
+        self.calls.append(("service_source_readability",))
+        return {"result": "PASS"}
+
     def git(self, repository, *args, timeout=900):
         self.calls.append(("git", *args))
         if args[0] == "rev-parse":
@@ -129,11 +137,13 @@ class FakeCampaign(campaign.Campaign):
         if path.endswith("event-health"):
             return {"backlog": 0, "quarantined": 0}
         if path.endswith("/runs/fixture-run"):
-            return {"status": "completed", "steps": [{"action": "core.set"}, {"action": "event.emit"}]}
+            return {"status": "completed", "workflow_id": "platform.smoke-test", "event_id": "fixture-event",
+                    "steps": [{"action": "core.set"}, {"action": "event.emit"}]}
         if path.endswith("/events/fixture-event"):
-            return {"status": "routed", "duplicate_count": 1}
+            return {"status": "routed", "duplicate_count": getattr(self, "duplicate_count", 0)}
         if path.endswith("/events"):
             if getattr(self, "event_seen", False):
+                self.duplicate_count = getattr(self, "duplicate_count", 0) + 1
                 return {"duplicate": True, "event_id": "fixture-event"}
             self.event_seen = True
             return {"accepted": True, "run_ids": ["fixture-run"], "event_id": "fixture-event"}
@@ -452,6 +462,7 @@ class CampaignFailureTests(unittest.TestCase):
             ("inspect-stopped-production", campaign.BASELINE, 1),
             ("freeze-v1-snapshot", campaign.BASELINE, 1),
             ("advance-production-checkout", campaign.BASELINE, 1),
+            ("production-source-permissions", CANDIDATE, 1),
             ("migrate-production-database", CANDIDATE, 1),
             ("start-candidate-service", CANDIDATE, 2),
             ("candidate-api-readiness", CANDIDATE, 2),
@@ -481,7 +492,7 @@ class CampaignFailureTests(unittest.TestCase):
                 expected_remote = CANDIDATE if stage in {"verify-remote-main", "postdeployment-recovery-tag",
                                                         "publish-production-recovery-tags"} else campaign.BASELINE
                 self.assertEqual(result["remote_main_sha"], expected_remote)
-                expected_active = stage not in {"migrate-production-database", "start-candidate-service"}
+                expected_active = stage not in {"production-source-permissions", "migrate-production-database", "start-candidate-service"}
                 self.assertEqual(result["production_service_active"], expected_active)
                 self.assertEqual(result["manual_recovery_required"], head != campaign.BASELINE)
                 pushes = [call for call in driver.calls if call[:2] == ("git", "push")]

@@ -8,6 +8,7 @@ ambiguous migration or automatically overwrites a production database.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 from datetime import datetime, timezone
 import fcntl
 import hashlib
@@ -39,6 +40,8 @@ EXPECTED_STATUS = "?? ops/backup/optibrain-cloudflare-auth-diagnostic.sh"
 OFFHOST_STATE = Path("/var/lib/optibrain/phase2a/state.json")
 UNRESOLVED_STATES = ("queued", "claimed", "running", "expired_leases", "failed", "partial",
                      "dead_letter", "human_action_required", "stale_queued", "stale_running")
+FORBIDDEN_SOURCE_PATHS = {"ops/backup/optibrain-cloudflare-auth-diagnostic.sh",
+                          "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md"}
 
 
 def check(condition: bool, category: str) -> None:
@@ -89,6 +92,118 @@ def write_record(path: Path, value: dict) -> None:
         os.close(directory)
 
 
+def git_paths(raw: bytes) -> list[str]:
+    check(len(raw) <= 8 * 1024**2 and (not raw or raw.endswith(b"\0")), "unsafe_git_path_output")
+    paths = [value.decode("utf-8", "strict") for value in raw.split(b"\0")[:-1]]
+    check(len(paths) <= 4096 and len(set(paths)) == len(paths), "unsafe_git_path_count")
+    for value in paths:
+        check(value and len(value) <= 4096 and not value.startswith("/")
+              and all(part not in {"", ".", ".."} for part in value.split("/")), "unsafe_git_relative_path")
+    return paths
+
+
+def index_entries(raw: bytes) -> dict[str, tuple[str, str]]:
+    check(len(raw) <= 8 * 1024**2 and (not raw or raw.endswith(b"\0")), "unsafe_git_index_output")
+    entries = {}
+    for record in raw.split(b"\0")[:-1]:
+        header, separator, name = record.partition(b"\t")
+        fields = header.decode("ascii").split()
+        check(separator and len(fields) == 3 and fields[2] == "0"
+              and re.fullmatch(r"[0-9a-f]{40}", fields[1]), "unsafe_git_index_entry")
+        path = git_paths(name + b"\0")[0]
+        check(path not in entries, "duplicate_git_index_entry")
+        entries[path] = (fields[0], fields[1])
+    return entries
+
+
+@contextmanager
+def source_descriptor(repository: Path, relative: str):
+    """Open through directory descriptors; never follow a parent or leaf symlink."""
+    git_paths(relative.encode() + b"\0")
+    descriptor = os.open(repository, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    file_descriptor = None
+    try:
+        parts = relative.split("/")
+        for part in parts[:-1]:
+            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = child
+        file_descriptor = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC,
+                                  dir_fd=descriptor)
+        metadata = os.fstat(file_descriptor)
+        check(stat.S_ISREG(metadata.st_mode) and metadata.st_nlink == 1, "unsafe_tracked_source_type")
+        yield file_descriptor
+        current = os.stat(parts[-1], dir_fd=descriptor, follow_symlinks=False)
+        check((current.st_dev, current.st_ino) == (metadata.st_dev, metadata.st_ino), "tracked_source_replaced")
+    finally:
+        if file_descriptor is not None:
+            os.close(file_descriptor)
+        os.close(descriptor)
+
+
+def normalize_tracked_modes(repository: Path, paths: list[str], entries: dict[str, tuple[str, str]],
+                            *, owner_uid: int, normalize: bool = True) -> dict:
+    """Only changed, indexed regular files; accept Git modes or the known 077 defect."""
+    targets, deleted = [], 0
+    for path in paths:
+        check(path not in FORBIDDEN_SOURCE_PATHS, "protected_source_path_in_candidate")
+        if path not in entries:
+            deleted += 1
+            continue
+        mode, _ = entries[path]
+        check(mode in {"100644", "100755"}, "unsupported_tracked_source_type")
+        targets.append((path, 0o644 if mode == "100644" else 0o755))
+    # Validate the entire scope before changing any mode. Revalidate each open
+    # descriptor during normalization so a replacement cannot redirect chmod.
+    def validate(descriptor: int, expected: int) -> int:
+        metadata = os.fstat(descriptor)
+        actual = stat.S_IMODE(metadata.st_mode)
+        check(metadata.st_uid == owner_uid and actual in {expected, expected & ~0o077}, "unexpected_tracked_source_mode")
+        check(normalize or actual == expected, "tracked_source_mode_not_materialized")
+        return actual
+    for path, expected in targets:
+        with source_descriptor(repository, path) as descriptor:
+            validate(descriptor, expected)
+    corrected = 0
+    for path, expected in targets:
+        with source_descriptor(repository, path) as descriptor:
+            actual = validate(descriptor, expected)
+            if actual != expected:
+                os.fchmod(descriptor, expected)
+                corrected += 1
+            check(stat.S_IMODE(os.fstat(descriptor).st_mode) == expected, "tracked_source_mode_verification")
+    return {"result": "PASS", "verified_files": len(targets), "normalized_files": corrected, "deleted_files_ignored": deleted}
+
+
+SOURCE_READ_PROBE = r'''
+import json, os, stat, sys
+repository, paths = sys.argv[1], json.loads(sys.argv[2])
+for relative in paths:
+    parent = os.open(repository, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    leaf = None
+    try:
+        parts = relative.split('/')
+        for part in parts[:-1]:
+            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent)
+            os.close(parent)
+            parent = child
+        leaf = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=parent)
+        if not stat.S_ISREG(os.fstat(leaf).st_mode):
+            raise RuntimeError('service_source_type')
+        with os.fdopen(leaf, 'rb', closefd=False) as stream:
+            content = stream.read(4 * 1024**2 + 1)
+        if len(content) > 4 * 1024**2:
+            raise RuntimeError('service_source_size')
+        if relative.endswith('.py'):
+            compile(content, relative, 'exec')
+    finally:
+        if leaf is not None:
+            os.close(leaf)
+        os.close(parent)
+print(json.dumps({'result':'PASS','readable_files':len(paths),'application_import_executed':False}))
+'''
+
+
 class Campaign:
     def __init__(self, candidate: str, root: Path) -> None:
         self.candidate, self.root = candidate, root
@@ -109,7 +224,8 @@ class Campaign:
         self.service_user = pwd.getpwnam("opticable-workflow-api")
         self.key = ""
 
-    def run(self, argv: list[str], *, user: str | None = None, timeout: int = 900) -> str:
+    def run(self, argv: list[str], *, user: str | None = None, timeout: int = 900,
+            umask: int | None = None, binary: bool = False) -> str | bytes:
         if user == "optibrain":
             argv = ["/usr/sbin/runuser", "-u", user, "--", *argv]
             kwargs = {}
@@ -117,6 +233,8 @@ class Campaign:
             kwargs = {"user": self.service_user.pw_uid, "group": self.service_user.pw_gid, "extra_groups": []}
         else:
             kwargs = {}
+        if umask is not None:
+            kwargs["umask"] = umask
         with (self.root / "operations.log").open("ab") as output:
             completed = subprocess.run(argv, env=SAFE_ENV, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                        stderr=output, timeout=timeout, check=False, **kwargs)
@@ -126,10 +244,40 @@ class Campaign:
                 # the failed drill's reason while reporting a generic exit.
                 output.write(completed.stdout[:65536])
         check(completed.returncode == 0, "fixed_operation_failed")
-        return completed.stdout.decode("utf-8", "replace").strip()
+        return completed.stdout if binary else completed.stdout.decode("utf-8", "replace").strip()
 
     def git(self, repository: Path, *args: str, timeout: int = 900) -> str:
-        return self.run(["/usr/bin/git", "-C", str(repository), *args], user="optibrain", timeout=timeout)
+        # Only Git materialization gets 022 in its child. Root recovery artifacts
+        # retain the caller's 077; no process-global umask relaxation occurs.
+        options = {"umask": 0o022} if repository == PROD and args and args[0] == "merge" else {}
+        return self.run(["/usr/bin/git", "-C", str(repository), *args], user="optibrain", timeout=timeout, **options)
+
+    def git_bytes(self, repository: Path, *args: str) -> bytes:
+        return self.run(["/usr/bin/git", "-C", str(repository), *args], user="optibrain", timeout=30, binary=True)
+
+    def checkout_permissions(self, candidate: str | None = None, *, normalize: bool = True) -> dict:
+        candidate = candidate or self.candidate
+        check(self.git(PROD, "rev-parse", "HEAD") == candidate, "source_permissions_checkout_identity")
+        check(self.git(PROD, "status", "--porcelain") == EXPECTED_STATUS, "source_permissions_worktree_changed")
+        check(not self.git_bytes(PROD, "diff", "--cached", "--name-only", "-z", candidate), "source_permissions_index_changed")
+        paths = git_paths(self.git_bytes(PROD, "diff", "--name-only", "--no-renames", "-z", BASELINE, candidate))
+        entries = index_entries(self.git_bytes(PROD, "ls-files", "--stage", "-z"))
+        result = normalize_tracked_modes(PROD, paths, entries, owner_uid=self.owner.pw_uid, normalize=normalize)
+        self.mark(source_permissions=result)
+        return result
+
+    def service_source_readability(self) -> dict:
+        entries = index_entries(self.git_bytes(PROD, "ls-files", "--stage", "-z"))
+        paths = [path for path, (mode, _) in entries.items()
+                 if ((path.startswith("apps/workflow-api/workflow/") and path.endswith(".py"))
+                     or path.startswith("apps/workflow-api/config/automation/"))]
+        check(paths and len(paths) <= 4096 and all(entries[path][0] in {"100644", "100755"} for path in paths),
+              "unsafe_service_source_scope")
+        result = json.loads(self.run([str(PYTHON), "-I", "-c", SOURCE_READ_PROBE, str(PROD), json.dumps(paths)],
+                                    user="opticable-workflow-api", timeout=60))
+        check(result["result"] == "PASS" and result["readable_files"] == len(paths), "service_source_readability_failed")
+        self.mark(service_source_readability=result)
+        return result
 
     def mark(self, **values) -> None:
         self.result.update(values)
@@ -368,6 +516,8 @@ class Campaign:
         check(self.git(PROD, "rev-parse", "HEAD") == BASELINE, "production_head_changed")
         check(self.git(PROD, "ls-remote", "origin", "refs/heads/main").split()[0] == BASELINE, "remote_main_changed")
         check(self.git(REPO, "merge-base", BASELINE, self.candidate) == BASELINE, "candidate_merge_base")
+        candidate_paths = git_paths(self.git_bytes(REPO, "diff", "--name-only", "--no-renames", "-z", BASELINE, self.candidate))
+        check(not FORBIDDEN_SOURCE_PATHS.intersection(candidate_paths), "protected_source_path_in_candidate")
         check(self.git(PROD, "status", "--porcelain") == "?? ops/backup/optibrain-cloudflare-auth-diagnostic.sh", "unexpected_production_changes")
         check(sha(PROTECTED) == PROTECTED_SHA, "protected_diagnostic_changed")
         protected_meta = PROTECTED.stat()
@@ -453,6 +603,9 @@ class Campaign:
         self.git(PROD, "merge", "--ff-only", self.candidate)
         check(self.git(PROD, "rev-parse", "HEAD") == self.candidate, "production_checkout_not_candidate")
         self.mark(production_checkout_advanced=True)
+        self.stage_start("production-source-permissions")
+        self.checkout_permissions()
+        self.service_source_readability()
         self.stage_start("migrate-production-database")
         self.mark(production_migration_started=True)
         migration = json.loads(self.run([str(PYTHON), str(REPO / "ops/phase4/migrate_db.py"), "--db", str(DB)], user="opticable-workflow-api"))
@@ -469,20 +622,7 @@ class Campaign:
         self.wait_watchdog(stopped["watchdog_sample_id"], 2)
         self.stage_start("candidate-health")
         self.healthy("1.9.0", events=True)
-        self.stage_start("safe-production-smoke")
-        event = {"event_type": "system.automation.smoke_test", "source": "internal", "idempotency_key": "phase4-production-smoke-" + uuid4().hex,
-                 "payload": {"requested_via": "phase4-gates"}}
-        self.mark(smoke_attempt={"event_type": event["event_type"], "idempotency_key": event["idempotency_key"]})
-        first = self.api("/v1/automation/events", event)
-        check(first["accepted"] and len(first["run_ids"]) == 1, "production_smoke_acceptance")
-        run = self.api("/v1/automation/runs/" + first["run_ids"][0])
-        check(run["status"] == "completed" and [s["action"] for s in run["steps"]] == ["core.set", "event.emit"], "production_smoke_execution")
-        duplicate = self.api("/v1/automation/events", event)
-        check(duplicate["duplicate"] and duplicate["event_id"] == first["event_id"], "production_smoke_dedupe")
-        evidence = self.api("/v1/automation/events/" + first["event_id"])
-        check(evidence["status"] == "routed" and evidence["duplicate_count"] >= 1, "production_ledger_evidence")
-        self.mark(smoke={"result": "PASS", "run_id": first["run_ids"][0], "event_id": first["event_id"],
-                         "idempotency_key": event["idempotency_key"]}, production_smoke_completed=True)
+        self.smoke()
         self.stage_start("post-smoke-health")
         self.healthy("1.9.0", events=True)
         post_archive, post_generation, _ = self.archive(self.candidate, "postdeployment")
@@ -515,6 +655,31 @@ class Campaign:
                            predeployment_tag=pretag, postdeployment_tag=posttag)
         return self.result
 
+    def smoke(self) -> None:
+        self.stage_start("safe-production-smoke")
+        event = {"event_type": "system.automation.smoke_test", "source": "internal", "idempotency_key": "phase4-production-smoke-" + uuid4().hex,
+                 "payload": {"requested_via": "phase4-gates"}}
+        self.mark(smoke_attempt={"event_type": event["event_type"], "idempotency_key": event["idempotency_key"]})
+        first = self.api("/v1/automation/events", event)
+        check(first["accepted"] and len(first["run_ids"]) == 1, "production_smoke_acceptance")
+        run = self.api("/v1/automation/runs/" + first["run_ids"][0])
+        check(run["status"] == "completed" and run["workflow_id"] == "platform.smoke-test"
+              and run["event_id"] == first["event_id"] and [s["action"] for s in run["steps"]] == ["core.set", "event.emit"],
+              "production_smoke_execution")
+        before_duplicate = self.api("/v1/automation/events/" + first["event_id"])
+        check(before_duplicate["status"] == "routed" and type(before_duplicate["duplicate_count"]) is int
+              and before_duplicate["duplicate_count"] >= 0, "production_ledger_first_delivery")
+        duplicate = self.api("/v1/automation/events", event)
+        check(duplicate["duplicate"] and duplicate["event_id"] == first["event_id"], "production_smoke_dedupe")
+        evidence = self.api("/v1/automation/events/" + first["event_id"])
+        check(evidence["status"] == "routed" and type(evidence["duplicate_count"]) is int
+              and evidence["duplicate_count"] > before_duplicate["duplicate_count"], "production_ledger_evidence")
+        self.mark(smoke={"result": "PASS", "run_id": first["run_ids"][0], "event_id": first["event_id"],
+                         "idempotency_key": event["idempotency_key"], "workflow_id": run["workflow_id"],
+                         "actions": [s["action"] for s in run["steps"]],
+                         "duplicate_count_before": before_duplicate["duplicate_count"],
+                         "duplicate_count_after": evidence["duplicate_count"]}, production_smoke_completed=True)
+
 
 def blocked_with_evidence(campaign: Campaign, exc: BaseException, stage: str) -> dict:
     # Freeze the blocking identity BEFORE any probe/recovery/reporting code.
@@ -537,6 +702,8 @@ def blocked_with_evidence(campaign: Campaign, exc: BaseException, stage: str) ->
         for name in ("production_git_sha", "remote_main_sha", "production_service_active",
                      "production_database_version", "production_checkout_advanced", "remote_main_promoted"):
             fallback[name] = "unknown"
+        if "hotfix_checkout_advanced" in fallback:
+            fallback["hotfix_checkout_advanced"] = "unknown"
         if fallback["production_migration_started"] and fallback["production_migration_completed"] is not True:
             fallback["production_migration_completed"] = "unknown"
         fallback["failure_reporting_errors"] = {"handler": type(reporting_error).__name__}
