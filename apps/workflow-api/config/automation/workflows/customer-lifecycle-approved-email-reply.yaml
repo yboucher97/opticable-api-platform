@@ -1,8 +1,8 @@
 id: customer.lifecycle.approved-email-reply
 name: Customer lifecycle approved email reply
-version: 1
-enabled: true
-description: Sends a reply only after an explicit approved_to_send event. Automatic email analysis remains draft-only.
+version: 2
+enabled: false
+description: Disabled for Phase 6. Boolean-only approval is unavailable unless separately approved for legacy compatibility. Gate F must explicitly register and route durable single-use approvals before outbound mail is enabled.
 trigger:
   event_types:
     - customer.lifecycle.email.reply.approved_to_send
@@ -12,8 +12,8 @@ steps:
     with:
       reply: "{{ event.payload }}"
     retry:
-      max_attempts: 2
-      backoff_seconds: 2
+      max_attempts: 1
+      backoff_seconds: 0
   - id: emit_sent
     action: event.emit
     with:

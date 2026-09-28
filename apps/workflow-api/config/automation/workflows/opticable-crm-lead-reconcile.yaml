@@ -1,8 +1,8 @@
 id: opticable.crm.lead-reconcile
 name: Opticable bounded CRM lead follow-up
-version: 1
+version: 2
 enabled: true
-description: Observe by default. Explicit phase5-lead-v1 service policy permits normalization and one verified internal task per lead.
+description: Observe by default. Legacy phase5-lead-v1 remains compatible; explicit phase6-sales-v1 permits only bounded normalization, Next_Followup_At, trusted empty Service_Types fill, and one verified internal task generation. No customer send, conversion, owner change, or Books mutation.
 trigger:
   event_types: [opticable.crm.lead.reviewed]
   sources: [crm-lead-observer]

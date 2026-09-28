@@ -94,6 +94,8 @@ def register_lifecycle_mailbox_actions(
     engine: AutomationEngine,
     client: ZohoGatewayClient,
     store: AutomationStore,
+    *,
+    allow_legacy_reply: bool = False,
 ) -> None:
     def poll_mailbox(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
         account_id = str(step.inputs.get("account_id") or "1083319000000008002").strip()
@@ -229,6 +231,10 @@ def register_lifecycle_mailbox_actions(
         return result
 
     def send_approved_reply(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
+        # Also blocks already queued V1 workflow snapshots. Startup never opts
+        # into this compatibility hook; it needs separate reviewed authorization.
+        if allow_legacy_reply is not True:
+            raise ValueError("Legacy boolean-only email reply is disabled for Phase 6")
         reply = step.inputs.get("reply")
         if not isinstance(reply, dict):
             raise ValueError("lifecycle.mail_reply_approved requires with.reply object.")
