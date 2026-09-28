@@ -30,7 +30,7 @@ class AutomationStore:
         # Even a connection opened solely to reject a future schema must not
         # change database metadata.
         version = conn.execute("PRAGMA user_version").fetchone()[0]
-        if version not in (0, 1):
+        if version not in (0, 1, 2):
             conn.close()
             raise RuntimeError(f"unknown automation schema version: {version}")
         conn.execute("PRAGMA journal_mode=WAL")
@@ -115,13 +115,16 @@ class AutomationStore:
                 """
                 )
         self._migrate_execution_control()
+        from .event_schema import migrate_events
+        with self._connect() as conn:
+            migrate_events(conn)
 
     def _migrate_execution_control(self) -> None:
         """Add only new execution metadata in one repeat-safe SQLite transaction."""
         with self._lock, self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
             version = conn.execute("PRAGMA user_version").fetchone()[0]
-            if version == 1:
+            if version in (1, 2):
                 required = {
                     "automation_run_steps": {"action_identity", "provider_operation_id"},
                     "automation_run_claims": {"run_id", "worker_id", "attempt_id", "claimed_at", "lease_expires_at"},
@@ -137,6 +140,8 @@ class AutomationStore:
                                  "idx_automation_run_failures_run"} <= indexes:
                     self._require_numeric_claim_clock(conn)
                     return
+                if version == 2:
+                    raise RuntimeError("incomplete execution schema version 2")
             columns = {row["name"] for row in conn.execute("PRAGMA table_info(automation_run_steps)")}
             if "action_identity" not in columns:
                 conn.execute("ALTER TABLE automation_run_steps ADD COLUMN action_identity TEXT")
@@ -263,107 +268,14 @@ class AutomationStore:
         return matches
 
     def ingest_event(self, event: AutomationEvent) -> tuple[bool, str, str]:
-        correlation_id = event.correlation_id or event.event_id
-        with self._lock, self._connect() as conn:
-            if event.idempotency_key:
-                existing = conn.execute(
-                    "SELECT event_id,correlation_id FROM automation_events WHERE idempotency_key=?",
-                    (event.idempotency_key,),
-                ).fetchone()
-                if existing is not None:
-                    return False, str(existing["event_id"]), str(existing["correlation_id"])
-            try:
-                conn.execute(
-                    """
-                    INSERT INTO automation_events(
-                        event_id,event_type,source,occurred_at,correlation_id,causation_id,
-                        idempotency_key,depth,payload_json,created_at
-                    ) VALUES(?,?,?,?,?,?,?,?,?,?)
-                    """,
-                    (
-                        event.event_id,
-                        event.event_type,
-                        event.source,
-                        event.occurred_at,
-                        correlation_id,
-                        event.causation_id,
-                        event.idempotency_key,
-                        event.depth,
-                        json.dumps(event.payload, separators=(",", ":"), ensure_ascii=False),
-                        utc_now_iso(),
-                    ),
-                )
-            except sqlite3.IntegrityError:
-                existing = conn.execute(
-                    "SELECT event_id,correlation_id FROM automation_events WHERE event_id=?",
-                    (event.event_id,),
-                ).fetchone()
-                if existing is None:
-                    raise
-                return False, str(existing["event_id"]), str(existing["correlation_id"])
-        return True, event.event_id, correlation_id
+        from .events import EventLedger
+        return EventLedger(self).capture(event, legacy_identity=True)
 
     def ingest_event_and_runs(
         self, event: AutomationEvent
     ) -> tuple[bool, str, str, list[tuple[str, WorkflowDefinition]]]:
-        """Commit the event and every matching queued run in one SQLite transaction.
-
-        This does not execute or replay a run. A crash after commit leaves a
-        visible queued run for explicit recovery, rather than an orphan event.
-        """
-        correlation_id = event.correlation_id or event.event_id
-        with self._lock, self._connect() as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            existing = None
-            if event.idempotency_key:
-                existing = conn.execute(
-                    "SELECT event_id,correlation_id FROM automation_events WHERE idempotency_key=?",
-                    (event.idempotency_key,),
-                ).fetchone()
-            if existing is None:
-                existing = conn.execute(
-                    "SELECT event_id,correlation_id FROM automation_events WHERE event_id=?",
-                    (event.event_id,),
-                ).fetchone()
-            if existing is not None:
-                return False, str(existing["event_id"]), str(existing["correlation_id"]), []
-
-            rows = conn.execute(
-                "SELECT definition_json FROM automation_workflows WHERE enabled=1 ORDER BY workflow_id"
-            ).fetchall()
-            matches: list[WorkflowDefinition] = []
-            for row in rows:
-                definition = WorkflowDefinition.model_validate(json.loads(row["definition_json"]))
-                if event.event_type not in definition.trigger.event_types and "*" not in definition.trigger.event_types:
-                    continue
-                if definition.trigger.sources and event.source not in definition.trigger.sources:
-                    continue
-                matches.append(definition)
-
-            now = utc_now_iso()
-            conn.execute(
-                """
-                INSERT INTO automation_events(
-                    event_id,event_type,source,occurred_at,correlation_id,causation_id,
-                    idempotency_key,depth,payload_json,created_at
-                ) VALUES(?,?,?,?,?,?,?,?,?,?)
-                """,
-                (event.event_id, event.event_type, event.source, event.occurred_at,
-                 correlation_id, event.causation_id, event.idempotency_key, event.depth,
-                 json.dumps(event.payload, separators=(",", ":"), ensure_ascii=False), now),
-            )
-            runs: list[tuple[str, WorkflowDefinition]] = []
-            for definition in matches:
-                run_id = uuid4().hex
-                conn.execute(
-                    "INSERT INTO automation_runs(run_id,workflow_id,event_id,correlation_id,status,created_at,context_json) "
-                    "VALUES(?,?,?,?,?,?,?)",
-                    (run_id, definition.id, event.event_id, correlation_id, "queued", now,
-                     json.dumps({"queued_definition": definition.model_dump(by_alias=True)},
-                                separators=(",", ":"), ensure_ascii=False)),
-                )
-                runs.append((run_id, definition))
-        return True, event.event_id, correlation_id, runs
+        from .events import EventLedger
+        return EventLedger(self).ingest_and_route(event)
 
     def queued_envelopes(self, limit: int = 10) -> list[tuple[str, WorkflowDefinition, AutomationEvent]]:
         """Read only runs with an immutable queued definition snapshot for recovery."""
@@ -371,9 +283,8 @@ class AutomationStore:
             raise ValueError("queue scan limit must be 1–100")
         with self._connect() as conn:
             rows = conn.execute(
-                "SELECT r.run_id,r.context_json,e.event_id,e.event_type,e.source,e.occurred_at,"
-                "e.correlation_id,e.causation_id,e.idempotency_key,e.depth,e.payload_json "
-                "FROM automation_runs r JOIN automation_events e ON e.event_id=r.event_id "
+                "SELECT r.run_id,r.context_json,l.envelope_json "
+                "FROM automation_runs r JOIN automation_event_ledger l ON l.event_id=r.event_id "
                 "WHERE r.status='queued' AND r.context_json IS NOT NULL "
                 "ORDER BY r.created_at,r.run_id LIMIT ?", (limit,),
             ).fetchall()
@@ -383,13 +294,7 @@ class AutomationStore:
             if "queued_definition" not in snapshot:
                 continue
             definition = WorkflowDefinition.model_validate(snapshot["queued_definition"])
-            event = AutomationEvent.model_validate({
-                "event_id": row["event_id"], "event_type": row["event_type"],
-                "source": row["source"], "occurred_at": row["occurred_at"],
-                "correlation_id": row["correlation_id"], "causation_id": row["causation_id"],
-                "idempotency_key": row["idempotency_key"], "depth": row["depth"],
-                "payload": json.loads(row["payload_json"]),
-            })
+            event = AutomationEvent.model_validate(json.loads(row["envelope_json"]))
             result.append((row["run_id"], definition, event))
         return result
 
@@ -535,6 +440,12 @@ class AutomationStore:
                 (run_id, step_id, action, action_identity, attempt, "started", self._claim_iso(checked)),
             )
             self._claim_audit(conn, "action_started", claim["worker_id"], run_id, attempt_id)
+            from .events import count
+            provider = action.split(".")[0]
+            if provider in {"zoho", "google", "github", "cloudflare", "ovh", "windsor", "apollo", "ai"}:
+                count(conn, provider, "ai_invocations" if provider == "ai" else "provider_api_calls")
+                if attempt > 1:
+                    count(conn, provider, "provider_retries")
         return int(cursor.lastrowid)
 
     def renew_claim(self, run_id: str, attempt_id: str, *, lease_seconds: int = 60,
@@ -600,6 +511,22 @@ class AutomationStore:
             )
             if cursor.rowcount != 1:
                 return False
+            from .events import count
+            action_row = conn.execute("SELECT action FROM automation_run_steps WHERE id=?", (marker_id,)).fetchone()
+            provider = action_row["action"].split(".")[0]
+            if not succeeded and provider in {"zoho", "google", "github", "cloudflare", "ovh", "windsor", "apollo", "ai"}:
+                count(conn, provider, "provider_failures")
+                if failure_category == "rate_limited":
+                    count(conn, provider, "provider_rate_limits")
+            if succeeded and provider == "ai" and isinstance(result, dict):
+                raw = result.get("raw") or {}
+                usage = raw.get("usage") or raw.get("usageMetadata") or {} if isinstance(raw, dict) else {}
+                if isinstance(usage, dict):
+                    for metric, keys in (("ai_input_tokens", ("input_tokens", "promptTokenCount")),
+                                         ("ai_output_tokens", ("output_tokens", "candidatesTokenCount"))):
+                        value = next((usage[k] for k in keys if k in usage), None)
+                        if isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= 10**9:
+                            count(conn, "ai", metric, value)
             if not succeeded:
                 step = conn.execute("SELECT step_id FROM automation_run_steps WHERE id=?", (marker_id,)).fetchone()
                 self._insert_failure(conn, run_id=run_id, step_id=step["step_id"],
@@ -616,6 +543,9 @@ class AutomationStore:
                               claim["worker_id"], run_id, attempt_id, success=succeeded)
             if final_context is not None:
                 self._claim_audit(conn, "run_completed", claim["worker_id"], run_id, attempt_id)
+                duration = conn.execute("SELECT CAST(MAX(0,(julianday(finished_at)-julianday(started_at))*86400000000) AS INTEGER) "
+                                        "FROM automation_runs WHERE run_id=?", (run_id,)).fetchone()[0]
+                count(conn, "internal", "workflow_duration_us", duration or 0)
         return True
 
     def finish_claim(self, run_id: str, attempt_id: str, *, status: str,

@@ -65,7 +65,7 @@ class WorkflowDefinition(BaseModel):
 class AutomationEvent(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    event_id: str = Field(default_factory=lambda: uuid4().hex)
+    event_id: str = Field(default_factory=lambda: uuid4().hex, min_length=1, max_length=128)
     event_type: str = Field(min_length=1, max_length=200, pattern=r"^[A-Za-z0-9._:-]+$")
     source: str = Field(min_length=1, max_length=128)
     occurred_at: str = Field(default_factory=utc_now_iso)
@@ -74,6 +74,33 @@ class AutomationEvent(BaseModel):
     idempotency_key: str | None = Field(default=None, max_length=255)
     depth: int = Field(default=0, ge=0, le=32)
     payload: dict[str, Any] = Field(default_factory=dict)
+    event_version: int = Field(default=1, ge=1, le=1000)
+    source_account: str = Field(default="", max_length=255)
+    provider_event_id: str | None = Field(default=None, max_length=255)
+    dedupe_identity: str | None = Field(default=None, max_length=255)
+    subject_type: str | None = Field(default=None, max_length=128)
+    subject_id: str | None = Field(default=None, max_length=255)
+    provider_timestamp: str | None = None
+    provider_evidence: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("occurred_at", "provider_timestamp")
+    @classmethod
+    def normalize_timestamp(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            raise ValueError("event timestamps must include a timezone")
+        return parsed.astimezone(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
+
+    @model_validator(mode="after")
+    def valid_lineage(self) -> "AutomationEvent":
+        if self.causation_id == self.event_id:
+            raise ValueError("an event cannot cause itself")
+        for value in (self.correlation_id, self.causation_id):
+            if value is not None and not 1 <= len(value) <= 128:
+                raise ValueError("invalid event lineage identity")
+        return self
 
 
 class EventIngestResponse(BaseModel):

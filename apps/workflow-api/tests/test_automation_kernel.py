@@ -112,7 +112,7 @@ steps:
         engine = AutomationEngine(self.store, self.workflows)
         engine.sync_definitions()
         event = AutomationEvent(event_type="test.started", source="unit-test", idempotency_key="crash")
-        with patch("workflow.automation.store.uuid4", side_effect=[type("Id", (), {"hex": "first"})(), RuntimeError("crash")]):
+        with patch("workflow.automation.events.uuid4", side_effect=[type("Id", (), {"hex": "first"})(), RuntimeError("crash")]):
             with self.assertRaisesRegex(RuntimeError, "crash"):
                 engine.ingest(event)
         with self.store._connect() as conn:
@@ -283,6 +283,9 @@ steps:
         self.store.ingest_event(event)
         run_id = self.store.create_run("test.smoke", event.event_id, event.event_id)
         with self.store._connect() as conn:
+            from _phase4_fixtures import remove_event_schema
+            remove_event_schema(conn)
+            conn.execute("PRAGMA user_version=0")
             conn.execute("DROP TABLE automation_run_claims")
             conn.execute("DROP TABLE automation_run_failures")
         migrated = AutomationStore(self.store.db_path)

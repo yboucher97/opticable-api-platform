@@ -110,7 +110,11 @@ class AutomationEngine:
                 run_ids=[],
             )
 
-        effective_event = event.model_copy(update={"correlation_id": correlation_id})
+        from .events import EventLedger
+        persisted = EventLedger(self.store).inspect(event_id)
+        if persisted is None:
+            raise RuntimeError("durable event is missing")
+        effective_event = AutomationEvent.model_validate(persisted["envelope"])
         run_ids: list[str] = []
         for run_id, definition in queued_runs:
             run_ids.append(run_id)
@@ -264,6 +268,8 @@ class AutomationEngine:
         return False
 
     def recover_pending(self, *, limit: int = 10) -> dict[str, int]:
+        from .events import EventLedger
+        EventLedger(self.store).process_pending(limit=min(limit, 100))
         recovered = self.store.recover_expired_claims(limit=min(limit, 100))
         attempted = 0
         for run_id, definition, event in self.store.queued_envelopes(limit):

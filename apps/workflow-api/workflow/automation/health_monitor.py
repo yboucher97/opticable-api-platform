@@ -3,8 +3,10 @@ from __future__ import annotations
 import threading
 import time
 from typing import Any
+from typing import Callable
 
 from .store import AutomationStore
+from .events import EventLedger
 
 
 _SEVERITY_ORDER = {"info": 0, "warning": 1, "critical": 2}
@@ -26,6 +28,7 @@ class AutomationHealthMonitor:
         queue_backlog_threshold: int = 25,
         queue_growth_threshold: int = 10,
         recent_failure_threshold: int = 3,
+        sync_health: Callable[[], dict[str, Any]] | None = None,
     ) -> None:
         if not 30 <= sample_interval_seconds <= 3600:
             raise ValueError("health sample interval must be 30-3600 seconds")
@@ -36,6 +39,7 @@ class AutomationHealthMonitor:
         if not 1 <= recent_failure_threshold <= 10_000:
             raise ValueError("invalid recent failure threshold")
         self.store = store
+        self.sync_health = sync_health
         self.sample_interval_seconds = sample_interval_seconds
         self.queue_backlog_threshold = queue_backlog_threshold
         self.queue_growth_threshold = queue_growth_threshold
@@ -151,6 +155,24 @@ class AutomationHealthMonitor:
                     "Automation queue grew materially since the previous health sample.",
                 ))
 
+        event_health = EventLedger(self.store).health()
+        if self.sync_health:
+            event_health["sync_worker"] = self.sync_health()
+            if not event_health["sync_worker"]["healthy"]:
+                alerts.append(self._alert("delta_worker_unhealthy", "critical", 1, "Delta synchronization worker is unhealthy."))
+        if event_health["quarantined"]:
+            alerts.append(self._alert("event_quarantine", "warning", event_health["quarantined"], "Events require quarantine review."))
+        if event_health["backlog"] >= self.queue_backlog_threshold:
+            alerts.append(self._alert("event_backlog", "warning", event_health["backlog"], "Event routing backlog exceeded its threshold."))
+        if (event_health["oldest_unprocessed_age_seconds"] or 0) > 300:
+            alerts.append(self._alert("event_routing_stale", "warning", event_health["backlog"], "Event routing has stalled."))
+        stalled_sync = sum(item["status"] in {"failed", "resync_required"} for item in event_health["sync_checkpoints"])
+        if stalled_sync:
+            alerts.append(self._alert("delta_sync_stopped", "warning", stalled_sync, "Delta synchronization requires review."))
+        stale_sync = sum(item["mode"] == "incremental" and (item["cursor_age_seconds"] or 0) > 172800 for item in event_health["sync_checkpoints"])
+        if stale_sync:
+            alerts.append(self._alert("delta_sync_stale", "warning", stale_sync, "Incremental synchronization checkpoint is stale."))
+
         alerts.sort(key=lambda item: (-_SEVERITY_ORDER[item["severity"]], item["code"]))
         status = "ok"
         if any(item["severity"] == "critical" for item in alerts):
@@ -163,6 +185,7 @@ class AutomationHealthMonitor:
             "alerts": alerts,
             "database": db,
             "recovery_worker": worker_health,
+            "events": event_health,
         }
 
     def inspect(self, worker_health: dict[str, Any]) -> dict[str, Any]:

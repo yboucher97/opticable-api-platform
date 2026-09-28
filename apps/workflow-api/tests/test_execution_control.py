@@ -51,7 +51,7 @@ class ExecutionControlTests(unittest.TestCase):
             with self.subTest(future_objects=future_objects):
                 db = self.root / f"future-{future_objects}.db"
                 with sqlite3.connect(db) as conn:
-                    conn.execute("PRAGMA user_version=2")
+                    conn.execute("PRAGMA user_version=3")
                     if future_objects:
                         conn.execute("CREATE TABLE future_actions(id INTEGER PRIMARY KEY,payload TEXT)")
                         conn.execute("CREATE INDEX future_actions_payload ON future_actions(payload)")
@@ -59,7 +59,7 @@ class ExecutionControlTests(unittest.TestCase):
                                      "BEGIN SELECT RAISE(ABORT,'future guard'); END")
                         conn.execute("INSERT INTO future_actions(payload) VALUES('preserve me')")
                 before = self.database_snapshot(db)
-                with self.assertRaisesRegex(RuntimeError, "unknown automation schema version: 2"):
+                with self.assertRaisesRegex(RuntimeError, "unknown automation schema version: 3"):
                     AutomationStore(db)
                 self.assertEqual(self.database_snapshot(db), before)
 
@@ -69,7 +69,7 @@ class ExecutionControlTests(unittest.TestCase):
             self.assertEqual(conn.execute("PRAGMA user_version").fetchone()[0], 0)
         AutomationStore(db)
         before = self.database_snapshot(db)
-        self.assertEqual(before[0], 1)
+        self.assertEqual(before[0], 2)
         self.assertIn("automation_run_claims", before[2])
         self.assertIn("automation_run_failures", before[2])
         AutomationStore(db)
@@ -592,13 +592,15 @@ steps:
                          "reason_code TEXT,attempt_id TEXT,recorded_at TEXT)")
             conn.execute("INSERT INTO automation_run_failures VALUES(?,?,?,?,?)",
                          (run_id, "permanent", "old_failure", "old-attempt", "2026-09-27T16:00:00Z"))
+            from _phase4_fixtures import remove_event_schema
+            remove_event_schema(conn)
             conn.execute("PRAGMA user_version=0")
         migrated = AutomationStore(self.db)
         self.assertEqual(migrated.failed_work(), [])
         with migrated._connect() as conn:
             self.assertEqual(conn.execute("SELECT COUNT(*) FROM automation_run_failures_legacy").fetchone()[0], 1)
             self.assertEqual(conn.execute("SELECT COUNT(*) FROM automation_run_failures").fetchone()[0], 1)
-            self.assertEqual(conn.execute("PRAGMA user_version").fetchone()[0], 1)
+            self.assertEqual(conn.execute("PRAGMA user_version").fetchone()[0], 2)
         AutomationStore(self.db)
         with migrated._connect() as conn:
             self.assertEqual(conn.execute("SELECT COUNT(*) FROM automation_run_failures").fetchone()[0], 1)
@@ -618,7 +620,7 @@ steps:
             self.assertNotIn("action_identity", columns)
             self.assertEqual(conn.execute("PRAGMA user_version").fetchone()[0], 0)
             conn.execute("DROP TABLE automation_run_failures_legacy")
-        self.assertEqual(AutomationStore(db)._connect().execute("PRAGMA user_version").fetchone()[0], 1)
+        self.assertEqual(AutomationStore(db)._connect().execute("PRAGMA user_version").fetchone()[0], 2)
 
 
 if __name__ == "__main__":
