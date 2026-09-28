@@ -1,0 +1,384 @@
+{
+  "api_version": "opticable.io/crm-supplement-v1",
+  "captured_at": "2026-09-28T14:26:07.468Z",
+  "entries": {
+    "email_notification": {
+      "content_type": "application/json;charset=UTF-8",
+      "data": {
+        "email_notifications": [
+          {
+            "associated": true,
+            "bulk_email": false,
+            "deletable": true,
+            "editable": true,
+            "feature_type": "workflow",
+            "from_address": {
+              "details": {
+                "email": "notifications@zohocrm.com"
+              },
+              "type": "email"
+            },
+            "id": "5062683000007022002",
+            "lock_status": {
+              "locked": false
+            },
+            "module": {
+              "api_name": "Leads",
+              "id": "5062683000000002175"
+            },
+            "name": "Lead was created",
+            "recipients": {
+              "to": [
+                {
+                  "associated_to": null,
+                  "details": null,
+                  "resource": {
+                    "id": "5062683000000339001",
+                    "name": "Yan Erik Boucher"
+                  },
+                  "type": "user"
+                }
+              ]
+            },
+            "related_module": null,
+            "reply_to_address": null,
+            "source": "crm",
+            "template": {
+              "id": "5062683000001496024",
+              "name": "Lead Demande de soumisson"
+            }
+          }
+        ]
+      },
+      "ok": true,
+      "request_id": null,
+      "status": 200
+    },
+    "source_picklist": {
+      "content_type": "application/json;charset=UTF-8",
+      "data": {
+        "global_picklists": [
+          {
+            "actual_label": "Source",
+            "api_name": "Source",
+            "customizable": false,
+            "description": null,
+            "display_label": "Source",
+            "id": "5062683000003545027",
+            "pick_list_values": [
+              {
+                "actual_value": "-None-",
+                "display_value": "-None-",
+                "id": "5062683000003545031",
+                "reference_value": "-None-",
+                "sequence_number": 0,
+                "type": "used"
+              },
+              {
+                "actual_value": "Advertisement",
+                "display_value": "Advertisement",
+                "id": "5062683000003545033",
+                "reference_value": "Advertisement",
+                "sequence_number": 1,
+                "type": "used"
+              },
+              {
+                "actual_value": "Cold Call",
+                "display_value": "Cold Call",
+                "id": "5062683000003545035",
+                "reference_value": "Cold Call",
+                "sequence_number": 2,
+                "type": "used"
+              },
+              {
+                "actual_value": "Employee Referral",
+                "display_value": "Employee Referral",
+                "id": "5062683000003545037",
+                "reference_value": "Employee Referral",
+                "sequence_number": 3,
+                "type": "used"
+              },
+              {
+                "actual_value": "External Referral",
+                "display_value": "External Referral",
+                "id": "5062683000003545039",
+                "reference_value": "External Referral",
+                "sequence_number": 4,
+                "type": "used"
+              },
+              {
+                "actual_value": "Partner",
+                "display_value": "Partner",
+                "id": "5062683000003545041",
+                "reference_value": "Partner",
+                "sequence_number": 5,
+                "type": "used"
+              },
+              {
+                "actual_value": "Public Relations",
+                "display_value": "Public Relations",
+                "id": "5062683000003545043",
+                "reference_value": "Public Relations",
+                "sequence_number": 6,
+                "type": "used"
+              },
+              {
+                "actual_value": "Trade Show",
+                "display_value": "Trade Show",
+                "id": "5062683000003545045",
+                "reference_value": "Trade Show",
+                "sequence_number": 7,
+                "type": "used"
+              },
+              {
+                "actual_value": "Seminar Partner",
+                "display_value": "Seminar Partner",
+                "id": "5062683000003545047",
+                "reference_value": "Seminar Partner",
+                "sequence_number": 8,
+                "type": "used"
+              },
+              {
+                "actual_value": "OnlineStore",
+                "display_value": "Online Store",
+                "id": "5062683000003545049",
+                "reference_value": "Online Store",
+                "sequence_number": 9,
+                "type": "used"
+              },
+              {
+                "actual_value": "Chat",
+                "display_value": "Chat",
+                "id": "5062683000003545051",
+                "reference_value": "Chat",
+                "sequence_number": 10,
+                "type": "used"
+              },
+              {
+                "actual_value": "Sales Mail Alias",
+                "display_value": "Sales Email Alias",
+                "id": "5062683000003545053",
+                "reference_value": "Sales Email Alias",
+                "sequence_number": 11,
+                "type": "used"
+              },
+              {
+                "actual_value": "Seminar-Internal",
+                "display_value": "Internal Seminar",
+                "id": "5062683000003545055",
+                "reference_value": "Internal Seminar",
+                "sequence_number": 12,
+                "type": "used"
+              },
+              {
+                "actual_value": "Web Download",
+                "display_value": "Web Download",
+                "id": "5062683000003545057",
+                "reference_value": "Web Download",
+                "sequence_number": 13,
+                "type": "used"
+              },
+              {
+                "actual_value": "Web Research",
+                "display_value": "Web Research",
+                "id": "5062683000003545059",
+                "reference_value": "Web Research",
+                "sequence_number": 14,
+                "type": "used"
+              },
+              {
+                "actual_value": "Twitter",
+                "display_value": "Twitter",
+                "id": "5062683000003545061",
+                "reference_value": "Twitter",
+                "sequence_number": 15,
+                "type": "used"
+              },
+              {
+                "actual_value": "Facebook",
+                "display_value": "Facebook",
+                "id": "5062683000003545063",
+                "reference_value": "Facebook",
+                "sequence_number": 16,
+                "type": "used"
+              },
+              {
+                "actual_value": "Google+",
+                "display_value": "Google+",
+                "id": "5062683000003545065",
+                "reference_value": "Google+",
+                "sequence_number": 17,
+                "type": "used"
+              }
+            ],
+            "pick_list_values_sorted_lexically": false,
+            "presence": true,
+            "source": "crm"
+          }
+        ]
+      },
+      "ok": true,
+      "request_id": null,
+      "status": 200
+    },
+    "industry_picklist": {
+      "content_type": "application/json;charset=UTF-8",
+      "data": {
+        "global_picklists": [
+          {
+            "actual_label": "Industry",
+            "api_name": "Industry",
+            "customizable": false,
+            "description": null,
+            "display_label": "Industry",
+            "id": "5062683000003545028",
+            "pick_list_values": [
+              {
+                "actual_value": "-None-",
+                "display_value": "-None-",
+                "id": "5062683000003545067",
+                "reference_value": "-None-",
+                "sequence_number": 0,
+                "type": "used"
+              },
+              {
+                "actual_value": "ASP (Application Service Provider)",
+                "display_value": "ASP (Application Service Provider)",
+                "id": "5062683000003545069",
+                "reference_value": "ASP (Application Service Provider)",
+                "sequence_number": 1,
+                "type": "used"
+              },
+              {
+                "actual_value": "Data/Telecom OEM",
+                "display_value": "Data/Telecom OEM",
+                "id": "5062683000003545071",
+                "reference_value": "Data/Telecom OEM",
+                "sequence_number": 2,
+                "type": "used"
+              },
+              {
+                "actual_value": "ERP (Enterprise Resource Planning)",
+                "display_value": "ERP (Enterprise Resource Planning)",
+                "id": "5062683000003545073",
+                "reference_value": "ERP (Enterprise Resource Planning)",
+                "sequence_number": 3,
+                "type": "used"
+              },
+              {
+                "actual_value": "Government/Military",
+                "display_value": "Government/Military",
+                "id": "5062683000003545075",
+                "reference_value": "Government/Military",
+                "sequence_number": 4,
+                "type": "used"
+              },
+              {
+                "actual_value": "Large Enterprise",
+                "display_value": "Large Enterprise",
+                "id": "5062683000003545077",
+                "reference_value": "Large Enterprise",
+                "sequence_number": 5,
+                "type": "used"
+              },
+              {
+                "actual_value": "ManagementISV",
+                "display_value": "ManagementISV",
+                "id": "5062683000003545079",
+                "reference_value": "ManagementISV",
+                "sequence_number": 6,
+                "type": "used"
+              },
+              {
+                "actual_value": "MSP (Management Service Provider)",
+                "display_value": "MSP (Management Service Provider)",
+                "id": "5062683000003545081",
+                "reference_value": "MSP (Management Service Provider)",
+                "sequence_number": 7,
+                "type": "used"
+              },
+              {
+                "actual_value": "Network Equipment (Enterprise)",
+                "display_value": "Network Equipment Enterprise",
+                "id": "5062683000003545083",
+                "reference_value": "Network Equipment Enterprise",
+                "sequence_number": 8,
+                "type": "used"
+              },
+              {
+                "actual_value": "Non-management ISV",
+                "display_value": "Non-management ISV",
+                "id": "5062683000003545085",
+                "reference_value": "Non-management ISV",
+                "sequence_number": 9,
+                "type": "used"
+              },
+              {
+                "actual_value": "Optical Networking",
+                "display_value": "Optical Networking",
+                "id": "5062683000003545087",
+                "reference_value": "Optical Networking",
+                "sequence_number": 10,
+                "type": "used"
+              },
+              {
+                "actual_value": "Service Provider",
+                "display_value": "Service Provider",
+                "id": "5062683000003545089",
+                "reference_value": "Service Provider",
+                "sequence_number": 11,
+                "type": "used"
+              },
+              {
+                "actual_value": "Small/Medium Enterprise",
+                "display_value": "Small/Medium Enterprise",
+                "id": "5062683000003545091",
+                "reference_value": "Small/Medium Enterprise",
+                "sequence_number": 12,
+                "type": "used"
+              },
+              {
+                "actual_value": "Storage Equipment",
+                "display_value": "Storage Equipment",
+                "id": "5062683000003545093",
+                "reference_value": "Storage Equipment",
+                "sequence_number": 13,
+                "type": "used"
+              },
+              {
+                "actual_value": "Storage Service Provider",
+                "display_value": "Storage Service Provider",
+                "id": "5062683000003545095",
+                "reference_value": "Storage Service Provider",
+                "sequence_number": 14,
+                "type": "used"
+              },
+              {
+                "actual_value": "Systems Integrator",
+                "display_value": "Systems Integrator",
+                "id": "5062683000003545097",
+                "reference_value": "Systems Integrator",
+                "sequence_number": 15,
+                "type": "used"
+              },
+              {
+                "actual_value": "Wireless Industry",
+                "display_value": "Wireless Industry",
+                "id": "5062683000003545099",
+                "reference_value": "Wireless Industry",
+                "sequence_number": 16,
+                "type": "used"
+              }
+            ],
+            "pick_list_values_sorted_lexically": false,
+            "presence": true,
+            "source": "crm"
+          }
+        ]
+      },
+      "ok": true,
+      "request_id": null,
+      "status": 200
+    }
+  }
+}

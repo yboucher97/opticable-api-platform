@@ -1,0 +1,92 @@
+{
+  "after": {
+    "changes": [
+      {
+        "action": "noop",
+        "adapter": "zoho_crm.field.v1",
+        "current": {
+          "api_name": "Service_Types",
+          "data_type": "text",
+          "field_label": "Service Types",
+          "id": "5062683000007833001",
+          "length": 255
+        },
+        "dependencies": [],
+        "desired": {
+          "api_name": "Service_Types",
+          "data_type": "text",
+          "field_label": "Service Types",
+          "length": 255
+        },
+        "kind": "field",
+        "name": "Service Types",
+        "provider": "zoho_crm",
+        "reason": "CRM field matches desired state.",
+        "requires_confirmation": false,
+        "resource_id": "crm.field.leads.service_types",
+        "risk": "low"
+      },
+      {
+        "action": "noop",
+        "adapter": "zoho_crm.field.v1",
+        "current": {
+          "api_name": "Next_Followup_At",
+          "data_type": "datetime",
+          "field_label": "Next Followup At",
+          "id": "5062683000007832003"
+        },
+        "dependencies": [],
+        "desired": {
+          "api_name": "Next_Followup_At",
+          "data_type": "datetime",
+          "field_label": "Next Followup At"
+        },
+        "kind": "field",
+        "name": "Next Followup At",
+        "provider": "zoho_crm",
+        "reason": "CRM field matches desired state.",
+        "requires_confirmation": false,
+        "resource_id": "crm.field.leads.next_followup_at",
+        "risk": "low"
+      }
+    ],
+    "document_hash": "77b5b8354f2d71fb5ccb485cba2dae89ac112cbfce0326836e7b0e3f6b7ad669",
+    "document_name": "opticable-lead-additions",
+    "document_version": 1,
+    "plan_hash": "71040e826d661c7e7f5f9bed85876eed09e4f314a32fabcdd1d9af1d85ce2778",
+    "summary": {
+      "noop": 2
+    }
+  },
+  "document_hash": "77b5b8354f2d71fb5ccb485cba2dae89ac112cbfce0326836e7b0e3f6b7ad669",
+  "plan_hash": "1442a4c7660c9dcb878caf4c21e3d7d499c6bf3437103810cb7dc79340d5effd",
+  "result": "PASS",
+  "results": [
+    {
+      "action": "create",
+      "changed": true,
+      "error": null,
+      "resource_id": "crm.field.leads.service_types",
+      "result": {
+        "operation_id": "5062683000007833001",
+        "provider_status": 201,
+        "request_id": null,
+        "verification": true
+      },
+      "status": "completed"
+    },
+    {
+      "action": "create",
+      "changed": true,
+      "error": null,
+      "resource_id": "crm.field.leads.next_followup_at",
+      "result": {
+        "operation_id": "5062683000007832003",
+        "provider_status": 201,
+        "request_id": null,
+        "verification": true
+      },
+      "status": "completed"
+    }
+  ]
+}

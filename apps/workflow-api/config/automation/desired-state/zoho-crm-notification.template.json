@@ -1,0 +1,19 @@
+{
+  "api_version": "opticable.io/v1alpha1",
+  "kind": "DesiredState",
+  "name": "opticable-crm-lead-notification",
+  "version": 1,
+  "resources": [{
+    "id": "crm.notification.leads.phase5",
+    "provider": "zoho_crm",
+    "kind": "notification",
+    "name": "OptiBrain Phase 5 lead notifications",
+    "identity": {"channel_id": "5062683202609281"},
+    "desired": {"events": ["Leads.create", "Leads.edit"]},
+    "metadata": {"authentication": {
+      "destination_env": "OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT",
+      "credential_env": "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL",
+      "expiry_env": "OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY"
+    }}
+  }]
+}

@@ -1,0 +1,48 @@
+{
+  "api_version": "opticable.io/v1alpha1",
+  "description": "Two verified lead gaps; reuse existing Deal service context semantics and native Tasks for follow-up status.",
+  "kind": "DesiredState",
+  "name": "opticable-lead-additions",
+  "resources": [
+    {
+      "desired": {
+        "api_name": "Service_Types",
+        "data_type": "text",
+        "field_label": "Service Types",
+        "length": 255,
+        "module": "Leads"
+      },
+      "id": "crm.field.leads.service_types",
+      "identity": {
+        "api_name": "Service_Types",
+        "module": "Leads"
+      },
+      "kind": "field",
+      "metadata": {
+        "rollback": "Leave optional field unused; removal requires explicit destructive approval"
+      },
+      "name": "Service Types",
+      "provider": "zoho_crm"
+    },
+    {
+      "desired": {
+        "api_name": "Next_Followup_At",
+        "data_type": "datetime",
+        "field_label": "Next Followup At",
+        "module": "Leads"
+      },
+      "id": "crm.field.leads.next_followup_at",
+      "identity": {
+        "api_name": "Next_Followup_At",
+        "module": "Leads"
+      },
+      "kind": "field",
+      "metadata": {
+        "rollback": "Leave optional field unused; removal requires explicit destructive approval"
+      },
+      "name": "Next Followup At",
+      "provider": "zoho_crm"
+    }
+  ],
+  "version": 1
+}

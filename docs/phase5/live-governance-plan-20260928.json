@@ -1,0 +1,14 @@
+{
+  "document": "opticable-crm-governance",
+  "document_hash": "c8704cd992fb4cdbbb86f8f353391da4d0ed6bcf8c13243fdb88553b86a2d50f",
+  "live_get_calls": 14,
+  "plan_hash": "9049109e8503ff217a2d087db5cd56a48122d64c3179c141ba49c51218632a45",
+  "provider_writes": 0,
+  "result": "PASS",
+  "summary": {
+    "noop": 93
+  },
+  "verified_existing_active_workflows": 3,
+  "verified_preserved_legacy_webhooks": 2,
+  "version": 2
+}

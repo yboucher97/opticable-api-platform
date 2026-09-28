@@ -1,0 +1,30 @@
+{
+  "after_hash": "ea144ba3c4e9e58370b037f4a030b8815893a3a30f0a1a143c5bdb1d99484bb6",
+  "before_hash": "6fd24967d89538992a8a29736879379c39bd7e0775e1f15916676e7f3bad5fb4",
+  "changes": [
+    {
+      "after_hash": "b5adc65c16e1c331bae7f3c5a594617c0bb4198f7926c03fc2730ab61c78151f",
+      "before_hash": "f0d4a6ff4a57848adab6c17a2fd2ef61fe49145eb3e5c21c10efc74023e1b7c4",
+      "entry": "fields:Leads",
+      "status": "complete"
+    },
+    {
+      "after_hash": "6ef79661c8363d1fc83c13f0b30b15e19516aafec74c34026ec96f15c25d16f3",
+      "before_hash": "a53d33c070c5b8cb393f87bd692e436e9024f29395b6a237e2f95c25cbeb195f",
+      "entry": "layouts:Leads",
+      "status": "complete"
+    }
+  ],
+  "unknown": [
+    "assignment_rules:Accounts_X_Buildings",
+    "assignment_rules:Buildings",
+    "assignment_rules:Contacts_X_Buildings",
+    "cadences:Accounts_X_Buildings",
+    "cadences:Buildings",
+    "cadences:Contacts_X_Buildings",
+    "cadences:Tasks",
+    "fields:Buildings",
+    "layouts:Buildings",
+    "related_lists:Buildings"
+  ]
+}
