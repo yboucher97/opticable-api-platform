@@ -8,7 +8,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Callable
 
-from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -80,6 +80,23 @@ def install_operator_outbound_routes(
         if sec_fetch not in {None, "same-origin", "none"}:
             raise HTTPException(status_code=403, detail="cross-site operator request rejected")
 
+    def approval_from_state(state: dict) -> OutboundApproval:
+        """Validate the immutable approval envelope separately from terminal audit metadata."""
+        metadata = state.get("approval")
+        state_name = state.get("state")
+        if not isinstance(metadata, dict):
+            raise ValueError("invalid stored approval metadata")
+        envelope_fields = set(OutboundApproval.model_fields)
+        allowed_extra = {
+            "consumed": {"provider_operation_id", "request_id_hash"},
+            "manual": {"error"},
+        }.get(state_name, set())
+        extras = set(metadata) - envelope_fields
+        if not extras.issubset(allowed_extra):
+            raise ValueError("unexpected stored approval audit metadata")
+        envelope = {key: metadata[key] for key in envelope_fields if key in metadata}
+        return OutboundApproval.model_validate(envelope)
+
     def candidate_dict(review_event_id: str) -> dict:
         try:
             return resolver.resolve(review_event_id).model_dump()
@@ -100,13 +117,15 @@ def install_operator_outbound_routes(
             "send_enabled": False,
         })
 
-    @app.post("/v1/operator/outbound/approvals", tags=["operator-outbound"])
+    @app.post(
+        "/v1/operator/outbound/approvals",
+        tags=["operator-outbound"],
+        dependencies=[Depends(mutation_guard)],
+    )
     async def issue_approval(
         body: IssueApprovalRequest,
-        request: Request,
         cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion"),
     ):
-        mutation_guard(request)
         identity = principal(cf_access_jwt_assertion)
         candidate = candidate_dict(body.review_event_id)
         if candidate["candidate_hash"] != body.candidate_hash:
@@ -163,7 +182,10 @@ def install_operator_outbound_routes(
             raise HTTPException(status_code=404, detail="Approval not found") from exc
         if state is None:
             raise HTTPException(status_code=404, detail="Approval not found")
-        approval = OutboundApproval.model_validate(state["approval"])
+        try:
+            approval = approval_from_state(state)
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail="Stored approval state is invalid") from exc
         if approval.actor != identity.actor:
             raise HTTPException(status_code=403, detail="Approval belongs to another operator")
         return _no_store({
@@ -172,13 +194,15 @@ def install_operator_outbound_routes(
             "at": state["at"],
         })
 
-    @app.post("/v1/operator/outbound/approvals/{approval_id}/consume", tags=["operator-outbound"])
+    @app.post(
+        "/v1/operator/outbound/approvals/{approval_id}/consume",
+        tags=["operator-outbound"],
+        dependencies=[Depends(mutation_guard)],
+    )
     async def consume_approval(
         approval_id: str,
-        request: Request,
         cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion"),
     ):
-        mutation_guard(request)
         identity = principal(cf_access_jwt_assertion)
         try:
             state = ledger.inspect(approval_id)
@@ -186,7 +210,10 @@ def install_operator_outbound_routes(
             raise HTTPException(status_code=404, detail="Approval not found") from exc
         if state is None:
             raise HTTPException(status_code=404, detail="Approval not found")
-        approval = OutboundApproval.model_validate(state["approval"])
+        try:
+            approval = approval_from_state(state)
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail="Stored approval state is invalid") from exc
         if approval.actor != identity.actor:
             raise HTTPException(status_code=403, detail="Approval belongs to another operator")
         if state["state"] != "issued":
