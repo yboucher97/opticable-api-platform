@@ -161,3 +161,31 @@ as part of diagnosing or engineering this correction.
 At the time of this correction production was running the superseded Phase 5
 candidate `16bcf566562b08c316b2984565079f7bd3c25841`, while `origin/main`
 remained the Phase 4 baseline `209aac07160e1376381faebd86fb38a18f92582a`.
+
+### Restored V2 isolated-health correction — 2026-09-28
+
+After the Zoho conditional-GET HTTP 304 correction passed in production, the
+postdeployment backup itself completed successfully and its archive, manifest,
+database/config/source extraction, and isolated archive verification all
+passed.
+
+The subsequent disposable restored-V2 API drill blocked only at the
+`health_alerts` assertion. A second disposable diagnostic reproduced the
+failure without touching production and showed exactly one alert:
+`native_subscription_degraded`.
+
+This warning is expected in the Phase 5 isolated restore environment. The
+restored database contains the verified native Zoho subscription evidence, but
+the drill intentionally launches with no webhook or sync configuration and no
+provider credentials. Native health therefore correctly reports the missing
+runtime binding as degraded/configuration drift.
+
+The isolated drill health policy was corrected narrowly. The inherited Phase 4
+drill now accepts an optional explicit warning allowlist; its default remains
+strict and accepts no alerts. Phase 5 supplies only
+`native_subscription_degraded`. Critical alerts and every other warning remain
+fatal to the restore drill.
+
+The backup was not weakened, production health rules were not changed, native
+subscription verification was not bypassed in production, and no Zoho/CRM/
+Books mutation or subscription retry was performed.

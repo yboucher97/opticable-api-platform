@@ -53,7 +53,13 @@ def run(source, workspace):
     base.check(base.inventory(candidate) == original, "schema_or_legacy_evidence_changed")
     base.check(EventLedger(store).health()["backlog"] == 0, "restored_event_backlog")
     base.wait_ready = ready
-    api = base.api_drill(workspace, candidate)
+    api = base.api_drill(
+        workspace,
+        candidate,
+        allowed_alert_codes={
+            "native_subscription_degraded",
+        },
+    )
     backup, restored = workspace / "post-api-v2-backup.db", workspace / "restored-v2.db"
     base.snapshot(candidate, backup); base.snapshot(backup, restored)
     base.check(base.inventory(restored) == base.inventory(candidate), "post_api_restore_mismatch")
@@ -61,6 +67,7 @@ def run(source, workspace):
     base.check(base.inventory(source) == original, "source_evidence_changed")
     result = {"result": "PASS", "source_version": 2, "candidate_version": 2, "migration_performed": False,
               "source_unchanged": True, "legacy_evidence_preserved": True, "backup_restore": "PASS",
+              "isolated_health_policy": "only reviewed native_subscription_degraded warning may be present",
               **api, **base.ambiguity_drill(workspace)}
     (workspace / "result.json").write_text(json.dumps(result, sort_keys=True, indent=2) + "\n")
     return result

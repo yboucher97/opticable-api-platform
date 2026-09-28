@@ -104,7 +104,39 @@ def prepare_smoke(workspace: Path, database: Path) -> Path:
     return definitions
 
 
-def api_drill(workspace: Path, database: Path) -> dict:
+def health_alerts_safe(payload: dict, allowed_alert_codes=()) -> bool:
+    """Accept only explicitly reviewed warning codes in isolated drills.
+
+    Production/default behavior remains strict because the default allowlist
+    is empty. Critical alerts are never accepted.
+    """
+    if not isinstance(payload, dict):
+        return False
+    alerts = payload.get("alerts")
+    if not isinstance(alerts, list):
+        return False
+
+    allowed = set(allowed_alert_codes)
+
+    for alert in alerts:
+        if (
+            not isinstance(alert, dict)
+            or not isinstance(alert.get("code"), str)
+            or alert.get("code") not in allowed
+            or alert.get("severity") != "warning"
+        ):
+            return False
+
+    expected_status = "warning" if alerts else "ok"
+    return payload.get("status") == expected_status
+
+
+def api_drill(
+    workspace: Path,
+    database: Path,
+    *,
+    allowed_alert_codes=(),
+) -> dict:
     definitions = prepare_smoke(workspace, database)
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
@@ -144,7 +176,18 @@ def api_drill(workspace: Path, database: Path) -> dict:
                 check(health["queued"] == 0 and health["expired_leases"] == 0, "queue_not_clear")
                 event_health = httpx.get(url + "/v1/automation/event-health", headers=headers, timeout=5).json()
                 check(event_health["backlog"] == 0, "event_backlog")
-                check(httpx.get(url + "/v1/automation/health-alerts", headers=headers, timeout=5).json()["status"] == "ok", "health_alerts")
+                alerts = httpx.get(
+                    url + "/v1/automation/health-alerts",
+                    headers=headers,
+                    timeout=5,
+                ).json()
+                check(
+                    health_alerts_safe(
+                        alerts,
+                        allowed_alert_codes,
+                    ),
+                    "health_alerts",
+                )
             finally:
                 # First shutdown is a crash drill, second is graceful. Both are
                 # disposable processes listening only on a temporary local port.
