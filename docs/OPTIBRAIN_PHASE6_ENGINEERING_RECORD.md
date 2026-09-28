@@ -147,3 +147,28 @@ Commit `b05cffd4a1920a744f872c3bb8b2a00c9b7ca1dd` versions the internal reconcil
 ### Gate C validation state
 
 Gate C code is engineering-only on `phase6/sales-autonomy-v1`. It has not been deployed and `OPTIBRAIN_CRM_LEAD_WRITES` has not been changed in production. Focused Phase 6 tests, complete regression and compile checks must pass before any live/read-only Phase 6 provider validation or draft-lifecycle work begins.
+
+### Gate C validation and exact-readback correction — PASS
+
+Initial validation of exact remote candidate `2b1326999710e6c6dc8d789ff41f92cde684d37a`:
+
+- clean worktree; exact seven-file contract scope; 10 commits ahead / 0 behind the Phase 5 baseline;
+- remote Phase 6 ref matched the candidate; production and remote main matched `52f11d4fc14d8582c03837e0317f849efe8aa3d7`;
+- decision tests: 13; CRM-action tests: 8; Phase 5 Lead compatibility: 16 tests / 3 subtests;
+- full regression: 445 tests / 374 subtests, zero failures/errors/skips.
+
+Independent inspection found a release-blocking gap despite those passing tests: Task search reconciliation checked Lead linkage but did not check the returned subject and due date. Commit `820e41dd9c369e645ac8ec71d460fc43bf59c529` now requires exact subject, Lead linkage, due date, valid provider ID and a recognized Task status. Completed matching Tasks are retained as fulfilled generations without creating replacements. Immediate readback also checks the returned operation ID.
+
+Validation of corrected candidate `820e41dd9c369e645ac8ec71d460fc43bf59c529`:
+
+- focused CRM tests: 12 tests / 5 subtests, including exact mismatches, stale review, durable restart, and absent ambiguous Task;
+- complete regression: **449 tests / 379 subtests, 0 failures, 0 errors, 0 skips**;
+- compileall and diff whitespace checks: PASS;
+- static provider boundary: only Lead reads/conditional PUT and Task reads/POST; no Books, Account/Contact/Deal, conversion or customer-send path;
+- tests used temporary databases, fake providers and a runner that clears inherited environment and blocks socket connections;
+- real provider writes, customer sends, Books mutations and Lead conversions during validation: **0**;
+- production and remote main remain `52f11d4fc14d8582c03837e0317f849efe8aa3d7`; production health reports `ok`, API `1.10.0`;
+- protected diagnostic SHA-256 remains `7b2a45b141ea8983e761fdc548e25690fe89bf15ee20b994be2bf4855f701000`; root recovery runbook untouched;
+- validation logs retained locally under `/var/tmp/optibrain-phase6-validation/`.
+
+Gate C is closed after the correction. Gate D may proceed on the engineering branch only. No production policy, service, database or recovery artifact was changed.
