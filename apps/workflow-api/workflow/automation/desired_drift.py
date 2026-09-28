@@ -16,6 +16,9 @@ class DesiredDriftObserver:
         if time.monotonic() < self.next_scan:
             return
         paths = sorted(self.directory.glob("opticable-*.json"))
+        notification = self.directory / "zoho-crm-notification.template.json"
+        if notification.is_file():
+            paths.append(notification)
         if not 1 <= len(paths) <= 4:
             raise ValueError("drift document bound")
         try:

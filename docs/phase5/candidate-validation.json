@@ -1,0 +1,79 @@
+{
+  "admin_security_recovery_suite": {
+    "log_sha256": "82c1a9d2fb6229fa1aeb9f63ef1f1340d8b2aee19ef9a8ff7a097c96b2a1a10b",
+    "result": "PASS",
+    "tests": 37
+  },
+  "backup_offhost_python_suite": {
+    "log_sha256": "69ff376640265a6b6a26a801cec2a862eac293e242928850a432eba795789279",
+    "result": "PASS",
+    "tests": 11
+  },
+  "backup_shell": "PASS; unprivileged ownership variant; root production variant pending",
+  "baseline": "209aac07160e1376381faebd86fb38a18f92582a",
+  "branch": "hardening/phase5-business-autonomy-v1",
+  "bucket_listing_shell": "PASS",
+  "deployment_driver_suite": {
+    "log_sha256": "35fa83f99a157fd89fc16e8d35227f3d7405fc9c09d485645fc7240a13d788f2",
+    "result": "PASS",
+    "tests": 6
+  },
+  "final_state_reporting": "root campaign verifies observed source/database/service/main before PASS; native channel included in periodic read-only drift",
+  "implementation_commits": [
+    "61b1eb33a94aa1d7eb401b7b0d15ace17ab86ba3",
+    "681cc00dcb22a3ccca08d66f2051cda847048efc",
+    "c4dd0119707616e09cfdd4602be0cca7fdd92d93"
+  ],
+  "isolated_v2_fixture_drill": {
+    "ambiguous_external_attempts": 1,
+    "ambiguous_replay_denied": "PASS",
+    "api_restart": "PASS",
+    "api_startup": "PASS",
+    "backup_restore": "PASS",
+    "candidate_version": 2,
+    "dedupe_after_restart": "PASS",
+    "event_id": "e27d552cf3674f1fb773ec38284b3ce1",
+    "legacy_evidence_preserved": true,
+    "migration_performed": false,
+    "result": "PASS",
+    "run_id": "58977b74d1fc4f95bbc67338ff93fd8f",
+    "safe_smoke": "PASS",
+    "source_unchanged": true,
+    "source_version": 2,
+    "temporary_port": 33071,
+    "worker_restart": "PASS"
+  },
+  "live_governance": {
+    "noop": 93,
+    "plan_hash": "9049109e8503ff217a2d087db5cd56a48122d64c3179c141ba49c51218632a45",
+    "provider_writes": 0
+  },
+  "live_optional_lead_fields": {
+    "books_mutations": 0,
+    "verified_noop": 2,
+    "writes": 2
+  },
+  "offhost_shell": "PASS",
+  "production_pending": [
+    "human root authentication",
+    "actual restored production V2 drill",
+    "fresh pre/post backups and restores",
+    "candidate production readiness/watchdog/smoke",
+    "native authenticated subscription and provider callback",
+    "matching encrypted offhost generation and download hash",
+    "published candidate recovery identities"
+  ],
+  "r2_health_shell": "PASS",
+  "root_permission_probe": "sudo -n pinned interpreter --plan: password required; no deployment attempted",
+  "secret_scan": "PASS; snapshots, evidence and desired documents; no plaintext credentials or provider URLs",
+  "status": "CANDIDATE_PASS_PRODUCTION_PENDING",
+  "workflow_suite": {
+    "errors": 0,
+    "failures": 0,
+    "log_sha256": "2b06010bf4cf53b04c991c58d4f8caacc28f0cf486a9f0d5b89288f167d8042b",
+    "passed": true,
+    "skipped": 0,
+    "subtests": 325,
+    "tests": 384
+  }
+}

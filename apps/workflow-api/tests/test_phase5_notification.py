@@ -126,11 +126,15 @@ class NativeSubscriptionTests(unittest.TestCase):
     def test_periodic_drift_is_read_only_bounded_and_durable(self):
         root = Path(self.tmp.name) / "desired"; root.mkdir()
         (root / "opticable-fixture.json").write_text(self.document.model_dump_json())
+        native = self.document.model_copy(deep=True)
+        native.name = "fixture-native-template"
+        (root / "zoho-crm-notification.template.json").write_text(native.model_dump_json())
         observer = DesiredDriftObserver(self.controller, root, interval=300)
         observer.poll(); calls = len(self.fake.calls)
         observer.poll()
         self.assertEqual(len(self.fake.calls), calls)
         self.assertEqual(self.controller.journal.last(self.document.name, ("drift",))["metadata"]["summary"], {"create": 1})
+        self.assertEqual(self.controller.journal.last(native.name, ("drift",))["metadata"]["summary"], {"create": 1})
         self.assertFalse(self.fake.writes)
         observer.next_scan = 0
         with self.controller.journal.lock(): observer.poll()

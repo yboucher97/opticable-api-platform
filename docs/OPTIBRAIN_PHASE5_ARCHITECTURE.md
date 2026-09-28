@@ -28,7 +28,7 @@ Write intent commits to the existing `automation_audit` table before the provide
 | Assignment / validation | Read/noop, proposed drift | Unsupported write contracts manual |
 | Native notification | HTTPS/private token references, pinned channel, bounded expiry, additive create and secret-free readback | Collision blocked; drift/renewal manual; no deletion or blind re-registration |
 
-The hourly drift observer runs on the existing delta worker, takes the same lock, checks the two `opticable-*.json` documents and persists changed resource/risk summaries. It never applies changes. On-demand authenticated drift and last-apply endpoints expose the same engine and journal.
+The hourly drift observer runs on the existing delta worker, takes the same lock, checks the two `opticable-*.json` documents and the native notification template, and persists changed resource/risk summaries. Subscription absence, collision or expiry therefore remains visible without an automatic provider write. On-demand authenticated drift and last-apply endpoints expose the same engine and journal.
 
 ## Lead lifecycle
 

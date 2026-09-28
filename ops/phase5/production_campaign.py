@@ -240,6 +240,15 @@ class Phase5Campaign(base.Campaign):
         self.mark(predeployment_tag=pretag, postdeployment_tag=posttag, recovery_tag_published=True)
         self.stage_start("provider-origin-lead-event-verification")
         self.mark(native_lead_delivery=self.provider("native-origin-proof"))
+        self.stage_start("verified-final-production-state")
+        self.healthy("1.10.0", events=True)
+        self.protected_unchanged()
+        self.observe_failure_state(self.result)
+        check(self.result["production_git_sha"] == self.candidate and
+              self.result["production_database_version"] == 2 and
+              self.result["production_service_active"] is True and
+              self.result["remote_main_sha"] == BASELINE and
+              not self.result.get("failure_reporting_errors"), "final_state_unverified")
         self.result.update(result="PASS", api_version="1.10.0", database_version=2,
                            production_sha=self.candidate, predeployment_tag=pretag, postdeployment_tag=posttag,
                            manual_recovery_required=False)
