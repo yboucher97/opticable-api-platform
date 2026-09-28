@@ -44,11 +44,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Provision validation service identity
+      - name: Provision validation-only legacy prerequisites
         run: |
           if ! getent passwd optibrain >/dev/null; then
-            sudo useradd --system --create-home --home-dir /home/optibrain --shell /usr/sbin/nologin optibrain
+            sudo useradd --system --no-create-home --shell /usr/sbin/nologin optibrain
           fi
+          if ! getent passwd opticable-workflow-api >/dev/null; then
+            sudo useradd --system --no-create-home --shell /usr/sbin/nologin opticable-workflow-api
+          fi
+          git branch -f hardening/phase4-durable-events-v1 origin/hardening/phase4-durable-events-v1
+          git branch -f hardening/phase5-business-autonomy-v1 origin/hardening/phase5-business-autonomy-v1
 
       - uses: actions/setup-python@v5
         with:
