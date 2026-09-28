@@ -2,9 +2,11 @@
 
 Date: **2026-09-28 UTC**.
 
-Status: **candidate validated; production gates blocked by existing privilege
-boundaries**. Production was not migrated, restarted, deployed or promoted to
-main during this engineering campaign.
+Status: **candidate hardened; production deployment explicitly withheld**.
+The user requested a final privileged-campaign review on top of candidate
+`db24573247ff586ea68a7d9a9f125c9d591f829a` and instructed that production must
+not be deployed yet. Production was not migrated, restarted, deployed or
+promoted to main during this engineering campaign.
 
 ## Baseline and isolated environment
 
@@ -21,14 +23,18 @@ main during this engineering campaign.
 - Expected baseline DB: `/var/lib/opticable-workflow-api/output/automation/automation.db`.
   Direct access is protected; the actual production DB was not read or changed.
 
-The final annotated tag `recovery/phase4-candidate-v2-20260928` stores the exact
+The reviewed annotated tag `recovery/phase4-candidate-v2-20260928` stores its exact
 candidate SHA, merge base, cumulative binary diff SHA-256, changed-file inventory,
 test results and drill evidence. Its target is the final candidate; its annotation
 is the release manifest, generated after the final commit to avoid a self-referential
 commit hash. A local copy is `release-evidence.json` in the private evidence
 directory. Resolve with `git rev-parse <tag>^{}` and inspect with `git show <tag>`.
-The first candidate tag remains preserved; V2 supersedes it after the exact
-time-window review. No development candidate was deployed. Databases from the
+The first and V2 candidate tags remain preserved. The new annotated tag
+`recovery/phase4-candidate-v3-20260928` supersedes V2 after the privileged-campaign
+hardening below. Its annotation records the new exact SHA, cumulative binary
+diff SHA-256 and executed validation results; its separate manifest is
+`hardening-v3/release-evidence.json`. No existing commit or tag was rewritten.
+No development candidate was deployed. Databases from the
 superseded candidate are not an upgrade source for this release: the final
 production path starts with the immutable Phase 3 V1 database and validates
 the complete final V2 definition.
@@ -75,7 +81,7 @@ also contains the exact mechanically generated inventory.
 | Event platform | `workflow/automation/event_schema.py`, `events.py`, `event_api.py`, `event_body_limit.py` under `apps/workflow-api`. |
 | Provider intake / sync | `workflow/automation/webhooks.py`, `delta_sync.py`, `google_delta.py`, `sync_runtime.py` under `apps/workflow-api`. |
 | Configuration examples | `apps/workflow-api/config/automation/webhooks.example.yaml`, `delta-sync.example.yaml`; all disabled. |
-| Phase 4 tests | `apps/workflow-api/tests/test_phase4_events.py`, `test_phase4_webhooks.py`, `test_phase4_delta.py`, `test_phase4_ops.py`. |
+| Phase 4 tests | `apps/workflow-api/tests/test_phase4_events.py`, `test_phase4_webhooks.py`, `test_phase4_delta.py`, `test_phase4_ops.py`, `test_phase4_campaign.py`. |
 | Migration fixtures | `apps/workflow-api/tests/_phase4_fixtures.py`, `fixtures/phase3-v1-schema.sql`. |
 | Existing test adaptations | `apps/workflow-api/tests/test_automation_kernel.py`, `test_execution_control.py`; schema expectations/crash injection only. |
 | Operations | `ops/phase4/run_tests.py`, `migrate_db.py`, `isolated_drill.py`, `production_campaign.py`. |
@@ -85,6 +91,9 @@ No provider mutation implementation, sudoers file, production secret, installed
 root helper, root runbook or protected diagnostic was changed.
 
 ## Validation commands and exact results
+
+This section records the previous reviewed V2 candidate. The V3 hardening
+results and commands appear below; all previous test methods remain present.
 
 Commands ran from the isolated worktree with a distinct disposable output root
 for each invocation. Python was
@@ -258,10 +267,22 @@ Fixed `verify-latest` verified the existing archive generation
 was encrypted and download-hash verified. This is historical evidence, not a
 fresh Phase 4 backup, production migration drill or postdeployment verification.
 
-Blocked gates: fresh production backup/isolated archive restore, actual restored
-production DB migration drill, authenticated live execution/event gates, schema
-migration/deployment, production smoke, fresh postdeployment backup/restore and
-its encrypted off-host verification. Production remains at the exact baseline.
+Subsequent recovery work verified a fresh **baseline V1** generation
+`20260928T023126Z`, archive SHA-256
+`ae36a28b250860003f10d5a0f95707b26eeeed43b899d5a433e5177d89a6092d`.
+The existing fixed helpers verified the archive and isolated restore (642 files,
+677 metadata entries, one DB, three critical configurations). The encrypted
+uploader completed its download-hash verification. Generation attribution uses
+the unchanged verified latest archive and the fixed uploader contract; the
+root state file was not directly read and private-key decryption was not done.
+See `continuation-recovery-audit.json` for that evidence. This is not a deployed
+Phase 4 V2 backup or an actual restored-production migration drill.
+
+Remaining production gates: actual restored production DB migration drill,
+authenticated live execution/event gates, schema migration/deployment, production
+smoke, fresh postdeployment backup/restore and encrypted off-host verification.
+Deployment is now explicitly withheld by the user's instruction. Production
+remains at the exact baseline.
 
 ## Prepared deployment and startup procedure
 
@@ -289,6 +310,189 @@ Root records: `/var/lib/optibrain/phase4/<generation>/result.json` and
 directories keep their permissions. Any failing gate stops promotion and
 preserves evidence. The driver does not improvise database repairs or overwrite
 the live database from a snapshot.
+
+## V3 privileged-campaign hardening and independent review
+
+Review input: `db24573247ff586ea68a7d9a9f125c9d591f829a`. New commits build on
+that candidate. Baseline and branch remain unchanged. The application event,
+migration, replay, provider mutation, execution and approval semantics remain
+intact. No privileged campaign was executed during this hardening pass.
+
+### State and failure evidence
+
+- Each stage and operation marker is published to private `progress.json` using
+  atomic replacement and file/directory fsync before the operation. Started /
+  attempted markers are conservative intent evidence; completed flags require
+  their successful verification. An interrupted attempt is never treated as a
+  successful operation.
+- Every campaign `BLOCKED` result records the original blocking stage/category,
+  current production Git SHA/status, remote main SHA, service state/active flag,
+  DB version, migration started/completed, checkout advancement, restart/readiness,
+  smoke, backup, off-host and promotion milestones, recovery workspace/category,
+  and manual recovery requirement. Current observations are read-only bounded
+  probes. Uninspectable facts are `unknown`, with non-secret error categories.
+- The false unconditional `production_database_overwritten=False` statement was
+  removed. Observed V1, verified V2 and unverified/unknown migration outcomes are
+  distinct. Neither a V2 version alone nor a lost subprocess result proves the
+  migration's row-preservation checks completed.
+- A reporting failure cannot replace the original blocking stage. Fallback
+  evidence retains the latest attempt markers, including a baseline restart
+  attempted by the handler, and labels unobserved current facts `unknown`.
+- Predeployment backup path/hash, frozen V1 snapshot path/hash/verification and
+  smoke idempotency identity are retained. Partial backup evidence remains an
+  attempt record; it is not marked completed.
+
+### Automatic recovery boundary
+
+Before a stop attempt, the handler only observes and leaves production alone.
+After a stop attempt, automatic baseline startup requires proof of all of:
+original service active; HEAD exactly the immutable Phase 3 baseline; unchanged
+tracked checkout with only the protected untracked diagnostic; intact V1 DB;
+no migration attempt; no non-completed run; and a stable inspectable service
+state. HEAD/status/DB/service are checked again immediately before start.
+Startup uses the existing service, bounded API readiness, a new healthy watchdog
+sample after a restart and authenticated baseline health. It never starts a
+candidate checkout with V1, changes Git, writes remote main, reruns a migration,
+or restores a database.
+
+Advanced checkout, any migration attempt, unknown inspection, unresolved work,
+or recovery verification failure requires manual review. Verified candidate/V2
+state is preserved even if a later gate fails. The frozen V1 snapshot and
+predeployment archive are evidence only: there is no automatic database rollback
+and no automatic checkout rollback.
+
+### Failure boundary inventory after service stop
+
+All rows describe failure of the named operation or its immediately following
+verification/progress record. The failure handler observes actual state; the
+states below are possibilities, not assumptions used in a report.
+
+| Stage / operation | Possible remaining checkout / DB / service state | Recovery policy |
+|---|---|---|
+| Stop command or inactive-state check | Baseline / V1 / active, stopped, failed, transitioning or unknown. | Restart only with the complete baseline proof; verify readiness. Never guess a stop outcome. |
+| Stopped DB inspection / run-state check | Baseline / V1 or unknown / stopped. Work may have arrived. | Intact V1 and only completed runs may recover; unresolved or unknown state requires manual review. |
+| Frozen snapshot creation, inspection, hashing or progress persistence | Baseline / V1 / stopped; snapshot may be partial or unverified. | Same proven baseline recovery; preserve all snapshot evidence. |
+| Fast-forward checkout or SHA verification | Baseline or candidate or unknown / V1 / stopped. | Baseline may recover if proven. Candidate/V1 must remain stopped; starting it would implicitly migrate. |
+| Migration intent record / subprocess / JSON / validation | Candidate / V1 after transaction rollback, V2 with lost/unverified result, or unknown / stopped. | Manual review. Report the observed version; migration completion may be unknown. Never rerun or restore automatically. |
+| Verified migration completion record | Candidate / verified V2 / stopped. | Preserve V2 and both V1 recovery sources. No handler startup or rollback. |
+| Candidate service start | Candidate / V2 / active, failed, stopped, transitioning or unknown. | Observe exact state. No repeated start, migration or destructive recovery. |
+| Candidate API readiness | Candidate / V2 / started or failed; API readiness not verified. | Preserve candidate/V2; report readiness incomplete. |
+| Fresh watchdog readiness | Candidate / V2 / API ready; candidate telemetry may be delayed/unhealthy. | Wait on a bounded deadline; on failure preserve state for review. |
+| Candidate authenticated health | Candidate / V2 / API ready; detailed health gate failed. | Preserve state and exact completed milestones. |
+| Safe smoke intake / run / duplicate / ledger checks | Candidate / V2 / ready; smoke may be durably accepted but not fully verified. | Preserve smoke idempotency evidence and never mark the smoke complete prematurely. Internal actions only. |
+| Post-smoke health | Candidate / V2 / ready; verified smoke retained. | Preserve state; no automatic rollback. |
+| Postdeployment backup start / checksum / archive verification / isolated restore | Candidate / V2 / ready; backup may exist but be unverified. | Preserve attempts; completed flag remains false until all checks succeed. |
+| Encrypted off-host upload / exact-generation verification | Candidate / V2 / ready; smoke and local backup/restore completed. | Preserve earlier successful gates; off-host completion remains false unless exact-generation download hash verifies. |
+| Final health / failed-unit / diagnostic checks | Candidate / V2 / inspected service state; previous gates completed. | Preserve state and evidence; do not promote main. |
+| Remote main preflight | Candidate / V2 / ready; remote baseline, externally changed or unknown. | Report actual remote observation; no handler push. |
+| Main fast-forward push | Candidate / V2 / ready; remote may be baseline or candidate if response is lost. | Read remote main; never repeat, reset or undo promotion in recovery. |
+| Remote promotion verification / progress record | Candidate / V2 / ready; remote candidate or unknown. | Report promotion from read-only evidence, including unknown outcomes. |
+| Postdeployment tag creation | Candidate / V2 / ready; main may already be promoted. | Preserve actual main and completed gates; manual completion of recovery metadata. |
+| Recovery-tag publication | Candidate / V2 / ready; tags may be local or remotely published. | Preserve evidence; no main change by failure recovery. |
+| Final result persistence | Fully verified candidate/V2 and remote promotion, or an earlier blocked state. | Emit state-aware terminal evidence even if disk persistence fails; retain the original failure stage. |
+
+Progress-file failures are handled at the operation's exact stage. They do not
+authorize the next operation. Kernel/process termination cannot guarantee a final
+report; the last durable progress record is the preserved intent/milestone
+evidence, and re-running the campaign is not an automatic recovery procedure.
+
+### Execution and watchdog gates
+
+`healthy()` now rejects `partial` in addition to queued, claimed, running,
+expired leases, failed, dead-letter and human-action-required work. Stale queued
+and stale running counts also block. The read-only DB status inventory accepts
+only `completed`, so future/unknown execution statuses block before downtime.
+
+After candidate startup, the driver waits up to a 90-second monotonic deadline
+for an independent watchdog sample with a greater durable audit ID than the
+pre-stop sample, successful status, healthy recovery worker and UTC age strictly
+less than 600 seconds. Each inspection has a 30-second timeout. Recent persisted
+pre-restart samples are insufficient. The 600-second policy is unchanged. The
+same fresh-sample proof is used after an automatic baseline restart.
+
+### Additional defect found during revalidation
+
+The first full revalidation exposed a real pre-existing connection race:
+concurrent fresh startup could return `SQLITE_BUSY` while setting WAL despite
+the connection timeout. A separate 30-cycle / 240-connection reproduction found
+one identical failure. This was not hidden by rerunning until green.
+
+Connection setup now reads the existing journal mode, avoids resetting an
+already-WAL database, retries only SQLite BUSY/LOCKED journal setup on a bounded
+30-second deadline, and closes failed connections. Non-lock errors and refusal
+to enable WAL fail closed. Unknown-schema validation still precedes metadata
+changes. No migration transaction, event/action dispatch or provider write is
+retried by this fix. Deterministic tests cover the retry boundary and cleanup;
+the independent 100-cycle / 800-connection stress drill checks V2, WAL and
+integrity after every cycle.
+
+An initial new reporting test enabled its inspection failure before the pre-stop
+gate and therefore failed at the correct earlier stage. The fixture was corrected
+to inject that failure only at the intended post-stop boundary. Review also
+found and fixed stale fallback markers after a handler restart and missing state
+inspection if final result persistence alone failed. All unsuccessful runs and
+their logs remain in the private evidence directory.
+
+### V3 revalidation results
+
+Every invocation used a separate private disposable output root beneath
+`/var/tmp/optibrain-phase4-artifacts/hardening-v3`. Exact commands are the same
+counted runner and Python executable documented above, with these patterns:
+
+| Scope / runner arguments | Exact result |
+|---|---|
+| Campaign failure state machine: `--pattern test_phase4_campaign.py` | 31 tests + 24 subtests, passed (4.114s). |
+| Phase 4 operations: `--pattern test_phase4_ops.py` | 11 tests + 9 subtests, passed (5.992s). |
+| All Phase 4: `--pattern 'test_phase4*.py'` | **144 tests + 132 subtests, passed (15.198s)**. |
+| Migration, ledger and WAL: `--pattern test_phase4_events.py` | 55 tests + 10 subtests, passed (5.877s). |
+| Execution controls: `--pattern test_execution_control.py` | 28 tests + 9 subtests, passed (3.712s). |
+| Zoho mutation safety: `--pattern test_zoho_gateway.py` | 8 tests, passed (0.132s). |
+| Inspection boundaries: `--pattern test_inspection_boundaries.py` | 6 tests + 36 subtests, passed (0.953s). |
+| Entire workflow API: no pattern override | **283 tests + 231 subtests, passed (21.455s)**. |
+| Existing helper tests: `python3 -m unittest discover -s tests/ops -v` | 37 tests, passed (1.549s). |
+| Existing backup tests: `python3 -m unittest discover -s tests -p 'test_optibrain*.py' -v` | 11 tests, passed (0.066s). |
+
+All final results have zero errors, failures or skips. V3 adds 37 test methods
+and 32 subtests to the reviewed V2 suite. Logs are the `*-final-tests.log` files,
+`admin-tests.log` and `backup-tests.log` beneath `hardening-v3`.
+
+The repeated isolated migration/failure drill used the populated exact-baseline
+V1 fixture, not the actual production DB:
+
+```bash
+SITE_WORKFLOW_OUTPUT_ROOT=/var/tmp/optibrain-phase4-artifacts/hardening-v3/drill-final-output \
+/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python ops/phase4/isolated_drill.py \
+  --source-db /var/tmp/optibrain-phase4-artifacts/populated-v1.db \
+  --workspace /var/tmp/optibrain-phase4-artifacts/hardening-v3/isolated-drill-final
+```
+
+Result **PASS**; temporary port 49181; run
+`e36d0c13e4d64ef492610d9304776430`; event
+`db110e69a1384cbf8f42bb864e732ec3`. V1 → V2 preserved all legacy hashes/counts;
+integrity, WAL, API/recovery restart, dedupe, V1 snapshot, V2 backup/restore and
+safe internal smoke passed. The ambiguous fake handler dispatched exactly once,
+then recovery and event replay refused repetition. Source V1 was unchanged.
+
+The 100-cycle WAL drill completed **800 concurrent connections with zero
+failures**, verifying V2, WAL and SQLite integrity after every cycle.
+`wal-reproduction.json` retains the original failure; `wal-stress.json` records
+the successful repeat. No real provider write or production database mutation
+occurred in any drill or state-machine test.
+
+Independent self-review covered every boundary in the table, completed-state
+accuracy, original-stage preservation, recovery proof races/rechecks, read-only
+DB inspection, V1 snapshot preservation, absence of a migration/checkout/main
+write in the handler, bounded watchdog waiting, unknown-schema rejection,
+SQLite lock scope, cleanup and secret handling. `git diff --check` and compilation
+of application, tests and Phase 4 operations passed. No new TODO/FIXME or secret
+was introduced.
+
+Production HEAD and remote main remain the baseline; service remains active at
+API 1.8.0. The protected diagnostic SHA/mode/owner/mtime remain unchanged. The
+root-owned master runbook remains SHA-256
+`cdab559d264fb7a17c469fd10953827a98a24ac4a926939db1055522a6dfc085`,
+root:root, mode 0644, mtime 1790525656. No actual privileged campaign, stop,
+migration, service restart or main promotion was performed during this pass.
 
 Recovery tags created only after applicable production verification:
 
