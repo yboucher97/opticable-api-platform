@@ -25,6 +25,29 @@ ACTIVE_STATUSES = {
     "Pre-Qualified",
 }
 
+# This is deliberately a small internal taxonomy. A service value can be
+# written only when a trusted non-AI intake layer supplies both an exact value
+# and reviewed evidence category. AI hints never populate Service_Types.
+TRUSTED_SERVICE_TYPES = {
+    "Structured Cabling",
+    "Commercial Wi-Fi",
+    "Network Infrastructure",
+    "IP Cameras",
+    "Access Control",
+    "Intercom",
+    "Alarm",
+    "IP Telephony",
+    "AI Loss Prevention",
+    "Fiber",
+    "Point-to-Point",
+    "Jobsite Wi-Fi",
+    "Jobsite Cameras",
+}
+TRUSTED_SERVICE_EVIDENCE = {
+    "explicit_customer_selection",
+    "validated_intake",
+}
+
 Priority = Literal["low", "normal", "high", "urgent"]
 NextAction = Literal[
     "review",
@@ -35,6 +58,7 @@ NextAction = Literal[
     "wait",
 ]
 Language = Literal["fr", "en", "unknown"]
+ServiceTypeSource = Literal["existing", "trusted_hint"]
 
 _PRIORITY_ORDER = {
     "low": 0,
@@ -66,6 +90,7 @@ class SalesDecision(BaseModel):
     email_contactable: bool
     email_opt_out: bool
     service_type: str | None
+    service_type_source: ServiceTypeSource | None
     language: Language
     priority: Priority
     next_action: NextAction
@@ -145,6 +170,21 @@ def _safe_hint_action(hint: dict[str, Any]) -> NextAction | None:
     return value if value in _ALLOWED_ACTIONS else None  # type: ignore[return-value]
 
 
+def _safe_service_type(
+    record: dict[str, Any],
+    trusted_service_hint: dict[str, Any],
+) -> tuple[str | None, ServiceTypeSource | None]:
+    existing = str(record.get("Service_Types") or "").strip()
+    if existing:
+        return existing, "existing"
+
+    value = str(trusted_service_hint.get("value") or "").strip()
+    evidence = str(trusted_service_hint.get("evidence") or "").strip()
+    if value in TRUSTED_SERVICE_TYPES and evidence in TRUSTED_SERVICE_EVIDENCE:
+        return value, "trusted_hint"
+    return None, None
+
+
 def _base_priority(status: str, *, stale: bool, age_seconds: float) -> Priority:
     if status == "Pre-Qualified":
         return "high"
@@ -187,16 +227,35 @@ def _safe_action(
     return "review"
 
 
+def _decision_hash(value: dict[str, Any]) -> str:
+    return digest([POLICY_VERSION, canonical(value)])
+
+
+def validate_sales_decision(value: dict[str, Any] | SalesDecision) -> SalesDecision:
+    """Validate the complete immutable decision envelope and its hash."""
+
+    decision = value if isinstance(value, SalesDecision) else SalesDecision.model_validate(value)
+    if decision.policy_version != POLICY_VERSION:
+        raise ValueError("Unsupported sales decision policy")
+    safe = decision.model_dump(exclude={"decision_hash"})
+    if decision.decision_hash != _decision_hash(safe):
+        raise ValueError("Sales decision hash mismatch")
+    return decision
+
+
 def build_sales_decision(
     record: dict[str, Any],
     *,
     ai_hint: dict[str, Any] | None = None,
+    trusted_service_hint: dict[str, Any] | None = None,
     now: datetime | None = None,
 ) -> SalesDecision:
     """Build one deterministic decision from one reviewed Lead snapshot.
 
     `ai_hint` is advisory only. Unknown values are discarded and an AI action
     can be selected only when deterministic contactability/state gates permit it.
+    `trusted_service_hint` is a separate non-AI evidence channel; an AI response
+    cannot fill Service_Types merely by naming a service or reporting confidence.
     """
 
     identity = str(record.get("id") or "")
@@ -213,6 +272,7 @@ def build_sales_decision(
         raise ValueError("now must include a timezone")
 
     hint = ai_hint if isinstance(ai_hint, dict) else {}
+    service_hint = trusted_service_hint if isinstance(trusted_service_hint, dict) else {}
     status = str(record.get("Lead_Status") or "").strip()
     converted = record.get("Converted__s") is True
     active = not converted and status in ACTIVE_STATUSES
@@ -231,12 +291,8 @@ def build_sales_decision(
         record.get("Next_Followup_At"),
         field="Next_Followup_At",
     )
-    explicit_future = bool(
-        active
-        and status == "Contact in Future"
-        and existing_followup
-        and existing_followup > clock
-    )
+    future_followup = bool(active and existing_followup and existing_followup > clock)
+    explicit_future = bool(status == "Contact in Future" and future_followup)
 
     language = _safe_language(record, hint)
     priority: Priority = _base_priority(status, stale=stale, age_seconds=age_seconds) if active else "low"
@@ -255,7 +311,9 @@ def build_sales_decision(
             explicit_future=explicit_future,
             hint=_safe_hint_action(hint),
         )
-        if explicit_future:
+        if future_followup:
+            # An existing explicit future timestamp is provider-owned state.
+            # Preserve it instead of shifting the SLA on every notification.
             followup = existing_followup
         else:
             cadence = {
@@ -266,7 +324,7 @@ def build_sales_decision(
             }[priority]
             followup = business_due(clock, cadence)
 
-    service_type = str(record.get("Service_Types") or "").strip() or None
+    service_type, service_type_source = _safe_service_type(record, service_hint)
     missing = []
     if not service_type:
         missing.append("service_type")
@@ -284,6 +342,7 @@ def build_sales_decision(
         "email_contactable": email_contactable,
         "email_opt_out": email_opt_out,
         "service_type": service_type,
+        "service_type_source": service_type_source,
         "language": language,
         "priority": priority,
         "next_action": action,
@@ -291,5 +350,5 @@ def build_sales_decision(
         "followup_at": followup.astimezone(timezone.utc).isoformat() if followup else None,
         "policy_version": POLICY_VERSION,
     }
-    safe["decision_hash"] = digest([POLICY_VERSION, canonical(safe)])
+    safe["decision_hash"] = _decision_hash(safe)
     return SalesDecision.model_validate(safe)
