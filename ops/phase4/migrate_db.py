@@ -5,7 +5,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-from isolated_drill import AutomationStore, check, inventory, snapshot
+from isolated_drill import AutomationStore, check, inventory, snapshot, smoke_policy
 
 
 def migrate(path: Path) -> dict:
@@ -32,6 +32,7 @@ if __name__ == "__main__":
             with sqlite3.connect(args.db.resolve().as_uri() + "?mode=ro", uri=True) as conn:
                 sample = conn.execute("SELECT at FROM automation_audit WHERE category='automation_health' AND action='sample' ORDER BY id DESC LIMIT 1").fetchone()
                 result["run_status_counts"] = dict(conn.execute("SELECT status,COUNT(*) FROM automation_runs GROUP BY status"))
+                result["smoke_policy"] = smoke_policy(conn)
             result["watchdog_sample_at"] = sample[0] if sample else None
         elif args.snapshot_to:
             check(not args.snapshot_to.exists() and args.snapshot_to.resolve() != args.db.resolve(), "snapshot_target_exists")

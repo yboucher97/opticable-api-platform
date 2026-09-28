@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import socket
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -54,6 +55,25 @@ def inventory(path: Path) -> dict:
         return {"version": conn.execute("PRAGMA user_version").fetchone()[0], "counts": counts, "hashes": hashes}
 
 
+def smoke_policy(conn: sqlite3.Connection) -> dict:
+    root_type, child_type = "system.automation.smoke_test", "system.automation.smoke_test.completed"
+    found, unsafe = False, False
+    for (raw,) in conn.execute("SELECT definition_json FROM automation_workflows WHERE enabled=1"):
+        definition = WorkflowDefinition.model_validate(json.loads(raw))
+        matches = [kind for kind, source in ((root_type, "internal"), (child_type, "automation-engine"))
+                   if (kind in definition.trigger.event_types or "*" in definition.trigger.event_types)
+                   and (not definition.trigger.sources or source in definition.trigger.sources)]
+        if not matches:
+            continue
+        expected = (definition.id == "platform.smoke-test" and matches == [root_type]
+                    and [step.action for step in definition.steps] == ["core.set", "event.emit"]
+                    and definition.steps[1].inputs.get("event_type") == child_type
+                    and definition.steps[1].inputs.get("source") == "automation-engine")
+        found |= expected
+        unsafe |= not expected
+    return {"safe": found and not unsafe, "reason": "safe_internal_smoke" if found and not unsafe else "unsafe_smoke_routing"}
+
+
 def wait_ready(url: str, process: subprocess.Popen) -> dict:
     deadline = time.monotonic() + 30
     while time.monotonic() < deadline:
@@ -70,7 +90,22 @@ def wait_ready(url: str, process: subprocess.Popen) -> dict:
     raise RuntimeError("isolated_api_readiness_timeout")
 
 
+def prepare_smoke(workspace: Path, database: Path) -> Path:
+    check(database.resolve().parent == workspace.resolve() and database.name == "candidate-v2.db"
+          and not database.is_symlink(), "isolated_smoke_database_scope")
+    definitions = workspace / "safe-workflows"
+    definitions.mkdir(mode=0o700)
+    shutil.copyfile(APP / "config/automation/workflows/platform-smoke-test.yaml",
+                    definitions / "platform-smoke-test.yaml")
+    # Only the disposable migrated copy is changed, AFTER legacy-row validation.
+    # Restored custom workflows must never dispatch a real provider action.
+    with sqlite3.connect(database) as conn:
+        conn.execute("UPDATE automation_workflows SET enabled=0")
+    return definitions
+
+
 def api_drill(workspace: Path, database: Path) -> dict:
+    definitions = prepare_smoke(workspace, database)
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
@@ -79,6 +114,7 @@ def api_drill(workspace: Path, database: Path) -> dict:
     env = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "LANG": "C.UTF-8",
            "SITE_WORKFLOW_OUTPUT_ROOT": str(workspace / "api-output"), "OPTICABLE_AUTOMATION_DB_PATH": str(database),
            "SITE_WORKFLOW_API_KEY": key, "OPTICABLE_AUTOMATION_ENABLED": "true",
+           "OPTICABLE_AUTOMATION_WORKFLOWS_DIR": str(definitions),
            "OPTIBRAIN_WEBHOOK_CONFIG": str(workspace / "no-webhooks.yaml"),
            "OPTIBRAIN_SYNC_CONFIG": str(workspace / "no-sync-jobs.yaml")}
     event = {"event_type": "system.automation.smoke_test", "source": "internal",
@@ -150,6 +186,9 @@ def run(source: Path, workspace: Path) -> dict:
     check(source.is_file(), "source_database_missing")
     original = inventory(source)
     check(original["version"] == 1, "drill_requires_v1_source")
+    with sqlite3.connect(source.as_uri() + "?mode=ro", uri=True) as conn:
+        check(not conn.execute("SELECT 1 FROM automation_runs WHERE status<>'completed' LIMIT 1").fetchone(),
+              "restored_unresolved_work_refuses_api_launch")
     pristine = workspace / "pristine-v1.db"
     migrated = workspace / "candidate-v2.db"
     snapshot(source, pristine); snapshot(pristine, migrated)
@@ -175,6 +214,7 @@ def run(source: Path, workspace: Path) -> dict:
     result = {"result": "PASS", "source_version": 1, "migrated_version": 2, "legacy_row_counts": after["counts"],
               "migration": "PASS", "migration_legacy_row_hashes": "PASS", "integrity": "PASS", "wal": "PASS",
               "rollback_snapshot": "PASS", "post_migration_backup_restore": "PASS", "source_unchanged": "PASS",
+              "isolated_smoke_policy": "only safe internal definition; restored workflows disabled in disposable copy",
               **api_result, **ambiguity_drill(workspace)}
     (workspace / "result.json").write_text(json.dumps(result, sort_keys=True, indent=2) + "\n")
     return result

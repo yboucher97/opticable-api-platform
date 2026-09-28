@@ -89,6 +89,11 @@ class Campaign:
         with (self.root / "operations.log").open("ab") as output:
             completed = subprocess.run(argv, env=SAFE_ENV, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                        stderr=output, timeout=timeout, check=False, **kwargs)
+            if completed.returncode:
+                # Fixed CLI tools emit bounded non-secret result categories.
+                # Preserve them in the root-only record instead of discarding
+                # the failed drill's reason while reporting a generic exit.
+                output.write(completed.stdout[:65536])
         check(completed.returncode == 0, "fixed_operation_failed")
         return completed.stdout.decode("utf-8", "replace").strip()
 
@@ -118,6 +123,7 @@ class Campaign:
         database = json.loads(self.run([str(PYTHON), str(REPO / "ops/phase4/migrate_db.py"), "--db", str(DB), "--inspect"],
                                        user="opticable-workflow-api"))
         check(database["version"] == (2 if events else 1), "production_database_version")
+        check(database["smoke_policy"]["safe"], "unsafe_production_smoke_routing")
         sample = database["watchdog_sample_at"]
         check(sample is not None, "watchdog_sample_missing")
         check(0 <= (datetime.now(timezone.utc) - datetime.fromisoformat(sample.replace("Z", "+00:00"))).total_seconds() < 600,

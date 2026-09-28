@@ -95,8 +95,9 @@ result below has zero failures/errors/skips.
 | Scope | Command (after Python executable) | Result |
 |---|---|---|
 | Baseline, independently counted archive | `/var/tmp/optibrain-phase4-artifacts/immutable-baseline-source/ops/phase4/run_tests.py` | 139 tests + 99 subtests, passed (6.002s). Only the standalone counted runner was copied into the archive; product/test source is the exact baseline. |
-| Phase 4 focused | `ops/phase4/run_tests.py --pattern 'test_phase4*.py'` | 103 tests + 100 subtests, passed (9.741s). |
+| Phase 4 focused | `ops/phase4/run_tests.py --pattern 'test_phase4*.py'` | 107 tests + 100 subtests, passed (10.361s). |
 | Ledger / migration / precision | `ops/phase4/run_tests.py --pattern test_phase4_events.py` | 50 tests + 7 subtests, passed (4.865s). |
+| Recovery / production safeguards | `ops/phase4/run_tests.py --pattern test_phase4_ops.py` | 10 tests + 4 subtests, passed (3.341s). |
 | Webhook focused | `ops/phase4/run_tests.py --pattern test_phase4_webhooks.py` | 21 tests + 61 subtests, passed. |
 | Execution controls | `ops/phase4/run_tests.py --pattern test_execution_control.py` | 28 tests + 9 subtests, passed (1.900s). |
 | Zoho mutation safety | `ops/phase4/run_tests.py --pattern test_zoho_gateway.py` | 8 tests, passed (0.055s). |
@@ -105,18 +106,18 @@ result below has zero failures/errors/skips.
 | Phase 3 API controls | `ops/phase4/run_tests.py --pattern test_phase3_api_controls.py` | 5 tests, passed (0.323s). |
 | Conservative retries | `ops/phase4/run_tests.py --pattern test_retry_control.py` | 5 tests, passed (0.001s). |
 | External provider controls | `ops/phase4/run_tests.py --pattern test_core_external_providers.py` | 4 tests, passed (0.002s). |
-| Entire workflow API | `ops/phase4/run_tests.py` | **242 tests + 199 subtests, passed (15.654s)**. |
+| Entire workflow API | `ops/phase4/run_tests.py` | **246 tests + 199 subtests, passed (16.202s)**. |
 | Existing privileged-helper tests | `python3 -m unittest discover -s tests/ops -v` | 37 tests, passed (1.756s). |
 | Existing backup / restore / off-host tests | `python3 -m unittest discover -s tests -p 'test_optibrain*.py' -v` | 11 tests, passed (0.091s). |
 
 The supplied Phase 3 report described 153 tests + 99 subtests. Direct discovery
 at the exact provided baseline found 139 workflow test methods. All 139 remain
-in the full suite; the additional 103 Phase 4 methods account for 242. The
+in the full suite; the additional 107 Phase 4 methods account for 246. The
 existing regression portion contributes 99 subtests. Counts are reported from
 executed commands rather than assumed from the earlier report.
 
-Final logs are `final2-full-tests.log`, `final2-focused-tests.log`,
-`final2-events-tests.log`,
+Final logs are `sealed-full-tests.log`, `sealed-focused-tests.log`,
+`final2-events-tests.log`, `sealed-ops-tests.log`,
 `checked-webhook-tests.log`, `counted-baseline-tests.log`,
 `execution-focused-tests.log`, `zoho-focused-tests.log`,
 `inspection-focused-tests.log`, `release-ops-tests.log` and
@@ -154,15 +155,15 @@ safe internal smoke runs: 20 events, 1 workflow, 10 runs, 20 steps, 10 claims,
 Final drill command:
 
 ```bash
-SITE_WORKFLOW_OUTPUT_ROOT=/var/tmp/optibrain-phase4-artifacts/final2-drill-output \
+SITE_WORKFLOW_OUTPUT_ROOT=/var/tmp/optibrain-phase4-artifacts/sealed-drill-output \
 /opt/opticable-api-platform/apps/workflow-api/.venv/bin/python ops/phase4/isolated_drill.py \
   --source-db /var/tmp/optibrain-phase4-artifacts/populated-v1.db \
-  --workspace /var/tmp/optibrain-phase4-artifacts/final2-populated-drill
+  --workspace /var/tmp/optibrain-phase4-artifacts/sealed-populated-drill
 ```
 
-Result: **PASS**. Temporary API port: 53583. Internal smoke run:
-`069b4d30aace42909e581f2d3647fb88`; event:
-`3efb1b5aa3e1477ead81b1de4c29475c`.
+Result: **PASS**. Temporary API port: 45607. Internal smoke run:
+`c92fd277198343478dba15b469ba821c`; event:
+`1a4dedcce744469f984059c25aef4fbb`.
 
 Verified: exact legacy counts and row hashes preserved; V1 → V2; integrity and
 foreign keys; WAL; source unchanged; V1 rollback snapshot; candidate API startup;
@@ -170,6 +171,10 @@ authenticated inspection and fail-closed access; core.set/event.emit smoke;
 forced API kill/restart; restarted recovery worker; dedupe across restart;
 V2 backup/isolated restore; ambiguous external handler dispatched exactly once,
 then `human_action_required`; recovery/replay did not repeat it.
+The migrated disposable copy disables restored workflows and loads only the
+frozen internal smoke definition after legacy-row verification. A restored DB
+with unresolved execution is refused before any API launches. The live deployment
+preflight separately rejects additional, wildcard or external smoke routes.
 
 Automated drills additionally cover thread and six-process duplicate ingestion,
 startup migration races, WAL reader concurrency, routing/replay races, action
@@ -223,6 +228,11 @@ Provider transport responses are simulated; no real provider write was used.
     index. Legacy copies normalize their instant while original rows remain
     exact. The regression first failed on the old comparison, then passed after
     the product fix and migration/restore reruns.
+14. Restored databases can contain pending runs or custom wildcard workflows.
+    The drill now rejects unresolved execution before API startup and uses only
+    the frozen internal workflow in its disposable copy. Live smoke preflight
+    inspects both root and child routing before sending the smoke event. Failed
+    CLI result categories are retained in the bounded root-only operation log.
 
 Independent self-review examined unique-index scope, insert races, replay
 preflight, cursor commits, expired leases, retained evidence, timezone handling,
