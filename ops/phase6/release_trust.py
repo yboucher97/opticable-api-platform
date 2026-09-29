@@ -1,8 +1,3 @@
-#!/usr/bin/env bash
-# Static verifier: no candidate-controlled code enters root execution.
-set -Eeuo pipefail
-[[ ${EUID} -eq 0 && $# -eq 1 && $1 =~ ^[0-9a-f]{40}$ ]] || exit 64
-env -i PATH=/usr/bin:/bin LANG=C.UTF-8 /usr/bin/python3 - "$1" <<'PY'
 """Installed static reconciliation verifier. Never executes candidate source.
 
 This file is embedded verbatim into the separately reviewed root wrapper; it is
@@ -105,4 +100,3 @@ if __name__=='__main__':
     import sys
     check(len(sys.argv)==2 and re.fullmatch(r'[a-f0-9]{40}',sys.argv[1]),'invalid_command')
     reconcile(sys.argv[1])
-PY

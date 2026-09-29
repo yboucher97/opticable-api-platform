@@ -28,13 +28,14 @@ cat >"${COMMAND_WRAPPER}" <<'EOF'
 set -euo pipefail
 
 original="${SSH_ORIGINAL_COMMAND:-}"
-if [[ ! "${original}" =~ ^deploy[[:space:]]+([0-9a-f]{40})$ ]]; then
+readonly allowed_command='^deploy ([0-9a-f]{40})$'
+if [[ ! "${original}" =~ ${allowed_command} ]]; then
   echo "Only 'deploy <40-hex-main-commit-sha>' is permitted." >&2
   exit 64
 fi
 
 sha="${BASH_REMATCH[1]}"
-exec sudo -n /usr/local/sbin/opticable-api-deploy-root "${sha}"
+exec /usr/bin/sudo -n /usr/local/sbin/opticable-api-deploy-root "${sha}"
 EOF
 
 install -m 755 "$(dirname "${BASH_SOURCE[0]}")/production-root-command.sh" "${ROOT_WRAPPER}"

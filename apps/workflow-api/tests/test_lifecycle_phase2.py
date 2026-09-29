@@ -160,7 +160,7 @@ steps:
         finally:
             tmp.cleanup()
 
-    def test_quote_request_creates_crm_task_without_books_write(self) -> None:
+    def test_legacy_quote_request_blocks_crm_task_and_books_write(self) -> None:
         workflow = """
 id: test.quote
 name: Quote review
@@ -176,8 +176,8 @@ steps:
 """
         tmp, run, zoho, _ = self._run(workflow, AutomationEvent(event_type="test.quote", source="unit", payload={"deal_id": "d1", "service_summary": "Cabling"}))
         try:
-            self.assertEqual(run["status"], "completed")
-            self.assertTrue(any(c["path"] == "/crm/v8/Tasks" and c["method"] == "POST" for c in zoho.calls))
+            self.assertEqual(run["status"], "failed")
+            self.assertEqual(zoho.calls, [])
             self.assertFalse(any(c["path"].startswith("/books/") and c["method"] != "GET" for c in zoho.calls))
         finally:
             tmp.cleanup()

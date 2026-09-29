@@ -89,7 +89,7 @@ class CustomerLifecycleTests(unittest.TestCase):
             lead_event_idempotency_key({"source": "manual", "email": "a@example.com"})
         )
 
-    def test_lead_workflow_creates_crm_record_and_task(self) -> None:
+    def test_legacy_lead_workflow_blocks_crm_record_and_task(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             workflows = root / "workflows"
@@ -139,12 +139,12 @@ steps:
                 )
             )
             run = store.get_run(response.run_ids[0])
-            self.assertEqual(run["status"], "completed")
+            self.assertEqual(run["status"], "failed")
             methods_paths = [(call["method"], call["path"]) for call in fake.calls]
-            self.assertIn(("POST", "/crm/v8/Leads"), methods_paths)
-            self.assertIn(("POST", "/crm/v8/Tasks"), methods_paths)
+            self.assertEqual(fake.calls, [])
+            self.assertEqual(methods_paths, [])
 
-    def test_existing_lead_is_updated_not_duplicated(self) -> None:
+    def test_existing_lead_legacy_update_is_blocked(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             workflows = root / "workflows"
@@ -188,9 +188,9 @@ steps:
                 )
             )
             run = store.get_run(response.run_ids[0])
-            self.assertEqual(run["status"], "completed")
+            self.assertEqual(run["status"], "failed")
             methods_paths = [(call["method"], call["path"]) for call in fake.calls]
-            self.assertIn(("PUT", "/crm/v8/Leads/9001"), methods_paths)
+            self.assertEqual(fake.calls, [])
             self.assertNotIn(("POST", "/crm/v8/Leads"), methods_paths)
 
     def test_books_api_path_detection(self) -> None:

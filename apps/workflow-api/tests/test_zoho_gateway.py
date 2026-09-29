@@ -137,7 +137,7 @@ class ZohoGatewayTests(unittest.TestCase):
 
     def test_mutation_transport_failure_never_replays_through_standby(self) -> None:
         client = self.standby_client()
-        request = httpx.Request("POST", "https://www.zohoapis.com/crm/v8/Leads")
+        request = httpx.Request("POST", "https://www.zohoapis.com/creator/data/x/y/form/z")
         with (
             patch(
                 "workflow.zoho_gateway.httpx.request",
@@ -147,9 +147,9 @@ class ZohoGatewayTests(unittest.TestCase):
         ):
             with self.assertRaises(ZohoWriteUnconfirmedError) as caught:
                 client.request(
-                    "zohoapis",
+                    "creator",
                     "POST",
-                    "/crm/v8/Leads",
+                    "/data/x/y/form/z",
                     body={"data": [{"Last_Name": "Fixture"}]},
                     reason="Create fixture lead",
                     confirm=True,
@@ -192,9 +192,9 @@ class ZohoGatewayTests(unittest.TestCase):
         fallback = {"ok": True, "status": 200, "provider_path": "connect_standby", "data": {}}
         with patch.object(client, "_standby_request", return_value=fallback) as standby:
             result = client.request(
-                "zohoapis",
+                "creator",
                 "POST",
-                "/crm/v8/Leads",
+                "/data/x/y/form/z",
                 body={"data": [{"Last_Name": "Fixture"}]},
                 reason="Create fixture lead",
                 confirm=True,
@@ -207,7 +207,7 @@ class ZohoGatewayTests(unittest.TestCase):
         response = httpx.Response(
             503,
             json={"code": "TEMPORARY"},
-            request=httpx.Request("POST", "https://www.zohoapis.com/crm/v8/Leads"),
+            request=httpx.Request("POST", "https://www.zohoapis.com/creator/data/x/y/form/z"),
         )
         with (
             patch("workflow.zoho_gateway.httpx.request", return_value=response) as local_request,
@@ -215,9 +215,9 @@ class ZohoGatewayTests(unittest.TestCase):
         ):
             with self.assertRaises(Exception):
                 client.request(
-                    "zohoapis",
+                    "creator",
                     "POST",
-                    "/crm/v8/Leads",
+                    "/data/x/y/form/z",
                     body={"data": [{"Last_Name": "Fixture"}]},
                     reason="Create fixture lead",
                     confirm=True,

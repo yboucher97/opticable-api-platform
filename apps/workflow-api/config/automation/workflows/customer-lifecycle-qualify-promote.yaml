@@ -1,7 +1,7 @@
 id: customer.lifecycle.qualify-and-promote
 name: Customer lifecycle - qualify and promote
 version: 1
-enabled: true
+enabled: false
 description: Qualify a CRM-synced lead and promote qualified commercial inquiries into Contact, optional Account, and Deal.
 trigger:
   event_types:

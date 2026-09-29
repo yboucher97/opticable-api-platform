@@ -33,6 +33,9 @@ def register_zoho_actions(
         if method != "GET" and not reason:
             raise ValueError("zoho.request mutations require with.reason.")
 
+        from ..crm_write_boundary import is_crm, blocked_legacy
+        if method != 'GET' and (is_crm(service, path) or any(c in path for c in ('%', '?', '#', '\\')) or any(p in {'.', '..'} for p in path.split('/'))):
+            blocked_legacy()
         result = client.request(
             service,
             method,

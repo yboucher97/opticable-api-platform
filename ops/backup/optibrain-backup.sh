@@ -18,6 +18,7 @@ OMADA_STATE_DIR="${OPTIBRAIN_OMADA_STATE_DIR:-/var/lib/opticable-omada-site}"
 PLATFORM_SHARED_DIR="${OPTIBRAIN_PLATFORM_SHARED_DIR:-/var/lib/opticable-api-platform/shared}"
 RETENTION_GENERATIONS="${OPTIBRAIN_BACKUP_RETENTION:-7}"
 VERIFY_ARCHIVE=""
+PRESERVE_EXISTING=false
 
 log() {
   local line="[$(date -u +%Y-%m-%dT%H:%M:%SZ)] $*"
@@ -30,13 +31,17 @@ fail() { log "ERROR: $*"; exit 1; }
 # Git's trust exception command-scoped and limited to this checkout; never use
 # a wildcard safe.directory value.
 git_repo() {
-  git -c "safe.directory=${REPO_DIR}" -C "${REPO_DIR}" "$@"
+  if [[ "${EUID}" -eq 0 && "${REPO_DIR}" == "${REPO_DEFAULT}" ]]; then
+    /usr/sbin/runuser -u optibrain -- /usr/bin/git -c core.fsmonitor=false -c core.hooksPath=/dev/null -C "${REPO_DIR}" "$@"
+  else
+    /usr/bin/git -c core.fsmonitor=false -c core.hooksPath=/dev/null -c "safe.directory=${REPO_DIR}" -C "${REPO_DIR}" "$@"
+  fi
 }
 
 usage() {
   cat <<'EOF'
 Usage:
-  optibrain-backup.sh [--config FILE] [--output-dir DIR]
+  optibrain-backup.sh [--config FILE] [--output-dir DIR] [--preserve-existing]
   optibrain-backup.sh --verify ARCHIVE
 EOF
 }
@@ -46,11 +51,14 @@ while (($#)); do
     --config) CONFIG_FILE="${2:?missing config path}"; shift 2 ;;
     --output-dir) DEST_DIR="${2:?missing output path}"; shift 2 ;;
     --verify) VERIFY_ARCHIVE="${2:?missing archive path}"; shift 2 ;;
+    --preserve-existing) PRESERVE_EXISTING=true; shift ;;
     --retention) RETENTION_GENERATIONS="${2:?missing retention count}"; shift 2 ;;
     --help|-h) usage; exit 0 ;;
     *) usage >&2; fail "unknown argument: $1" ;;
   esac
 done
+
+readonly PRESERVE_EXISTING
 
 if [[ -f "${CONFIG_FILE}" ]]; then
   # Administrator-owned configuration only; no secret values belong here.
@@ -146,8 +154,9 @@ require_safe_destination
 
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 generation="${DEST_DIR}/generation-${timestamp}"
-staging="$(mktemp -d "${DEST_DIR}/.staging-${timestamp}.XXXXXX")"
 archive="${DEST_DIR}/optibrain-backup-${timestamp}.tar.gz"
+[[ ! -e "${archive}" && ! -e "${archive}.sha256" && ! -e "${generation}" ]] || fail "backup generation collision"
+staging="$(mktemp -d "${DEST_DIR}/.staging-${timestamp}.XXXXXX")"
 trap 'rm -rf -- "${staging}"' EXIT
 mkdir -p "${staging}/source" "${staging}/state" "${staging}/system" "${staging}/credentials" "${staging}/database"
 
@@ -300,7 +309,7 @@ rm -rf -- "${generation}"
 verify_archive "${archive}"
 
 mapfile -t archives < <(find "${DEST_DIR}" -maxdepth 1 -type f -name 'optibrain-backup-*.tar.gz' -printf '%T@ %p\n' | sort -nr | awk '{print $2}')
-if (( ${#archives[@]} > RETENTION_GENERATIONS )); then
+if [[ "${PRESERVE_EXISTING}" != true ]] && (( ${#archives[@]} > RETENTION_GENERATIONS )); then
   valid_count=0
   for candidate in "${archives[@]}"; do if verify_archive "${candidate}" >/dev/null 2>&1; then ((valid_count++)) || true; fi; done
   if (( valid_count > 1 )); then

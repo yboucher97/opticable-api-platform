@@ -111,9 +111,12 @@ class ZohoGatewayClient:
         if mutation and confirm is not True:
             raise ValueError("Zoho mutations require confirm=True.")
 
+        if any(str(key).lower().strip() in {"x-http-method-override", "x-method-override"} for key in (headers or {})):
+            raise ValueError("HTTP method override headers are forbidden.")
+
         blocked = {
             "authorization", "cookie", "host", "content-length",
-            "connection", "proxy-authorization", "x-api-key",
+            "connection", "proxy-authorization", "x-api-key", "x-http-method-override", "x-method-override",
         }
         safe_headers = {
             str(key): str(value)
@@ -259,8 +262,13 @@ class ZohoGatewayClient:
             service, method, path, headers, reason, confirm
         )
         mutation = normalized_method != "GET"
+        from .automation.crm_write_boundary import require_authority, verify_transport_authority
+        if mutation and ('%' in path or '?' in path or '#' in path or any(part in {'.','..'} for part in path.split('/'))):
+            raise ValueError('Mutation path must be canonical and cannot contain escapes')
+        require_authority(self, service, normalized_method, path, body, headers)
 
         def standby() -> dict[str, Any]:
+            verify_transport_authority(self, service, normalized_method, path, body, headers)
             return self._standby_request(
                 service,
                 normalized_method,
@@ -293,6 +301,7 @@ class ZohoGatewayClient:
             raise
 
         try:
+            verify_transport_authority(self, service, normalized_method, path, body, headers)
             return self._local_request(
                 service,
                 normalized_method,

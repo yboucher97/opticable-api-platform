@@ -53,7 +53,7 @@ def validate_authorization(value, candidate, now=None):
     approved, expires = (datetime.fromisoformat(value[k].replace("Z", "+00:00")) for k in ("approved_at", "expires_at"))
     check(approved.tzinfo is not None and expires.tzinfo is not None and
           approved <= now < expires and 0 < (expires - approved).total_seconds() <= 7200, "authorization_lifetime")
-    for key, minimum in (("full_tests", 556), ("subtests", 495), ("focused_tests", 84), ("ci_run_id", 1)):
+    for key, minimum in (("full_tests", 580), ("subtests", 540), ("focused_tests", 156), ("ci_run_id", 1)):
         check(type(value[key]) is int and value[key] >= minimum, "validation_evidence")
     check(all(type(value[k]) is int and value[k] == 0 for k in ("failures", "errors", "skipped")), "validation_not_clean")
     return value
@@ -88,6 +88,7 @@ class Phase6Campaign(legacy.Phase5Campaign):
         self.deploy_lock = None
         self.pre = self.post = None
         self.environment_digest = None
+        self.preserved_archives = {}
 
     def run(self, argv, **kwargs):
         # Reuse V2 extraction/ownership but invoke the new version-bound drill.
@@ -95,6 +96,9 @@ class Phase6Campaign(legacy.Phase5Campaign):
         if any(Path(arg).name == "migrate_db.py" for arg in argv):
             check("--inspect" in argv, "production_database_mutation_forbidden")
         check(not any(arg in {"subscribe", "notification-proof", "delta-proof"} for arg in argv), "provider_write_mode_forbidden")
+        if argv == ["/usr/bin/systemctl", "start", "optibrain-backup.service"]:
+            # Exact approved/root-frozen primitive, no installer/config change and no pruning.
+            argv = ["/bin/bash", str(REPO / "ops/backup/optibrain-backup.sh"), "--preserve-existing"]
         return super().run(argv, **kwargs)
 
     def protections(self):
@@ -137,9 +141,7 @@ class Phase6Campaign(legacy.Phase5Campaign):
         checked = []
         for raw in workflows:
             document = raw
-            # Reject custom active routing before switching or sending internal smoke.
-            if not document.get("enabled", True):
-                continue
+            # Check disabled rows too: persisted snapshots can survive a code rollback.
             matches = [p for p in shipped.glob("*.yaml") if yaml.safe_load(p.read_text()).get("id") == document.get("workflow_id")]
             check(len(matches) == 1, "unreviewed_custom_active_workflow")
             expected = yaml.safe_load(matches[0].read_text())
@@ -150,8 +152,11 @@ class Phase6Campaign(legacy.Phase5Campaign):
                 except RuntimeError:
                     raise RuntimeError("unexpected_new_workflow_on_baseline") from None
             check(document["definition_sha256"] == inspector.definition_hash(expected), "unreviewed_workflow_definition")
-            if candidate:
-                check(not set(document["actions"]) & {"lifecycle.mail_reply_approved", "lifecycle.mail_send_approved_v2"}, "legacy_or_outbound_route_enabled")
+            if candidate and document.get("enabled", True):
+                forbidden={"lifecycle.mail_reply_approved", "lifecycle.mail_send_approved_v2",
+                    "lifecycle.crm_upsert_lead", "lifecycle.crm_create_followup_task", "lifecycle.crm_promote_lead",
+                    "lifecycle.crm_create_meeting", "lifecycle.crm_create_quote_review_task"}
+                check(not set(document["actions"]) & forbidden, "legacy_or_outbound_route_enabled")
             checked.append(document.get("workflow_id"))
         self.mark(reviewed_workflow_ids=checked)
 
@@ -216,25 +221,39 @@ class Phase6Campaign(legacy.Phase5Campaign):
                   ("OPTIBRAIN_CRM_LEAD_WRITES", "OPTIBRAIN_SALES_DRAFTS", "OPTIBRAIN_OUTBOUND_SENDS")), "effective_external_policy_enabled")
 
     def rollback_proof(self):
-        # Restore baseline code alongside baseline BACKUP data, never the live DB.
-        cold = self.root / "baseline-code"
-        cold.mkdir(mode=0o755)
-        archive = self.root / "baseline-source.tar"
-        self.git(REPO, "archive", "--format=tar", "--output=" + str(archive), BASELINE)
-        with tarfile.open(archive) as handle:
-            check(all(member.isfile() or member.isdir() for member in handle.getmembers()), "unsafe_baseline_archive")
-            handle.extractall(cold, filter="data")
-        # /var/lib/optibrain is private; service-owned staging gives no root workspace access.
-        private = Path(self.result["postdeployment_restore_workspace"])
-        public = private / "baseline-code"
-        self.run(["/usr/bin/cp", "-a", str(cold), str(public)])
-        self.run(["/usr/bin/chmod", "-R", "a+rX", str(public)])
-        source = private / "restored-production-v2.db"
-        value = json.loads(self.run([str(base.PYTHON), str(public / "ops/phase5/isolated_drill.py"),
-                                   "--source-db", str(source), "--workspace", str(private / "rollback-drill")],
-                                  user="opticable-workflow-api", timeout=240))
-        check(value["result"] == "PASS" and value["source_unchanged"] is True and value["migration_performed"] is False, "baseline_rollback_drill")
-        self.mark(rollback_proof={"baseline": BASELINE, "schema": 2, "result": "PASS", "live_db_restored": False})
+        # Baseline code contains unguarded legacy writers. Never authorize its live return.
+        result = json.loads(self.run([str(base.PYTHON), "-I", str(REPO / "ops/phase6/recovery_compatibility.py"),
+                                      "--baseline", BASELINE], user="opticable-workflow-api", timeout=240))
+        check(result["result"] == "PASS" and result["direct_baseline_rollback_safe"] is False
+              and result["forward_recovery"] == "PASS", "forward_recovery_compatibility")
+        self.mark(rollback_proof=result, recovery_strategy="forward-only-preserve-v2")
+
+    def backup_capacity(self):
+        spec=importlib.util.spec_from_file_location("phase6_backup_policy",REPO/"ops/phase6/backup_policy.py")
+        policy=importlib.util.module_from_spec(spec);spec.loader.exec_module(policy)
+        inventory=[]
+        for archive in sorted(Path("/var/backups/optibrain").glob("optibrain-backup-*.tar.gz")):
+            base.protected_file(archive,private=True)
+            sidecar=Path(str(archive)+".sha256");base.protected_file(sidecar,private=True)
+            value=base.sha(archive)
+            with tarfile.open(archive) as stream:uncompressed=sum(m.size for m in stream if m.isfile())
+            inventory.append({"generation":archive.name,"size":archive.stat().st_size,
+                "uncompressed_bytes":uncompressed,"sha256":value,"sidecar_matches":sidecar.read_text().split()[0]==value})
+        free=os.statvfs("/var/backups/optibrain")
+        current={r["generation"]:r["sha256"] for r in inventory}
+        check(all(current.get(name)==digest for name,digest in self.preserved_archives.items()), "protected_backup_generation_changed")
+        if not self.preserved_archives:self.preserved_archives=current
+        self.mark(backup_preservation=policy.preservation_plan(inventory,free.f_bavail*free.f_frsize))
+        return inventory
+
+    def release_guard(self,status):
+        data={"baseline":BASELINE,"candidate":self.candidate,"status":status,
+              "authorization_sha256":base.sha(AUTHORIZATION),"completed_gates":self.result.get("completed_gates",[]),
+              "workflow_hashes_verified":bool(self.result.get("reviewed_workflow_ids")),
+              "external_actions_enabled":False,"recovery_strategy":"forward-only-preserve-v2",
+              "pre_reference_sha":BASELINE,"recovery_reference_verified":bool(self.result.get("pre_reference_readback")==BASELINE)}
+        if self.post:data["candidate_backup"]={"generation":self.post[1],"sha256":base.sha(self.post[0])}
+        base.write_record(ACTIVE_RELEASE,data)
 
     def perform(self, stage):
         if stage == "preflight":
@@ -259,6 +278,7 @@ class Phase6Campaign(legacy.Phase5Campaign):
             wrapper = Path("/usr/local/sbin/opticable-api-deploy-root")
             base.protected_file(wrapper)
             check(base.sha(wrapper) == base.sha(REPO / "deploy/production-root-command.sh"), "deploy_trust_chain_not_hardened")
+            check(self.run(["/usr/bin/systemctl", "show", "optibrain-backup.timer", "--property=ActiveState", "--value"]) == "inactive", "backup_retention_hold_not_authorized")
             check(not ACTIVE_RELEASE.exists() and not ACTIVE_RELEASE.is_symlink(), "previous_release_requires_manual_review")
             check(os.statvfs("/var/backups/optibrain").f_bavail * os.statvfs("/var/backups/optibrain").f_frsize > 4 * 1024**3, "backup_capacity")
             # Serialize staging with the automatic production deploy driver.
@@ -272,8 +292,9 @@ class Phase6Campaign(legacy.Phase5Campaign):
         elif stage == "provider-governance-readonly":
             self.mark(provider_governance=self.provider("verify"))
         elif stage == "fresh-baseline-backup":
-            check(len(list(Path("/var/backups/optibrain").glob("optibrain-backup-*.tar.gz"))) <= 5, "two_generation_retention_headroom_required")
+            self.backup_capacity()
             self.pre = self.archive(BASELINE, "predeployment")
+            self.backup_capacity()
         elif stage == "baseline-restore": self.restored_drill(*self.pre, "predeployment")
         elif stage == "baseline-offhost": self.offhost(self.pre)
         elif stage == "pre-release-reference": self.reference("pre", BASELINE)
@@ -284,7 +305,7 @@ class Phase6Campaign(legacy.Phase5Campaign):
             self.git(base.PROD, "fetch", "origin", BRANCH)
             check(self.git(base.PROD, "rev-parse", "FETCH_HEAD") == self.candidate, "candidate_fetch_identity")
             check(self.git(base.PROD, "merge-base", BASELINE, self.candidate) == BASELINE, "production_candidate_ancestry")
-            base.write_record(ACTIVE_RELEASE, {"baseline": BASELINE, "candidate": self.candidate, "status": "staging"})
+            self.release_guard("staging")
             self.mark(production_service_stop_attempted=True)
             self.run(["/usr/bin/systemctl", "stop", base.SERVICE], timeout=60)
             check(self.service_state() == "inactive", "service_not_stopped")
@@ -298,13 +319,14 @@ class Phase6Campaign(legacy.Phase5Campaign):
             self.mark(production_service_restart_attempted=True)
             self.run(["/usr/bin/systemctl", "start", base.SERVICE], timeout=60)
             self.ready(API_VERSION); self.wait_watchdog(db["watchdog_sample_id"], 2)
-            base.write_record(ACTIVE_RELEASE, {"baseline": BASELINE, "candidate": self.candidate, "status": "staged"})
+            self.release_guard("staged")
         elif stage == "candidate-health-smoke":
             self.protections(); self.policies(); self.healthy(API_VERSION, events=True); self.audit_routes(candidate=True)
             self.smoke(); self.healthy(API_VERSION, events=True)
         elif stage == "candidate-backup":
-            check(len(list(Path("/var/backups/optibrain").glob("optibrain-backup-*.tar.gz"))) < 7, "retention_headroom_required")
+            self.backup_capacity()
             self.post = self.archive(self.candidate, "postdeployment")
+            self.backup_capacity()
         elif stage == "candidate-restore": self.restored_drill(*self.post, "postdeployment")
         elif stage == "rollback-proof": self.rollback_proof()
         elif stage == "candidate-offhost": self.offhost(self.post)
@@ -320,7 +342,7 @@ class Phase6Campaign(legacy.Phase5Campaign):
                 observed = self.git(REPO, "ls-remote", "origin", "refs/heads/main").split()[0]
                 self.mark(remote_main_sha=observed, remote_main_promoted=observed == self.candidate)
             check(observed == self.candidate, "main_promotion_unverified")
-            base.write_record(ACTIVE_RELEASE, {"baseline": BASELINE, "candidate": self.candidate, "status": "promoted"})
+            self.release_guard("promoted")
         elif stage == "ci-deploy-reconciliation":
             end = time.monotonic() + 1200
             while time.monotonic() < end:
@@ -338,7 +360,8 @@ class Phase6Campaign(legacy.Phase5Campaign):
         elif stage == "post-release-reference": self.reference("post", self.candidate)
         elif stage == "final-backup-verification":
             self.verify_backup_receipt(self.post)
-            base.write_record(ACTIVE_RELEASE, {"baseline": BASELINE, "candidate": self.candidate, "status": "complete"})
+            self.backup_capacity()
+            self.release_guard("complete")
         else: raise RuntimeError("unknown_gate")
 
 

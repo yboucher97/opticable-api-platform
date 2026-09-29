@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..crm_write_boundary import blocked_legacy
+
 from datetime import datetime, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -181,98 +183,10 @@ def register_lifecycle_actions(
         return {"lead": normalize_lead(payload)}
 
     def upsert_lead(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
-        lead = step.inputs.get("lead")
-        if not isinstance(lead, dict):
-            raise ValueError("lifecycle.crm_upsert_lead requires with.lead object.")
-
-        existing = _find_existing_lead(client, lead)
-        if existing and existing.get("id"):
-            record_id = str(existing["id"])
-            payload = _lead_payload(lead, create=False)
-            response = client.request(
-                "zohoapis",
-                "PUT",
-                f"/crm/v8/Leads/{record_id}",
-                body={"data": [payload]},
-                reason="Customer lifecycle: update deduplicated CRM lead",
-                confirm=True,
-            )
-            action = "updated"
-        else:
-            payload = _lead_payload(lead, create=True)
-            response = client.request(
-                "zohoapis",
-                "POST",
-                "/crm/v8/Leads",
-                body={"data": [payload]},
-                reason="Customer lifecycle: create CRM lead from normalized intake",
-                confirm=True,
-            )
-            record_id = _first_record_id(response)
-            if not record_id:
-                raise RuntimeError("Zoho CRM did not return the created Lead id.")
-            action = "created"
-
-        event = context.get("event") or {}
-        store.audit(
-            category="customer_lifecycle",
-            action=f"crm_lead_{action}",
-            actor="automation-engine",
-            success=True,
-            correlation_id=event.get("correlation_id") or event.get("event_id"),
-            target=record_id,
-            metadata={
-                "source": lead.get("source"),
-                "inquiry_id": lead.get("inquiry_id"),
-                "identity_hash": lead.get("identity_hash"),
-            },
-        )
-        return {"lead_id": record_id, "action": action, "lead": lead}
+        blocked_legacy()
 
     def create_followup_task(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
-        lead_id = str(step.inputs.get("lead_id") or "").strip()
-        if not lead_id:
-            raise ValueError("lifecycle.crm_create_followup_task requires with.lead_id.")
-
-        lead = step.inputs.get("lead") if isinstance(step.inputs.get("lead"), dict) else {}
-        label = (
-            " ".join(
-                part for part in (str(lead.get("first_name") or "").strip(), str(lead.get("last_name") or "").strip())
-                if part
-            )
-            or str(lead.get("company") or "").strip()
-            or lead_id
-        )
-        due_days = int(step.inputs.get("due_days", 1))
-        due_days = max(0, min(due_days, 30))
-        due_date = (datetime.now(ZoneInfo("America/Toronto")).date() + timedelta(days=due_days)).isoformat()
-
-        description_parts = ["Automatically created by OptiBrain customer lifecycle."]
-        if lead.get("service_type"):
-            description_parts.append(f"Service requested: {lead['service_type']}")
-        if lead.get("message"):
-            description_parts.append(f"Inquiry: {lead['message']}")
-
-        response = client.request(
-            "zohoapis",
-            "POST",
-            "/crm/v8/Tasks",
-            body={
-                "data": [
-                    {
-                        "Subject": f"Review new lead: {label}"[:255],
-                        "Due_Date": due_date,
-                        "Who_Id": lead_id,
-                        "$se_module": "Leads",
-                        "Description": "\n".join(description_parts),
-                    }
-                ]
-            },
-            reason="Customer lifecycle: create next-action task for new or updated lead",
-            confirm=True,
-        )
-        task_id = _first_record_id(response)
-        return {"task_id": task_id, "due_date": due_date}
+        blocked_legacy()
 
     engine.register_action("lifecycle.normalize_lead", normalize_action)
     engine.register_action("lifecycle.crm_upsert_lead", upsert_lead)

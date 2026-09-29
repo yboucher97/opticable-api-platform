@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..crm_write_boundary import blocked_legacy
+
 import json
 import re
 from datetime import datetime
@@ -275,7 +277,8 @@ def register_lifecycle_extended_actions(
         return {
             "qualified": qualified,
             "confidence": confidence,
-            "promotion_allowed": promotion_allowed,
+            "promotion_allowed": False,
+            "promotion_recommended": promotion_allowed,
             "summary": str(parsed.get("summary") or "")[:2000],
             "service_type": str(parsed.get("service_type") or lead.get("service_type") or "").strip() or None,
             "language": str(parsed.get("language") or "unknown").lower(),
@@ -288,102 +291,7 @@ def register_lifecycle_extended_actions(
         }
 
     def promote_lead(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
-        lead = step.inputs.get("lead")
-        qualification = step.inputs.get("qualification")
-        if not isinstance(lead, dict) or not isinstance(qualification, dict):
-            raise ValueError("lifecycle.crm_promote_lead requires lead and qualification objects.")
-        if not qualification.get("promotion_allowed"):
-            return {"promoted": False, "reason": "qualification_gate"}
-
-        if qualification.get("service_type") and not lead.get("service_type"):
-            lead = {**lead, "service_type": qualification["service_type"]}
-
-        account_id: str | None = None
-        company = str(lead.get("company") or "").strip()
-        if company:
-            account = _find_account(client, company)
-            if account and account.get("id"):
-                account_id = str(account["id"])
-            else:
-                response = client.request(
-                    "zohoapis", "POST", "/crm/v8/Accounts",
-                    body={"data": [{"Account_Name": company}]},
-                    reason="Customer lifecycle: create Account for qualified lead",
-                    confirm=True,
-                )
-                account_id = _created_id(response)
-                if not account_id:
-                    raise RuntimeError("CRM did not return the created Account id.")
-
-        contact = _find_contact(client, lead)
-        if contact and contact.get("id"):
-            contact_id = str(contact["id"])
-            client.request(
-                "zohoapis", "PUT", f"/crm/v8/Contacts/{contact_id}",
-                body={"data": [_contact_payload(lead, account_id, create=False)]},
-                reason="Customer lifecycle: update deduplicated Contact for qualified lead",
-                confirm=True,
-            )
-            contact_action = "updated"
-        else:
-            response = client.request(
-                "zohoapis", "POST", "/crm/v8/Contacts",
-                body={"data": [_contact_payload(lead, account_id, create=True)]},
-                reason="Customer lifecycle: create Contact for qualified lead",
-                confirm=True,
-            )
-            contact_id = _created_id(response)
-            if not contact_id:
-                raise RuntimeError("CRM did not return the created Contact id.")
-            contact_action = "created"
-
-        deal = _find_deal(client, lead)
-        if deal and deal.get("id"):
-            deal_id = str(deal["id"])
-            client.request(
-                "zohoapis", "PUT", f"/crm/v8/Deals/{deal_id}",
-                body={"data": [_deal_payload(lead, contact_id, account_id, create=False)]},
-                reason="Customer lifecycle: update deduplicated Deal for qualified lead",
-                confirm=True,
-            )
-            deal_action = "updated"
-        else:
-            response = client.request(
-                "zohoapis", "POST", "/crm/v8/Deals",
-                body={"data": [_deal_payload(lead, contact_id, account_id, create=True)]},
-                reason="Customer lifecycle: create Deal at Qualification stage",
-                confirm=True,
-            )
-            deal_id = _created_id(response)
-            if not deal_id:
-                raise RuntimeError("CRM did not return the created Deal id.")
-            deal_action = "created"
-
-        event = context.get("event") or {}
-        store.audit(
-            category="customer_lifecycle",
-            action="lead_promoted",
-            actor="automation-engine",
-            success=True,
-            correlation_id=event.get("correlation_id") or event.get("event_id"),
-            target=deal_id,
-            metadata={
-                "account_id": account_id,
-                "contact_id": contact_id,
-                "deal_id": deal_id,
-                "contact_action": contact_action,
-                "deal_action": deal_action,
-                "confidence": qualification.get("confidence"),
-            },
-        )
-        return {
-            "promoted": True,
-            "account_id": account_id,
-            "contact_id": contact_id,
-            "deal_id": deal_id,
-            "contact_action": contact_action,
-            "deal_action": deal_action,
-        }
+        blocked_legacy()
 
     def resolve_email_party(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
         email = str(step.inputs.get("email") or "").strip().lower()
@@ -497,42 +405,7 @@ def register_lifecycle_extended_actions(
         return {"drafted": True, "provider_status": response.get("status")}
 
     def create_meeting(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
-        meeting = step.inputs.get("meeting")
-        if not isinstance(meeting, dict):
-            raise ValueError("lifecycle.crm_create_meeting requires with.meeting object.")
-        title = str(meeting.get("title") or "").strip()
-        start = str(meeting.get("start_datetime") or "").strip()
-        end = str(meeting.get("end_datetime") or "").strip()
-        if not title or not start or not end:
-            raise ValueError("Meeting title, start_datetime and end_datetime are required.")
-        # Parsing prevents malformed/ambiguous date strings from reaching CRM.
-        if datetime.fromisoformat(start.replace("Z", "+00:00")) >= datetime.fromisoformat(end.replace("Z", "+00:00")):
-            raise ValueError("Meeting end_datetime must be after start_datetime.")
-
-        record: dict[str, Any] = {
-            "Event_Title": title[:255],
-            "Start_DateTime": start,
-            "End_DateTime": end,
-            "Description": str(meeting.get("description") or "")[:32000],
-        }
-        if meeting.get("venue"):
-            record["Venue"] = str(meeting["venue"])[:255]
-        if meeting.get("contact_id"):
-            record["Who_Id"] = str(meeting["contact_id"])
-        if meeting.get("deal_id"):
-            record["What_Id"] = str(meeting["deal_id"])
-            record["$se_module"] = "Deals"
-
-        response = client.request(
-            "zohoapis", "POST", "/crm/v8/Events",
-            body={"data": [record]},
-            reason="Customer lifecycle: create explicitly requested CRM meeting",
-            confirm=True,
-        )
-        meeting_id = _created_id(response)
-        if not meeting_id:
-            raise RuntimeError("CRM did not return the created Meeting id.")
-        return {"meeting_id": meeting_id}
+        blocked_legacy()
 
     engine.register_action("lifecycle.qualify_lead", qualify_lead)
     engine.register_action("lifecycle.crm_promote_lead", promote_lead)

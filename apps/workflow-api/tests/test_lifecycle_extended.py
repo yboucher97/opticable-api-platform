@@ -54,7 +54,7 @@ class LifecycleExtendedTests(unittest.TestCase):
         engine.sync_definitions()
         return tmp, store, engine, zoho, ai
 
-    def test_qualified_lead_promotes_to_account_contact_deal(self) -> None:
+    def test_ai_qualified_lead_cannot_promote_account_contact_deal(self) -> None:
         workflow = """
 id: test.promote
 name: Promote
@@ -108,13 +108,8 @@ steps:
                 )
             )
             run = store.get_run(response.run_ids[0])
-            self.assertEqual(run["status"], "completed")
-            posts = [(c["service"], c["method"], c["path"]) for c in zoho.calls if c["method"] == "POST"]
-            self.assertIn(("zohoapis", "POST", "/crm/v8/Accounts"), posts)
-            self.assertIn(("zohoapis", "POST", "/crm/v8/Contacts"), posts)
-            self.assertIn(("zohoapis", "POST", "/crm/v8/Deals"), posts)
-            deal_call = next(c for c in zoho.calls if c["method"] == "POST" and c["path"] == "/crm/v8/Deals")
-            self.assertEqual(deal_call["body"]["data"][0]["Stage"], "Qualification")
+            self.assertEqual(run["status"], "failed")
+            self.assertEqual(zoho.calls, [])
         finally:
             tmp.cleanup()
 
@@ -158,8 +153,8 @@ steps:
                 )
             )
             run = store.get_run(response.run_ids[0])
-            self.assertEqual(run["status"], "completed")
-            self.assertFalse(run["steps"][1]["result"]["promoted"])
+            self.assertEqual(run["status"], "failed")
+            self.assertEqual(zoho.calls, [])
             self.assertFalse(any(c["method"] != "GET" for c in zoho.calls))
         finally:
             tmp.cleanup()
@@ -256,12 +251,8 @@ steps:
                 )
             )
             run = store.get_run(response.run_ids[0])
-            self.assertEqual(run["status"], "completed")
-            event_call = next(c for c in zoho.calls if c["path"] == "/crm/v8/Events")
-            record = event_call["body"]["data"][0]
-            self.assertEqual(record["Who_Id"], "123")
-            self.assertEqual(record["What_Id"], "456")
-            self.assertEqual(record["$se_module"], "Deals")
+            self.assertEqual(run["status"], "failed")
+            self.assertEqual(zoho.calls, [])
         finally:
             tmp.cleanup()
 

@@ -175,9 +175,14 @@ def register_crm_lead_actions(engine, client, store):
             evidence.update(fields=sorted(desired_subset), desired_hash=digest(desired_subset))
         journal.record("started", key, evidence, actor)
         try:
-            response = client.request("zohoapis", method, path, body=body, headers=headers or {},
-                                      reason="Phase 6 bounded internal lead lifecycle" if policy == PHASE6_POLICY else "Phase 5 bounded internal lead lifecycle",
-                                      confirm=True)
+            from ..crm_write_boundary import reviewed_reconciler_call
+            if policy == PHASE6_POLICY:
+                with reviewed_reconciler_call(client, method, path, body, headers or {}, policy):
+                    response = client.request("zohoapis", method, path, body=body, headers=headers or {},
+                                              reason="Phase 6 bounded internal lead lifecycle", confirm=True)
+            else:
+                response = client.request("zohoapis", method, path, body=body, headers=headers or {},
+                                          reason="Phase 5 bounded internal lead lifecycle", confirm=True)
             rows = (response.get("data") or {}).get("data")
             if response.get("ok") is not True or response.get("status") not in {200, 201, 202} or not isinstance(rows, list) or len(rows) != 1 or rows[0].get("status") != "success":
                 raise ZohoWriteUnconfirmedError("CRM write outcome is unverified")

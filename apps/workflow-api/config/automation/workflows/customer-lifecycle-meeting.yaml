@@ -1,7 +1,7 @@
 id: customer.lifecycle.meeting-create
 name: Customer lifecycle - create meeting
 version: 1
-enabled: true
+enabled: false
 description: Create a CRM Meeting only from an explicit authenticated meeting request event.
 trigger:
   event_types:

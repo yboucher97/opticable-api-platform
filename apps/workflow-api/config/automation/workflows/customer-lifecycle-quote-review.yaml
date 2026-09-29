@@ -1,7 +1,7 @@
 id: customer.lifecycle.quote-review
 name: Customer lifecycle quote review
 version: 1
-enabled: true
+enabled: false
 description: Creates a CRM review task for a quote request without mutating Zoho Books.
 trigger:
   event_types:

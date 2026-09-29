@@ -20,6 +20,7 @@ class Phase5CampaignTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
+        self.subscription_expiry = (datetime.now(timezone.utc) + timedelta(days=6)).replace(microsecond=0).isoformat()
         with campaign_identities(campaign.base):
             self.job = campaign.Phase5Campaign("a" * 40, self.root)
         self.job.service_user = types.SimpleNamespace(pw_uid=os.getuid(), pw_gid=os.getgid())
@@ -91,7 +92,7 @@ class Phase5CampaignTests(unittest.TestCase):
             automation=types.SimpleNamespace(db_path=self.root / "provider-evidence.db"))
         environment = {"OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT": "https://example.test/fixture",
             "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL": "native-fixture-credential-32bytes-long",
-            "OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY": (datetime.now(timezone.utc) + timedelta(days=6)).replace(microsecond=0).isoformat()}
+            "OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY": self.subscription_expiry}
         with patch.object(provider, "load_settings", return_value=settings), patch.object(provider, "ZohoOAuthManager"), patch.object(provider, "ZohoGatewayClient", return_value=fake), patch.dict(os.environ, environment):
             if apply:
                 with patch.object(provider.DesiredStateController, "apply", apply), patch.object(provider.time, "sleep"):

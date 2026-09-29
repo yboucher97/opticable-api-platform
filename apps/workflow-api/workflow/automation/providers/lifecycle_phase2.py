@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..crm_write_boundary import blocked_legacy
+
 import json
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -155,40 +157,7 @@ def register_lifecycle_phase2_actions(
     store: AutomationStore,
 ) -> None:
     def create_quote_review_task(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
-        quote = step.inputs.get("quote")
-        if not isinstance(quote, dict):
-            raise ValueError("lifecycle.crm_create_quote_review_task requires with.quote object.")
-        deal_id = str(quote.get("deal_id") or "").strip()
-        if not deal_id:
-            raise ValueError("Quote review requires deal_id.")
-        priority = str(quote.get("priority") or "normal").lower()
-        crm_priority = {"low": "Low", "normal": "Normal", "high": "High", "urgent": "Highest"}.get(priority, "Normal")
-        description = str(quote.get("service_summary") or "").strip()
-        notes = str(quote.get("notes") or "").strip()
-        if notes:
-            description = f"{description}\n\nNotes:\n{notes}"
-        due = datetime.now(ZoneInfo("America/Toronto")).date().isoformat()
-        response = client.request(
-            "zohoapis",
-            "POST",
-            "/crm/v8/Tasks",
-            body={
-                "data": [
-                    {
-                        "Subject": "Prepare / review quote"[:255],
-                        "Due_Date": due,
-                        "Priority": crm_priority,
-                        "What_Id": deal_id,
-                        "$se_module": "Deals",
-                        "Description": description[:32000],
-                    }
-                ]
-            },
-            reason="Customer lifecycle: create quote review task without mutating Zoho Books",
-            confirm=True,
-        )
-        task_id = _created_id(response)
-        return {"task_id": task_id, "deal_id": deal_id, "books_mutated": False}
+        blocked_legacy()
 
     def observe_books(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
         request = step.inputs.get("request")

@@ -37,7 +37,7 @@ The only accepted request is:
 
 `deploy <40-hex-commit-sha>`
 
-The reviewed root wrapper fetches only the fixed repository's current remote `main` into a private bare Git repository, checks exact SHA equality, and only then materializes and executes its deployment script. Caller-controlled Git configuration and the writable production repository are excluded from this trust decision. During a staged Phase 6 release, a root-private release marker also rejects delayed workflows targeting another SHA.
+The reviewed Phase 6 root wrapper is a static health-only verifier. It never downloads or executes a deployment script. It checks root-private unexpired human authority, completed backup/recovery gates, exact fixed-repository GitHub CI, main/Phase 6 SHA and ancestry, already-staged production identity and health. Caller-controlled Git configuration and production Git configuration cannot execute as root. During staging, every ordinary deploy request fails closed until recovery gates and guarded main promotion complete.
 
 For Phase 6, automatic deployment is reconciliation only: the exact candidate must already be running following the separately authorized staged campaign. A fresh Phase 6 checkout switch through the ordinary SSH deployment path is refused. See [the Phase 6 recovery supplement](../docs/OPTIBRAIN_PHASE6_GATE_G_RECOVERY.md). The inherited rollback flow below applies to earlier releases; it is not a Phase 6 rollback authorization.
 
@@ -98,3 +98,5 @@ printf '%s %s\n' 'REVIEWED_SSH_HOST' "$(cut -d' ' -f1-2 /etc/ssh/ssh_host_ed2551
 This intentionally does **not** reinstall the PDF service, Omada service, Caddy, firewall, OAuth credentials, or other VM configuration on routine application deployments.
 
 For Phase 6, backup, restore, encrypted off-host verification and staged health gates precede main promotion. CI then validates main and the forced-command deployment reconciles the already-running exact SHA without a checkout change or restart. Public health must report the version declared by that exact source tree. No deploy-only SSH command authorizes provider writes or customer sends.
+
+For separately approved human-root staging, use only the independently reviewed static `deploy/phase6-release-loader.py`. It establishes repository/SHA/ancestry/CI/backup/recovery authorization before reading and verifying a link-free candidate archive and executing the reviewed campaign. It uses the trusted system interpreter and a fresh root-owned source repository. Never execute the campaign directly from a mutable branch checkout as root. Neither this loader nor the new SSH wrapper has been installed or executed during engineering. Direct baseline dispatch on Phase 6 state is unsafe; corrected-code forward recovery preserves V2 approval/journal evidence. See the recovery supplement for retention holds and remaining live prerequisites.

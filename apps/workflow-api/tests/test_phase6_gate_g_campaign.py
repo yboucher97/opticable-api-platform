@@ -25,7 +25,7 @@ class GateGCampaignTests(unittest.TestCase):
         return {"candidate": CANDIDATE, "validated_sha": CANDIDATE, "baseline": campaign.BASELINE,
                 "branch": campaign.BRANCH, "approved_by": "human:fixture", "approved_at": now.isoformat(),
                 "expires_at": (now + timedelta(hours=1)).isoformat(), "campaign_sha256": "a" * 64,
-                "ci_run_id": 1, "full_tests": 556, "subtests": 495, "focused_tests": 84,
+                "ci_run_id": 1, "full_tests": 580, "subtests": 540, "focused_tests": 156,
                 "failures": 0, "errors": 0, "skipped": 0, "release_id": "20260928-fixture"}
 
     def test_exact_human_authorization_accepts(self):
@@ -33,8 +33,8 @@ class GateGCampaignTests(unittest.TestCase):
 
     def test_changed_identity_actor_counts_and_extra_authority_refuse(self):
         changes = {"candidate": "c" * 40, "validated_sha": "c" * 40, "baseline": "c" * 40,
-                   "branch": "main", "approved_by": "automation:fixture", "full_tests": 555,
-                   "focused_tests": 83, "subtests": 494, "failures": 1, "errors": 1, "skipped": 1,
+                   "branch": "main", "approved_by": "automation:fixture", "full_tests": 579,
+                   "focused_tests": 155, "subtests": 539, "failures": 1, "errors": 1, "skipped": 1,
                    "release_id": "../escape", "campaign_sha256": "bad"}
         for name, value in changes.items():
             with self.subTest(name=name), self.assertRaises(RuntimeError):
@@ -147,7 +147,8 @@ class GateGCampaignTests(unittest.TestCase):
             process = subprocess.run(["bash", str(ROOT / "deploy/production-root-command.sh"), CANDIDATE], capture_output=True)
             self.assertEqual(process.returncode, 64)
         text = (ROOT / "deploy/production-root-command.sh").read_text()
-        self.assertLess(text.index('[[ $target_sha =='), text.index('show "$target_sha:deploy/update-production.sh"'))
+        self.assertNotIn("deploy/update-production.sh", text)
+        self.assertNotIn("git show", text)
         self.assertIn("env -i", text)
 
     def test_automatic_phase6_deploy_guard_precedes_checkout_switch(self):
@@ -156,25 +157,12 @@ class GateGCampaignTests(unittest.TestCase):
         self.assertLess(text.index('Phase6 target is not already staged'), text.index('git -C "${INSTALL_DIR}" reset --hard "${TARGET_SHA}"'))
 
     def test_root_wrapper_wrong_remote_sha_cannot_materialize_or_execute_script(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary); calls = root / "calls.jsonl"; marker = root / "executed"
-            fake = root / "fake-git"
-            fake.write_text("#!/usr/bin/python3\nimport json,os,sys\nfrom pathlib import Path\n"
-                + "with open(" + repr(str(calls)) + ", 'a') as f: f.write(json.dumps({'args':sys.argv[1:],'environment':sorted(os.environ)})+'\\n')\n"
-                + "if 'rev-parse' in sys.argv: print('" + CANDIDATE + "')\n"
-                + "if 'show' in sys.argv: print('touch " + str(marker) + "')\n")
-            fake.chmod(0o755)
-            text = (ROOT / "deploy/production-root-command.sh").read_text()
-            # Only the OS root guard is removed in the disposable harness; actual
-            # unprivileged refusal is covered separately. Git is a local fake.
-            text = text.replace('[[ ${EUID} -eq 0 && $# -eq 1', '[[ $# -eq 1').replace('/usr/bin/git', str(fake))
-            wrapper = root / "wrapper.sh"; wrapper.write_text(text)
-            process = subprocess.run(["bash", str(wrapper), "c" * 40], capture_output=True, text=True)
-            self.assertEqual(process.returncode, 65, process.stderr)
-            operations = [json.loads(line) for line in calls.read_text().splitlines()]
-            self.assertFalse(any('show' in item['args'] for item in operations))
-            self.assertFalse(marker.exists())
-            self.assertTrue(all(set(item['environment']) <= {'PATH','LANG','GIT_CONFIG_NOSYSTEM','GIT_CONFIG_GLOBAL','LC_CTYPE'} for item in operations))
+        spec = importlib.util.spec_from_file_location('trust_fixture',ROOT/'ops/phase6/release_trust.py')
+        trust = importlib.util.module_from_spec(spec); spec.loader.exec_module(trust)
+        with patch.object(trust, 'protected', return_value={}), patch.object(trust.os,'geteuid',return_value=0), patch.object(trust,'run') as process:
+            with self.assertRaises(RuntimeError): trust.reconcile('c'*40)
+        process.assert_not_called()
+        self.assertNotIn('deploy/update-production.sh', (ROOT/'deploy/production-root-command.sh').read_text())
 
     def test_inventory_reads_only_and_never_discloses_workflow_inputs(self):
         import sqlite3
@@ -271,6 +259,23 @@ class GateGCampaignTests(unittest.TestCase):
         self.assertEqual(diagnostic.stat().st_mtime_ns, original.st_mtime_ns)
         (diagnostic.parent / "extra").write_text("unexpected")
         self.assertNotEqual(self.cleanliness_check().returncode, 0)
+
+
+    def test_disabled_stored_workflow_tampering_is_not_ignored(self):
+        import yaml
+        path=ROOT/'apps/workflow-api/config/automation/workflows/customer-lifecycle-qualify-promote.yaml'
+        expected=yaml.safe_load(path.read_text())
+        driver=campaign.Phase6Campaign.__new__(campaign.Phase6Campaign)
+        driver.mark=Mock()
+        row={'workflow_id':expected['id'],'enabled':False,'definition_sha256':'f'*64,'actions':['lifecycle.crm_promote_lead']}
+        driver.run=Mock(return_value=json.dumps({'workflows':[row]}))
+        with self.assertRaisesRegex(RuntimeError,'unreviewed_workflow_definition'):
+            driver.audit_routes(candidate=True)
+        driver.mark.assert_not_called()
+        row['definition_sha256']=inspector.definition_hash(expected)
+        driver.run.return_value=json.dumps({'workflows':[row]})
+        driver.audit_routes(candidate=True)
+        driver.mark.assert_called_once()
 
 
 if __name__ == "__main__": unittest.main()
