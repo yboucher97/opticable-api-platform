@@ -18,7 +18,8 @@ def execute_approved_canary(client, store, approval_id: str, *, now: datetime | 
     A future authenticated operator route must control invocation and the exact
     canary flag. Unknown provider results are terminal manual, not retried.
     """
-    if os.environ.get("OPTIBRAIN_CRM_CANARY") != CANARY_POLICY:
+    if (os.environ.get("OPTIBRAIN_CRM_CANARY") != CANARY_POLICY
+            or os.environ.get("OPTIBRAIN_CRM_CANARY_APPROVAL_ID") != approval_id):
         raise ValueError("CRM canary policy is disabled")
     ledger = CrmCanaryApprovalLedger(store)
     state = ledger.inspect(approval_id)

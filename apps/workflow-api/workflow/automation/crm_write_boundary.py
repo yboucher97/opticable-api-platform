@@ -14,6 +14,7 @@ import re
 _AUTHORITY = ContextVar('phase6_crm_authority', default=None)
 POLICY = 'phase6-sales-v1'
 CANARY_POLICY = 'phase7-single-canary-v1'
+CREATE_POLICY = 'phase7-single-lead-create-v1'
 LEGACY_ACTIONS = frozenset({'lifecycle.crm_upsert_lead', 'lifecycle.crm_create_followup_task',
     'lifecycle.crm_promote_lead', 'lifecycle.crm_create_meeting', 'lifecycle.crm_create_quote_review_task'})
 
@@ -50,6 +51,51 @@ def validate_request(method, path, body, headers):
         datetime.strptime(row['Due_Date'], '%Y-%m-%d')
     else:
         raise ValueError('CRM operation is outside the Phase 6 approved boundary')
+
+
+def validate_create_request(method, path, body, headers):
+    """Separate fixed-module create boundary; never broadens the Phase 6 writer."""
+    from .phase7_lead_create import canonical_payload
+    if method != 'POST' or path != '/crm/v8/Leads' or headers:
+        raise ValueError('Lead create grant permits only exact CRM v8 Leads POST')
+    if (not isinstance(body, dict) or set(body) != {'data', 'trigger', 'skip_feature_execution'}
+            or body.get('trigger') != []
+            or body.get('skip_feature_execution') != [{'name':'cadences'}]):
+        raise ValueError('Lead create request envelope is invalid')
+    rows = body.get('data')
+    if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict):
+        raise ValueError('Lead create requires one exact record')
+    if body != canonical_payload(rows[0]):
+        raise ValueError('Lead create body is not canonical')
+
+
+@contextmanager
+def reviewed_create_call(client, body, approval, ledger, *, now=None):
+    """One durable transport grant after human approval and exact preflight."""
+    from .phase7_lead_create import request_hash
+    from .outbound_approval import _clock, _aware
+    policy = os.environ.get('OPTIBRAIN_LEAD_CREATE_CANARY')
+    pinned = os.environ.get('OPTIBRAIN_LEAD_CREATE_APPROVAL_ID')
+    if policy != CREATE_POLICY or pinned != approval.approval_id or approval.policy != CREATE_POLICY:
+        raise ValueError('Lead create canary policy or pin is disabled')
+    validate_create_request('POST', '/crm/v8/Leads', body, None)
+    if request_hash(body['data'][0]) != approval.payload_hash:
+        raise ValueError('Lead create payload differs from approval')
+    state = ledger.inspect(approval.approval_id)
+    if state is None or state['state'] != 'consuming' or state['approval'] != approval:
+        raise ValueError('Lead create approval has not been claimed')
+    current = _clock(now)
+    if not _aware(approval.approved_at, field='approved_at') <= current < _aware(approval.expires_at, field='expires_at'):
+        raise ValueError('Lead create approval expired before dispatch')
+    if _AUTHORITY.get() is not None:
+        raise ValueError('Nested CRM authority forbidden')
+    ledger.dispatch(approval)
+    value = {'client':client, 'hash':fingerprint('POST','/crm/v8/Leads',body,None),
+             'policy':CREATE_POLICY, 'used':False, 'expires_at':approval.expires_at,
+             'ledger':ledger, 'approval':approval}
+    token = _AUTHORITY.set(value)
+    try: yield
+    finally: _AUTHORITY.reset(token)
 
 
 @contextmanager
@@ -100,7 +146,17 @@ def _enabled(value):
     if policy == POLICY:
         return os.environ.get('OPTIBRAIN_CRM_LEAD_WRITES') == POLICY
     if policy == CANARY_POLICY:
-        if os.environ.get('OPTIBRAIN_CRM_CANARY') != CANARY_POLICY:
+        if (os.environ.get('OPTIBRAIN_CRM_CANARY') != CANARY_POLICY
+                or os.environ.get('OPTIBRAIN_CRM_CANARY_APPROVAL_ID') != value['approval'].approval_id):
+            return False
+        expiry = datetime.fromisoformat(value['expires_at'])
+        if expiry.tzinfo is None or datetime.now(timezone.utc) >= expiry.astimezone(timezone.utc):
+            return False
+        state = value['ledger'].inspect(value['approval'].approval_id)
+        return state is not None and state['state'] == 'dispatching' and state['approval'] == value['approval']
+    if policy == CREATE_POLICY:
+        if (os.environ.get('OPTIBRAIN_LEAD_CREATE_CANARY') != CREATE_POLICY
+                or os.environ.get('OPTIBRAIN_LEAD_CREATE_APPROVAL_ID') != value['approval'].approval_id):
             return False
         expiry = datetime.fromisoformat(value['expires_at'])
         if expiry.tzinfo is None or datetime.now(timezone.utc) >= expiry.astimezone(timezone.utc):
@@ -115,7 +171,10 @@ def require_authority(client, service, method, path, body, headers):
     value = _AUTHORITY.get()
     if not _enabled(value) or value.get('client') is not client or value.get('used') is not False or value.get('hash') != fingerprint(method,path,body,headers):
         raise ValueError('CRM mutation requires exact single-use reconciler authority')
-    validate_request(method,path,body,headers)
+    if value['policy'] == CREATE_POLICY:
+        validate_create_request(method,path,body,headers)
+    else:
+        validate_request(method,path,body,headers)
     value['used'] = True  # Consumed before OAuth/provider calls; never blindly reused.
 
 
@@ -126,4 +185,7 @@ def verify_transport_authority(client, service, method, path, body, headers):
     value = _AUTHORITY.get()
     if not _enabled(value) or value.get('client') is not client or value.get('used') is not True or value.get('hash') != fingerprint(method, path, body, headers):
         raise ValueError('CRM transport authority changed before the provider call')
-    validate_request(method, path, body, headers)
+    if value['policy'] == CREATE_POLICY:
+        validate_create_request(method, path, body, headers)
+    else:
+        validate_request(method, path, body, headers)

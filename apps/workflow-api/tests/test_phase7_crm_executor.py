@@ -78,14 +78,27 @@ class CrmCanaryExecutorTests(unittest.TestCase):
     def execute(self):
         return execute_approved_canary(self.client, self.store, self.approval.approval_id, now=NOW)
 
+    def enabled(self):
+        return patch.dict(os.environ, {
+            "OPTIBRAIN_CRM_CANARY": "phase7-single-canary-v1",
+            "OPTIBRAIN_CRM_CANARY_APPROVAL_ID": self.approval.approval_id,
+        })
+
     def test_disabled_policy_does_not_read_or_write(self):
         with patch.dict(os.environ, {"OPTIBRAIN_CRM_CANARY": ""}):
             with self.assertRaisesRegex(ValueError, "disabled"):
                 self.execute()
         self.assertEqual(self.client.calls, [])
 
+    def test_missing_single_approval_pin_does_not_read_or_write(self):
+        with patch.dict(os.environ, {"OPTIBRAIN_CRM_CANARY": "phase7-single-canary-v1",
+                                     "OPTIBRAIN_CRM_CANARY_APPROVAL_ID": ""}):
+            with self.assertRaisesRegex(ValueError, "disabled"):
+                self.execute()
+        self.assertEqual(self.client.calls, [])
+
     def test_exact_approved_lead_patch_is_single_use(self):
-        with patch.dict(os.environ, {"OPTIBRAIN_CRM_CANARY": "phase7-single-canary-v1"}):
+        with self.enabled():
             result = self.execute()
             self.assertEqual(result["state"], "consumed")
             self.assertEqual(self.client.writes, 1)
@@ -96,7 +109,7 @@ class CrmCanaryExecutorTests(unittest.TestCase):
 
     def test_source_drift_blocks_before_claim_or_write(self):
         self.client.lead["Modified_Time"] = "2026-09-29T17:30:00+00:00"
-        with patch.dict(os.environ, {"OPTIBRAIN_CRM_CANARY": "phase7-single-canary-v1"}):
+        with self.enabled():
             with self.assertRaisesRegex(ValueError, "changed before consumption"):
                 self.execute()
         self.assertEqual(self.client.writes, 0)
@@ -104,7 +117,7 @@ class CrmCanaryExecutorTests(unittest.TestCase):
 
     def test_response_loss_after_acceptance_becomes_manual_without_retry(self):
         self.client.accept_then_lose_response = True
-        with patch.dict(os.environ, {"OPTIBRAIN_CRM_CANARY": "phase7-single-canary-v1"}):
+        with self.enabled():
             with self.assertRaisesRegex(ValueError, "human reconciliation"):
                 self.execute()
             with self.assertRaises(ValueError):
@@ -114,7 +127,7 @@ class CrmCanaryExecutorTests(unittest.TestCase):
 
     def test_malformed_ack_becomes_manual_without_retry(self):
         self.client.malformed_ack = True
-        with patch.dict(os.environ, {"OPTIBRAIN_CRM_CANARY": "phase7-single-canary-v1"}):
+        with self.enabled():
             with self.assertRaisesRegex(ValueError, "human reconciliation"):
                 self.execute()
         self.assertEqual(self.client.writes, 1)
@@ -128,7 +141,7 @@ class CrmCanaryExecutorTests(unittest.TestCase):
 
     def test_policy_change_before_transport_prevents_write_and_becomes_manual(self):
         self.client.before_transport = lambda: os.environ.__setitem__("OPTIBRAIN_CRM_CANARY", "")
-        with patch.dict(os.environ, {"OPTIBRAIN_CRM_CANARY": "phase7-single-canary-v1"}):
+        with self.enabled():
             with self.assertRaisesRegex(ValueError, "human reconciliation"):
                 self.execute()
         self.assertEqual(self.client.writes, 0)
@@ -137,7 +150,7 @@ class CrmCanaryExecutorTests(unittest.TestCase):
     def test_manual_revocation_before_transport_prevents_write(self):
         self.client.before_transport = lambda: CrmCanaryApprovalLedger(self.store).finish(
             self.approval, reason="policy_disabled")
-        with patch.dict(os.environ, {"OPTIBRAIN_CRM_CANARY": "phase7-single-canary-v1"}):
+        with self.enabled():
             with self.assertRaisesRegex(ValueError, "human reconciliation"):
                 self.execute()
         self.assertEqual(self.client.writes, 0)
@@ -147,7 +160,7 @@ class CrmCanaryExecutorTests(unittest.TestCase):
         patch_body = {"data": [{"id": "1234567890", **self.plan.crm_patch}], "trigger": [],
                       "skip_feature_execution": [{"name": "cadences"}]}
         headers = {"If-Unmodified-Since": VERSION}
-        with patch.dict(os.environ, {"OPTIBRAIN_CRM_CANARY": "phase7-single-canary-v1"}):
+        with self.enabled():
             with self.assertRaisesRegex(ValueError, "single-use reconciler authority"):
                 require_authority(self.client, "zohoapis", "PUT", "/crm/v8/Leads/1234567890",
                                   patch_body, headers)

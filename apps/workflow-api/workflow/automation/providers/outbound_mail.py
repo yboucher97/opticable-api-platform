@@ -171,3 +171,4 @@ def register_outbound_mail_action(engine, client, store):
             }
 
     engine.register_action("lifecycle.mail_send_approved_v2", send)  # Never retry an outbound send.
+    return send

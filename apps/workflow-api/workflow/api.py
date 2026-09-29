@@ -838,6 +838,13 @@ app = FastAPI(
     ],
 )
 
+# Phase 7 operator controls are absent by default. A root-owned exact-SHA
+# registration manifest and explicit mode are required to install any route.
+from .phase7_registration import maybe_install_phase7
+phase7_registration = maybe_install_phase7(
+    app, client=zoho_gateway_client, store=automation_store,
+    engine=automation_engine, api_version=API_VERSION)
+
 
 def _validate_api_key(provided_api_key: str | None) -> None:
     expected_api_key = os.getenv(settings.api.api_key_env)

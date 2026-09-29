@@ -563,8 +563,17 @@ class OutboundApprovalTests(unittest.TestCase):
         for path in (APP / "workflow").rglob("*.py"):
             if path.name in {"outbound_mail.py", "outbound_approval.py"}:
                 continue
-            self.assertNotIn("register_outbound_mail_action", path.read_text(), str(path))
-            self.assertNotIn("allow_legacy_reply=True", path.read_text(), str(path))
+            source = path.read_text()
+            if path.name == "phase7_registration.py":
+                # Phase 7 introduces a separate exact-SHA, root-manifest and
+                # single-approval-pin gate. The default startup still cannot
+                # register this send action or a retryable workflow.
+                self.assertIn('if plan["outbound"]:', source)
+                self.assertIn('OPTIBRAIN_OUTBOUND_CANARY_APPROVAL_ID', source)
+                self.assertIn('validate_registration(manifest', source)
+            else:
+                self.assertNotIn("register_outbound_mail_action", source, str(path))
+            self.assertNotIn("allow_legacy_reply=True", source, str(path))
         for path in (APP / "config/automation/workflows").glob("*.yaml"):
             definition = yaml.safe_load(path.read_text())
             if definition.get("enabled"):
