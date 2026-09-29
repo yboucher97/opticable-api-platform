@@ -32,6 +32,7 @@ class FakeCrm:
         self.writes = 0
         self.accept_then_lose_response = False
         self.malformed_ack = False
+        self.offset_readback = False
         self.before_transport = None
 
     def request(self, service, method, path, **kwargs):
@@ -43,7 +44,12 @@ class FakeCrm:
                     "data": {"data": [{"id": self.lead["id"], "Email": self.lead["Email"]}],
                              "info": {"more_records": False}}}
         if method == "GET" and path == "/crm/v8/Leads/1234567890":
-            return {"ok": True, "status": 200, "data": {"data": [dict(self.lead)]}}
+            record = dict(self.lead)
+            if self.offset_readback and record.get("Next_Followup_At"):
+                record["Next_Followup_At"] = datetime.fromisoformat(
+                    record["Next_Followup_At"]
+                ).astimezone(timezone(timedelta(hours=-4))).isoformat()
+            return {"ok": True, "status": 200, "data": {"data": [record]}}
         if method == "PUT" and path == "/crm/v8/Leads/1234567890":
             require_authority(self, service, method, path, kwargs["body"], kwargs["headers"])
             if self.before_transport:
@@ -104,6 +110,14 @@ class CrmCanaryExecutorTests(unittest.TestCase):
             self.assertEqual(self.client.writes, 1)
             with self.assertRaises(ValueError):
                 self.execute()
+        self.assertEqual(self.client.writes, 1)
+        self.assertEqual(CrmCanaryApprovalLedger(self.store).inspect(self.approval.approval_id)["state"], "consumed")
+
+    def test_equivalent_timezone_readback_consumes_exact_patch(self):
+        self.client.offset_readback = True
+        with self.enabled():
+            result = self.execute()
+        self.assertEqual(result["state"], "consumed")
         self.assertEqual(self.client.writes, 1)
         self.assertEqual(CrmCanaryApprovalLedger(self.store).inspect(self.approval.approval_id)["state"], "consumed")
 

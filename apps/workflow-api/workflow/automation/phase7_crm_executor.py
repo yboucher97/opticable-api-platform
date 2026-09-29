@@ -8,7 +8,7 @@ from .crm_write_boundary import CANARY_POLICY, reviewed_canary_call
 from .event_schema import digest
 from .phase7_canary import build_canary_plan, hydrate_unique_lead
 from .phase7_crm_approval import CrmCanaryApprovalLedger
-from .providers.crm_leads import FIELDS, records
+from .providers.crm_leads import FIELDS, _field_subset, records
 
 
 def execute_approved_canary(client, store, approval_id: str, *, now: datetime | None = None) -> dict:
@@ -55,11 +55,12 @@ def execute_approved_canary(client, store, approval_id: str, *, now: datetime | 
             raise ValueError("CRM canary operation identity unconfirmed")
         readback = client.request("zohoapis", "GET", path, query={"fields": FIELDS})
         current = records(readback)
+        verified = _field_subset(current[0], plan.crm_patch) if len(current) == 1 else {}
         if (len(current) != 1 or str(current[0].get("id") or "") != plan.lead_id
-                or any(current[0].get(key) != value for key, value in plan.crm_patch.items())):
+                or verified != plan.crm_patch):
             raise ValueError("CRM canary exact readback mismatch")
         ledger.finish(claimed, operation_id=operation_id,
-                      verified_patch_hash=digest({key: current[0].get(key) for key in plan.crm_patch}))
+                      verified_patch_hash=digest(verified))
         return {"state": "consumed", "approval_id": approval_id,
                 "operation_id": operation_id, "patch_hash": plan.crm_patch_hash}
     except Exception:
