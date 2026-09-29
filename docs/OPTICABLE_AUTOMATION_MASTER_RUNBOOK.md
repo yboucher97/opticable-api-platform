@@ -253,3 +253,42 @@ The backup service's sandboxed identity-switch repair was verified by a real
 timer-dispatched run, generation 20260929T184240Z. Local checksum, isolated
 Schema V2 restore, encrypted off-host upload and downloaded hash all passed;
 all 12 previous local generations were preserved. Both normal timers are active.
+
+## Phase 7 controlled live canaries — 2026-09-29
+
+Production/main `d2ca75d588665112d1d62329abfda23dd92d533f` stayed on API
+1.11.0. Evidence is under
+`/var/lib/optibrain/phase7/20260929-phase7-first-canary-sourcepin-200300/`.
+Only the controlled test Lead `5062683000007880001` and recipient
+`hckyan97@gmail.com` were used. Books, conversions, and real-customer actions
+remained zero. Unrestricted external-action flags were disabled after each
+single-use attempt.
+
+Canary 2 issued one exact CRM patch for `Normalized_Email` and
+`Next_Followup_At` (hash
+`55e7169f6a6a9daa7b961d99f035facdadc5bff7e3dd5298305bef2c26451d77`).
+Zoho applied both values, but returned the follow-up instant as `-04:00`
+rather than `+00:00`; the production executor's raw string comparison left
+approval `025ab8e57e6d4efdbb78ed53b5d191fe` terminal manual. Never retry
+it. Read-only field-hash snapshots prove no unrelated business field changed.
+The isolated narrow fix normalizes the readback instant before exact hash
+verification; 11 focused executor tests pass. Deploy it through a future
+guarded release before another CRM canary, and do not edit production source.
+
+Canary 3 sent exactly one approved test email from `yboucher@opticable.ca`
+to the controlled address. Approval `70e297032183447282587e943605e744`
+was consumed; Zoho Mail message `1790714949014155100` was verified by direct
+read-only Sent metadata/content retrieval. The first broad Sent search missed
+it, so do not treat a missing search hit as permission to resend. Body hash:
+`49f9cfa5838fbcb1d1c1d0d5aa2d439016d940d8dc3ca7e56479de60a9f19609`.
+
+The existing AI website form posts to `connect.opticable.ca/public/lead`.
+One controlled submission returned `updated_lead`, and Zoho readback showed
+the same Lead plus source/inquiry attribution. Fresh exact-email search still
+returned one Lead. The Zoho native Lead notification reached OptiBrain; Lead
+observe, read-only reconcile, and sales-draft runs completed. Reconcile stayed
+in `observe` and drafting stayed in `observe`; the decision was normal
+priority, `draft_reply`, with the preserved follow-up instant. Internal
+client/contact/company/site/project references and six local test-only folders
+were generated; these are not provider IDs or production document folders.
+The automation database remained Schema V2 with no queued/running/failed run.
