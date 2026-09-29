@@ -633,7 +633,8 @@ class ResumeStateTests(unittest.TestCase):
         self.assert_no_lifecycle_or_migration()
 
     def test_lifecycle_and_migration_defensive_guard(self):
-        driver = resume.ResumeCloseout(CANDIDATE, self.root)
+        with campaign_identities(campaign):
+            driver = resume.ResumeCloseout(CANDIDATE, self.root)
         for argv in (["/usr/bin/systemctl", "stop", resume.SERVICE], ["/usr/bin/systemctl", "restart", resume.SERVICE],
                      [str(campaign.PYTHON), str(REPO / "ops/phase4/migrate_db.py"), "--db", str(campaign.DB)]):
             with self.subTest(argv=argv), self.assertRaises(RuntimeError):

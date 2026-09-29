@@ -385,6 +385,10 @@ class CampaignStageFailureTests(unittest.TestCase):
         self.offhost = self.root / 'offhost.json'
         self.offhost.write_text(json.dumps({'generation': 'fixture-generation', 'source_sha256': campaign.sha(self.archive),
                                            'verification_status': 'download_hash_verified'}))
+        self.diagnostic = self.root / 'protected-diagnostic'
+        self.diagnostic.write_bytes(b'fixture protected diagnostic')
+        self.runbook = self.root / 'protected-runbook'
+        self.runbook.write_bytes(b'fixture protected runbook')
         self.env = self.root / 'fixture.env'
         self.env.write_text('SITE_WORKFLOW_API_KEY=fixture-private-key\n'); self.env.chmod(0o600)
         original_stage = self.job.stage_start
@@ -457,7 +461,7 @@ class CampaignStageFailureTests(unittest.TestCase):
         self.job.observe_failure_state = observed
 
     def execute(self):
-        with patch.object(campaign.base, 'ENV', self.env), patch.object(campaign.base, 'OFFHOST_STATE', self.offhost), patch.object(campaign.base, 'protected_file'):
+        with patch.object(campaign.base, 'ENV', self.env), patch.object(campaign.base, 'OFFHOST_STATE', self.offhost), patch.object(campaign.base, 'protected_file'), patch.object(campaign.base, 'PROTECTED', self.diagnostic), patch.object(campaign, 'RUNBOOK', self.runbook):
             return campaign.base.execute_with_evidence(self.job)
 
     def test_pending_origin_complete_deterministic_deployment_and_release_order(self):

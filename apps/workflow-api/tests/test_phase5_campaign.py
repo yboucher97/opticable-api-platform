@@ -26,9 +26,10 @@ class Phase5CampaignTests(unittest.TestCase):
 
     def test_failure_preserves_actual_state_without_legacy_rollback(self):
         self.job.result.update(production_checkout_advanced=True, notification_subscription_verified=True)
-        with patch.object(self.job, "observe_failure_state") as observed, patch.object(self.job, "recover_baseline") as recover, patch.object(self.job, "run") as run:
+        with patch.object(self.job, "observe_failure_state") as observed, patch.object(self.job, "recover_baseline") as recover, patch.object(self.job, "run") as run, patch.object(self.job, "checkout_permissions", return_value={"result": "PASS"}) as permissions, patch.object(campaign, "CONFIG_DIRECTORY", self.root / "private-config"):
             value = self.job.blocked(RuntimeError("fixture_postdeployment_restore_failure"), "postdeployment-backup")
         observed.assert_called_once(); recover.assert_not_called(); run.assert_not_called()
+        permissions.assert_called_once_with(self.job.candidate, normalize=False)
         self.assertEqual(value["result"], "BLOCKED")
         self.assertTrue(value["production_checkout_advanced"])
         self.assertTrue(value["notification_subscription_verified"])
@@ -38,7 +39,7 @@ class Phase5CampaignTests(unittest.TestCase):
 
     def test_provider_exception_message_is_not_reported(self):
         class ProviderError(RuntimeError): pass
-        with patch.object(self.job, "observe_failure_state"):
+        with patch.object(self.job, "observe_failure_state"), patch.object(self.job, "checkout_permissions", return_value={"result": "PASS"}), patch.object(campaign, "CONFIG_DIRECTORY", self.root / "private-config"):
             value = self.job.blocked(ProviderError("credential=private-fixture"), "provider")
         self.assertNotIn("private-fixture", json.dumps(value))
         self.assertEqual(value["category"], "ProviderError")
