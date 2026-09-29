@@ -15,6 +15,8 @@ from pydantic import BaseModel, ConfigDict
 from .event_schema import digest
 from .providers.crm_leads import _utc_iso, phase6_lead_patch
 from .providers.crm_leads import FIELDS, records
+from .providers.sales_drafts import TEMPLATES
+from .outbound_approval import _email, _internal, validate_text
 from .sales_decision import SalesDecision, build_sales_decision
 
 
@@ -75,6 +77,7 @@ class CanaryPlan(BaseModel):
     policy: str
     lead_id: str
     source_version: str
+    source_hash: str
     identity_hash: str
     dedupe_status: str
     client_ref: str
@@ -99,6 +102,44 @@ class CanaryPlan(BaseModel):
     def audit_evidence(self) -> dict[str, Any]:
         """Return IDs/hashes only; no email, phone, subject, body or patch values."""
         return self.model_dump(exclude={"crm_patch", "folder_paths"})
+
+
+class CanaryReviewPackage(BaseModel):
+    """Human-visible exact proposal; never persist this raw object in audit."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    policy: str
+    lead_id: str
+    source_version: str
+    plan_hash: str
+    crm_before: dict[str, Any]
+    crm_after: dict[str, Any]
+    crm_patch_hash: str
+    account_id: str
+    reviewed_language: str
+    sender: str
+    recipient: str
+    subject: str
+    content: str
+    subject_hash: str
+    content_hash: str
+    package_hash: str
+
+    def audit_evidence(self) -> dict[str, Any]:
+        return {
+            "policy": self.policy,
+            "lead_id": self.lead_id,
+            "source_version": self.source_version,
+            "plan_hash": self.plan_hash,
+            "crm_patch_hash": self.crm_patch_hash,
+            "account_id": self.account_id,
+            "reviewed_language": self.reviewed_language,
+            "sender_hash": digest(self.sender),
+            "recipient_hash": digest(self.recipient),
+            "subject_hash": self.subject_hash,
+            "content_hash": self.content_hash,
+            "package_hash": self.package_hash,
+        }
 
 
 def _provider_id(value: Any) -> str | None:
@@ -133,7 +174,9 @@ def build_canary_plan(
     if matches != (lead_id,):
         raise ValueError("Lead identity is ambiguous; human dedupe review required")
 
-    decision: SalesDecision = build_sales_decision(record, ai_hint=ai_hint, now=now)
+    bounded_hint = {key: value for key, value in (ai_hint if isinstance(ai_hint, dict) else {}).items()
+                    if key != "language"}
+    decision: SalesDecision = build_sales_decision(record, ai_hint=bounded_hint, now=now)
     if not decision.active or decision.converted:
         raise ValueError("Canary requires an active, unconverted Lead")
     patch = phase6_lead_patch(record, decision)
@@ -151,6 +194,7 @@ def build_canary_plan(
         "policy": POLICY,
         "lead_id": lead_id,
         "source_version": version,
+        "source_hash": digest(record),
         "identity_hash": identity_hash,
         "dedupe_status": "unique_lead_email_match",
         "client_ref": client_ref,
@@ -174,3 +218,49 @@ def build_canary_plan(
     }
     value["plan_hash"] = digest(value)
     return CanaryPlan.model_validate(value)
+
+
+def build_review_package(
+    plan: CanaryPlan,
+    record: dict[str, Any],
+    *,
+    account_id: str,
+    from_address: str,
+    reviewed_language: str | None = None,
+) -> CanaryReviewPackage:
+    """Prepare exact CRM/email review values without issuing approval or sending."""
+    if plan.policy != POLICY or str(record.get("id") or "") != plan.lead_id:
+        raise ValueError("Canary plan identity changed")
+    if _utc_iso(record.get("Modified_Time")) != plan.source_version or digest(record) != plan.source_hash:
+        raise ValueError("Canary Lead version changed")
+    # A human may explicitly choose a bounded language when CRM has no trusted
+    # language field. AI hints cannot supply this parameter through the planner.
+    language = reviewed_language if reviewed_language is not None else plan.language
+    if reviewed_language is not None and plan.language in TEMPLATES and reviewed_language != plan.language:
+        raise ValueError("Human language selection conflicts with reviewed Lead language")
+    if (plan.next_action != "draft_reply" or language not in TEMPLATES
+            or (reviewed_language is None and not plan.outbound_eligible)):
+        raise ValueError("Canary outbound review is not eligible")
+    if not isinstance(account_id, str) or not _CRM_ID.fullmatch(account_id):
+        raise ValueError("Configured mailbox account ID required")
+    sender = _email(from_address)
+    recipient = _email(record.get("Email"))
+    if sender.rsplit("@", 1)[1] != "opticable.ca" or _internal(recipient):
+        raise ValueError("Owned sender and external customer recipient required")
+    if record.get("Email_Opt_Out") is not False:
+        raise ValueError("Explicit non-opt-out state required")
+    subject, content = validate_text(*TEMPLATES[language])
+    before = {key: record.get(key) for key in plan.crm_patch}
+    after = {**before, **plan.crm_patch}
+    value = {
+        "policy": POLICY, "lead_id": plan.lead_id,
+        "source_version": plan.source_version, "plan_hash": plan.plan_hash,
+        "crm_before": before, "crm_after": after,
+        "crm_patch_hash": plan.crm_patch_hash,
+        "account_id": account_id, "reviewed_language": language,
+        "sender": sender, "recipient": recipient,
+        "subject": subject, "content": content,
+        "subject_hash": digest(subject), "content_hash": digest(content),
+    }
+    value["package_hash"] = digest(value)
+    return CanaryReviewPackage.model_validate(value)

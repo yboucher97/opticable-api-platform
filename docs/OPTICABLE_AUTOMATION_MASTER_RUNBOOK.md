@@ -240,3 +240,9 @@ Phase 7 canary preparation is described in
 or outbound send flag for the first live canary. Require exact human-approved
 record/action/content packages and single-use controls before either external
 action. The provisional folder/relationship plan performs no provider mutation.
+The Phase 7 branch also has an unregistered one-use CRM approval ledger and an
+exact human review package generator. Its current complete inherited regression
+is 640 tests / 704 subtests, zero failures/errors/skips. No live canary Lead
+has been created. A controlled external mailbox must be verified before a
+customer-email canary can be proposed, and the outbound resolver's human-only
+language binding and single-record CRM transport gate still need engineering.
