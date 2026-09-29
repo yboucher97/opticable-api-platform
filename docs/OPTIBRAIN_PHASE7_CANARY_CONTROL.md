@@ -5,10 +5,11 @@ authorized by this document. Production Phase 6 remains at
 `0ade0ec02eeea5b503dc8eba8bea9c982cbf9240`, API 1.11.0, with external
 business-action flags absent.
 
-Current branch validation: 640 inherited tests / 704 subtests with zero
-failures, errors or skips after the unregistered CRM approval ledger and exact
-review package were added. The first Phase 7 draft commit passed both GitHub
-checks; the revised SHA requires its own GitHub validation.
+Current branch validation: 656 inherited tests / 706 subtests with zero
+failures, errors or skips after the unregistered CRM executor, operator
+approval surface and outbound canary pin were added. The prior pushed branch
+commit passed both GitHub checks; the final SHA requires its own GitHub
+validation.
 
 ## Exact one-Lead workflow
 
@@ -25,7 +26,8 @@ checks; the revised SHA requires its own GitHub validation.
    may affect an advisory priority/action only within the policy; they cannot
    authorize provider writes or customer sends.
 3. Internal client, contact, optional company, site and project references are
-   deterministic provisional references. They are **not** Zoho object IDs.
+   deterministic provisional references stable across later versions of the
+   same Lead. They are **not** Zoho object IDs.
    Existing numeric CRM relationship IDs are carried through only if supplied
    by an authoritative reviewed record. There is no Account/Contact/Deal create
    or update route in this canary planner.
@@ -46,14 +48,36 @@ checks; the revised SHA requires its own GitHub validation.
    `consuming` durably before any future provider call and cannot be reused
    after restart, ambiguity, manual outcome or verified consumption. A consumed
    record requires a provider operation ID and exact verified patch hash. It does
-   **not** authenticate the human or grant CRM transport authority on its own;
-   the future operator route/executor must supply those boundaries.
+   **not** authenticate the human or grant CRM transport authority on its own.
+   `operator_phase7_api` derives the actor from verified Cloudflare Access and
+   rehydrates before issuance; it remains unregistered in production. Its
+   consume endpoint defaults to unavailable. The unregistered
+   `phase7_crm_executor` rehydrates, claims durably, obtains an exact one-record
+   transport grant under `OPTIBRAIN_CRM_CANARY=phase7-single-canary-v1`, sends
+   at most one Lead PUT, requires exact readback, and records ambiguous outcomes
+   as manual. A separate durable `dispatching` marker prevents a second grant
+   even if a caller tries to enter the transport scope again. The broad Phase 6
+   write flag is neither needed nor accepted as a substitute for this canary
+   flag. No Account, Contact, Deal, Books, conversion or customer send path is
+   present in this executor.
 6. Follow-up text is a draft candidate only. Existing Phase 6 outbound approval
    binds exact source/version, recipient, sender, subject/content hashes,
    mailbox, human actor and expiry. The outbound action remains unregistered and
    `OPTIBRAIN_OUTBOUND_SENDS` remains absent. A live send needs a separately
    authorized one-attempt registration/feature gate and exact human approval.
    Response loss is permanently manual, never an automatic resend.
+   Phase 7 engineering adds a distinct outbound canary mode:
+   `OPTIBRAIN_OUTBOUND_SENDS=phase7-single-canary-v1` plus the exact lowercase
+   32-hex `OPTIBRAIN_OUTBOUND_CANARY_APPROVAL_ID`. That mode observes/refuses any
+   other approval ID and rechecks the pin before the provider call. Neither
+   variable is set in production, and the action remains unregistered there.
+   The unregistered Phase 7 operator API now issues an existing durable outbound
+   approval from the exact review package under verified Access identity. Its
+   consume route rehydrates the Lead, resolves the human-reviewed `fr`/`en`
+   template by the stored hashes, and defaults to unavailable without an
+   explicitly installed callback. This avoids treating AI language as send
+   authority. The existing Phase 6 source resolver remains unchanged for its
+   separate event-backed path.
 
 ## Required authorization package before any live action
 
@@ -65,12 +89,13 @@ hashes. Show personal data only in an access-controlled human review surface;
 persist hashes/IDs in the audit record, not raw body or phone/email values.
 `build_review_package` produces the exact human-visible CRM before/after values
 and email subject/body, and a separate redacted audit receipt. It refuses
-source snapshot drift, opted-out/internal recipients and unowned senders. If
+   source snapshot drift, opted-out/internal recipients and unowned senders. If
 the Lead lacks a trusted `fr`/`en` language, an authenticated human must choose
 one explicitly for the package; AI language hints are discarded. A language
-conflicting with a trusted Lead value is refused. This package alone does not
-make the existing Phase 6 outbound resolver accept a human-only language; that
-live source-binding integration remains a separate engineering gate.
+conflicting with a trusted Lead value is refused. The Phase 7 operator route
+binds that selection to the exact package and stored outbound approval; the
+   callback/action remain unavailable in production until a separate deployment
+and first-send authorization gate.
 
 List the one permitted CRM operation and one permitted Mail operation separately.
 Each needs a one-use release approval. Success requires exact provider readback,
@@ -91,9 +116,23 @@ approval; do not automatically write old values over newer customer changes.
 
 `phase7_canary` is not registered in production startup or any workflow. Its
 identity resolver performs GETs only. Its plan does not issue a durable approval
-or call a provider writer. The CRM ledger is also unregistered and performs no
-provider call. Synthetic tests block Python sockets, prove exact version and
-duplicate refusals, one-use approval/restart behavior, and redacted evidence. The first live
+or call a provider writer. The operator API, CRM ledger and executor are also
+unregistered; `OPTIBRAIN_CRM_CANARY` is absent in production. Synthetic tests
+prove exact version and duplicate refusals, Access-derived issuance, single-use
+approval/restart/concurrency, disabled-policy zero calls, exact one-record
+transport, ambiguity/manual state, and redacted evidence. The first live
 read-only Lead review requires selection of a real Lead ID. A real CRM mutation
 and outbound email remain separate later approvals after their exact packages
-and single-use live transport boundary are implemented, tested and deployed safely.
+and single-use live transport boundary are validated on the final candidate and
+deployed safely. The first real outbound mailbox must be verified as controlled
+by the operator, outside Opticable's blocked internal domains; do not guess or
+send to an unverified external address.
+
+The repaired scheduled backup service completed a timer-dispatched generation
+`20260929T184240Z` using the preserved sandbox. Local archive SHA-256 is
+`4478b55626141a9ad5fe221a37cbca880ad597c1e4febb1e713cc8e1d9c0995c`;
+an isolated copy of its automation DB passed manifest hash, SQLite integrity and
+Schema V2 checks. Encrypted off-host upload and downloaded ciphertext hash
+verification passed. All 12 previous local generations were preserved, giving
+13 generations and about 55 GB free. Both normal backup/upload timers remain
+enabled and active; the temporary timer proof unit was removed.

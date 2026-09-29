@@ -71,6 +71,9 @@ class CrmCanaryApprovalTests(unittest.TestCase):
         self.ledger.claim(approval.approval_id, now=NOW, **BINDING)
         with self.assertRaisesRegex(ValueError, "verified or manual"):
             self.ledger.finish(approval, operation_id="987654321")
+        self.ledger.mark_dispatch(approval, now=NOW)
+        with self.assertRaisesRegex(ValueError, "already used"):
+            self.ledger.mark_dispatch(approval, now=NOW)
         self.ledger.finish(approval, operation_id="987654321", verified_patch_hash="b" * 64)
         state = CrmCanaryApprovalLedger(AutomationStore(self.path)).inspect(approval.approval_id)
         self.assertEqual(state["state"], "consumed")

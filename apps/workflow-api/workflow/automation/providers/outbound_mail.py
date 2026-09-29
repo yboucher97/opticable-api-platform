@@ -15,6 +15,7 @@ from ..outbound_approval import OutboundApprovalLedger, POLICY_VERSION, _email, 
 
 
 _INTERNAL_DOMAINS = {"opticable.ca", "opti-plex.ca"}
+_CANARY_POLICY = "phase7-single-canary-v1"
 _SEND_FIELDS = {"approval_id", "action_type", "source_type", "source_id", "source_version",
                 "mailbox_account_id", "message_id", "from_address", "to_address",
                 "subject", "content", "mail_format"}
@@ -40,17 +41,30 @@ def _provider_message_id(response):
     return None
 
 
+def _enabled_for(approval_id):
+    mode = os.environ.get("OPTIBRAIN_OUTBOUND_SENDS")
+    if mode == POLICY_VERSION:
+        return True
+    if mode == _CANARY_POLICY:
+        pinned = os.environ.get("OPTIBRAIN_OUTBOUND_CANARY_APPROVAL_ID", "")
+        return (isinstance(approval_id, str) and re.fullmatch(r"[0-9a-f]{32}", approval_id)
+                and pinned == approval_id)
+    return False
+
+
 def register_outbound_mail_action(engine, client, store):
     ledger = OutboundApprovalLedger(store)
 
     def send(context, step):
-        if os.environ.get("OPTIBRAIN_OUTBOUND_SENDS") != POLICY_VERSION:
+        if os.environ.get("OPTIBRAIN_OUTBOUND_SENDS") not in {POLICY_VERSION, _CANARY_POLICY}:
             return {"sent": False, "reason": "observe"}
         request = step.inputs.get("send")
         if not isinstance(request, dict) or set(request) - _SEND_FIELDS:
             raise ValueError("lifecycle.mail_send_approved_v2 requires with.send object")
 
         approval_id = request.get("approval_id")
+        if not _enabled_for(approval_id):
+            return {"sent": False, "reason": "observe"}
         action_type = request.get("action_type")
         source_type = request.get("source_type")
         source_id = request.get("source_id")
@@ -99,7 +113,7 @@ def register_outbound_mail_action(engine, client, store):
         with ledger.lock():
             approval = ledger.require_issued(expected)
             # Re-read policy immediately before making the approval single-use.
-            if os.environ.get("OPTIBRAIN_OUTBOUND_SENDS") != POLICY_VERSION:
+            if not _enabled_for(approval_id):
                 return {"sent": False, "reason": "observe"}
             ledger.mark_consuming(approval)
             # A process loss after this durable marker is intentionally
@@ -118,7 +132,7 @@ def register_outbound_mail_action(engine, client, store):
                 else:
                     path = f"/api/accounts/{account_id}/messages"
                 ledger.require_consuming(approval)
-                if os.environ.get("OPTIBRAIN_OUTBOUND_SENDS") != POLICY_VERSION:
+                if not _enabled_for(approval_id):
                     ledger.mark_manual(approval, error="policy_disabled")
                     return {"sent": False, "reason": "observe", "approval_state": "manual"}
                 response = client.request(

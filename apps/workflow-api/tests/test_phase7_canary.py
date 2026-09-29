@@ -101,7 +101,7 @@ class Phase7CanaryTests(unittest.TestCase):
         new = build_canary_plan(record(Modified_Time=newer), evidence("1234567890", version=newer),
                                 now=datetime(2026, 9, 29, 19, 10, tzinfo=timezone.utc))
         self.assertNotEqual(old.plan_hash, new.plan_hash)
-        self.assertNotEqual(old.project_ref, new.project_ref)
+        self.assertEqual(old.project_ref, new.project_ref)
 
     def test_hydration_uses_get_only_and_exact_email_identity(self):
         class FakeClient:

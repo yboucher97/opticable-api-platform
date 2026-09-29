@@ -241,8 +241,15 @@ or outbound send flag for the first live canary. Require exact human-approved
 record/action/content packages and single-use controls before either external
 action. The provisional folder/relationship plan performs no provider mutation.
 The Phase 7 branch also has an unregistered one-use CRM approval ledger and an
-exact human review package generator. Its current complete inherited regression
-is 640 tests / 704 subtests, zero failures/errors/skips. No live canary Lead
+exact human review package generator. The unregistered authenticated operator
+preview/issuance and one-record CRM executor use a distinct canary opt-in and
+manual-on-ambiguity state. The current complete inherited regression is 656
+tests / 706 subtests, zero failures/errors/skips; the final branch SHA needs
+GitHub validation. No live canary Lead
 has been created. A controlled external mailbox must be verified before a
 customer-email canary can be proposed, and the outbound resolver's human-only
-language binding and single-record CRM transport gate still need engineering.
+language binding is now bound to an authenticated human's exact review package.
+The backup service's sandboxed identity-switch repair was verified by a real
+timer-dispatched run, generation 20260929T184240Z. Local checksum, isolated
+Schema V2 restore, encrypted off-host upload and downloaded hash all passed;
+all 12 previous local generations were preserved. Both normal timers are active.

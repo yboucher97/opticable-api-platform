@@ -140,14 +140,26 @@ class CrmCanaryApprovalLedger:
             self._record("consuming", approval)
             return approval
 
+    def mark_dispatch(self, approval: CrmCanaryApproval, *, now: datetime | None = None) -> None:
+        """One durable dispatch token; a crash leaves no second transport grant."""
+        with self._lock():
+            state = self.inspect(approval.approval_id)
+            if state is None or state["state"] != "consuming" or state["approval"] != approval:
+                raise ValueError("CRM canary transport grant already used or unavailable")
+            current = _clock(now)
+            if not _aware(approval.approved_at, field="approved_at") <= current < _aware(approval.expires_at, field="expires_at"):
+                raise ValueError("CRM canary approval expired before transport")
+            self._record("dispatching", approval)
+
     def finish(self, approval: CrmCanaryApproval, *, operation_id: str | None = None,
                verified_patch_hash: str | None = None, reason: str | None = None) -> None:
         with self._lock():
             state = self.inspect(approval.approval_id)
-            if state is None or state["state"] != "consuming" or state["approval"] != approval:
-                raise ValueError("CRM canary approval is not consuming")
+            if (state is None or state["state"] not in {"consuming", "dispatching"}
+                    or state["approval"] != approval):
+                raise ValueError("CRM canary approval is not in a resolvable state")
             if (operation_id is not None and reason is None and _CRM_ID.fullmatch(operation_id)
-                    and verified_patch_hash == approval.patch_hash):
+                    and verified_patch_hash == approval.patch_hash and state["state"] == "dispatching"):
                 self._record("consumed", approval, {"provider_operation_id": operation_id,
                                                    "verified_patch_hash": verified_patch_hash})
             elif (operation_id is None and verified_patch_hash is None

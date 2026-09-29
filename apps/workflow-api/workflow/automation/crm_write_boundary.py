@@ -5,7 +5,7 @@ Legacy writers are unavailable. Only the journaled phase6 adapter enters this sc
 """
 from contextlib import contextmanager
 from contextvars import ContextVar
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -13,6 +13,7 @@ import re
 
 _AUTHORITY = ContextVar('phase6_crm_authority', default=None)
 POLICY = 'phase6-sales-v1'
+CANARY_POLICY = 'phase7-single-canary-v1'
 LEGACY_ACTIONS = frozenset({'lifecycle.crm_upsert_lead', 'lifecycle.crm_create_followup_task',
     'lifecycle.crm_promote_lead', 'lifecycle.crm_create_meeting', 'lifecycle.crm_create_quote_review_task'})
 
@@ -57,16 +58,62 @@ def reviewed_reconciler_call(client, method, path, body, headers, policy):
         raise ValueError('CRM write policy is disabled')
     validate_request(method, path, body, headers)
     if _AUTHORITY.get() is not None: raise ValueError('Nested CRM authority forbidden')
-    value = {'client':client, 'hash':fingerprint(method,path,body,headers), 'used':False}
+    value = {'client':client, 'hash':fingerprint(method,path,body,headers),
+             'policy':POLICY, 'used':False}
     token = _AUTHORITY.set(value)
     try: yield
     finally: _AUTHORITY.reset(token)
 
 
+@contextmanager
+def reviewed_canary_call(client, method, path, body, headers, approval, ledger, *, now=None):
+    """Scope one durably claimed Phase 7 Lead PUT to an exact provider call."""
+    from .event_schema import digest
+    if os.environ.get('OPTIBRAIN_CRM_CANARY') != CANARY_POLICY:
+        raise ValueError('CRM canary policy is disabled')
+    validate_request(method, path, body, headers)
+    lead = re.fullmatch(r'/crm/v8/Leads/([0-9]{1,30})', path)
+    if method != 'PUT' or lead is None or approval.policy != CANARY_POLICY or approval.lead_id != lead[1]:
+        raise ValueError('CRM canary permits one approved Lead PUT only')
+    reviewed = datetime.fromisoformat(headers['If-Unmodified-Since'].replace('Z', '+00:00'))
+    if reviewed.astimezone(timezone.utc).isoformat() != approval.source_version:
+        raise ValueError('CRM canary source version differs from approval')
+    patch = {key:value for key,value in body['data'][0].items() if key != 'id'}
+    if not patch or digest(patch) != approval.patch_hash:
+        raise ValueError('CRM canary patch differs from approval')
+    state = ledger.inspect(approval.approval_id)
+    if state is None or state['state'] != 'consuming' or state['approval'] != approval:
+        raise ValueError('CRM canary approval has not been durably claimed')
+    if _AUTHORITY.get() is not None:
+        raise ValueError('Nested CRM authority forbidden')
+    value = {'client':client, 'hash':fingerprint(method,path,body,headers),
+             'policy':CANARY_POLICY, 'used':False, 'expires_at':approval.expires_at,
+             'ledger':ledger, 'approval':approval}
+    ledger.mark_dispatch(approval, now=now)
+    token = _AUTHORITY.set(value)
+    try: yield
+    finally: _AUTHORITY.reset(token)
+
+
+def _enabled(value):
+    policy = value.get('policy') if isinstance(value, dict) else None
+    if policy == POLICY:
+        return os.environ.get('OPTIBRAIN_CRM_LEAD_WRITES') == POLICY
+    if policy == CANARY_POLICY:
+        if os.environ.get('OPTIBRAIN_CRM_CANARY') != CANARY_POLICY:
+            return False
+        expiry = datetime.fromisoformat(value['expires_at'])
+        if expiry.tzinfo is None or datetime.now(timezone.utc) >= expiry.astimezone(timezone.utc):
+            return False
+        state = value['ledger'].inspect(value['approval'].approval_id)
+        return state is not None and state['state'] == 'dispatching' and state['approval'] == value['approval']
+    return False
+
+
 def require_authority(client, service, method, path, body, headers):
     if method == 'GET' or not is_crm(service,path): return
     value = _AUTHORITY.get()
-    if os.environ.get('OPTIBRAIN_CRM_LEAD_WRITES') != POLICY or not isinstance(value,dict) or value.get('client') is not client or value.get('used') is not False or value.get('hash') != fingerprint(method,path,body,headers):
+    if not _enabled(value) or value.get('client') is not client or value.get('used') is not False or value.get('hash') != fingerprint(method,path,body,headers):
         raise ValueError('CRM mutation requires exact single-use reconciler authority')
     validate_request(method,path,body,headers)
     value['used'] = True  # Consumed before OAuth/provider calls; never blindly reused.
@@ -77,6 +124,6 @@ def verify_transport_authority(client, service, method, path, body, headers):
     if method == 'GET' or not is_crm(service, path):
         return
     value = _AUTHORITY.get()
-    if os.environ.get('OPTIBRAIN_CRM_LEAD_WRITES') != POLICY or not isinstance(value, dict) or value.get('client') is not client or value.get('used') is not True or value.get('hash') != fingerprint(method, path, body, headers):
+    if not _enabled(value) or value.get('client') is not client or value.get('used') is not True or value.get('hash') != fingerprint(method, path, body, headers):
         raise ValueError('CRM transport authority changed before the provider call')
     validate_request(method, path, body, headers)

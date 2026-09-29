@@ -79,6 +79,7 @@ class CanaryPlan(BaseModel):
     source_version: str
     source_hash: str
     identity_hash: str
+    dedupe_query_hash: str
     dedupe_status: str
     client_ref: str
     contact_ref: str
@@ -180,7 +181,9 @@ def build_canary_plan(
     if not decision.active or decision.converted:
         raise ValueError("Canary requires an active, unconverted Lead")
     patch = phase6_lead_patch(record, decision)
-    identity_hash = digest([POLICY, lead_id, version, evidence.query_hash, matches])
+    # Provisional references survive later Lead versions. Version/dedupe proof
+    # remain separately bound to the plan hash and must be re-reviewed.
+    identity_hash = digest([POLICY, lead_id])
     # These are provisional internal references. Never present them as Zoho IDs.
     suffix = identity_hash[:12].upper()
     client_ref = f"OB-C-{suffix}"
@@ -196,6 +199,7 @@ def build_canary_plan(
         "source_version": version,
         "source_hash": digest(record),
         "identity_hash": identity_hash,
+        "dedupe_query_hash": evidence.query_hash,
         "dedupe_status": "unique_lead_email_match",
         "client_ref": client_ref,
         "contact_ref": contact_ref,
