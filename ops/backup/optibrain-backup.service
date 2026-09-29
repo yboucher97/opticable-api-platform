@@ -5,8 +5,10 @@ After=local-fs.target
 
 [Service]
 Type=oneshot
-User=root
-Group=root
+# The default root identity retains the bounded setuid/setgid capabilities
+# needed by the script's read-only runuser Git probe. Explicit User=root with
+# NoNewPrivileges drops that identity-switch ability on this host.
+CapabilityBoundingSet=CAP_CHOWN CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH CAP_FOWNER CAP_SETGID CAP_SETUID
 ExecStart=/opt/opticable-api-platform/ops/backup/optibrain-backup.sh
 StandardOutput=journal
 StandardError=journal

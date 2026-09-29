@@ -200,3 +200,43 @@ uploader rejects archives outside its 36-hour freshness window (with five minute
 of tolerated clock skew). A missed local run fails closed and is visible through
 systemd/audit state. Latest code passed nine uploader fixture tests and a second
 manual end-to-end hash verification without writing duplicate objects.
+
+## Phase 6 closure and Phase 7 backup timer repair — 2026-09-29
+
+Phase 6 Gate G closed at production/main
+`0ade0ec02eeea5b503dc8eba8bea9c982cbf9240`, API 1.11.0, Schema V2.
+External business-action flags remain disabled; no customer send, CRM/Books
+mutation, Lead conversion or financial action was enabled by the release.
+Direct rollback to the old Phase 5 code is unsafe for queued legacy CRM work;
+use the validated corrected-code forward-recovery procedure in
+`docs/OPTIBRAIN_PHASE6_GATE_G_RECOVERY.md`.
+
+The local backup timer was held inactive during preserve-all Phase 6 recovery
+work. Its first scheduled-service attempt failed before archive creation:
+explicit `User=root`/`Group=root` combined with the sandbox prevented the
+script's read-only `runuser -u optibrain` Git probe from changing UID. An
+isolated systemd probe reproduced the failure with explicit `User=root` and
+passed without those redundant declarations. The installed root-owned drop-in
+`/etc/systemd/system/optibrain-backup.service.d/identity-switch.conf` clears
+them and bounds capabilities to `CHOWN`, `DAC_OVERRIDE`, `DAC_READ_SEARCH`,
+`FOWNER`, `SETGID` and `SETUID`. `NoNewPrivileges`, `RestrictSUIDSGID`,
+`ProtectHome`, `ProtectSystem=strict`, private devices/tmp, and the root-only
+runtime script remain. The preserve-existing override remains active, so
+automatic runs do not prune prior recovery generations.
+
+The repaired systemd service created generation `20260929T181245Z` from the
+Phase 6 SHA. Archive SHA-256 `bdd07483af02b3effe1eafd01c1c6d17a62e23bb4846a041b02cbfeaa2b7f0ec`
+passed its sidecar check. Isolated extraction verified manifest DB hash,
+SQLite integrity, Schema V2, and workflow/audit/dedupe/journal tables. The
+off-host service encrypted it, uploaded it, then downloaded and verified hashes
+for the ciphertext and receipt; `generation_verified` was recorded. All 11
+earlier local archives remained present, with about 55 GB free. The local timer
+is enabled/active again, next due 2026-09-30 around 02:43 UTC. The source unit
+and backup fixture regression have been updated on the Phase 7 branch; the
+running application checkout has not changed.
+
+Phase 7 canary preparation is described in
+`docs/OPTIBRAIN_PHASE7_CANARY_CONTROL.md`. Do not enable a broad CRM write flag
+or outbound send flag for the first live canary. Require exact human-approved
+record/action/content packages and single-use controls before either external
+action. The provisional folder/relationship plan performs no provider mutation.
