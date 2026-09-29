@@ -106,21 +106,21 @@ class ReleaseSecurityTests(unittest.TestCase):
  def test_loader_validates_archive_as_data_and_refuses_links_path_or_digest_substitution(self):
   import hashlib,io,tarfile
   spec=importlib.util.spec_from_file_location('static_loader',ROOT/'deploy/phase6-release-loader.py');loader=importlib.util.module_from_spec(spec);spec.loader.exec_module(loader)
-  content=b'# reviewed exact campaign\n';digest=hashlib.sha256(content).hexdigest()
-  for malicious in (None,'link','../escape','/absolute','duplicate','.git/config','wrong_digest'):
+  content=b'# reviewed exact campaign\n';digest=hashlib.sha256(content).hexdigest();blobs={loader.CAMPAIGN:hashlib.sha1(b'blob '+str(len(content)).encode()+b'\x00'+content).hexdigest()}
+  for malicious in (None,'link','../escape','/absolute','duplicate','.git/config','wrong_digest','ops/phase6/./production_campaign.py','ops//phase6/production_campaign.py','./ops/phase6/production_campaign.py','.git//config'):
    stream=io.BytesIO()
    with tarfile.open(fileobj=stream,mode='w') as archive:
     member=tarfile.TarInfo(loader.CAMPAIGN);member.size=len(content);archive.addfile(member,io.BytesIO(content))
-    if malicious in ('link','../escape','/absolute','duplicate','.git/config'):
+    if malicious is not None and malicious!='wrong_digest':
      path=loader.CAMPAIGN if malicious in ('link','duplicate') else malicious
      extra=tarfile.TarInfo(path)
      if malicious=='link':extra.type=tarfile.SYMTYPE;extra.linkname='/bin/sh'
      else:extra.size=1
      archive.addfile(extra,None if malicious=='link' else io.BytesIO(b'x'))
    with self.subTest(malicious=malicious):
-    if malicious is None:self.assertTrue(loader.validate_archive(stream.getvalue(),digest))
+    if malicious is None:self.assertTrue(loader.validate_archive(stream.getvalue(),digest,blobs))
     else:
-     with self.assertRaises(Exception):loader.validate_archive(stream.getvalue(),'a'*64 if malicious=='wrong_digest' else digest)
+     with self.assertRaises(Exception):loader.validate_archive(stream.getvalue(),'a'*64 if malicious=='wrong_digest' else digest,blobs)
  def test_loader_missing_policy_or_mismatched_authority_never_enters_candidate_code(self):
   spec=importlib.util.spec_from_file_location('static_loader_noexecute',ROOT/'deploy/phase6-release-loader.py');loader=importlib.util.module_from_spec(spec);spec.loader.exec_module(loader)
   with patch.object(loader.os,'geteuid',return_value=0),patch.object(loader,'protected',return_value={}),patch.object(loader,'command') as command,patch.object(loader.subprocess,'run') as invoke:
@@ -131,5 +131,45 @@ class ReleaseSecurityTests(unittest.TestCase):
   self.assertNotIn('os.environ',source)
   self.assertIn("subprocess.run(['/usr/bin/python3','-I'",source)
   self.assertNotIn("subprocess.run(['/opt/",source)
-  self.assertLess(source.index("validate_archive(material, auth['campaign_sha256'])"),source.index("subprocess.run(['/usr/bin/python3','-I'"))
+  self.assertLess(source.index("validate_archive(material, auth['campaign_sha256'],blobs)"),source.index("subprocess.run(['/usr/bin/python3','-I'"))
   self.assertIn("'merge-base','--is-ancestor',BASELINE,candidate",source)
+
+ def test_root_inline_python_cannot_import_from_deploy_user_working_directory(self):
+  import subprocess
+  shell=(ROOT/'deploy/production-root-command.sh').read_text()
+  self.assertTrue(shell.startswith('#!/bin/bash\n'))
+  self.assertIn('/usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 /usr/bin/python3 -I - "$1"',shell)
+  with tempfile.TemporaryDirectory() as temp:
+   (Path(temp)/'json.py').write_text("raise RuntimeError('untrusted deploy-user module executed')\n")
+   result=subprocess.run(['/usr/bin/python3','-I','-'],cwd=temp,input='import json; print(json.__file__)',capture_output=True,text=True,check=True)
+   self.assertNotIn(temp,result.stdout)
+   self.assertIn('json',result.stdout)
+
+ def test_loader_rejects_changed_or_omitted_helper_even_with_valid_campaign_digest(self):
+  import hashlib,io,tarfile
+  spec=importlib.util.spec_from_file_location('static_loader_tree',ROOT/'deploy/phase6-release-loader.py');loader=importlib.util.module_from_spec(spec);spec.loader.exec_module(loader)
+  files={loader.CAMPAIGN:b'# reviewed campaign\n','ops/phase5/production_campaign.py':b'# reviewed helper\n'}
+  blobs={name:hashlib.sha1(b'blob '+str(len(data)).encode()+b'\x00'+data).hexdigest() for name,data in files.items()}
+  digest=hashlib.sha256(files[loader.CAMPAIGN]).hexdigest()
+  for failure in ('modified','omitted'):
+   stream=io.BytesIO()
+   with tarfile.open(fileobj=stream,mode='w') as archive:
+    for name,data in files.items():
+     if name!=loader.CAMPAIGN:
+      if failure=='omitted':continue
+      data=b'# substituted helper\n'
+     member=tarfile.TarInfo(name);member.size=len(data);archive.addfile(member,io.BytesIO(data))
+   with self.subTest(failure=failure),self.assertRaisesRegex(RuntimeError,'candidate_blob_changed|candidate_tree_incomplete'):
+    loader.validate_archive(stream.getvalue(),digest,blobs)
+ def test_exact_current_git_archive_matches_all_reviewed_blobs(self):
+  import hashlib,subprocess
+  spec=importlib.util.spec_from_file_location('static_loader_exact_tree',ROOT/'deploy/phase6-release-loader.py');loader=importlib.util.module_from_spec(spec);spec.loader.exec_module(loader)
+  command=['/usr/bin/git','-C',str(ROOT)]
+  tree=subprocess.check_output(command+['ls-tree','-r','-z','HEAD'])
+  blobs={}
+  for row in tree.split(b'\x00'):
+   if row:
+    metadata,name=row.split(b'\t',1);mode,kind,identity=metadata.split();self.assertIn(mode,(b'100644',b'100755'));self.assertEqual(kind,b'blob');blobs[name.decode()]=identity.decode()
+  campaign=subprocess.check_output(command+['show','HEAD:'+loader.CAMPAIGN])
+  archive=subprocess.check_output(command+['archive','--format=tar','HEAD'])
+  self.assertTrue(loader.validate_archive(archive,hashlib.sha256(campaign).hexdigest(),blobs))

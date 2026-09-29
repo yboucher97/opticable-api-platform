@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # Static verifier: no candidate-controlled code enters root execution.
 set -Eeuo pipefail
 [[ ${EUID} -eq 0 && $# -eq 1 && $1 =~ ^[0-9a-f]{40}$ ]] || exit 64
-env -i PATH=/usr/bin:/bin LANG=C.UTF-8 /usr/bin/python3 - "$1" <<'PY'
+/usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 /usr/bin/python3 -I - "$1" <<'PY'
 """Installed static reconciliation verifier. Never executes candidate source.
 
 This file is embedded verbatim into the separately reviewed root wrapper; it is

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
 
 DEPLOY_USER="${OPTICABLE_DEPLOY_USER:-opticable-deploy}"
@@ -24,7 +24,7 @@ if ! id -u "${DEPLOY_USER}" >/dev/null 2>&1; then
 fi
 
 cat >"${COMMAND_WRAPPER}" <<'EOF'
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
 
 original="${SSH_ORIGINAL_COMMAND:-}"

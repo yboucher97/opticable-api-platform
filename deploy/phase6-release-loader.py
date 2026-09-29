@@ -63,15 +63,24 @@ def validate_authority(auth, candidate):
     check(all(type(auth.get(key)) is int and auth[key] == 0 for key in ('failures', 'errors', 'skipped')), 'validation_not_clean')
 
 
-def validate_archive(data, campaign_digest):
+def validate_archive(data, campaign_digest, approved_blobs):
     """Authorized Git archive is data; reject links, executable-path substitution."""
     seen = set()
+    files = set()
+    check(isinstance(approved_blobs,dict) and approved_blobs,"missing_reviewed_tree")
     with tarfile.open(fileobj=io.BytesIO(data)) as archive:
         for member in archive.getmembers():
-            parts = Path(member.name).parts
-            check(parts and not Path(member.name).is_absolute() and not any(p in {'.', '..', '.git'} for p in parts) and member.name not in seen, 'unsafe_candidate_path')
+            canonical=member.name[:-1] if member.isdir() and member.name.endswith('/') else member.name
+            parts=canonical.split('/')
+            check(canonical and '\\' not in canonical and '\x00' not in canonical and not any(p in {'', '.', '..', '.git'} for p in parts) and canonical not in seen, 'unsafe_candidate_path')
             check(member.isdir() or member.isfile(), 'candidate_link_or_special_file')
-            seen.add(member.name)
+            seen.add(canonical)
+            if member.isfile():
+                content=archive.extractfile(member).read()
+                blob=hashlib.sha1(b'blob '+str(len(content)).encode()+b'\x00'+content).hexdigest()
+                check(approved_blobs.get(canonical)==blob,'candidate_blob_changed')
+                files.add(canonical)
+        check(files==set(approved_blobs),'candidate_tree_incomplete')
         member = archive.getmember(CAMPAIGN)
         check(member.isfile() and member.size < 1024*1024, 'campaign_path_substitution')
         check(hashlib.sha256(archive.extractfile(member).read()).hexdigest() == campaign_digest, 'reviewed_campaign_changed')
@@ -112,8 +121,15 @@ def execute(candidate):
         check(command(git+['rev-parse','refs/tags/reviewed-recovery^{}']).strip() == BASELINE, 'recovery_reference_changed')
         command(git+['merge-base','--is-ancestor',BASELINE,candidate])
         # No candidate blobs/material can enter privileged execution before this point.
+        tree=command(git+['ls-tree','-r','-z',candidate],binary=True)
+        blobs={}
+        for row in tree.split(b'\x00'):
+            if not row:continue
+            metadata,name=row.split(b'\t',1);mode,kind,identity=metadata.split()
+            check(mode in {b'100644',b'100755'} and kind==b'blob','unsafe_candidate_tree')
+            blobs[name.decode('utf-8')]=identity.decode('ascii')
         material = command(git+['archive','--format=tar',candidate], binary=True)
-        validate_archive(material, auth['campaign_sha256'])
+        validate_archive(material, auth['campaign_sha256'],blobs)
         source = Path(temporary)/'reviewed-source'
         source.mkdir(mode=0o755)
         with tarfile.open(fileobj=io.BytesIO(material)) as selected:
