@@ -27,9 +27,10 @@ after scanning 10 Leads and 45 Contacts. It is evidence for preparation only;
 it expires after five minutes and must be repeated at approval and dispatch.
 
 The registered operator surface defaults to absent. It requires a root-owned
-non-writable manifest at `/etc/optibrain/phase7-canary-registration.json`, an
-exact checked-out Git SHA matching both that manifest and the registration
-environment, API 1.11.0, an exact HTTPS origin, and a verified Cloudflare Access
+non-writable manifest at `/etc/optibrain/phase7-canary-registration.json`, a
+root-verified checked-out Git SHA matching the manifest and registration
+environment, exact SHA-256 pins for every canary runtime source file, API
+1.11.0, an exact HTTPS origin, and a verified Cloudflare Access
 human allowlist. In controls-only mode it installs review/issuance routes but
 no consume callback. Enabling a business callback additionally requires an
 issued exact approval, matching single-use approval ID and per-action mode.
@@ -37,6 +38,20 @@ Lead creation, Lead patch and outbound email have independent pins. No YAML
 workflow gains an automatic create or send action. Books and finance remain
 blocked by the shared gateway; no Account, Contact, Deal or conversion writer
 is included.
+
+The first controls-only staging of `84270ac316c7a3e7d91c5e205d0a1a2fefa138c4`
+passed branch CI, fresh baseline backup/restore/off-host checks and initial
+application health. Enabling registration then exposed a deployment-identity
+defect: the unprivileged API service cannot traverse production Git metadata,
+so `git rev-parse HEAD` in registration startup exited 128. The prior API
+environment was restored atomically and the staged code returned to healthy
+1.11.0 with registration absent; production Git remained at that staged SHA,
+while remote main remained at the previous Phase 7 SHA. There were no business
+provider calls or DB/schema changes. This correction replaces service-user Git
+access with root-reviewed per-file source hashes in the protected manifest.
+The root deployment campaign still verifies Git SHA/ancestry before staging.
+The corrected SHA requires fresh CI and staged validation; the earlier candidate
+cannot be promoted as the final registration release.
 
 Live read-only mailbox verification found Zoho Mail account
 `1083319000000008002` enabled, not outbound-blocked, and

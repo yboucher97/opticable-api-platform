@@ -1,5 +1,6 @@
 """Fail-closed exact-release registration and operator route fixtures."""
 from datetime import datetime, timedelta, timezone
+import hashlib
 import os
 from pathlib import Path
 import tempfile
@@ -15,7 +16,8 @@ from workflow.automation.crm_write_boundary import require_authority, verify_tra
 from workflow.automation.store import AutomationStore
 from workflow.operator_access import AccessPrincipal
 from workflow.operator_phase7_create_api import install_phase7_create_routes
-from workflow.phase7_registration import MODE, maybe_install_phase7, validate_registration
+from workflow.phase7_registration import MODE, _PINNED_SOURCES, maybe_install_phase7, validate_registration
+from workflow.phase7_registration import verify_source_hashes
 
 
 SHA="a"*40
@@ -34,7 +36,8 @@ def manifest():
             "from_address":"sales@opticable.ca", "create_approval_id":None,
             "create_request_hash":None,
             "crm_approval_id":None,"outbound_approval_id":None,
-            "business_actions_enabled":False}
+            "business_actions_enabled":False,
+            "source_hashes":{path:"a"*64 for path in _PINNED_SOURCES}}
 
 
 class FakeVerifier:
@@ -97,7 +100,7 @@ class RegistrationTests(unittest.TestCase):
         env={"OPTIBRAIN_PHASE7_REGISTRATION":MODE,"OPTIBRAIN_PHASE7_RELEASE_SHA":SHA}
         with (patch.dict(os.environ,env),
               patch('workflow.phase7_registration._trusted_manifest',return_value=manifest()),
-              patch('workflow.phase7_registration.subprocess.check_output',return_value=SHA)):
+              patch('workflow.phase7_registration.verify_source_hashes')):
             result=maybe_install_phase7(app,client=fake,store=store,engine=engine,api_version="1.11.0")
         self.assertTrue(result["registered"])
         self.assertFalse(any(result[k] for k in ("create","crm","outbound")))
@@ -117,6 +120,25 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(validate_registration(changed,checkout_sha=SHA,env=env)["create"],True)
         changed["create_approval_id"]="*"
         with self.assertRaises(ValueError): validate_registration(changed,checkout_sha=SHA,env=env)
+
+    def test_source_hashes_bind_readable_files_without_git_access(self):
+        tmp=tempfile.TemporaryDirectory(prefix="phase7-source-pin-")
+        self.addCleanup(tmp.cleanup)
+        root=Path(tmp.name)
+        hashes={}
+        for relative in _PINNED_SOURCES:
+            path=root/relative
+            path.parent.mkdir(parents=True,exist_ok=True)
+            data=(relative+'\n').encode()
+            path.write_bytes(data);path.chmod(0o644)
+            hashes[relative]=hashlib.sha256(data).hexdigest()
+        verify_source_hashes(hashes,root=root)
+        chosen=root/'workflow/api.py'
+        chosen.write_text('changed\n')
+        with self.assertRaisesRegex(ValueError,"differs"):
+            verify_source_hashes(hashes,root=root)
+        chosen.unlink();chosen.symlink_to(root/'workflow/operator_access.py')
+        with self.assertRaises(OSError): verify_source_hashes(hashes,root=root)
 
     def test_human_review_issue_and_disabled_consume(self):
         tmp=tempfile.TemporaryDirectory(prefix="phase7-registration-")
@@ -164,7 +186,7 @@ class RegistrationTests(unittest.TestCase):
         app=FastAPI()
         with (patch.dict(os.environ,env),
               patch('workflow.phase7_registration._trusted_manifest',return_value=reviewed),
-              patch('workflow.phase7_registration.subprocess.check_output',return_value=SHA),
+              patch('workflow.phase7_registration.verify_source_hashes'),
               patch('workflow.phase7_registration.AccessIdentityVerifier',return_value=FakeVerifier())):
             plan=maybe_install_phase7(app,client=fake,store=store,engine=engine,api_version="1.11.0")
             self.assertTrue(plan["create"])

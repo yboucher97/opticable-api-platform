@@ -7,11 +7,11 @@ approval IDs. The absence of a manifest or flag leaves every route absent.
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 from pathlib import Path
 import re
 import stat
-import subprocess
 
 from .automation.phase7_lead_create import POLICY as CREATE_POLICY, LeadCreateLedger, execute_approved_create
 from .automation.phase7_crm_approval import CrmCanaryApprovalLedger
@@ -28,6 +28,17 @@ MANIFEST = Path("/etc/optibrain/phase7-canary-registration.json")
 _SHA = re.compile(r"[0-9a-f]{40}\Z")
 _PIN = re.compile(r"[0-9a-f]{32}\Z")
 _HASH = re.compile(r"[0-9a-f]{64}\Z")
+_PINNED_SOURCES = frozenset({
+    "workflow/api.py", "workflow/phase7_registration.py",
+    "workflow/operator_access.py", "workflow/operator_phase7_api.py",
+    "workflow/operator_phase7_create_api.py",
+    "workflow/automation/phase7_lead_create.py",
+    "workflow/automation/phase7_crm_approval.py",
+    "workflow/automation/phase7_crm_executor.py",
+    "workflow/automation/crm_write_boundary.py",
+    "workflow/automation/outbound_approval.py",
+    "workflow/automation/providers/outbound_mail.py",
+})
 
 
 def _trusted_manifest(path: Path = MANIFEST, *, trusted_uid: int = 0) -> dict:
@@ -59,7 +70,7 @@ def validate_registration(manifest: dict, *, checkout_sha: str, env: dict) -> di
             "access_audience", "allowed_subjects", "allowed_emails", "mailbox_account_id",
             "from_address", "create_approval_id", "create_request_hash",
             "crm_approval_id", "outbound_approval_id",
-            "business_actions_enabled"}:
+            "business_actions_enabled", "source_hashes"}:
         raise ValueError("Phase 7 registration manifest has unexpected fields")
     if (manifest["mode"] != MODE or not isinstance(checkout_sha, str)
             or not _SHA.fullmatch(checkout_sha) or manifest["candidate_sha"] != checkout_sha
@@ -68,6 +79,11 @@ def validate_registration(manifest: dict, *, checkout_sha: str, env: dict) -> di
         raise ValueError("Phase 7 registration is not bound to this release")
     if not isinstance(manifest["business_actions_enabled"], bool):
         raise ValueError("Invalid Phase 7 business-action setting")
+    hashes = manifest["source_hashes"]
+    if (not isinstance(hashes, dict) or set(hashes) != _PINNED_SOURCES
+            or any(not isinstance(value, str) or not _HASH.fullmatch(value)
+                   for value in hashes.values())):
+        raise ValueError("Phase 7 registration source hash set is incomplete")
     enabled = manifest["business_actions_enabled"]
     pins = {"create": "create_approval_id", "crm": "crm_approval_id",
             "outbound": "outbound_approval_id"}
@@ -87,18 +103,40 @@ def validate_registration(manifest: dict, *, checkout_sha: str, env: dict) -> di
     return {"registered": True, **active}
 
 
+def verify_source_hashes(expected: dict, *, root: Path) -> None:
+    """Bind service-readable code to the root-reviewed exact-SHA manifest.
+
+    The service identity cannot read production Git metadata. Root verifies
+    HEAD/ancestry during staging and installs this exact content-hash manifest.
+    """
+    for relative in sorted(_PINNED_SOURCES):
+        path = root / relative
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        try:
+            info = os.fstat(fd)
+            if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_mode & 0o022:
+                raise ValueError("Unsafe Phase 7 source file")
+            with os.fdopen(fd, "rb") as stream:
+                fd = -1
+                actual = hashlib.file_digest(stream, "sha256").hexdigest()
+        finally:
+            if fd >= 0:
+                os.close(fd)
+        if actual != expected[relative]:
+            raise ValueError("Phase 7 source differs from reviewed release")
+
+
 def maybe_install_phase7(app, *, client, store, engine, api_version: str,
                          manifest_path: Path = MANIFEST):
     if os.environ.get("OPTIBRAIN_PHASE7_REGISTRATION") is None:
         return {"registered": False, "create": False, "crm": False, "outbound": False}
     if api_version != "1.11.0":
         raise ValueError("Phase 7 registration requires API 1.11.0")
-    raw = subprocess.check_output(["/usr/bin/git", "-C", "/opt/opticable-api-platform",
-                                   "rev-parse", "HEAD"], text=True, timeout=10).strip()
     manifest = _trusted_manifest(manifest_path)
-    plan = validate_registration(manifest, checkout_sha=raw, env=os.environ)
+    plan = validate_registration(manifest, checkout_sha=manifest["candidate_sha"], env=os.environ)
     if not plan["registered"]:
         return plan
+    verify_source_hashes(manifest["source_hashes"], root=Path(__file__).resolve().parents[1])
     verifier = AccessIdentityVerifier(
         team_domain=manifest["team_domain"], audience=manifest["access_audience"],
         allowed_subjects=manifest["allowed_subjects"],
