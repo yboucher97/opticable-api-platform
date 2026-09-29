@@ -504,16 +504,38 @@ class AtomicMainPushTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
         self.bare, self.clone = Path(self.tmp.name) / 'origin.git', Path(self.tmp.name) / 'candidate'
-        self.command(['git', 'clone', '--bare', '--shared', '--quiet', str(campaign.REPO), str(self.bare)])
-        self.command(['git', '-C', str(self.bare), 'update-ref', 'refs/heads/main', campaign.BASELINE])
-        self.command(['git', 'clone', '--shared', '--quiet', '--branch', campaign.BRANCH, str(self.bare), str(self.clone)])
+        self.command(['git', 'init', '--bare', '--quiet', str(self.bare)])
+        seed = Path(self.tmp.name) / 'seed'
+        self.command(['git', 'init', '--quiet', str(seed)])
+        self.command(['git', '-C', str(seed), 'config', 'user.name', 'Fixture'])
+        self.command(['git', '-C', str(seed), 'config', 'user.email', 'fixture@example.invalid'])
+        self.command(['git', '-C', str(seed), 'checkout', '-b', 'main'])
+        source = seed / 'fixture.txt'
+        source.write_text('baseline\n')
+        self.command(['git', '-C', str(seed), 'add', '.'])
+        self.command(['git', '-C', str(seed), 'commit', '-qm', 'baseline'])
+        self.baseline = self.command(['git', '-C', str(seed), 'rev-parse', 'HEAD']).stdout.strip()
+        self.command(['git', '-C', str(seed), 'checkout', '-b', campaign.BRANCH])
+        for content in ('intermediate', 'candidate'):
+            source.write_text(content + '\n')
+            self.command(['git', '-C', str(seed), 'commit', '-am', content, '-q'])
+        self.command(['git', '-C', str(seed), 'remote', 'add', 'origin', str(self.bare)])
+        self.command(['git', '-C', str(seed), 'push', '-q', 'origin', 'main', campaign.BRANCH])
+        self.command(['git', 'clone', '--quiet', '--branch', campaign.BRANCH, str(self.bare), str(self.clone)])
+        self.hooks = Path(self.tmp.name) / 'hooks'
+        self.hooks.mkdir()
+        template = (campaign.REPO / 'ops/phase5/git-hooks/pre-push').read_text()
+        self.assertIn(campaign.BASELINE, template)
+        hook = self.hooks / 'pre-push'
+        hook.write_text(template.replace(campaign.BASELINE, self.baseline))
+        hook.chmod(0o755)
         self.candidate = self.command(['git', '-C', str(self.clone), 'rev-parse', 'HEAD']).stdout.strip()
 
     def command(self, argv, *, check=True):
         return subprocess.run(argv, capture_output=True, text=True, check=check, timeout=30)
 
     def push(self):
-        return self.command(['git', '-C', str(self.clone), '-c', 'core.hooksPath=' + str(campaign.REPO / 'ops/phase5/git-hooks'),
+        return self.command(['git', '-C', str(self.clone), '-c', 'core.hooksPath=' + str(self.hooks),
                              'push', 'origin', self.candidate + ':refs/heads/main'], check=False)
 
     def test_exact_advertised_baseline_allows_normal_fast_forward(self):

@@ -37,7 +37,9 @@ The only accepted request is:
 
 `deploy <40-hex-commit-sha>`
 
-The root deployment wrapper validates the SHA and downloads the deployment script from that exact GitHub commit. The deployment script then verifies that the commit is an ancestor of `origin/main`.
+The reviewed root wrapper fetches only the fixed repository's current remote `main` into a private bare Git repository, checks exact SHA equality, and only then materializes and executes its deployment script. Caller-controlled Git configuration and the writable production repository are excluded from this trust decision. During a staged Phase 6 release, a root-private release marker also rejects delayed workflows targeting another SHA.
+
+For Phase 6, automatic deployment is reconciliation only: the exact candidate must already be running following the separately authorized staged campaign. A fresh Phase 6 checkout switch through the ordinary SSH deployment path is refused. See [the Phase 6 recovery supplement](../docs/OPTIBRAIN_PHASE6_GATE_G_RECOVERY.md). The inherited rollback flow below applies to earlier releases; it is not a Phase 6 rollback authorization.
 
 ### One-time deploy identity setup
 
@@ -51,13 +53,11 @@ ssh-keygen -t ed25519 -f opticable-api-github-deploy -C "github-actions-opticabl
 
 Only the **public** key is needed by the server bootstrap.
 
-On the API VM, as root, from a trusted shell:
+Only after separate administrative approval, use a complete, verified release source bundle containing both `deploy/bootstrap-deploy-user.sh` and its adjacent `deploy/production-root-command.sh`. The bootstrap fails before changes if the reviewed wrapper is missing. The following changes privileged state and must not run during engineering readiness:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yboucher97/opticable-api-platform/main/deploy/bootstrap-deploy-user.sh -o /root/bootstrap-opticable-deploy.sh
-chmod 700 /root/bootstrap-opticable-deploy.sh
-/root/bootstrap-opticable-deploy.sh 'ssh-ed25519 PUBLIC_KEY_MATERIAL'
-rm -f /root/bootstrap-opticable-deploy.sh
+# Run from the reviewed immutable source bundle; preserve the existing key policy.
+bash deploy/bootstrap-deploy-user.sh 'ssh-ed25519 PUBLIC_KEY_MATERIAL'
 ```
 
 Never put the private key in the repository.
@@ -70,15 +70,16 @@ Repository: `yboucher97/opticable-api-platform`
 - `OPTICABLE_API_DEPLOY_SSH_KEY` — private half of the dedicated deploy-only key
 - `OPTICABLE_API_DEPLOY_KNOWN_HOSTS` — trusted SSH host-key line for the VM
 - `OPTICABLE_API_DEPLOY_PORT` — optional; defaults to 22
-- `OPTICABLE_API_PUBLIC_BASE_URL` — optional; defaults to `https://api01.opticable.ca`
+- `OPTICABLE_API_PUBLIC_BASE_URL` — optional; defaults to `https://optibrain.opticable.ca`
 
 For the known-hosts value, prefer deriving the key from the VM itself through an already trusted administrative session rather than trusting a network scan. For example, on the VM:
 
 ```bash
-printf 'api01.opticable.ca %s\n' "$(cut -d' ' -f1-2 /etc/ssh/ssh_host_ed25519_key.pub)"
+# Use the independently verified SSH host; it need not equal the API hostname.
+printf '%s %s\n' 'REVIEWED_SSH_HOST' "$(cut -d' ' -f1-2 /etc/ssh/ssh_host_ed25519_key.pub)"
 ```
 
-### Deployment sequence
+### Inherited deployment sequence (before Phase 6)
 
 1. Push/merge to `main`.
 2. `Validate API Platform` compiles and tests the workflow service and shell deployment scripts.
@@ -95,3 +96,5 @@ printf 'api01.opticable.ca %s\n' "$(cut -d' ' -f1-2 /etc/ssh/ssh_host_ed25519_ke
 13. GitHub performs a public health check after successful remote deployment.
 
 This intentionally does **not** reinstall the PDF service, Omada service, Caddy, firewall, OAuth credentials, or other VM configuration on routine application deployments.
+
+For Phase 6, backup, restore, encrypted off-host verification and staged health gates precede main promotion. CI then validates main and the forced-command deployment reconciles the already-running exact SHA without a checkout change or restart. Public health must report the version declared by that exact source tree. No deploy-only SSH command authorizes provider writes or customer sends.

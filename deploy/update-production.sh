@@ -99,6 +99,21 @@ rollback() {
   return 1
 }
 
+production_cleanliness() {
+  git -C "${INSTALL_DIR}" diff --exit-code --quiet || fail "Production tracked files changed."
+  git -C "${INSTALL_DIR}" diff --cached --exit-code --quiet || fail "Production index changed."
+  local untracked
+  untracked="$(git -C "${INSTALL_DIR}" ls-files --others --exclude-standard)"
+  if [[ -n "${untracked}" ]]; then
+    [[ "${untracked}" == "ops/backup/optibrain-cloudflare-auth-diagnostic.sh" ]] \
+      || fail "Unexpected untracked production file."
+    local diagnostic="${INSTALL_DIR}/${untracked}"
+    [[ -f "${diagnostic}" && ! -L "${diagnostic}" ]] || fail "Unsafe protected diagnostic."
+    [[ "$(sha256sum -- "${diagnostic}" | cut -d' ' -f1)" == "7b2a45b141ea8983e761fdc548e25690fe89bf15ee20b994be2bf4855f701000" ]] \
+      || fail "Protected diagnostic hash mismatch."
+  fi
+}
+
 main() {
   require_root
   [[ -n "${TARGET_SHA}" ]] || fail "Target commit SHA is required."
@@ -110,18 +125,7 @@ main() {
   exec 9>"${LOCK_FILE}"
   flock -n 9 || fail "Another deployment is already running."
 
-  if [[ -n "$(git -C "${INSTALL_DIR}" status --porcelain --untracked-files=no -- deploy/bootstrap-deploy-user.sh)" ]]; then
-    log "Restoring tracked deploy/bootstrap-deploy-user.sh to the checked-out version"
-    git -C "${INSTALL_DIR}" restore --source=HEAD --worktree -- deploy/bootstrap-deploy-user.sh
-  fi
-
-  local tracked_changes
-  tracked_changes="$(git -C "${INSTALL_DIR}" status --porcelain --untracked-files=no)"
-  if [[ -n "${tracked_changes}" ]]; then
-    log "Modified tracked files detected:"
-    printf '%s\n' "${tracked_changes}" >&2
-    fail "Production checkout has modified tracked files. Refusing to overwrite local changes."
-  fi
+  production_cleanliness
 
   local previous_sha
   previous_sha="$(git -C "${INSTALL_DIR}" rev-parse HEAD)"
@@ -138,6 +142,12 @@ main() {
     log "Target is already deployed; verifying health only"
     health_check || fail "Service is not healthy even though target commit is already deployed."
     exit 0
+  fi
+
+  # Phase6 requires its root-authorized backup/recovery campaign before promotion.
+  # The automatic main path may only reconcile an already-staged Phase6 release.
+  if git -C "${INSTALL_DIR}" show "${TARGET_SHA}:ops/phase6/production_campaign.py" >/dev/null 2>&1; then
+    fail "Phase6 target is not already staged. Run the separately authorized recovery campaign before main promotion."
   fi
 
   stage_dir="${STAGE_ROOT}/${TARGET_SHA}"

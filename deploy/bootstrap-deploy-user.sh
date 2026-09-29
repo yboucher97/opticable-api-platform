@@ -13,6 +13,8 @@ fail() {
 }
 
 [[ "${EUID}" -eq 0 ]] || fail "Run as root."
+[[ -f "$(dirname "${BASH_SOURCE[0]}")/production-root-command.sh" ]] \
+  || fail "Use the complete reviewed deployment source bundle; production-root-command.sh is required."
 [[ -n "${DEPLOY_PUBLIC_KEY}" ]] || fail "Provide the dedicated deploy PUBLIC key as the first argument or OPTICABLE_DEPLOY_PUBLIC_KEY."
 [[ "${DEPLOY_PUBLIC_KEY}" =~ ^(ssh-ed25519|ecdsa-sha2-nistp256|sk-ssh-ed25519@openssh.com)[[:space:]] ]] \
   || fail "Deploy public key must be an SSH public key."
@@ -35,23 +37,7 @@ sha="${BASH_REMATCH[1]}"
 exec sudo -n /usr/local/sbin/opticable-api-deploy-root "${sha}"
 EOF
 
-cat >"${ROOT_WRAPPER}" <<'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-
-sha="${1:-}"
-if [[ ! "${sha}" =~ ^[0-9a-f]{40}$ ]]; then
-  echo "Invalid deployment SHA." >&2
-  exit 64
-fi
-
-tmp="$(mktemp /var/tmp/opticable-api-deploy.XXXXXX.sh)"
-trap 'rm -f "${tmp}"' EXIT
-url="https://raw.githubusercontent.com/yboucher97/opticable-api-platform/${sha}/deploy/update-production.sh"
-curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 "${url}" -o "${tmp}"
-chmod 700 "${tmp}"
-exec bash "${tmp}" "${sha}"
-EOF
+install -m 755 "$(dirname "${BASH_SOURCE[0]}")/production-root-command.sh" "${ROOT_WRAPPER}"
 
 chown root:root "${COMMAND_WRAPPER}" "${ROOT_WRAPPER}"
 chmod 755 "${COMMAND_WRAPPER}" "${ROOT_WRAPPER}"
@@ -77,4 +63,4 @@ echo "This key cannot open a shell; it can only request: deploy <40-hex-main-com
 echo
 echo "For the GitHub OPTICABLE_API_DEPLOY_KNOWN_HOSTS secret, copy a trusted host-key line."
 echo "On this server, one can be generated from the local SSH host public key, for example:"
-echo "  printf 'api01.opticable.ca %s\\n' \"\$(cut -d' ' -f1-2 /etc/ssh/ssh_host_ed25519_key.pub)\""
+echo "Use the actual reviewed SSH deployment hostname; the API hostname is optibrain.opticable.ca."

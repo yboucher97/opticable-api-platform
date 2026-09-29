@@ -7,6 +7,7 @@ import tempfile
 import types
 import unittest
 from unittest.mock import patch
+from campaign_identity_fixture import campaign_identities
 
 ROOT = Path(__file__).resolve().parents[3]
 spec = importlib.util.spec_from_file_location("phase5_test_campaign", ROOT / "ops/phase5/production_campaign.py")
@@ -19,7 +20,8 @@ class Phase5CampaignTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
-        self.job = campaign.Phase5Campaign("a" * 40, self.root)
+        with campaign_identities(campaign.base):
+            self.job = campaign.Phase5Campaign("a" * 40, self.root)
         self.job.service_user = types.SimpleNamespace(pw_uid=os.getuid(), pw_gid=os.getgid())
 
     def test_failure_preserves_actual_state_without_legacy_rollback(self):

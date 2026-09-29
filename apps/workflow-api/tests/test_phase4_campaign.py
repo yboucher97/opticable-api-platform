@@ -7,6 +7,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
+from campaign_identity_fixture import campaign_identities
 
 
 SCRIPT = Path(__file__).resolve().parents[3] / "ops/phase4/production_campaign.py"
@@ -20,7 +21,8 @@ class FakeCampaign(campaign.Campaign):
     """Only fixture files and fake process/Git/DB state; no production operations."""
 
     def __init__(self, root: Path):
-        super().__init__(CANDIDATE, root)
+        with campaign_identities(campaign):
+            super().__init__(CANDIDATE, root)
         self.calls = []
         self.head, self.remote = campaign.BASELINE, campaign.BASELINE
         self.service, self.version = "active", 1

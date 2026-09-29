@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Only the root-authorized campaign supplies this hook; no force push allowed.
+set -Eeuo pipefail
+[[ ${1:-} == origin ]] || exit 1
+[[ $(git branch --show-current) == phase6/sales-autonomy-v1 ]] || exit 1
+reviewed_candidate=$(git rev-parse --verify 'HEAD^{commit}')
+updates=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [[ $remote_ref == refs/heads/main ]] || exit 1
+  [[ $remote_sha == 52f11d4fc14d8582c03837e0317f849efe8aa3d7 ]] || exit 1
+  [[ $local_sha == "$reviewed_candidate" ]] || exit 1
+  updates=$((updates + 1))
+done
+[[ $updates -eq 1 ]]

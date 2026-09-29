@@ -13,6 +13,7 @@ import tarfile
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
+from campaign_identity_fixture import campaign_identities
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -198,7 +199,9 @@ class SourcePermissionTests(unittest.TestCase):
         self.assertNotEqual(value.returncode, 0)
 
     def test_read_probe_uses_service_uid_and_no_supplementary_groups(self):
-        driver = campaign.Campaign(CANDIDATE, self.root)
+        with campaign_identities(campaign):
+            driver = campaign.Campaign(CANDIDATE, self.root)
+        self.assertNotEqual(driver.owner.pw_uid, driver.service_user.pw_uid)
         entries = b"100644 " + b"a" * 40 + b" 0\tapps/workflow-api/workflow/api.py\0"
         driver.git_bytes = Mock(return_value=entries)
         with patch.object(campaign.subprocess, "run", return_value=Mock(returncode=0, stdout=b'{"result":"PASS","readable_files":1}')) as process:
@@ -278,7 +281,8 @@ class LegacyEvidenceTests(unittest.TestCase):
 
 class FakeResume(resume.ResumeCloseout):
     def __init__(self, root):
-        super().__init__(CANDIDATE, root)
+        with campaign_identities(campaign):
+            super().__init__(CANDIDATE, root)
         self.calls = []
         self.head, self.remote = resume.DEPLOYED, resume.BASELINE
         self.fail_stage = None
@@ -654,7 +658,8 @@ class PreviousRecoveryEvidenceTests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
-        self.driver = resume.ResumeCloseout(CANDIDATE, self.root)
+        with campaign_identities(campaign):
+            self.driver = resume.ResumeCloseout(CANDIDATE, self.root)
         self.frozen = self.root / "frozen.db"
         self.frozen.write_bytes(b"frozen V1 fixture")
         self.frozen.chmod(0o600)

@@ -73,5 +73,14 @@ jobs:
         env:
           PUBLIC_BASE_URL: ${{ secrets.OPTICABLE_API_PUBLIC_BASE_URL }}
         run: |
-          BASE="${PUBLIC_BASE_URL:-https://api01.opticable.ca}"
-          curl --fail --silent --show-error --max-time 15 "$BASE/v1/system/health" >/dev/null
+          BASE="${PUBLIC_BASE_URL:-https://optibrain.opticable.ca}"
+          curl --fail --silent --show-error --max-time 15 "$BASE/v1/system/health" > /tmp/opticable-health.json
+          python3 - <<'PY'
+          import ast, json
+          from pathlib import Path
+          module = ast.parse(Path("apps/workflow-api/workflow/api.py").read_text())
+          expected = next(ast.literal_eval(node.value) for node in module.body
+                          if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "API_VERSION" for t in node.targets))
+          health = json.loads(Path("/tmp/opticable-health.json").read_text())
+          assert health.get("status") == "ok" and health.get("version") == expected, "Public API version/health mismatch"
+          PY

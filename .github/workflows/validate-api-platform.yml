@@ -8,6 +8,8 @@ on:
       - "install.sh"
       - "deploy/update-production.sh"
       - "deploy/bootstrap-deploy-user.sh"
+      - "deploy/production-root-command.sh"
+      - "ops/phase6/**"
       - ".github/workflows/deploy-api-platform.yml"
       - ".github/workflows/deploy-control-plane.yml"
       - ".github/workflows/monitor-production-health.yml"
@@ -21,6 +23,8 @@ on:
       - "install.sh"
       - "deploy/update-production.sh"
       - "deploy/bootstrap-deploy-user.sh"
+      - "deploy/production-root-command.sh"
+      - "ops/phase6/**"
       - ".github/workflows/deploy-api-platform.yml"
       - ".github/workflows/deploy-control-plane.yml"
       - ".github/workflows/monitor-production-health.yml"
@@ -55,12 +59,14 @@ jobs:
           bash -n ../../deploy/update-production.sh
           bash -n ../../deploy/bootstrap-deploy-user.sh
           bash -n ../../deploy/bootstrap-github-actions-secrets.sh
+          bash -n ../../deploy/production-root-command.sh
+          bash -n ../../ops/phase6/git-hooks/pre-push
 
       - name: Compile Python
-        run: python -m compileall -q workflow tests
+        run: python -m compileall -q workflow tests ../../ops/phase6
 
       - name: Run automation kernel tests
-        run: python -m unittest discover -s tests -v
+        run: python -I ../../ops/phase6/validate.py --suite full
 
 
   control-plane-worker:
@@ -81,4 +87,6 @@ jobs:
         run: npm install
 
       - name: Validate durable control-plane Worker
+        env:
+          WRANGLER_SEND_METRICS: "false"
         run: npm run check
