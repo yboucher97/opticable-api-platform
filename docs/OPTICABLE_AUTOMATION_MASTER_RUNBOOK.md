@@ -367,3 +367,37 @@ recommendation also checks the last send, reply state, Lead status, and recent
 CRM modification. Reply excerpts and labelled facts are advisory and require
 operator verification before any CRM update or quote. This route performs GETs
 and read-only local audit queries; it has no send or provider-write control.
+
+## Phase 8 bounded sales queue — 2026-09-30
+
+The same authenticated operator surface exposes
+`GET /v1/operator/phase8/sales-queue`. It reads at most 15 recently modified
+CRM Leads, 100 Contacts and 100 Accounts, plus the existing exact-identity
+controlled Lead and Mail view when that Lead is in the sample. It labels the
+result as a validation sample and marks list completeness. The route has no
+write method. The persistent autonomous worker remains disabled.
+
+The queue distinguishes verified CRM data from suggested name/company matches.
+It never treats a suggested Contact or Account as a linked provider record.
+Exact-email duplicate counts are authoritative only when the bounded Lead read
+is complete. Unknown Lead status, unverified Mail history, and record age alone
+cannot establish neglect or justify outreach. Quote review requires an open
+Lead and recorded service, site, scope and timeline; contact details alone do
+not qualify. The controlled Lead uses fresh thread-linked Mail evidence and
+preserves its existing WAIT state. Other inbox states are explicitly NOT
+CHECKED. Operator times use America/Toronto; internal comparisons use aware
+instants. The queue never sends or creates provider drafts.
+
+One manually invoked, root-only `ops/phase8/create_test_artifacts.py` may
+create the authorized controlled test Task and unsent Mail draft. It checks
+the exact controlled Lead, one exact email identity, known outbound message,
+no linked reply, future CRM deadline, and prior equivalent artifacts first.
+The Task transport grant is single-use and permits only one trigger-free
+`Tasks` POST for Lead `5062683000007880001`; the production service has
+no Phase 8 test Task flag. A root-owned attempt marker is persisted before
+each write. After an ambiguous acknowledgement, only read-only reconciliation
+is permitted; there is no automatic retry. Zoho Task `Due_Date` is a date,
+so the exact 5:00 PM EDT follow-up remains on the Lead and is stated in the
+test draft. The Mail payload uses `mode=draft`, the exact approved sender and
+recipient, and readback must confirm the Drafts folder, address, subject and
+content hash. The test draft must never be sent.

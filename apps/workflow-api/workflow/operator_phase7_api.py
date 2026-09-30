@@ -18,6 +18,7 @@ from .automation.phase7_crm_approval import CrmCanaryApprovalLedger
 from .automation.sales_operator_view import (
     CONTROLLED_LEAD_ID, build_sales_operator_view, render_sales_operator_view,
 )
+from .automation.sales_queue import build_sales_queue, render_sales_queue
 from .automation.outbound_approval import OutboundApproval, OutboundApprovalLedger
 from .operator_access import AccessIdentityVerifier
 from .zoho_gateway import ZohoGatewayError
@@ -111,6 +112,24 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         except ZohoGatewayError as exc:
             raise HTTPException(status_code=503, detail="Fresh provider evidence unavailable") from exc
         return HTMLResponse(render_sales_operator_view(view), headers={
+            "Cache-Control": "private, no-store, max-age=0", "Pragma": "no-cache",
+            "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
+        })
+
+    @app.get("/v1/operator/phase8/sales-queue", tags=["operator-phase8"],
+             response_class=HTMLResponse)
+    async def sales_queue(
+            cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
+        identity(cf_access_jwt_assertion)
+        try:
+            view = build_sales_queue(client, store.db_path, account_id=account_id,
+                                     from_address=from_address, now=now())
+        except (ValueError, LookupError) as exc:
+            raise HTTPException(status_code=409, detail="Fresh sales evidence needs review") from exc
+        except ZohoGatewayError as exc:
+            raise HTTPException(status_code=503, detail="Fresh provider evidence unavailable") from exc
+        return HTMLResponse(render_sales_queue(view), headers={
             "Cache-Control": "private, no-store, max-age=0", "Pragma": "no-cache",
             "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
             "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",

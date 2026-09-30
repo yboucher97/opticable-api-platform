@@ -15,6 +15,8 @@ _AUTHORITY = ContextVar('phase6_crm_authority', default=None)
 POLICY = 'phase6-sales-v1'
 CANARY_POLICY = 'phase7-single-canary-v1'
 CREATE_POLICY = 'phase7-single-lead-create-v1'
+PHASE8_TEST_TASK_POLICY = 'phase8-single-test-task-v1'
+PHASE8_TEST_LEAD = '5062683000007880001'
 LEGACY_ACTIONS = frozenset({'lifecycle.crm_upsert_lead', 'lifecycle.crm_create_followup_task',
     'lifecycle.crm_promote_lead', 'lifecycle.crm_create_meeting', 'lifecycle.crm_create_quote_review_task'})
 
@@ -67,6 +69,43 @@ def validate_create_request(method, path, body, headers):
         raise ValueError('Lead create requires one exact record')
     if body != canonical_payload(rows[0]):
         raise ValueError('Lead create body is not canonical')
+
+
+def validate_phase8_test_task(method, path, body, headers):
+    """Separate exact controlled-Lead Task boundary; date only is Zoho's Task due field."""
+    if method != 'POST' or path != '/crm/v8/Tasks' or headers:
+        raise ValueError('Phase 8 task permits only CRM Tasks POST')
+    if not isinstance(body, dict) or set(body) != {'data', 'trigger'} or body['trigger'] != []:
+        raise ValueError('Phase 8 task requires a trigger-free envelope')
+    rows = body['data']
+    if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict):
+        raise ValueError('Phase 8 task requires exactly one record')
+    row = rows[0]
+    if (set(row) != {'Subject', 'Who_Id', '$se_module', 'Status', 'Due_Date'}
+            or row['Who_Id'] != PHASE8_TEST_LEAD or row['$se_module'] != 'Leads'
+            or row['Status'] != 'Not Started'
+            or not re.fullmatch(r'TEST ONLY — OPTIBRAIN PHASE 8 — '
+                                + PHASE8_TEST_LEAD + r' — [0-9a-f]{16}', str(row['Subject']))):
+        raise ValueError('Phase 8 task escaped controlled identity')
+    datetime.strptime(row['Due_Date'], '%Y-%m-%d')
+
+
+@contextmanager
+def reviewed_phase8_test_task_call(client, body, *, payload_hash):
+    """One process-local, single-use grant pinned to an exact reviewed payload hash."""
+    if os.geteuid() != 0 or os.environ.get('OPTIBRAIN_PHASE8_TEST_TASK') != PHASE8_TEST_TASK_POLICY:
+        raise ValueError('Phase 8 test task policy is disabled')
+    if not re.fullmatch(r'[0-9a-f]{64}', str(payload_hash)) or fingerprint(
+            'POST', '/crm/v8/Tasks', body, None) != payload_hash:
+        raise ValueError('Phase 8 test task payload changed')
+    validate_phase8_test_task('POST', '/crm/v8/Tasks', body, None)
+    if _AUTHORITY.get() is not None:
+        raise ValueError('Nested CRM authority forbidden')
+    value = {'client': client, 'hash': payload_hash, 'policy': PHASE8_TEST_TASK_POLICY,
+             'used': False}
+    token = _AUTHORITY.set(value)
+    try: yield
+    finally: _AUTHORITY.reset(token)
 
 
 @contextmanager
@@ -145,6 +184,8 @@ def _enabled(value):
     policy = value.get('policy') if isinstance(value, dict) else None
     if policy == POLICY:
         return os.environ.get('OPTIBRAIN_CRM_LEAD_WRITES') == POLICY
+    if policy == PHASE8_TEST_TASK_POLICY:
+        return os.geteuid() == 0 and os.environ.get('OPTIBRAIN_PHASE8_TEST_TASK') == PHASE8_TEST_TASK_POLICY
     if policy == CANARY_POLICY:
         if (os.environ.get('OPTIBRAIN_CRM_CANARY') != CANARY_POLICY
                 or os.environ.get('OPTIBRAIN_CRM_CANARY_APPROVAL_ID') != value['approval'].approval_id):
@@ -171,7 +212,9 @@ def require_authority(client, service, method, path, body, headers):
     value = _AUTHORITY.get()
     if not _enabled(value) or value.get('client') is not client or value.get('used') is not False or value.get('hash') != fingerprint(method,path,body,headers):
         raise ValueError('CRM mutation requires exact single-use reconciler authority')
-    if value['policy'] == CREATE_POLICY:
+    if value['policy'] == PHASE8_TEST_TASK_POLICY:
+        validate_phase8_test_task(method,path,body,headers)
+    elif value['policy'] == CREATE_POLICY:
         validate_create_request(method,path,body,headers)
     else:
         validate_request(method,path,body,headers)
@@ -185,7 +228,9 @@ def verify_transport_authority(client, service, method, path, body, headers):
     value = _AUTHORITY.get()
     if not _enabled(value) or value.get('client') is not client or value.get('used') is not True or value.get('hash') != fingerprint(method, path, body, headers):
         raise ValueError('CRM transport authority changed before the provider call')
-    if value['policy'] == CREATE_POLICY:
+    if value['policy'] == PHASE8_TEST_TASK_POLICY:
+        validate_phase8_test_task(method,path,body,headers)
+    elif value['policy'] == CREATE_POLICY:
         validate_create_request(method, path, body, headers)
     else:
         validate_request(method, path, body, headers)
