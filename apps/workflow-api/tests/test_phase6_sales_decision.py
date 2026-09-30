@@ -203,6 +203,22 @@ class Phase6SalesDecisionTests(unittest.TestCase):
         )
         self.assertEqual(decision.next_action, "review")
 
+    def test_unknown_language_is_explicit_gap_for_email_followup(self):
+        decision = build_sales_decision(
+            self.lead(Language=None, Preferred_Language=None),
+            now=datetime(2026, 9, 28, 14, tzinfo=timezone.utc),
+        )
+        self.assertIn("preferred_language", decision.missing_information)
+        self.assertEqual(decision.language, "unknown")
+        self.assertEqual(decision.next_action, "draft_reply")
+        self.assertEqual(validate_sales_decision(decision), decision)
+
+        opted_out = build_sales_decision(
+            self.lead(Email_Opt_Out=True, Language=None, Preferred_Language=None),
+            now=datetime(2026, 9, 28, 14, tzinfo=timezone.utc),
+        )
+        self.assertNotIn("preferred_language", opted_out.missing_information)
+
     def test_hash_is_stable_for_irrelevant_ai_keys(self):
         now = datetime(2026, 9, 28, 14, tzinfo=timezone.utc)
         first = build_sales_decision(

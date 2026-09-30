@@ -93,6 +93,7 @@ class CanaryPlan(BaseModel):
     qualification_score: int
     next_action: str
     language: str
+    missing_information: tuple[str, ...]
     followup_at: str | None
     crm_patch: dict[str, Any]
     crm_patch_hash: str
@@ -213,6 +214,7 @@ def build_canary_plan(
         "qualification_score": _SCORE[decision.priority],
         "next_action": decision.next_action,
         "language": decision.language,
+        "missing_information": tuple(decision.missing_information),
         "followup_at": decision.followup_at,
         "crm_patch": patch,
         "crm_patch_hash": digest(patch),

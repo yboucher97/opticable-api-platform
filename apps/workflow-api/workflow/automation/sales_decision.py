@@ -334,6 +334,8 @@ def build_sales_decision(
         missing.append("contact_method")
     if not str(record.get("City") or record.get("State") or "").strip():
         missing.append("location")
+    if active and email_contactable and language == "unknown":
+        missing.append("preferred_language")
 
     safe = {
         "lead_id": identity,

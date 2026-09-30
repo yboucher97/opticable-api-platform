@@ -180,6 +180,7 @@ class Phase7CanaryTests(unittest.TestCase):
         plan = build_canary_plan(lead, evidence("1234567890"), now=NOW,
                                  ai_hint={"language": "fr"})
         self.assertEqual(plan.language, "unknown")
+        self.assertIn("preferred_language", plan.missing_information)
         self.assertFalse(plan.outbound_eligible)
         with self.assertRaisesRegex(ValueError, "not eligible"):
             build_review_package(plan, lead, account_id="12345",
