@@ -16,7 +16,7 @@ on:
       - ".github/workflows/schedule-customer-lifecycle.yml"
       - ".github/workflows/validate-api-platform.yml"
   push:
-    branches: [main]
+    branches: [main, phase8/integrated-sales-candidate-20260930]
     paths:
       - "apps/workflow-api/**"
       - "apps/control-plane-worker/**"
