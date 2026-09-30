@@ -10,13 +10,16 @@ on:
       - "deploy/bootstrap-deploy-user.sh"
       - "deploy/production-root-command.sh"
       - "ops/phase6/**"
+      - "ops/phase8/**"
+      - "deploy/phase8-*.py"
+      - "tests/test_phase8_*.py"
       - ".github/workflows/deploy-api-platform.yml"
       - ".github/workflows/deploy-control-plane.yml"
       - ".github/workflows/monitor-production-health.yml"
       - ".github/workflows/schedule-customer-lifecycle.yml"
       - ".github/workflows/validate-api-platform.yml"
   push:
-    branches: [main]
+    branches: [main, phase8/static-release-controls-20260930]
     paths:
       - "apps/workflow-api/**"
       - "apps/control-plane-worker/**"
@@ -25,6 +28,9 @@ on:
       - "deploy/bootstrap-deploy-user.sh"
       - "deploy/production-root-command.sh"
       - "ops/phase6/**"
+      - "ops/phase8/**"
+      - "deploy/phase8-*.py"
+      - "tests/test_phase8_*.py"
       - ".github/workflows/deploy-api-platform.yml"
       - ".github/workflows/deploy-control-plane.yml"
       - ".github/workflows/monitor-production-health.yml"
@@ -70,6 +76,11 @@ jobs:
 
       - name: Run automation kernel tests
         run: python -I ../../ops/phase6/validate.py --suite full
+
+      - name: Check Phase 8 offline release controls
+        run: |
+          python -m compileall -q ../../deploy/phase8-static-release-gates.py ../../deploy/phase8-production-root-command.py ../../ops/phase8/production_campaign.py
+          python -m unittest discover -s ../../tests -p 'test_phase8_*.py' -v
 
 
   control-plane-worker:
