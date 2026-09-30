@@ -12,6 +12,7 @@ from workflow.automation.crm_write_boundary import (
 from workflow.automation.phase7_canary import build_canary_plan, hydrate_unique_lead
 from workflow.automation.phase7_crm_approval import CrmCanaryApprovalLedger
 from workflow.automation.phase7_crm_executor import execute_approved_canary
+from workflow.automation.providers.crm_leads import _field_subset
 from workflow.automation.store import AutomationStore
 
 
@@ -189,3 +190,38 @@ class CrmCanaryExecutorTests(unittest.TestCase):
                                           CrmCanaryApprovalLedger(self.store)):
                     pass
         self.assertEqual(self.client.writes, 0)
+
+class CrmTimestampReadbackTests(unittest.TestCase):
+    def test_equivalent_offsets_reconcile_as_instants(self):
+        expected = {"Next_Followup_At": "2026-10-01T21:00:00+00:00"}
+        for provider_value in ("2026-10-01T17:00:00-04:00", "2026-10-02T02:30:00+05:30"):
+            with self.subTest(provider_value=provider_value):
+                self.assertEqual(_field_subset({"Next_Followup_At": provider_value}, expected), expected)
+        winter = {"Next_Followup_At": "2026-12-01T22:00:00+00:00"}
+        self.assertEqual(_field_subset({"Next_Followup_At": "2026-12-01T17:00:00-05:00"}, winter), winter)
+
+    def test_different_instants_do_not_reconcile(self):
+        expected = {"Next_Followup_At": "2026-10-01T21:00:00+00:00"}
+        self.assertNotEqual(_field_subset({"Next_Followup_At": "2026-10-01T17:01:00-04:00"}, expected), expected)
+
+    def test_malformed_and_naive_timestamps_fail_closed(self):
+        for value in ("yesterday", "2026-10-01T17:00:00", "2026-11-01T01:30:00"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                _field_subset({"Next_Followup_At": value}, {"Next_Followup_At": value})
+
+    def test_dst_fallback_uses_offset_to_distinguish_instants(self):
+        first = {"Next_Followup_At": "2026-11-01T05:30:00+00:00"}
+        second = {"Next_Followup_At": "2026-11-01T06:30:00+00:00"}
+        edt = {"Next_Followup_At": "2026-11-01T01:30:00-04:00"}
+        est = {"Next_Followup_At": "2026-11-01T01:30:00-05:00"}
+        self.assertEqual(_field_subset(edt, first), first)
+        self.assertEqual(_field_subset(est, second), second)
+        self.assertNotEqual(_field_subset(est, first), first)
+
+    def test_text_fields_remain_exact_and_null_transitions_remain_distinct(self):
+        expected = {"Normalized_Email": "hckyan97@gmail.com", "Next_Followup_At": None}
+        self.assertEqual(_field_subset(expected, expected), expected)
+        self.assertNotEqual(_field_subset({"Normalized_Email": "HCKYAN97@gmail.com", "Next_Followup_At": None}, expected), expected)
+        later = {"Normalized_Email": "hckyan97@gmail.com", "Next_Followup_At": "2026-10-01T21:00:00+00:00"}
+        self.assertNotEqual(_field_subset(later, expected), expected)
+        self.assertNotEqual(_field_subset(expected, later), later)
