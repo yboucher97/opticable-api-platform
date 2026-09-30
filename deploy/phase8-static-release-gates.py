@@ -27,6 +27,7 @@ INSTALLED_ARTIFACTS = {
     "campaign_sha256": Path("/usr/local/lib/optibrain/phase8-production-campaign.py"),
     "wrapper_sha256": Path("/usr/local/sbin/opticable-api-deploy-root"),
     "hook_sha256": Path("/usr/local/lib/optibrain/phase8-main-push-hook"),
+    "adapter_sha256": Path("/usr/local/lib/optibrain/phase8-trusted-release-adapter.py"),
 }
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 GENERATION = re.compile(r"[0-9]{8}T[0-9]{6}Z\Z")
@@ -113,7 +114,7 @@ def validate_authority(authority, now):
     fields(authority, {"repository", "branch", "candidate", "validated_sha", "baseline",
                        "ci_run_id", "ci_jobs", "release_id", "approved_by", "issued_at",
                        "expires_at", "loader_sha256", "campaign_sha256", "wrapper_sha256",
-                       "hook_sha256"}, "authority_fields")
+                       "hook_sha256", "adapter_sha256"}, "authority_fields")
     require(authority["repository"] == REPOSITORY and authority["branch"] == BRANCH
             and authority["candidate"] == authority["validated_sha"] == CANDIDATE
             and authority["baseline"] == BASELINE and type(authority["ci_run_id"]) is int
@@ -131,7 +132,7 @@ def validate_authority(authority, now):
     expiry = timestamp(authority["expires_at"], "authority_time")
     require(issued <= now < expiry and 0 < (expiry - issued).total_seconds() <= 7200,
             "authority_expired_or_stale")
-    for key in ("loader_sha256", "campaign_sha256", "wrapper_sha256", "hook_sha256"):
+    for key in INSTALLED_ARTIFACTS:
         digest(authority[key], "artifact_digest")
     return issued
 
@@ -203,8 +204,7 @@ def validate_packet(authority, packet, now=None):
     require({job["name"] for job in ci["jobs"]} == JOBS and
             all(job["status"] == "completed" and job["conclusion"] == "success"
                 for job in ci["jobs"]), "ci_jobs_failed")
-    fields(packet["artifacts"], {"loader_sha256", "campaign_sha256", "wrapper_sha256",
-                                 "hook_sha256"}, "artifact_fields")
+    fields(packet["artifacts"], INSTALLED_ARTIFACTS, "artifact_fields")
     require(packet["artifacts"] == {key: authority[key] for key in packet["artifacts"]},
             "artifact_changed")
     require(packet["remote_main"] == BASELINE, "main_changed")

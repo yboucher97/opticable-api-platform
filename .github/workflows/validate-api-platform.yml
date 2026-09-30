@@ -79,7 +79,7 @@ jobs:
 
       - name: Check Phase 8 offline release controls
         run: |
-          python -m compileall -q ../../deploy/phase8-static-release-gates.py ../../deploy/phase8-production-root-command.py ../../ops/phase8/production_campaign.py
+          python -m compileall -q ../../deploy/phase8-static-release-gates.py ../../deploy/phase8-production-root-command.py ../../ops/phase8/production_campaign.py ../../ops/phase8/trusted_release_adapter.py
           python -m unittest discover -s ../../tests -p 'test_phase8_*.py' -v
 
 

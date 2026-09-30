@@ -29,8 +29,7 @@ def backup(sha, generation):
 
 
 def fixtures(stage="prestage"):
-    artifacts = {key: HASH for key in ("loader_sha256", "campaign_sha256",
-                                      "wrapper_sha256", "hook_sha256")}
+    artifacts = {key: HASH for key in gates.INSTALLED_ARTIFACTS}
     authority = dict(repository=gates.REPOSITORY, branch=gates.BRANCH,
                      candidate=gates.CANDIDATE, validated_sha=gates.CANDIDATE,
                      baseline=gates.BASELINE, ci_run_id=gates.CI_RUN,
