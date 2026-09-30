@@ -7,6 +7,7 @@ from workflow.automation.sales_decision import (
     business_due,
     validate_sales_decision,
 )
+from workflow.automation.providers.crm_leads import phase6_lead_patch
 
 
 class Phase6SalesDecisionTests(unittest.TestCase):
@@ -108,6 +109,23 @@ class Phase6SalesDecisionTests(unittest.TestCase):
         )
         self.assertEqual(decision.next_action, "draft_reply")
         self.assertEqual(decision.followup_at, "2026-10-05T13:30:00+00:00")
+
+    def test_overdue_followup_remains_visible_without_rewriting_crm_deadline(self):
+        record = self.lead(
+            Lead_Status="Contact in Future",
+            Next_Followup_At="2026-09-25T17:00:00-04:00",
+            Normalized_Email="customer@example.com",
+            Normalized_Phone="5145550101",
+        )
+        decision = build_sales_decision(
+            record,
+            now=datetime(2026, 9, 29, 21, 0, tzinfo=timezone.utc),
+            ai_hint={"recommended_next_action": "wait"},
+        )
+        self.assertEqual(decision.followup_at, "2026-09-25T21:00:00+00:00")
+        self.assertEqual(decision.next_action, "draft_reply")
+        self.assertEqual(decision.priority, "high")
+        self.assertNotIn("Next_Followup_At", phase6_lead_patch(record, decision))
 
     def test_trusted_service_hint_is_separate_from_ai(self):
         record = self.lead(Service_Types=None)
