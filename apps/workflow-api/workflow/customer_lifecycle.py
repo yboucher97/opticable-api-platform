@@ -240,6 +240,8 @@ class MeetingRequest(BaseModel):
     def validate_window(self) -> "MeetingRequest":
         start = datetime.fromisoformat(self.start_datetime.replace("Z", "+00:00"))
         end = datetime.fromisoformat(self.end_datetime.replace("Z", "+00:00"))
+        if start.tzinfo is None or end.tzinfo is None:
+            raise ValueError("meeting timestamps must include a timezone")
         if start >= end:
             raise ValueError("end_datetime must be after start_datetime")
         return self

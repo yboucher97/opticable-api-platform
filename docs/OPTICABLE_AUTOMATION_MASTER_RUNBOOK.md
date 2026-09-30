@@ -235,7 +235,8 @@ is enabled/active again, next due 2026-09-30 around 02:43 UTC. The source unit
 and backup fixture regression have been updated on the Phase 7 branch; the
 running application checkout has not changed.
 
-Phase 7 canary preparation is described in
+The following paragraph is a historical pre-canary snapshot and is superseded
+by the controlled live-canary record below. Phase 7 canary preparation is described in
 `docs/OPTIBRAIN_PHASE7_CANARY_CONTROL.md`. Do not enable a broad CRM write flag
 or outbound send flag for the first live canary. Require exact human-approved
 record/action/content packages and single-use controls before either external
@@ -292,3 +293,32 @@ priority, `draft_reply`, with the preserved follow-up instant. Internal
 client/contact/company/site/project references and six local test-only folders
 were generated; these are not provider IDs or production document folders.
 The automation database remained Schema V2 with no queued/running/failed run.
+
+## Manual mission control and Montreal business time — 2026-09-30
+
+The persistent autonomous engineering worker is retired. Its dispatch,
+status-email and usage-email services/timers are stopped and disabled. Original
+controller state, queue, checkpoints, logs and code remain in place; a root-only
+historical archive and manifest are under
+`/var/lib/optibrain/autonomous-worker-retired-20260930T205928Z/`.
+The worker must not be restarted automatically. Manually started Codex missions
+retain full `NOPASSWD: ALL` sudo/root access. Production API, website, monitoring,
+local backup and encrypted off-host backup remain on.
+
+`America/Toronto` is the OptiBrain business/display timezone, including Montreal
+EST/EDT transitions. The VPS timezone was set with `timedatectl`; system clock,
+NTP and UTC RTC were not manually offset. Store aware instants (normally UTC),
+compare them semantically, and display business dates/times in Montreal time
+with offset/zone when ambiguous. Existing backup and off-host timers are pinned
+to 02:30 and 03:00 **UTC** respectively; this preserves their previous instants
+after the host timezone change. Phase 6 sales due dates and mail digest dates
+already use Toronto business time. The legacy Phase 5 task due date and meeting
+request timezone validation were repaired on the CRM-offset release branch.
+
+The earlier Phase 7 readiness branch is historical only and must not be merged
+or used to recreate Lead `5062683000007880001`. The CRM follow-up readback fix
+on `phase7/live-crm-offset-reconciliation` compares equivalent UTC and Montreal
+instants and fails closed on naive/malformed timestamps. The prior terminal
+manual approval remains terminal; neither the Lead update nor test email should
+be repeated. The production/main SHA remains `d2ca75d` until a guarded release
+is completed and verified.

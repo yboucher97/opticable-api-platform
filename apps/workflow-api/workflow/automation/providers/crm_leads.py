@@ -71,6 +71,13 @@ def _field_subset(record, fields):
     return value
 
 
+def _phase5_task_due(now: datetime) -> str:
+    """The legacy Phase 5 task Due_Date is a Montreal business date."""
+    if now.tzinfo is None:
+        raise ValueError("Task clock lacks timezone")
+    return (now.astimezone(TORONTO).date() + timedelta(days=1)).isoformat()
+
+
 def lead_plan(record, *, now=None):
     if not re.fullmatch(r"[0-9]{1,30}", str(record.get("id", ""))):
         raise ValueError("Invalid lead id")
@@ -224,7 +231,7 @@ def register_crm_lead_actions(engine, client, store):
                 task_id = str(tasks[0]["id"])
                 journal.record("verified", task_key, {"operation_id": task_id, "verification": True, "reconciled": True}, "phase3-crm-lead-action")
             else:
-                due = (datetime.now(timezone.utc).date() + timedelta(days=1)).isoformat()
+                due = _phase5_task_due(datetime.now(timezone.utc))
                 def verify_task(operation):
                     rows = records(client.request("zohoapis", "GET", "/crm/v8/Tasks/" + operation))
                     return len(rows) == 1 and rows[0].get("Subject") == subject and str((rows[0].get("Who_Id") or {}).get("id")) == identity

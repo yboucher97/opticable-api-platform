@@ -12,7 +12,7 @@ from workflow.automation.crm_write_boundary import (
 from workflow.automation.phase7_canary import build_canary_plan, hydrate_unique_lead
 from workflow.automation.phase7_crm_approval import CrmCanaryApprovalLedger
 from workflow.automation.phase7_crm_executor import execute_approved_canary
-from workflow.automation.providers.crm_leads import _field_subset
+from workflow.automation.providers.crm_leads import _field_subset, _phase5_task_due
 from workflow.automation.store import AutomationStore
 
 
@@ -192,6 +192,12 @@ class CrmCanaryExecutorTests(unittest.TestCase):
         self.assertEqual(self.client.writes, 0)
 
 class CrmTimestampReadbackTests(unittest.TestCase):
+    def test_legacy_task_date_uses_montreal_calendar(self):
+        self.assertEqual(_phase5_task_due(datetime.fromisoformat("2026-10-01T02:00:00+00:00")), "2026-10-01")
+        self.assertEqual(_phase5_task_due(datetime.fromisoformat("2026-12-01T03:00:00+00:00")), "2026-12-01")
+        with self.assertRaises(ValueError):
+            _phase5_task_due(datetime.fromisoformat("2026-10-01T02:00:00"))
+
     def test_equivalent_offsets_reconcile_as_instants(self):
         expected = {"Next_Followup_At": "2026-10-01T21:00:00+00:00"}
         for provider_value in ("2026-10-01T17:00:00-04:00", "2026-10-02T02:30:00+05:30"):

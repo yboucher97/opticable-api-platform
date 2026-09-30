@@ -9,6 +9,7 @@ from workflow.automation.engine import AutomationEngine
 from workflow.automation.models import AutomationEvent
 from workflow.automation.providers.lifecycle_extended import register_lifecycle_extended_actions
 from workflow.automation.store import AutomationStore
+from workflow.customer_lifecycle import MeetingRequest
 
 
 class FakeAi:
@@ -40,6 +41,18 @@ class FakeZoho:
 
 
 class LifecycleExtendedTests(unittest.TestCase):
+    def test_meeting_window_requires_unambiguous_instants(self) -> None:
+        base = {"title": "Site visit", "start_datetime": "2026-11-01T01:30:00-04:00",
+                "end_datetime": "2026-11-01T01:30:00-05:00"}
+        self.assertEqual(MeetingRequest.model_validate(base).title, "Site visit")
+        for bad in (
+            {**base, "start_datetime": "2026-11-01T01:30:00"},
+            {**base, "end_datetime": "2026-11-01T01:30:00"},
+            {**base, "end_datetime": "2026-11-01T01:29:00-04:00"},
+        ):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                MeetingRequest.model_validate(bad)
+
     def _engine(self, workflow_text: str, ai_payload: dict):
         tmp = tempfile.TemporaryDirectory()
         root = Path(tmp.name)
