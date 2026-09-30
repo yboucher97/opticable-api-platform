@@ -118,7 +118,9 @@ def validate_authority(authority, now):
             and authority["candidate"] == authority["validated_sha"] == CANDIDATE
             and authority["baseline"] == BASELINE and type(authority["ci_run_id"]) is int
             and authority["ci_run_id"] == CI_RUN and type(authority["ci_jobs"]) is list
-            and len(authority["ci_jobs"]) == len(JOBS) and set(authority["ci_jobs"]) == JOBS,
+            and len(authority["ci_jobs"]) == len(JOBS)
+            and all(type(name) is str for name in authority["ci_jobs"])
+            and set(authority["ci_jobs"]) == JOBS,
             "authority_identity")
     require(type(authority["release_id"]) is str and RELEASE_ID.fullmatch(authority["release_id"]),
             "release_id")
@@ -197,6 +199,7 @@ def validate_packet(authority, packet, now=None):
     require(type(ci["jobs"]) is list and len(ci["jobs"]) == len(JOBS), "ci_jobs")
     require(all(type(job) is dict and set(job) == {"name", "status", "conclusion"}
                 for job in ci["jobs"]), "ci_job_fields")
+    require(all(type(job["name"]) is str for job in ci["jobs"]), "ci_job_name")
     require({job["name"] for job in ci["jobs"]} == JOBS and
             all(job["status"] == "completed" and job["conclusion"] == "success"
                 for job in ci["jobs"]), "ci_jobs_failed")
@@ -206,7 +209,8 @@ def validate_packet(authority, packet, now=None):
             "artifact_changed")
     require(packet["remote_main"] == BASELINE, "main_changed")
     validate_backup(packet["baseline_backup"], BASELINE, now, "baseline")
-    require(packet["stage"] in {"prestage", "prepromotion"}, "unknown_stage")
+    require(type(packet["stage"]) is str and
+            packet["stage"] in {"prestage", "prepromotion"}, "unknown_stage")
     if packet["stage"] == "prestage":
         require(packet["production_sha"] == BASELINE and packet["candidate_backup"] is None
                 and packet["forward_recovery_result"] is None, "prestage_identity")

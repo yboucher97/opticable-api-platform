@@ -31,3 +31,7 @@ fresh backup, isolated restore, and off-host state remain unverified. These are
 administrator read-only evidence gaps, not presumed approvals. Release and
 provider actions stay disabled. A future campaign requires its own independent
 code review and human authorization before a real deployment or main promotion.
+
+The separate offline campaign and health-only verifier review is recorded in
+`docs/phase8/phase8-guarded-campaign-offline-20260930.md`. Neither has an
+installed live execution path.
