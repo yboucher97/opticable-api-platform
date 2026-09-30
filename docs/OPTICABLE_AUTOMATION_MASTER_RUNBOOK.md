@@ -1,6 +1,6 @@
 # Opticable Automation Master Runbook
 
-Last updated: 2026-09-27
+Last updated: 2026-09-30
 Authority: Git history + this runbook + machine-readable production state.
 Rule: never store secret values in Git. Record only locations, scopes, IDs that are safe to retain, and recovery procedures.
 
@@ -253,3 +253,43 @@ The backup service's sandboxed identity-switch repair was verified by a real
 timer-dispatched run, generation 20260929T184240Z. Local checksum, isolated
 Schema V2 restore, encrypted off-host upload and downloaded hash all passed;
 all 12 previous local generations were preserved. Both normal timers are active.
+
+## Phase 7 readiness audit — 2026-09-30
+
+Production checkout and remote main are
+`d2ca75d588665112d1d62329abfda23dd92d533f`, API 1.11.0. The API health
+endpoint returned OK. The root-owned Phase 7 registration manifest matches that
+SHA and remains controls-only (`business_actions_enabled: false`, no create,
+CRM, or outbound approval pin). The API publishes authenticated operator review
+and approval routes, but no business consume callback is registered. No live
+Lead create, CRM patch, customer email, Books write, or financial mutation was
+performed in this audit.
+
+The normal `optibrain-backup.timer` ran automatically on 2026-09-30 at
+02:34:07 UTC; the service completed successfully at 02:35:16 UTC. Generation
+`20260930T023407Z` has SHA-256
+`0d37bb3a08a59574d9ae0cd2678eb4379bfae079e36dc29aecf5f97f9e323172`;
+its sidecar check passed. An isolated restore drill passed source extraction,
+653 file hashes, 689 metadata entries, three critical configs, one SQLite DB,
+and DB integrity, without starting services. The 03:04 UTC encrypted off-host
+job reached `generation_verified` after independent downloaded ciphertext and
+receipt hash checks. Its durable state records the same generation and
+`download_hash_verified`, with ciphertext SHA-256
+`1dd9212765c1cfedcf86327ed541a0a32e22c0c4576dc9f4454365af4c909440`.
+The root-run backup fixture passed, including the ownership and sandbox unit
+assertions. Both backup timers are enabled and active. The preserve-existing
+drop-in remains in force; 22 local archives remain, with 49 GB filesystem free.
+No archive was pruned or remote object deleted.
+
+The focused Phase 7 suite passed: 56 tests and 17 subtests. The complete API
+suite passed in a clean worktree at the production commit: 690 tests and 706
+subtests, zero failures. A preliminary run from the live checkout failed
+historical Phase 4/5/6 campaign fixtures because those tests inspect the
+checkout's local source identity and protected untracked file; the same 96
+historical tests and 128 subtests passed in the clean worktree. Use an isolated
+clean worktree for that suite so its fixture assumptions remain valid.
+The first action proposed for human review is the exact single-record Lead
+create in `docs/OPTIBRAIN_PHASE7_FIRST_CANARY_EXECUTION_CONTROL.md`. Its
+dedupe observation from 2026-09-29 has expired and must be repeated immediately
+before approval and dispatch. A real customer Lead has not yet been selected,
+and no customer email is approved.

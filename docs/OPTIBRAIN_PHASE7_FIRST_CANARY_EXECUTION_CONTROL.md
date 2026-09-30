@@ -1,8 +1,11 @@
 # Phase 7 first Lead canary execution control
 
-Status: branch engineering. This document does not authorize a Zoho mutation or
-customer send. The deployed application remains `e55ea3f9afe24ca254f4e60bf7a8ea0cc9ffb841`
-until a separately guarded release of this change.
+Status: controls-only production preparation as of 2026-09-30. This document
+does not authorize a Zoho mutation or customer send. Production and remote main
+are `d2ca75d588665112d1d62329abfda23dd92d533f`, API 1.11.0. The
+root-owned Phase 7 manifest has `business_actions_enabled: false`; the Lead
+create, CRM patch, and outbound approval pins are all absent. Operator review
+and issuance routes exist, while their consume callbacks remain unavailable.
 
 The new Lead-create control permits one `POST /crm/v8/Leads` with exactly six
 reviewed fields, one record, `trigger: []`, and `skip_feature_execution` for
@@ -50,8 +53,8 @@ while remote main remained at the previous Phase 7 SHA. There were no business
 provider calls or DB/schema changes. This correction replaces service-user Git
 access with root-reviewed per-file source hashes in the protected manifest.
 The root deployment campaign still verifies Git SHA/ancestry before staging.
-The corrected SHA requires fresh CI and staged validation; the earlier candidate
-cannot be promoted as the final registration release.
+The corrected `d2ca75d` release completed staging and is the current
+controls-only production/remote-main release.
 
 Live read-only mailbox verification found Zoho Mail account
 `1083319000000008002` enabled, not outbound-blocked, and
@@ -91,3 +94,67 @@ After a create with an uncertain response, perform only read-only reconciliation
 never blindly retry or delete a possible record. A CRM patch reversal requires
 fresh read and a new human approval. A sent email cannot be unsent; its approval
 must be fenced and the provider message ID retained.
+
+## Exact first live-canary authorization package
+
+**Proposed first action:** create exactly one controlled test Lead in the real
+Zoho CRM tenant. The record does not yet exist; the exact six reviewed values
+and request body appear above. The recipient address must be confirmed as a
+mailbox controlled by the approving operator before any live use. The create
+request suppresses workflows and cadences. No relationship object, folder,
+Lead patch, email, Books object, or financial record is changed by this action.
+
+**Exact record/data:** one new `Leads` record with `First_Name=OptiBrain`,
+`Last_Name=Phase 7 Canary`, `Company=Opticable Internal Canary`,
+`Email=hckyan97@gmail.com`, `Lead_Status=Not Contacted`, and
+`Email_Opt_Out=false`. The CRM Lead ID is assigned by Zoho on success. The
+policy request hash above binds the exact JSON body. Internal client/contact/
+company/site/project references and six folder paths may be computed only
+after the returned Lead ID is verified; they remain provisional and make no
+provider writes.
+
+**Exact draft for a later, separately authorized send:** From
+`yboucher@opticable.ca`; To `hckyan97@gmail.com`; Subject
+`Your inquiry with Opticable`; body:
+
+```text
+Hello,
+
+Thank you for your inquiry. Could you share your requirements, the site address, and your preferred timeline?
+
+The Opticable team
+```
+
+This message is **not** authorized by approval of the Lead create. Its source
+Lead ID/version, opt-out state, verified recipient, language, exact subject and
+body hashes, and independent single-use outbound approval must be established
+after the Lead is created. A real customer Lead must likewise be selected and
+reviewed separately before any customer-facing mutation or send.
+
+**Approval and dedupe:** an authenticated Cloudflare Access human must approve
+this exact body and confirm control of the target mailbox. Recheck exact email
+in Leads and Contacts through Search and a complete bounded inventory within
+five minutes of approval and again before dispatch. Mint one approval expiring
+within one hour, pin only its ID and this request hash in the root-owned release
+manifest, and enable only the single-use Lead-create callback for the execution
+window. The broad CRM and outbound flags stay absent. Claim `consuming` and
+`dispatching` durably before the sole POST. A lost response cannot be retried.
+
+**Success evidence:** one successful POST, a numeric Zoho Lead ID, exact
+readback of the six fields, one matching Lead and zero matching Contacts after
+index reconciliation, one durable approval/audit ledger trail and no duplicate
+POST. Later CRM and outbound actions require their own journal evidence.
+Preserve the provider response ID, source version, request hash, dedupe proof,
+approval actor/expiry, and backup generation in the restricted audit package.
+The follow-on planner may then report provisional IDs, folders, qualification
+score, next action and follow-up draft without external writes.
+
+**Stop and recovery:** stop on duplicate/ambiguous identity, stale or incomplete
+inventory, unverified mailbox control, field/consent drift, missing/expired
+approval, extra queued write, unexpected provider trigger, backup failure, or
+health regression. Immediately remove the one-action execution pin after the
+attempt. On timeout or ambiguous acknowledgement, retain the durable fence and
+reconcile by read-only email/ID searches; do not POST again or delete a possible
+record. On a confirmed but unwanted Lead, propose a separately reviewed
+correction or deletion with fresh authorization. Preserve Schema V2 and use the
+documented corrected-code forward-recovery path for an application failure.

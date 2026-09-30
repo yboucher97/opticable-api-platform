@@ -1,15 +1,14 @@
 # OptiBrain Phase 7 — controlled single-Lead canary preparation
 
-Status: engineering preparation only. No real CRM mutation or customer send is
-authorized by this document. Production Phase 6 remains at
-`0ade0ec02eeea5b503dc8eba8bea9c982cbf9240`, API 1.11.0, with external
+Status: controls-only production preparation. No real CRM mutation or customer
+send is authorized by this document. Production and remote main are
+`d2ca75d588665112d1d62329abfda23dd92d533f`, API 1.11.0, with external
 business-action flags absent.
 
-Current branch validation: 656 inherited tests / 706 subtests with zero
-failures, errors or skips after the unregistered CRM executor, operator
-approval surface and outbound canary pin were added. The prior pushed branch
-commit passed both GitHub checks; the final SHA requires its own GitHub
-validation.
+Current production-commit validation in a clean worktree: 690 tests / 706
+subtests with zero failures. The focused Phase 7 suite passed 56 tests and 17
+subtests. The root-owned registration manifest enables authenticated review
+and approval routes only; all business approval pins and callbacks are absent.
 
 ## Exact one-Lead workflow
 
