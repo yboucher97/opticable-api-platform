@@ -338,7 +338,10 @@ Mail write and has no send control.
 The view distinguishes CRM fields from unconfirmed AI-site form details in the
 Lead description, shows a bounded discovery/priority/quote recommendation,
 missing site and scope details, one next action, the provider-owned follow-up,
-an unsent draft preview, and exact-version workflow evidence. An old workflow
+an unsent draft preview, and exact-version workflow evidence. A matching
+consumed outbound approval is shown as a prior send with its provider message
+ID; the view tells the operator to check the inbox before further outreach.
+An old workflow
 review is not presented as current-version evidence when the CRM version
 changes. Operator times use `America/Toronto`; durable instants remain aware/UTC.
 Overdue follow-ups remain visible and are not silently moved forward. This

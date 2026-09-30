@@ -88,6 +88,31 @@ def _history(db_path: Path, lead_id: str, version: str) -> dict:
     return {"current_version_reviewed": False, "actions": []}
 
 
+def _prior_outbound(db_path: Path, lead_id: str, email: str) -> dict | None:
+    """Read a consumed, Lead-bound send from the local approval journal."""
+    uri = "file:" + quote(str(db_path.resolve())) + "?mode=ro"
+    with closing(sqlite3.connect(uri, uri=True)) as db:
+        rows = db.execute(
+            "SELECT at,metadata_json FROM automation_audit "
+            "WHERE category='outbound_approval_v1' AND action='consumed' AND success=1 "
+            "AND json_extract(metadata_json,'$.source_id') LIKE ? "
+            "ORDER BY id DESC LIMIT 20", (f"phase7:{lead_id}:%",)).fetchall()
+    matches = []
+    for at, raw in rows:
+        evidence = json.loads(raw)
+        if (not re.fullmatch(rf"phase7:{re.escape(lead_id)}:[0-9a-f]{{64}}",
+                             str(evidence.get("source_id") or ""))
+                or str(evidence.get("recipient") or "").casefold() != email.casefold()
+                or not re.fullmatch(r"[0-9]{1,30}", str(evidence.get("provider_operation_id") or ""))):
+            continue
+        matches.append({"sent_at": _local(at),
+                        "provider_message_id": str(evidence["provider_operation_id"])})
+    if not matches:
+        return None
+    return {"latest": matches[0], "recorded_sends": len(matches),
+            "basis": "consumed human approval and provider message ID in local audit"}
+
+
 def build_sales_operator_view(client, db_path: Path, *, lead_id: str = CONTROLLED_LEAD_ID,
                               now: datetime | None = None) -> dict:
     """Three bounded CRM GETs; no approval, write, draft save or send path."""
@@ -166,19 +191,35 @@ def build_sales_operator_view(client, db_path: Path, *, lead_id: str = CONTROLLE
     else:
         next_action = "Resolve contact details before outreach"
 
+    prior_outbound = _prior_outbound(db_path, lead_id, str(record.get("Email") or ""))
+    if prior_outbound and decision.active and not overdue:
+        next_action = "Check for a reply before the scheduled follow-up"
+    next_reason = ("The CRM deadline has passed and a prior send is recorded; check the inbox before outreach."
+                   if prior_outbound and overdue else
+                   "A prior approved send is recorded; check the inbox before another request."
+                   if prior_outbound and decision.active else
+                   "The current CRM record lacks enough confirmed scope for a quote."
+                   if not ready else
+                   "The core quote inputs are present; pricing still requires human review.")
     language = decision.language if decision.language in {"en", "fr"} else form_language
     if decision.email_contactable and language == "en":
-        subject = "Re: Your inquiry with Opticable"
+        subject = ("Following up on your Opticable inquiry" if prior_outbound
+                   else "Re: Your inquiry with Opticable")
         topic = service_interest or "your project"
         place = str(record.get("City") or "your site").strip()
-        body = (f"Hello,\n\nThank you for your inquiry about {topic} in {place}. "
+        opening = (f"I’m following up on my previous note about {topic} in {place}. "
+                   if prior_outbound else f"Thank you for your inquiry about {topic} in {place}. ")
+        body = ("Hello,\n\n" + opening +
                 "To assess the right solution and whether a quote is appropriate, "
                 "could you confirm the site address, the approximate scope"
                 + (" (including camera count and coverage areas)" if service_code == "ai_loss_prevention" else "")
                 + ", and your target timeline?\n\nThe Opticable team")
     elif decision.email_contactable and language == "fr":
-        subject = "Votre demande auprès d’Opticable"
-        body = ("Bonjour,\n\nMerci pour votre demande. Pour évaluer la solution et préparer "
+        subject = ("Suivi de votre demande auprès d’Opticable" if prior_outbound
+                   else "Votre demande auprès d’Opticable")
+        opening = ("Je fais suite à mon dernier message. " if prior_outbound
+                   else "Merci pour votre demande. ")
+        body = ("Bonjour,\n\n" + opening + "Pour évaluer la solution et préparer "
                 "une soumission appropriée, pourriez-vous confirmer l’adresse du site, "
                 "la portée approximative du projet et votre échéancier?\n\nL’équipe Opticable")
     else:
@@ -209,9 +250,7 @@ def build_sales_operator_view(client, db_path: Path, *, lead_id: str = CONTROLLE
                           if service_interest and not ready else
                           "Project details require human review."},
         "missing_information": missing,
-        "next_action": {"primary": next_action,
-                        "reason": "The current CRM record lacks enough confirmed scope for a quote."
-                        if not ready else "The core quote inputs are present; pricing still requires human review."},
+        "next_action": {"primary": next_action, "reason": next_reason},
         "quote_readiness": {"status": quote,
                             "reason": "Confirm site, scope and timeline before pricing."
                             if not ready else "Prepare a human-reviewed quote; no automatic send."},
@@ -223,6 +262,8 @@ def build_sales_operator_view(client, db_path: Path, *, lead_id: str = CONTROLLE
                                "Montreal business-day recommendation"},
         "draft": {"label": "DRAFT — NOT SENT", "subject": subject, "body": body,
                   "recipient": record.get("Email"),
+                  "use_condition": "Check the inbox for a reply and wait until the CRM follow-up deadline."
+                                   if prior_outbound and not overdue else "Check Sent and inbox before use.",
                   "language_basis": "AI website form; verify before use" if decision.language == "unknown" and form_language else
                                     "CRM language" if language else "Language needs review"},
         "evidence": {"read_at": _local(clock.isoformat()), "created_at": _local(record.get("Created_Time")),
@@ -230,7 +271,7 @@ def build_sales_operator_view(client, db_path: Path, *, lead_id: str = CONTROLLE
                      "source_version": proof.source_version,
                      "crm_age_hours": round((clock - modified).total_seconds() / 3600, 1),
                      "decision_hash": decision.decision_hash,
-                     "audit": audit},
+                     "audit": audit, "prior_outbound": prior_outbound},
     }
 
 
@@ -264,9 +305,10 @@ h1{{font-size:1.5rem;margin-bottom:.2rem}}h2{{font-size:1rem;margin:.2rem 0 .7re
 <p><strong>Project:</strong> {h(view['known']['project_summary'])}</p>
 <p class="note">Inquiry ID: {h(view['source']['inquiry_id'])}</p></section>
 <section class="card"><h2>Missing before quote</h2><ul>{items}</ul></section></div>
-<section class="card"><h2>{h(draft['label'])}</h2>{draft_content}<p class="note">To: {h(draft['recipient'])} · Language: {h(draft['language_basis'])}. Preview only; no Mail draft or send.</p></section>
+<section class="card"><h2>{h(draft['label'])}</h2>{draft_content}<p class="note">To: {h(draft['recipient'])} · Language: {h(draft['language_basis'])}. {h(draft['use_condition'])} Preview only; no Mail draft or send.</p></section>
 <section class="card"><h2>Evidence</h2><p>Exact-email dedupe: {h(view['dedupe']['status'])} · CRM status: {h(view['lead']['status'])}</p>
 <p>CRM created {h(view['evidence']['created_at'])}; modified {h(view['evidence']['modified_at'])} ({h(view['evidence']['crm_age_hours'])} hours before this read).</p>
+<p>Prior outbound: {('Recorded sent ' + h(view['evidence']['prior_outbound']['latest']['sent_at']) + ' · message ' + h(view['evidence']['prior_outbound']['latest']['provider_message_id']) + ' · ' + h(view['evidence']['prior_outbound']['basis'])) if view['evidence']['prior_outbound'] else 'No Lead-bound send found in local audit; check Mail before outreach.'}</p>
 <p>Reviewed event: {h(audit.get('review_event_id')) if audit['current_version_reviewed'] else 'No exact-version review'}</p>
-<p>Workflow: {actions}</p><p class="note">Internal refs: {h(view['lead']['client_ref'])}, {h(view['lead']['project_ref'])}; these are not Zoho IDs. Source and decision hashes remain in the audit record.</p></section>
+<p>Workflow: {actions}</p><p class="note">Internal refs: {h(view['lead']['client_ref'])}, {h(view['lead']['project_ref'])}; these are not Zoho IDs.</p></section>
 </body></html>"""

@@ -155,6 +155,34 @@ class SalesOperatorViewTests(unittest.TestCase):
         self.crm.record["Modified_Time"] = "2026-09-29T16:51:31-04:00"
         self.assertFalse(self.view()["evidence"]["audit"]["current_version_reviewed"])
 
+    def test_prior_consumed_send_changes_next_action_and_followup_preview(self):
+        self.store.audit(category="outbound_approval_v1", action="consumed",
+                         actor="automation-engine", success=True,
+                         metadata={"source_id": f"phase7:{CONTROLLED_LEAD_ID}:" + "a" * 64,
+                                   "recipient": self.crm.record["Email"],
+                                   "provider_operation_id": "1790714949014155100"})
+        view = self.view()
+        self.assertEqual(view["next_action"]["primary"],
+                         "Check for a reply before the scheduled follow-up")
+        self.assertIn("prior approved send", view["next_action"]["reason"])
+        self.assertEqual(view["evidence"]["prior_outbound"]["latest"]["provider_message_id"],
+                         "1790714949014155100")
+        self.assertIn("following up", view["draft"]["body"].lower())
+        self.assertIn("wait until the CRM follow-up deadline", view["draft"]["use_condition"])
+        self.assertIn("1790714949014155100", render_sales_operator_view(view))
+        overdue = self.view(datetime.fromisoformat("2026-10-01T17:01:00-04:00"))
+        self.assertEqual(overdue["next_action"]["primary"], "Review overdue follow-up now")
+
+    def test_other_recipient_does_not_claim_a_prior_send(self):
+        self.store.audit(category="outbound_approval_v1", action="consumed",
+                         actor="automation-engine", success=True,
+                         metadata={"source_id": f"phase7:{CONTROLLED_LEAD_ID}:" + "a" * 64,
+                                   "recipient": "other@example.com",
+                                   "provider_operation_id": "1790714949014155100"})
+        view = self.view()
+        self.assertIsNone(view["evidence"]["prior_outbound"])
+        self.assertIn("Check Sent and inbox", view["draft"]["use_condition"])
+
     def test_route_requires_human_and_is_read_only(self):
         app = FastAPI()
         install_phase7_canary_routes(
