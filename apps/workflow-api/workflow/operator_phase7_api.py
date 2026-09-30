@@ -10,11 +10,14 @@ from datetime import datetime, timedelta, timezone
 import re
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from .automation.phase7_canary import build_canary_plan, build_review_package, hydrate_unique_lead
 from .automation.phase7_crm_approval import CrmCanaryApprovalLedger
+from .automation.sales_operator_view import (
+    CONTROLLED_LEAD_ID, build_sales_operator_view, render_sales_operator_view,
+)
 from .automation.outbound_approval import OutboundApproval, OutboundApprovalLedger
 from .operator_access import AccessIdentityVerifier
 
@@ -90,6 +93,23 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         return result({"operator": {"subject": person.subject},
                        "plan": plan.model_dump(), "review": review.model_dump(),
                        "crm_mutation_enabled": False, "customer_send_enabled": False})
+
+    @app.get("/v1/operator/phase8/sales-view/{lead_id}", tags=["operator-phase8"],
+             response_class=HTMLResponse)
+    async def sales_view(lead_id: str,
+                         cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
+        identity(cf_access_jwt_assertion)
+        if lead_id != CONTROLLED_LEAD_ID:
+            raise HTTPException(status_code=404, detail="Controlled sales view not found")
+        try:
+            view = build_sales_operator_view(client, store.db_path, lead_id=lead_id, now=now())
+        except (ValueError, LookupError) as exc:
+            raise HTTPException(status_code=409, detail="Fresh Lead identity or evidence needs review") from exc
+        return HTMLResponse(render_sales_operator_view(view), headers={
+            "Cache-Control": "private, no-store, max-age=0", "Pragma": "no-cache",
+            "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
+        })
 
     @app.post("/v1/operator/phase7/crm-approvals", tags=["operator-phase7"],
               dependencies=[Depends(guard)])

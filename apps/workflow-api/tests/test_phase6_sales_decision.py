@@ -7,6 +7,7 @@ from workflow.automation.sales_decision import (
     business_due,
     validate_sales_decision,
 )
+from workflow.automation.providers.crm_leads import phase6_lead_patch
 
 
 class Phase6SalesDecisionTests(unittest.TestCase):
@@ -109,6 +110,23 @@ class Phase6SalesDecisionTests(unittest.TestCase):
         self.assertEqual(decision.next_action, "draft_reply")
         self.assertEqual(decision.followup_at, "2026-10-05T13:30:00+00:00")
 
+    def test_overdue_followup_remains_visible_without_rewriting_crm_deadline(self):
+        record = self.lead(
+            Lead_Status="Contact in Future",
+            Next_Followup_At="2026-09-25T17:00:00-04:00",
+            Normalized_Email="customer@example.com",
+            Normalized_Phone="5145550101",
+        )
+        decision = build_sales_decision(
+            record,
+            now=datetime(2026, 9, 29, 21, 0, tzinfo=timezone.utc),
+            ai_hint={"recommended_next_action": "wait"},
+        )
+        self.assertEqual(decision.followup_at, "2026-09-25T21:00:00+00:00")
+        self.assertEqual(decision.next_action, "draft_reply")
+        self.assertEqual(decision.priority, "high")
+        self.assertNotIn("Next_Followup_At", phase6_lead_patch(record, decision))
+
     def test_trusted_service_hint_is_separate_from_ai(self):
         record = self.lead(Service_Types=None)
         ai_only = build_sales_decision(
@@ -184,6 +202,22 @@ class Phase6SalesDecisionTests(unittest.TestCase):
             ["service_type", "contact_method", "location"],
         )
         self.assertEqual(decision.next_action, "review")
+
+    def test_unknown_language_is_explicit_gap_for_email_followup(self):
+        decision = build_sales_decision(
+            self.lead(Language=None, Preferred_Language=None),
+            now=datetime(2026, 9, 28, 14, tzinfo=timezone.utc),
+        )
+        self.assertIn("preferred_language", decision.missing_information)
+        self.assertEqual(decision.language, "unknown")
+        self.assertEqual(decision.next_action, "draft_reply")
+        self.assertEqual(validate_sales_decision(decision), decision)
+
+        opted_out = build_sales_decision(
+            self.lead(Email_Opt_Out=True, Language=None, Preferred_Language=None),
+            now=datetime(2026, 9, 28, 14, tzinfo=timezone.utc),
+        )
+        self.assertNotIn("preferred_language", opted_out.missing_information)
 
     def test_hash_is_stable_for_irrelevant_ai_keys(self):
         now = datetime(2026, 9, 28, 14, tzinfo=timezone.utc)

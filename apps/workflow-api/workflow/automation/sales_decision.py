@@ -203,6 +203,7 @@ def _safe_action(
     email_contactable: bool,
     phone_contactable: bool,
     explicit_future: bool,
+    overdue_followup: bool,
     hint: NextAction | None,
 ) -> NextAction:
     if explicit_future:
@@ -216,7 +217,7 @@ def _safe_action(
     if status == "Pre-Qualified":
         allowed.update({"quote_review", "site_visit"})
 
-    if hint in allowed:
+    if hint in allowed and not (overdue_followup and hint == "wait"):
         return hint
     if status == "Pre-Qualified":
         return "quote_review"
@@ -309,11 +310,12 @@ def build_sales_decision(
             email_contactable=email_contactable,
             phone_contactable=phone_contactable,
             explicit_future=explicit_future,
+            overdue_followup=bool(existing_followup and existing_followup <= clock),
             hint=_safe_hint_action(hint),
         )
-        if future_followup:
-            # An existing explicit future timestamp is provider-owned state.
-            # Preserve it instead of shifting the SLA on every notification.
+        if existing_followup is not None:
+            # The provider owns an existing deadline, including an overdue one.
+            # Moving an overdue deadline forward would hide neglected follow-up.
             followup = existing_followup
         else:
             cadence = {
@@ -332,6 +334,8 @@ def build_sales_decision(
         missing.append("contact_method")
     if not str(record.get("City") or record.get("State") or "").strip():
         missing.append("location")
+    if active and email_contactable and language == "unknown":
+        missing.append("preferred_language")
 
     safe = {
         "lead_id": identity,

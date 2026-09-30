@@ -320,5 +320,27 @@ or used to recreate Lead `5062683000007880001`. The CRM follow-up readback fix
 on `phase7/live-crm-offset-reconciliation` compares equivalent UTC and Montreal
 instants and fails closed on naive/malformed timestamps. The prior terminal
 manual approval remains terminal; neither the Lead update nor test email should
-be repeated. The production/main SHA remains `d2ca75d` until a guarded release
-is completed and verified.
+be repeated. The guarded CRM-offset release moved production/main to
+`3da4e9798a0cbd5ba4005fc8bda359eb5e483b23`; the release and its recovered
+first staging failure are recorded in
+`/var/lib/optibrain/phase7/20260930-crm-offset-release/RELEASE_RESULT.md`.
+
+## Phase 8 controlled Lead sales view — 2026-09-30
+
+The authenticated, read-only HTML view is
+`GET /v1/operator/phase8/sales-view/5062683000007880001` at
+`optibrain.opticable.ca`. It uses the existing verified human Cloudflare Access
+identity boundary and is limited to the known controlled Lead. Each request
+performs a bounded Lead GET, exact-email dedupe search, and same-version full
+Lead GET. Local workflow history is opened SQLite read-only. It makes no CRM or
+Mail write and has no send control.
+
+The view distinguishes CRM fields from unconfirmed AI-site form details in the
+Lead description, shows a bounded discovery/priority/quote recommendation,
+missing site and scope details, one next action, the provider-owned follow-up,
+an unsent draft preview, and exact-version workflow evidence. An old workflow
+review is not presented as current-version evidence when the CRM version
+changes. Operator times use `America/Toronto`; durable instants remain aware/UTC.
+Overdue follow-ups remain visible and are not silently moved forward. This
+view proves one controlled Lead scenario; it does not prove a pipeline scan,
+live Mail draft, automated follow-up task, or quote creation.
