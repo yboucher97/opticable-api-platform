@@ -20,6 +20,7 @@ from .automation.sales_operator_view import (
 )
 from .automation.outbound_approval import OutboundApproval, OutboundApprovalLedger
 from .operator_access import AccessIdentityVerifier
+from .zoho_gateway import ZohoGatewayError
 
 
 class IssueCrmCanaryRequest(BaseModel):
@@ -102,9 +103,13 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         if lead_id != CONTROLLED_LEAD_ID:
             raise HTTPException(status_code=404, detail="Controlled sales view not found")
         try:
-            view = build_sales_operator_view(client, store.db_path, lead_id=lead_id, now=now())
+            view = build_sales_operator_view(client, store.db_path,
+                                             account_id=account_id, from_address=from_address,
+                                             lead_id=lead_id, now=now())
         except (ValueError, LookupError) as exc:
             raise HTTPException(status_code=409, detail="Fresh Lead identity or evidence needs review") from exc
+        except ZohoGatewayError as exc:
+            raise HTTPException(status_code=503, detail="Fresh provider evidence unavailable") from exc
         return HTMLResponse(render_sales_operator_view(view), headers={
             "Cache-Control": "private, no-store, max-age=0", "Pragma": "no-cache",
             "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",

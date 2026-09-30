@@ -1,5 +1,5 @@
 """Focused proof of the controlled read-only operator sales view."""
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 import sqlite3
@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 from workflow.automation.sales_operator_view import (
     CONTROLLED_LEAD_ID, build_sales_operator_view, render_sales_operator_view,
 )
+from workflow.automation.followup_mail import followup_status
 from workflow.automation.store import AutomationStore
 from workflow.operator_phase7_api import install_phase7_canary_routes
 
@@ -19,6 +20,9 @@ from workflow.operator_phase7_api import install_phase7_canary_routes
 class FakeCrm:
     def __init__(self):
         self.calls = []
+        self.inbound = []
+        self.inbound_body = {}
+        self.inbound_headers = {}
         self.record = {
             "id": CONTROLLED_LEAD_ID, "Full_Name": "OptiBrain Phase 7 Canary",
             "Company": "Opticable Internal Canary", "Email": "hckyan97@gmail.com",
@@ -32,7 +36,36 @@ class FakeCrm:
 
     def request(self, provider, method, path, **kwargs):
         self.calls.append((provider, method, path))
-        assert provider == "zohoapis" and method == "GET"
+        assert method == "GET"
+        if provider == "mail":
+            if path.endswith("/messages/search"):
+                return {"ok": True, "status": 200, "data": {"status": {"code": 200},
+                                                                "data": list(self.inbound)}}
+            message_id = path.split("/")[-2]
+            suffix = path.rsplit("/", 1)[-1]
+            if message_id == "1790714949014155100":
+                if suffix == "details":
+                    data = {"messageId": message_id, "folderId": "1083319000000008022",
+                            "fromAddress": "yboucher@opticable.ca",
+                            "toAddress": "&lt;hckyan97@gmail.com&gt;",
+                            "subject": "Your inquiry with Opticable",
+                            "receivedTime": "1790714949009", "sentDateInGMT": "1790740148000"}
+                else:
+                    data = {"headerContent": {"Message-ID": ["<controlled@opticable.ca>"],
+                                              "Date": ["Tue, 29 Sep 2026 16:49:08 -0400"]}}
+            elif message_id in self.inbound_headers:
+                row = next(item for item in self.inbound if str(item["messageId"]) == message_id)
+                if suffix == "details":
+                    data = dict(row)
+                    data["toAddress"] = "yboucher@opticable.ca"
+                elif suffix == "header":
+                    data = {"headerContent": self.inbound_headers[message_id]}
+                else:
+                    data = {"content": {"content": self.inbound_body[message_id]}}
+            else:
+                raise AssertionError("Unreviewed Mail path")
+            return {"ok": True, "status": 200, "data": {"status": {"code": 200}, "data": data}}
+        assert provider == "zohoapis"
         if path == f"/crm/v8/Leads/{CONTROLLED_LEAD_ID}":
             return {"ok": True, "status": 200, "data": {"data": [dict(self.record)]}}
         if path == "/crm/v8/Leads/search":
@@ -56,13 +89,42 @@ class SalesOperatorViewTests(unittest.TestCase):
         self.store = AutomationStore(Path(tmp.name) / "automation.db")
         self.crm = FakeCrm()
         self.clock = datetime.fromisoformat("2026-09-30T17:00:00-04:00")
+        self.record_outbound()
+
+    def record_outbound(self, recipient="hckyan97@gmail.com"):
+        self.store.audit(category="outbound_approval_v1", action="consumed",
+                         actor="automation-engine", success=True,
+                         metadata={"source_id": f"phase7:{CONTROLLED_LEAD_ID}:" + "a" * 64,
+                                   "source_type": "lead", "action_type": "send_new_email",
+                                   "account_id": "1083319000000008002",
+                                   "from_address": "yboucher@opticable.ca",
+                                   "recipient": recipient,
+                                   "provider_operation_id": "1790714949014155100"})
+        with sqlite3.connect(self.store.db_path) as db:
+            db.execute("UPDATE automation_audit SET at=? WHERE category='outbound_approval_v1'",
+                       ("2026-09-29T20:49:09.135723Z",))
 
     def view(self, clock=None):
-        return build_sales_operator_view(self.crm, self.store.db_path, now=clock or self.clock)
+        return build_sales_operator_view(self.crm, self.store.db_path,
+                                         account_id="1083319000000008002",
+                                         from_address="yboucher@opticable.ca",
+                                         now=clock or self.clock)
+
+    def add_reply(self, *, linked=True, body="Site address: 123 Test St\nCamera count: 12\nTimeline: November"):
+        received = datetime.fromisoformat("2026-09-30T16:00:00-04:00")
+        message_id = "1790800000000000001"
+        self.crm.inbound = [{"messageId": message_id, "folderId": "1083319000000008003",
+                             "fromAddress": "hckyan97@gmail.com", "subject": "Re: Your inquiry with Opticable",
+                             "receivedTime": str(int(received.timestamp() * 1000)),
+                             "summary": body[:100]}]
+        self.crm.inbound_headers[message_id] = {
+            "Message-ID": ["<reply@example.com>"],
+            "In-Reply-To": ["<controlled@opticable.ca>" if linked else "<other@example.com>"]}
+        self.crm.inbound_body[message_id] = body
 
     def test_realistic_inquiry_produces_useful_unsent_view(self):
         view = self.view()
-        self.assertEqual(len(self.crm.calls), 3)
+        self.assertEqual(len(self.crm.calls), 6)
         self.assertTrue(all(method == "GET" for _, method, _ in self.crm.calls))
         self.assertEqual(view["source"]["label"], "AI website")
         self.assertTrue(view["source"]["description_agrees"])
@@ -72,9 +134,12 @@ class SalesOperatorViewTests(unittest.TestCase):
         self.assertIn("Camera count and coverage areas", view["missing_information"])
         self.assertIn("Confirm preferred reply language", " ".join(view["missing_information"]))
         self.assertEqual(view["follow_up"]["current"], "Oct 1, 2026 5:00 PM EDT")
+        self.assertEqual(view["follow_up"]["status"], "WAIT")
+        self.assertEqual(view["evidence"]["mail"]["reply_state"], "NO_REPLY_YET")
+        self.assertTrue(view["evidence"]["mail"]["last_outbound"]["provider_sent_date_disagrees"])
         self.assertFalse(view["follow_up"]["overdue"])
         self.assertEqual(view["draft"]["label"], "DRAFT — NOT SENT")
-        self.assertIn("camera count", view["draft"]["body"])
+        self.assertIsNone(view["draft"]["body"])
         self.assertFalse(view["evidence"]["audit"]["current_version_reviewed"])
 
     def test_exact_email_duplicate_fails_closed(self):
@@ -99,15 +164,16 @@ class SalesOperatorViewTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "changed"):
             self.view()
 
-    def test_est_and_dst_fallback_overdue_use_instants(self):
+    def test_est_and_dst_fallback_due_use_instants(self):
         self.crm.record["Next_Followup_At"] = "2026-11-01T01:30:00-04:00"
-        self.assertFalse(self.view(datetime.fromisoformat("2026-11-01T01:15:00-04:00"))["follow_up"]["overdue"])
+        self.assertEqual(self.view(datetime.fromisoformat("2026-11-01T01:15:00-04:00"))["follow_up"]["status"], "WAIT")
         # Same wall-clock hour, different offset: this is after the EDT deadline.
         after = self.view(datetime.fromisoformat("2026-11-01T01:15:00-05:00"))
-        self.assertTrue(after["follow_up"]["overdue"])
+        self.assertEqual(after["follow_up"]["status"], "DUE")
         self.assertEqual(after["follow_up"]["current"], "Nov 1, 2026 1:30 AM EDT")
         self.crm.record["Next_Followup_At"] = "2026-12-01T17:00:00-05:00"
-        self.assertTrue(self.view(datetime.fromisoformat("2026-12-01T17:01:00-05:00"))["follow_up"]["overdue"])
+        self.assertEqual(self.view(datetime.fromisoformat("2026-12-01T17:01:00-05:00"))["follow_up"]["status"], "DUE")
+        self.assertEqual(self.view(datetime.fromisoformat("2026-12-02T17:01:00-05:00"))["follow_up"]["status"], "OVERDUE")
         self.assertEqual(self.view(datetime.fromisoformat("2026-12-01T16:59:00-05:00"))["follow_up"]["current"], "Dec 1, 2026 5:00 PM EST")
 
     def test_malformed_or_naive_followup_fails_closed(self):
@@ -155,39 +221,87 @@ class SalesOperatorViewTests(unittest.TestCase):
         self.crm.record["Modified_Time"] = "2026-09-29T16:51:31-04:00"
         self.assertFalse(self.view()["evidence"]["audit"]["current_version_reviewed"])
 
-    def test_prior_consumed_send_changes_next_action_and_followup_preview(self):
-        self.store.audit(category="outbound_approval_v1", action="consumed",
-                         actor="automation-engine", success=True,
-                         metadata={"source_id": f"phase7:{CONTROLLED_LEAD_ID}:" + "a" * 64,
-                                   "recipient": self.crm.record["Email"],
-                                   "provider_operation_id": "1790714949014155100"})
+    def test_prior_consumed_send_prevents_early_followup(self):
         view = self.view()
         self.assertEqual(view["next_action"]["primary"],
-                         "Check for a reply before the scheduled follow-up")
-        self.assertIn("prior approved send", view["next_action"]["reason"])
+                         "Wait until the scheduled follow-up; monitor for a reply")
         self.assertEqual(view["evidence"]["prior_outbound"]["latest"]["provider_message_id"],
                          "1790714949014155100")
-        self.assertIn("following up", view["draft"]["body"].lower())
-        self.assertIn("wait until the CRM follow-up deadline", view["draft"]["use_condition"])
+        self.assertIsNone(view["draft"]["body"])
         self.assertIn("1790714949014155100", render_sales_operator_view(view))
-        overdue = self.view(datetime.fromisoformat("2026-10-01T17:01:00-04:00"))
-        self.assertEqual(overdue["next_action"]["primary"], "Review overdue follow-up now")
+        due = self.view(datetime.fromisoformat("2026-10-01T17:01:00-04:00"))
+        self.assertEqual(due["follow_up"]["status"], "DUE")
+        self.assertIn("following up", due["draft"]["body"].lower())
 
     def test_other_recipient_does_not_claim_a_prior_send(self):
-        self.store.audit(category="outbound_approval_v1", action="consumed",
-                         actor="automation-engine", success=True,
-                         metadata={"source_id": f"phase7:{CONTROLLED_LEAD_ID}:" + "a" * 64,
-                                   "recipient": "other@example.com",
-                                   "provider_operation_id": "1790714949014155100"})
+        with sqlite3.connect(self.store.db_path) as db:
+            db.execute("DELETE FROM automation_audit WHERE category='outbound_approval_v1'")
+        self.record_outbound(recipient="other@example.com")
         view = self.view()
         self.assertIsNone(view["evidence"]["prior_outbound"])
-        self.assertIn("Check Sent and inbox", view["draft"]["use_condition"])
+        self.assertEqual(view["follow_up"]["status"], "AMBIGUOUS")
+        self.assertIsNone(view["draft"]["body"])
+
+    def test_linked_reply_suppresses_chase_and_updates_provisional_missing(self):
+        self.add_reply()
+        view = self.view(datetime.fromisoformat("2026-10-02T18:00:00-04:00"))
+        self.assertEqual(view["evidence"]["mail"]["reply_state"], "REPLIED")
+        self.assertEqual(view["follow_up"]["status"], "REPLIED — REVIEW RESPONSE")
+        self.assertIsNone(view["draft"]["body"])
+        self.assertIn("Verify site address from reply", view["missing_information"])
+        self.assertIn("Camera count: 12", " ".join(view["new_from_reply"]))
+        self.assertIn("Review the customer reply", view["next_action"]["primary"])
+
+    def test_unrelated_incoming_same_sender_is_ambiguous(self):
+        self.add_reply(linked=False)
+        view = self.view(datetime.fromisoformat("2026-10-02T18:00:00-04:00"))
+        self.assertEqual(view["follow_up"]["status"], "AMBIGUOUS")
+        self.assertIsNone(view["draft"]["body"])
+
+    def test_inbound_details_time_drift_is_ambiguous(self):
+        self.add_reply()
+        original = self.crm.request
+        def drift(provider, method, path, **kwargs):
+            value = original(provider, method, path, **kwargs)
+            if provider == "mail" and path.endswith("1790800000000000001/details"):
+                value["data"]["data"]["receivedTime"] = "1790000000000"
+            return value
+        self.crm.request = drift
+        view = self.view(datetime.fromisoformat("2026-10-02T18:00:00-04:00"))
+        self.assertEqual(view["follow_up"]["status"], "AMBIGUOUS")
+        self.assertIsNone(view["draft"]["body"])
+
+    def test_mail_search_failure_fails_closed(self):
+        original = self.crm.request
+        def failed(provider, method, path, **kwargs):
+            if provider == "mail" and path.endswith("/messages/search"):
+                return {"ok": False, "status": 502, "data": {}}
+            return original(provider, method, path, **kwargs)
+        self.crm.request = failed
+        with self.assertRaisesRegex(ValueError, "Mail read failed"):
+            self.view()
+
+    def test_recent_send_after_deadline_waits_before_another_outreach(self):
+        mail = {"reply_state": "NO_REPLY_YET",
+                "last_outbound": {"sent_at": "2026-10-01T20:30:00+00:00"}}
+        deadline = datetime.fromisoformat("2026-10-01T21:00:00+00:00")
+        self.assertEqual(followup_status(mail, deadline=deadline,
+            now=datetime.fromisoformat("2026-10-01T22:00:00+00:00"),
+            crm_modified=datetime.fromisoformat("2026-09-29T20:50:31+00:00"), active=True), "WAIT")
+
+    def test_recent_crm_activity_prevents_neglected_label(self):
+        mail = {"reply_state": "NO_REPLY_YET",
+                "last_outbound": {"sent_at": "2026-09-29T20:49:09+00:00"}}
+        deadline = datetime.fromisoformat("2026-10-01T21:00:00+00:00")
+        self.assertEqual(followup_status(mail, deadline=deadline,
+            now=datetime.fromisoformat("2026-10-03T21:00:00+00:00"),
+            crm_modified=datetime.fromisoformat("2026-10-03T20:00:00+00:00"), active=True), "DUE")
 
     def test_route_requires_human_and_is_read_only(self):
         app = FastAPI()
         install_phase7_canary_routes(
             app, verifier=Identity(), client=self.crm, store=self.store,
-            account_id="1234567890", from_address="yboucher@opticable.ca",
+            account_id="1083319000000008002", from_address="yboucher@opticable.ca",
             allowed_origin="https://optibrain.opticable.ca", clock=lambda: self.clock)
         client = TestClient(app)
         path=f"/v1/operator/phase8/sales-view/{CONTROLLED_LEAD_ID}"

@@ -347,3 +347,23 @@ changes. Operator times use `America/Toronto`; durable instants remain aware/UTC
 Overdue follow-ups remain visible and are not silently moved forward. This
 view proves one controlled Lead scenario; it does not prove a pipeline scan,
 live Mail draft, automated follow-up task, or quote creation.
+
+## Phase 8 inbox-aware follow-up — 2026-09-30
+
+The same authenticated sales view now reads the known Sent message directly
+from Zoho Mail and performs a bounded exact-sender search for inbound messages,
+including Spam and Trash. A reply is linked only when its headers reference the
+known outbound Internet Message-ID. Unlinked incoming mail, incomplete search,
+or conflicting identity is shown as ambiguous and suppresses outreach advice.
+At the Sep 30, 2026 6:08 PM EDT read, the controlled mailbox had no matching
+inbound reply after message
+`1790714949014155100`; the live state is WAIT until the existing CRM deadline,
+Oct 1, 2026 at 5:00 PM EDT. No follow-up draft is shown while waiting.
+
+The sent message's Zoho `sentDateInGMT` disagrees with its Date header and
+receipt timestamp; the latter two agree within seconds and anchor the displayed
+instant. All business times are displayed in `America/Toronto`. A due/overdue
+recommendation also checks the last send, reply state, Lead status, and recent
+CRM modification. Reply excerpts and labelled facts are advisory and require
+operator verification before any CRM update or quote. This route performs GETs
+and read-only local audit queries; it has no send or provider-write control.

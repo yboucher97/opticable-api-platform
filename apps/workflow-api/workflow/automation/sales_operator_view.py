@@ -12,6 +12,7 @@ from urllib.parse import quote
 from zoneinfo import ZoneInfo
 
 from .phase7_canary import build_canary_plan, hydrate_unique_lead
+from .followup_mail import followup_status, read_controlled_mail
 from .providers.crm_leads import _utc_iso, records
 from .sales_decision import build_sales_decision
 
@@ -103,19 +104,25 @@ def _prior_outbound(db_path: Path, lead_id: str, email: str) -> dict | None:
         if (not re.fullmatch(rf"phase7:{re.escape(lead_id)}:[0-9a-f]{{64}}",
                              str(evidence.get("source_id") or ""))
                 or str(evidence.get("recipient") or "").casefold() != email.casefold()
+                or evidence.get("source_type") != "lead"
+                or evidence.get("action_type") != "send_new_email"
+                or not re.fullmatch(r"[0-9]{1,30}", str(evidence.get("account_id") or ""))
                 or not re.fullmatch(r"[0-9]{1,30}", str(evidence.get("provider_operation_id") or ""))):
             continue
-        matches.append({"sent_at": _local(at),
-                        "provider_message_id": str(evidence["provider_operation_id"])})
+        matches.append({"sent_at": _local(at), "sent_at_iso": at,
+                        "provider_message_id": str(evidence["provider_operation_id"]),
+                        "account_id": str(evidence["account_id"]),
+                        "from_address": str(evidence.get("from_address") or "")})
     if not matches:
         return None
     return {"latest": matches[0], "recorded_sends": len(matches),
             "basis": "consumed human approval and provider message ID in local audit"}
 
 
-def build_sales_operator_view(client, db_path: Path, *, lead_id: str = CONTROLLED_LEAD_ID,
+def build_sales_operator_view(client, db_path: Path, *, account_id: str, from_address: str,
+                              lead_id: str = CONTROLLED_LEAD_ID,
                               now: datetime | None = None) -> dict:
-    """Three bounded CRM GETs; no approval, write, draft save or send path."""
+    """Bounded CRM and Mail GETs; no approval, write, draft save or send path."""
     if lead_id != CONTROLLED_LEAD_ID:
         raise ValueError("Sales view is limited to the controlled Lead")
     clock = now or datetime.now(timezone.utc)
@@ -154,7 +161,12 @@ def build_sales_operator_view(client, db_path: Path, *, lead_id: str = CONTROLLE
     camera_context = inquiry.get("existing cameras") if source_agrees else None
     project_summary = inquiry.get("project") if source_agrees else None
     current_due = _aware(record["Next_Followup_At"]) if record.get("Next_Followup_At") else None
-    overdue = bool(current_due and current_due <= clock)
+    prior_outbound = _prior_outbound(db_path, lead_id, str(record.get("Email") or ""))
+    mail = read_controlled_mail(client, account_id=account_id, from_address=from_address,
+                                recipient=str(record.get("Email") or ""),
+                                prior_outbound=prior_outbound, now=clock)
+    followup = followup_status(mail, deadline=current_due, now=clock,
+                               crm_modified=modified, active=decision.active)
 
     missing = []
     if not record.get("Service_Types"):
@@ -171,38 +183,34 @@ def build_sales_operator_view(client, db_path: Path, *, lead_id: str = CONTROLLE
         missing.append("Preferred reply language")
     elif decision.language == "unknown":
         missing.append("Confirm preferred reply language (form suggests " + form_language.upper() + ")")
+    for learned in mail["new_information"]:
+        label = learned.split(":", 1)[0]
+        old = {"Service": "Confirm service requirements", "Site address": "Site street address",
+               "Camera count": "Camera count and coverage areas", "Timeline": "Target timeline"}.get(label)
+        if old in missing:
+            missing[missing.index(old)] = "Verify " + label.casefold() + " from reply"
 
     ready = bool(decision.active and record.get("Service_Types")
                  and record.get("Street") and not any("scope" in x.lower() or "camera" in x.lower()
                                                        or "timeline" in x.lower() for x in missing))
     quote = "READY" if ready else "NEEDS INFORMATION"
-    priority = "High" if overdue and decision.active else {"urgent": "High", "high": "High",
+    priority = "High" if followup == "OVERDUE" and decision.active else {"urgent": "High", "high": "High",
                 "normal": "Medium", "low": "Low"}[decision.priority]
-    if not decision.active:
-        next_action = "Review Lead status before further action"
-    elif overdue:
-        next_action = "Review overdue follow-up now"
-    elif ready:
-        next_action = "Prepare a quote for human review"
-    elif decision.email_contactable:
-        next_action = "Ask for project details before quoting"
-    elif decision.contactable:
-        next_action = "Call to clarify project requirements"
+    if followup == "WAIT":
+        next_action = "Wait until the scheduled follow-up; monitor for a reply"
+        next_reason = "The known email was sent and the CRM deadline has not matured."
+    elif followup == "REPLIED — REVIEW RESPONSE":
+        next_action = "Review the customer reply and confirm new project details"
+        next_reason = "A linked inbound reply exists; do not send a generic follow-up."
+    elif followup in {"DUE", "OVERDUE"}:
+        next_action = "Review inbox, then follow up on missing project details"
+        next_reason = "The approved prior send has no linked reply and the follow-up is due."
     else:
-        next_action = "Resolve contact details before outreach"
-
-    prior_outbound = _prior_outbound(db_path, lead_id, str(record.get("Email") or ""))
-    if prior_outbound and decision.active and not overdue:
-        next_action = "Check for a reply before the scheduled follow-up"
-    next_reason = ("The CRM deadline has passed and a prior send is recorded; check the inbox before outreach."
-                   if prior_outbound and overdue else
-                   "A prior approved send is recorded; check the inbox before another request."
-                   if prior_outbound and decision.active else
-                   "The current CRM record lacks enough confirmed scope for a quote."
-                   if not ready else
-                   "The core quote inputs are present; pricing still requires human review.")
+        next_action = "Resolve Mail or Lead identity before outreach"
+        next_reason = mail["reason"] if mail["reply_state"] == "AMBIGUOUS" else "Lead status or deadline needs review."
     language = decision.language if decision.language in {"en", "fr"} else form_language
-    if decision.email_contactable and language == "en":
+    draft_allowed = followup in {"DUE", "OVERDUE"} and decision.email_contactable
+    if draft_allowed and language == "en":
         subject = ("Following up on your Opticable inquiry" if prior_outbound
                    else "Re: Your inquiry with Opticable")
         topic = service_interest or "your project"
@@ -214,7 +222,7 @@ def build_sales_operator_view(client, db_path: Path, *, lead_id: str = CONTROLLE
                 "could you confirm the site address, the approximate scope"
                 + (" (including camera count and coverage areas)" if service_code == "ai_loss_prevention" else "")
                 + ", and your target timeline?\n\nThe Opticable team")
-    elif decision.email_contactable and language == "fr":
+    elif draft_allowed and language == "fr":
         subject = ("Suivi de votre demande auprès d’Opticable" if prior_outbound
                    else "Votre demande auprès d’Opticable")
         opening = ("Je fais suite à mon dernier message. " if prior_outbound
@@ -250,20 +258,21 @@ def build_sales_operator_view(client, db_path: Path, *, lead_id: str = CONTROLLE
                           if service_interest and not ready else
                           "Project details require human review."},
         "missing_information": missing,
+        "new_from_reply": mail["new_information"],
         "next_action": {"primary": next_action, "reason": next_reason},
         "quote_readiness": {"status": quote,
                             "reason": "Confirm site, scope and timeline before pricing."
                             if not ready else "Prepare a human-reviewed quote; no automatic send."},
         "follow_up": {"current": _local(record.get("Next_Followup_At")),
-                      "overdue": overdue,
-                      "recommended": "Review now; preserve the overdue CRM deadline" if overdue else
-                                     _local(decision.followup_at),
+                      "overdue": followup == "OVERDUE", "status": followup,
+                      "recommended": "Review now; preserve the CRM deadline" if followup in {"DUE", "OVERDUE", "REPLIED — REVIEW RESPONSE"} else
+                                     _local(decision.followup_at) if followup == "WAIT" else "Manual review required",
                       "basis": "Existing provider deadline preserved" if current_due else
                                "Montreal business-day recommendation"},
         "draft": {"label": "DRAFT — NOT SENT", "subject": subject, "body": body,
                   "recipient": record.get("Email"),
-                  "use_condition": "Check the inbox for a reply and wait until the CRM follow-up deadline."
-                                   if prior_outbound and not overdue else "Check Sent and inbox before use.",
+                  "use_condition": "Fresh inbox check and human review required before any outreach."
+                                   if draft_allowed else "No follow-up draft while waiting, replied, or ambiguous.",
                   "language_basis": "AI website form; verify before use" if decision.language == "unknown" and form_language else
                                     "CRM language" if language else "Language needs review"},
         "evidence": {"read_at": _local(clock.isoformat()), "created_at": _local(record.get("Created_Time")),
@@ -271,7 +280,7 @@ def build_sales_operator_view(client, db_path: Path, *, lead_id: str = CONTROLLE
                      "source_version": proof.source_version,
                      "crm_age_hours": round((clock - modified).total_seconds() / 3600, 1),
                      "decision_hash": decision.decision_hash,
-                     "audit": audit, "prior_outbound": prior_outbound},
+                     "audit": audit, "prior_outbound": prior_outbound, "mail": mail},
     }
 
 
@@ -282,9 +291,20 @@ def render_sales_operator_view(view: dict) -> str:
     audit = view["evidence"]["audit"]
     actions = " · ".join(h(x["workflow"].removeprefix("opticable.") + ": " + x["detail"])
                          for x in audit["actions"]) or "No current-version action evidence"
+    mail = view["evidence"]["mail"]
+    outbound = mail["last_outbound"]
+    inbound = mail["last_inbound"]
+    reply_label = {"NO_REPLY_YET": "No reply found", "REPLIED": "Replied",
+                   "AMBIGUOUS": "Ambiguous — review Mail"}[mail["reply_state"]]
+    outbound_line = (f"{h(outbound['sent_at_local'])} · To {h(outbound['recipient'])} · {h(outbound['subject'])}"
+                     if outbound else "Known outbound identity needs review")
+    inbound_line = (f"{h(inbound['received_at_local'])} · {h(inbound['summary'])}"
+                    if inbound else "None found after the known outbound")
+    learned = "".join(f"<li>{h(item)}</li>" for item in view["new_from_reply"])
+    learned_line = f"<p><strong>New from reply:</strong></p><ul>{learned}</ul>" if learned else ""
     draft = view["draft"]
     draft_content = (f"<p><strong>{h(draft['subject'])}</strong></p><pre>{h(draft['body'])}</pre>"
-                     if draft["body"] else "<p>Language or contact permission requires review before drafting.</p>")
+                     if draft["body"] else "<p>No outbound draft is appropriate in the current state.</p>")
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OptiBrain sales view — {h(view['lead']['id'])}</title><style>
 body{{font:16px/1.45 system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#182536;background:#f7f9fc}}
@@ -297,8 +317,12 @@ h1{{font-size:1.5rem;margin-bottom:.2rem}}h2{{font-size:1rem;margin:.2rem 0 .7re
 <div class="grid"><section class="card"><h2>Sales decision</h2><p><span class="badge">{h(view['qualification']['priority'])} priority</span> · {h(view['qualification']['status'])}</p>
 <p>{h(view['qualification']['reason'])}</p><p><strong>Next:</strong> {h(view['next_action']['primary'])}</p><p class="note">{h(view['next_action']['reason'])}</p></section>
 <section class="card"><h2>Quote and follow-up</h2><p><strong>Quote:</strong> {h(view['quote_readiness']['status'])} — {h(view['quote_readiness']['reason'])}</p>
-<p><strong>CRM follow-up:</strong> {h(view['follow_up']['current'])}</p><p><strong>Overdue:</strong> {'Yes' if view['follow_up']['overdue'] else 'No'}</p>
+<p><strong>CRM deadline:</strong> {h(view['follow_up']['current'])}</p><p><strong>Follow-up status:</strong> {h(view['follow_up']['status'])}</p>
 <p><strong>Recommended:</strong> {h(view['follow_up']['recommended'])}</p></section></div>
+<section class="card"><h2>Mail and reply</h2><p><strong>Last outbound:</strong> {outbound_line}</p>
+<p><strong>Reply state:</strong> {h(reply_label)} · {h(mail['reason'])}</p>
+<p><strong>Last inbound:</strong> {inbound_line}</p>{learned_line}
+<p class="note">Mail evidence is read fresh. Sent time uses agreeing header and receipt timestamps. Ambiguous thread identity suppresses outreach advice.</p></section>
 <div class="grid"><section class="card"><h2>Known</h2><p><strong>Source:</strong> {h(view['source']['label'])} {'(CRM and description agree)' if view['source']['description_agrees'] else '(source needs review)'}</p>
 <p><strong>Service interest:</strong> {h(view['known']['service_interest'])} <span class="note">{h(view['known']['service_basis'])}</span></p>
 <p><strong>City:</strong> {h(view['known']['city'])} · <strong>Existing cameras:</strong> {h(view['known']['existing_cameras'])}</p>
@@ -308,7 +332,7 @@ h1{{font-size:1.5rem;margin-bottom:.2rem}}h2{{font-size:1rem;margin:.2rem 0 .7re
 <section class="card"><h2>{h(draft['label'])}</h2>{draft_content}<p class="note">To: {h(draft['recipient'])} · Language: {h(draft['language_basis'])}. {h(draft['use_condition'])} Preview only; no Mail draft or send.</p></section>
 <section class="card"><h2>Evidence</h2><p>Exact-email dedupe: {h(view['dedupe']['status'])} · CRM status: {h(view['lead']['status'])}</p>
 <p>CRM created {h(view['evidence']['created_at'])}; modified {h(view['evidence']['modified_at'])} ({h(view['evidence']['crm_age_hours'])} hours before this read).</p>
-<p>Prior outbound: {('Recorded sent ' + h(view['evidence']['prior_outbound']['latest']['sent_at']) + ' · message ' + h(view['evidence']['prior_outbound']['latest']['provider_message_id']) + ' · ' + h(view['evidence']['prior_outbound']['basis'])) if view['evidence']['prior_outbound'] else 'No Lead-bound send found in local audit; check Mail before outreach.'}</p>
+<p>Prior outbound message: {h(outbound['message_id']) if outbound else 'Unverified'}</p>
 <p>Reviewed event: {h(audit.get('review_event_id')) if audit['current_version_reviewed'] else 'No exact-version review'}</p>
 <p>Workflow: {actions}</p><p class="note">Internal refs: {h(view['lead']['client_ref'])}, {h(view['lead']['project_ref'])}; these are not Zoho IDs.</p></section>
 </body></html>"""
