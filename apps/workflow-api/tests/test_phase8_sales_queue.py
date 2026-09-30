@@ -16,6 +16,7 @@ from workflow.automation.crm_write_boundary import (
     reviewed_phase8_test_task_call, validate_phase8_test_task, verify_transport_authority,
 )
 from workflow.operator_phase7_api import install_phase7_canary_routes
+from workflow.zoho_gateway import ZohoGatewayError
 
 SPEC = importlib.util.spec_from_file_location(
     "phase8_test_artifacts", Path(__file__).resolve().parents[3] / "ops/phase8/create_test_artifacts.py")
@@ -198,3 +199,7 @@ class QueueRouteTests(unittest.TestCase):
         self.assertIn("What should I work on now?", response.text)
         self.assertIn("no-store", response.headers["cache-control"])
         self.assertEqual(client.post(path, headers={"Cf-Access-Jwt-Assertion": "human"}).status_code, 405)
+        with patch("workflow.operator_phase7_api.build_sales_queue",
+                   side_effect=ZohoGatewayError("OAuth unavailable")):
+            self.assertEqual(client.get(
+                path, headers={"Cf-Access-Jwt-Assertion": "human"}).status_code, 503)

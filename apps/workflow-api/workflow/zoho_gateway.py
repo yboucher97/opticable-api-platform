@@ -285,20 +285,20 @@ class ZohoGatewayClient:
         # configured standby may be used without creating duplicate-write risk.
         try:
             local_configured = self.configured
-        except Exception:
+        except Exception as exc:
             if self.settings.standby_enabled:
                 return standby()
-            raise
+            raise ZohoGatewayError("Zoho authentication is temporarily unavailable.") from exc
         if not local_configured:
             if self.settings.standby_enabled:
                 return standby()
             raise ZohoGatewayError("Local Zoho OAuth is not configured and connected.")
         try:
             access_token = self.oauth.access_token()
-        except Exception:
+        except Exception as exc:
             if self.settings.standby_enabled:
                 return standby()
-            raise
+            raise ZohoGatewayError("Zoho authentication is temporarily unavailable.") from exc
 
         try:
             verify_transport_authority(self, service, normalized_method, path, body, headers)

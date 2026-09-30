@@ -410,3 +410,10 @@ adapter now use this documented relation. The rejected attempt remains in the
 root-owned artifact journal. A corrected attempt requires that explicit
 rejection state, a fresh zero-match search, and a new exact payload hash; an
 ambiguous outcome still blocks any retry.
+
+Repeated standalone provider validation processes exhausted Zoho's OAuth
+refresh rate briefly after artifact creation. An authentication refresh
+failure is now surfaced as provider unavailable (HTTP 503 on the sales queue)
+instead of a misleading Lead-evidence conflict (HTTP 409). No automatic
+write retry or provider replay is added. Reuse long-lived service clients
+and keep manual provider checks bounded.

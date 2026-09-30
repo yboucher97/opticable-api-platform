@@ -12,7 +12,7 @@ from workflow.automation.models import AutomationEvent
 from workflow.automation.providers.zoho import register_zoho_actions
 from workflow.automation.store import AutomationStore
 from workflow.config import ZohoGatewaySettings
-from workflow.zoho_gateway import ZohoGatewayClient, ZohoWriteUnconfirmedError
+from workflow.zoho_gateway import ZohoGatewayClient, ZohoGatewayError, ZohoWriteUnconfirmedError
 
 
 class FakeOAuth:
@@ -134,6 +134,15 @@ class ZohoGatewayTests(unittest.TestCase):
         client = ZohoGatewayClient(self.settings, BrokenOAuth())
         with self.assertRaises(Exception):
             client.request("creator", "GET", "/meta/applications")
+
+    def test_oauth_refresh_failure_is_provider_unavailable(self) -> None:
+        class RateLimitedOAuth(FakeOAuth):
+            def access_token(self):
+                raise ValueError("Zoho token refresh failed with status 400: rate limited")
+
+        client = ZohoGatewayClient(self.settings, RateLimitedOAuth())
+        with self.assertRaisesRegex(ZohoGatewayError, "authentication is temporarily unavailable"):
+            client.request("zohoapis", "GET", "/crm/v8/Leads")
 
     def test_mutation_transport_failure_never_replays_through_standby(self) -> None:
         client = self.standby_client()
