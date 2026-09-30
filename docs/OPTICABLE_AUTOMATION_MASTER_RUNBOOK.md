@@ -401,3 +401,12 @@ so the exact 5:00 PM EDT follow-up remains on the Lead and is stated in the
 test draft. The Mail payload uses `mode=draft`, the exact approved sender and
 recipient, and readback must confirm the Drafts folder, address, subject and
 content hash. The test draft must never be sent.
+
+The first controlled Task POST was rejected with HTTP 400 `INVALID_DATA` on
+`Who_Id`; an exact-subject read showed zero Tasks and no draft had been made.
+Zoho's Tasks API associates a Lead through `What_Id: {"id": lead_id}` and
+`$se_module: "Leads"`. The Phase 8 test boundary and the dormant Phase 6 Task
+adapter now use this documented relation. The rejected attempt remains in the
+root-owned artifact journal. A corrected attempt requires that explicit
+rejection state, a fresh zero-match search, and a new exact payload hash; an
+ambiguous outcome still blocks any retry.

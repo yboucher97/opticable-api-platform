@@ -48,7 +48,8 @@ def validate_request(method, path, body, headers):
         version = datetime.fromisoformat(headers['If-Unmodified-Since'].replace('Z','+00:00'))
         if version.tzinfo is None: raise ValueError('Reviewed version must be timezone aware')
     elif method == 'POST' and path == '/crm/v8/Tasks':
-        if set(body) != {'data','trigger'} or set(row) != {'Subject','Who_Id','$se_module','Status','Due_Date'} or headers or row['$se_module'] != 'Leads' or row['Status'] != 'Not Started' or not re.fullmatch(r'[0-9]{1,30}', str(row['Who_Id'])) or not re.fullmatch(r'OptiBrain [a-z ]+ [0-9]{1,30} [a-f0-9]{16}', str(row['Subject'])):
+        relation = row.get('What_Id')
+        if set(body) != {'data','trigger'} or set(row) != {'Subject','What_Id','$se_module','Status','Due_Date'} or headers or row['$se_module'] != 'Leads' or row['Status'] != 'Not Started' or not isinstance(relation,dict) or set(relation) != {'id'} or not re.fullmatch(r'[0-9]{1,30}', str(relation['id'])) or not re.fullmatch(r'OptiBrain [a-z ]+ [0-9]{1,30} [a-f0-9]{16}', str(row['Subject'])):
             raise ValueError('CRM Task grant exceeds deterministic internal boundary')
         datetime.strptime(row['Due_Date'], '%Y-%m-%d')
     else:
@@ -81,8 +82,8 @@ def validate_phase8_test_task(method, path, body, headers):
     if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict):
         raise ValueError('Phase 8 task requires exactly one record')
     row = rows[0]
-    if (set(row) != {'Subject', 'Who_Id', '$se_module', 'Status', 'Due_Date'}
-            or row['Who_Id'] != PHASE8_TEST_LEAD or row['$se_module'] != 'Leads'
+    if (set(row) != {'Subject', 'What_Id', '$se_module', 'Status', 'Due_Date'}
+            or row['What_Id'] != {'id': PHASE8_TEST_LEAD} or row['$se_module'] != 'Leads'
             or row['Status'] != 'Not Started'
             or not re.fullmatch(r'TEST ONLY — OPTIBRAIN PHASE 8 — '
                                 + PHASE8_TEST_LEAD + r' — [0-9a-f]{16}', str(row['Subject']))):

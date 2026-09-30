@@ -123,7 +123,7 @@ class QueueTests(unittest.TestCase):
 class TaskBoundaryTests(unittest.TestCase):
     def setUp(self):
         self.body = {"data": [{"Subject": f"TEST ONLY — OPTIBRAIN PHASE 8 — {LEAD} — " + "a"*16,
-                               "Who_Id": LEAD, "$se_module": "Leads", "Status": "Not Started",
+                               "What_Id": {"id": LEAD}, "$se_module": "Leads", "Status": "Not Started",
                                "Due_Date": "2026-10-01"}], "trigger": []}
 
     def test_exact_task_and_single_use_root_only(self):
@@ -143,10 +143,10 @@ class TaskBoundaryTests(unittest.TestCase):
                 reviewed_phase8_test_task_call(client, self.body, payload_hash=h).__enter__()
 
     def test_other_lead_and_extra_fields_rejected(self):
-        changed = {"data": [{**self.body["data"][0], "Who_Id": "999"}], "trigger": []}
+        changed = {"data": [{**self.body["data"][0], "What_Id": {"id": "999"}}], "trigger": []}
         with self.assertRaises(ValueError):
             validate_phase8_test_task("POST", "/crm/v8/Tasks", changed, None)
-        changed["data"][0]["Who_Id"] = LEAD
+        changed["data"][0]["What_Id"] = {"id": LEAD}
         changed["data"][0]["Description"] = "hidden extra"
         with self.assertRaises(ValueError):
             validate_phase8_test_task("POST", "/crm/v8/Tasks", changed, None)
@@ -155,7 +155,7 @@ class TaskBoundaryTests(unittest.TestCase):
         class Client:
             def request(self, service, method, path, **kwargs):
                 return {"ok": True, "status": 200, "data": {"data": [
-                    {"id": "555", "Subject": "subject", "Who_Id": {"id": "999"},
+                    {"id": "555", "Subject": "subject", "What_Id": {"id": "999"},
                      "Due_Date": "2026-10-01", "Status": "Not Started"}]}}
         with self.assertRaisesRegex(ValueError, "collision"):
             ARTIFACTS.task_search(Client(), "subject", "2026-10-01")

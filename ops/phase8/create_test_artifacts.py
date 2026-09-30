@@ -57,9 +57,9 @@ def provider_rows(response, *, empty=False):
 
 
 def task_matches(row, subject, due):
-    who = row.get("Who_Id")
-    who_id = who.get("id") if isinstance(who, dict) else who
-    return (row.get("Subject") == subject and str(who_id) == LEAD
+    related = row.get("What_Id")
+    related_id = related.get("id") if isinstance(related, dict) else None
+    return (row.get("Subject") == subject and str(related_id) == LEAD
             and row.get("Due_Date") == due and row.get("Status") == "Not Started")
 
 
@@ -125,7 +125,7 @@ def prepare(client, db_path):
     due = due_instant.date().isoformat()
     generation = sha(LEAD + "|" + due + "|phase8-test")[:16]
     subject = f"TEST ONLY — OPTIBRAIN PHASE 8 — {LEAD} — {generation}"
-    task = {"data": [{"Subject": subject, "Who_Id": LEAD, "$se_module": "Leads",
+    task = {"data": [{"Subject": subject, "What_Id": {"id": LEAD}, "$se_module": "Leads",
                       "Status": "Not Started", "Due_Date": due}], "trigger": []}
     preview = future_controlled_draft(view)
     if preview is None:
@@ -174,7 +174,17 @@ def main():
         fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
         state = loaded()
         if state and state.get("plan") != plan:
-            raise ValueError("Artifact plan changed; manual reconciliation required")
+            if (state.get("task", {}).get("state") != "rejected"
+                    or state.get("draft", {}).get("state") != "pending"
+                    or state["plan"]["task_subject"] != plan["task_subject"]
+                    or state["plan"]["draft_payload_sha256"] != plan["draft_payload_sha256"]
+                    or task_search(client, state["plan"]["task_subject"], state["plan"]["task_date"])):
+                raise ValueError("Artifact plan changed; manual reconciliation required")
+            state.setdefault("rejected_attempts", []).append({
+                "plan": state["plan"], "task": state["task"]})
+            state["plan"] = plan
+            state["task"] = {"state": "pending"}
+            atomic(state)
         if not state:
             state = {"plan": plan, "task": {"state": "pending"}, "draft": {"state": "pending"}}
             atomic(state)

@@ -79,7 +79,6 @@ class Phase6LeadFake:
             identity = "123"
         elif method == "POST" and path == "/crm/v8/Tasks":
             task = {"id": "789", **kwargs["body"]["data"][0]}
-            task["Who_Id"] = {"id": task["Who_Id"]}
             self.tasks.append(task)
             identity = "789"
             if self.lost_task:
@@ -331,7 +330,7 @@ class Phase6CrmActionTests(unittest.TestCase):
         original = copy.deepcopy(self.fake.tasks[0])
         for index, change in enumerate(({"Subject": "unrelated"},
                                          {"Due_Date": "2026-12-31"},
-                                         {"Who_Id": {"id": "999"}},
+                                         {"What_Id": {"id": "999"}},
                                          {"id": ""}, {"Status": "Cancelled"})):
             with self.subTest(change=change):
                 self.fake.tasks = [{**original, **change}]

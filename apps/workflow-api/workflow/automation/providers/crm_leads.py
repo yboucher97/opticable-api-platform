@@ -286,7 +286,7 @@ def register_crm_lead_actions(engine, client, store):
         def exact_task(task):
             return (re.fullmatch(r"[0-9]{1,30}", str(task.get("id") or "")) is not None
                     and task.get("Subject") == subject
-                    and str((task.get("Who_Id") or {}).get("id")) == identity
+                    and str((task.get("What_Id") or {}).get("id")) == identity
                     and task.get("Due_Date") == due
                     and task.get("Status") in {"Not Started", "In Progress", "Completed"})
 
@@ -325,7 +325,7 @@ def register_crm_lead_actions(engine, client, store):
             rows = records(client.request("zohoapis", "GET", "/crm/v8/Tasks/" + operation))
             return len(rows) == 1 and str(rows[0].get("id")) == operation and exact_task(rows[0])
         return write_once(task_key,
-                          {"data": [{"Subject": subject, "Who_Id": identity, "$se_module": "Leads",
+                          {"data": [{"Subject": subject, "What_Id": {"id": identity}, "$se_module": "Leads",
                                      "Status": "Not Started", "Due_Date": due}], "trigger": []},
                           "/crm/v8/Tasks", "POST", verify_task,
                           policy=PHASE6_POLICY, actor="phase6-crm-lead-action")
