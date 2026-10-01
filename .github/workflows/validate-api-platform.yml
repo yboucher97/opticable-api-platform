@@ -95,12 +95,12 @@ jobs:
           node-version: "22"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Validate durable control-plane Worker
         env:
           WRANGLER_SEND_METRICS: "false"
-        run: npm run check
+        run: npm test && npm run check
 
   omada-containment:
     runs-on: ubuntu-latest

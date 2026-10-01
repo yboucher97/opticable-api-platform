@@ -172,6 +172,15 @@ class AutomationEngine:
 
     def execute_run(self, run_id: str, definition: WorkflowDefinition, event: AutomationEvent,
                     *, worker_id: str | None = None) -> bool:
+        from .provider_usage import ProviderUsage
+        # Existing trusted workflow IDs; no provider text or execution payload in metrics.
+        import re
+        name=definition.id if re.fullmatch(r'[A-Za-z0-9_.:-]{1,80}',definition.id) else 'other'
+        with ProviderUsage(self.store.db_path,'workflow:'+name):
+            return self._execute_run(run_id,definition,event,worker_id=worker_id)
+
+    def _execute_run(self, run_id: str, definition: WorkflowDefinition, event: AutomationEvent,
+                     *, worker_id: str | None = None) -> bool:
         worker = worker_id or f"{socket.gethostname()}:{os.getpid()}"
         attempt_id = self.store.claim_run(run_id, worker, lease_seconds=300)
         if attempt_id is None:

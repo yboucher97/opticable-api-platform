@@ -5,6 +5,7 @@ After=local-fs.target
 
 [Service]
 Type=oneshot
+TimeoutStartSec=45min
 # The default root identity retains the bounded setuid/setgid capabilities
 # needed by the script's read-only runuser Git probe. Explicit User=root with
 # NoNewPrivileges drops that identity-switch ability on this host.

@@ -1,3 +1,5 @@
+import { NonRetryableError } from "cloudflare:workflows";
+import { lifecycleSchedules, deliverEvent, workflowInstanceId } from "./runtime-policy.js";
 import { WorkflowEntrypoint, WorkflowEvent, WorkflowStep } from "cloudflare:workers";
 
 type BusinessEvent = {
@@ -58,26 +60,6 @@ function normalizeEvent(input: unknown): BusinessEvent {
   };
 }
 
-function torontoParts(epochMs: number) {
-  const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Toronto",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    weekday: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23"
-  });
-  const parts = Object.fromEntries(formatter.formatToParts(new Date(epochMs)).map((p) => [p.type, p.value]));
-  return {
-    date: `${parts.year}-${parts.month}-${parts.day}`,
-    weekday: parts.weekday,
-    hour: Number(parts.hour),
-    minute: Number(parts.minute)
-  };
-}
-
 function scheduledEvent(eventType: string, bucket: string, payload: Record<string, unknown>): BusinessEvent {
   const eventId = `schedule-${eventType.replace(/[^a-z0-9]+/gi, "-")}-${bucket}`.slice(0, 100);
   return normalizeEvent({
@@ -93,59 +75,8 @@ function scheduledEvent(eventType: string, bucket: string, payload: Record<strin
 }
 
 async function enqueueScheduledLifecycle(controller: ScheduledController, env: Env): Promise<void> {
-  const local = torontoParts(controller.scheduledTime);
-  const slot = `${local.date}T${String(local.hour).padStart(2, "0")}:${String(local.minute).padStart(2, "0")}`;
-  const events: BusinessEvent[] = [];
-
-  // Mailbox: hourly. One search call per hour; downstream event idempotency prevents duplicate processing.
-  if (local.minute === 0) {
-    events.push(scheduledEvent("customer.lifecycle.mailbox.poll.requested", `mail-${slot}`, {
-      account_id: "1083319000000008002",
-      mailbox_address: "yboucher@opticable.ca",
-      window_days: 1,
-      limit: 100
-    }));
-  }
-
-  // Zoho Sign observation: every two hours during the normal operating day, read-only.
-  if (local.minute === 15 && local.hour >= 7 && local.hour <= 21 && local.hour % 2 === 1) {
-    events.push(scheduledEvent("customer.lifecycle.sign.poll.requested", `sign-${slot}`, {
-      page: 1,
-      per_page: 100
-    }));
-  }
-
-  // Finance observation: once daily. Zoho Books is strictly GET/read-only by policy and gateway enforcement.
-  if (local.hour === 7 && local.minute === 15) {
-    events.push(scheduledEvent("customer.lifecycle.finance.poll.requested", `finance-${local.date}`, {
-      organization_id: "802337532",
-      per_page: 100
-    }));
-  }
-
-  // Daily executive digest is drafted at 07:30 Toronto time.
-  if (local.hour === 7 && local.minute === 30) {
-    events.push(scheduledEvent("customer.lifecycle.digest.requested", `daily-${local.date}`, {
-      period: "daily",
-      organization_id: "802337532",
-      mailbox_account_id: "1083319000000008002",
-      from_address: "yboucher@opticable.ca",
-      recipient: "yboucher@opticable.ca",
-      create_mail_draft: true
-    }));
-  }
-
-  // Weekly executive digest is drafted Monday at 07:45 Toronto time.
-  if (local.weekday === "Mon" && local.hour === 7 && local.minute === 45) {
-    events.push(scheduledEvent("customer.lifecycle.digest.requested", `weekly-${local.date}`, {
-      period: "weekly",
-      organization_id: "802337532",
-      mailbox_account_id: "1083319000000008002",
-      from_address: "yboucher@opticable.ca",
-      recipient: "yboucher@opticable.ca",
-      create_mail_draft: true
-    }));
-  }
+  const events = lifecycleSchedules(controller.scheduledTime).map(({event_type, bucket, payload}) =>
+    scheduledEvent(event_type, bucket, payload));
 
   for (const event of events) await env.EVENTS.send(event, { contentType: "json" });
 }
@@ -157,24 +88,7 @@ export class BusinessWorkflow extends WorkflowEntrypoint<Env, BusinessEvent> {
     const delivered = await step.do(
       "deliver-to-automation-kernel",
       { retries: { limit: 8, delay: "5 seconds", backoff: "exponential" }, timeout: "30 seconds" },
-      async () => {
-        const base = this.env.CORE_API_URL.replace(/\/$/, "");
-        const response = await fetch(`${base}/v1/automation/events`, {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            "x-api-key": this.env.CORE_API_KEY,
-            "x-opticable-correlation-id": businessEvent.correlation_id,
-            "x-opticable-idempotency-key": businessEvent.idempotency_key
-          },
-          body: JSON.stringify(businessEvent)
-        });
-        const text = await response.text();
-        if (!response.ok) throw new Error(`Automation kernel HTTP ${response.status}: ${text.slice(0, 1000)}`);
-        let body: unknown = text;
-        try { body = JSON.parse(text); } catch {}
-        return { status: response.status, body };
-      }
+      async () => deliverEvent(this.env, businessEvent, NonRetryableError)
     );
 
     return {
@@ -217,7 +131,7 @@ export default {
     for (const message of batch.messages) {
       const event = normalizeEvent(message.body);
       try {
-        await env.BUSINESS_WORKFLOW.create({ id: event.event_id, params: event });
+        await env.BUSINESS_WORKFLOW.create({ id: await workflowInstanceId(event.event_id), params: event });
         message.ack();
       } catch (error) {
         const msg = error instanceof Error ? error.message.toLowerCase() : "";

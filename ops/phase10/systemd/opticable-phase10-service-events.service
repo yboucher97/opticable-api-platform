@@ -5,6 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
+TimeoutStartSec=300
 User=opticable-workflow-api
 Group=opticable-workflow-api
 WorkingDirectory=/opt/opticable-api-platform/apps/workflow-api

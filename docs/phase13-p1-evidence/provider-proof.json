@@ -1,0 +1,102 @@
+{
+  "policy": "GET ONLY; isolated DB copies; no real or Test provider mutations",
+  "operations": {
+    "before_calls": 22,
+    "after_calls": 9,
+    "equivalent": true,
+    "projects": 3,
+    "evidence": "provider-proof-first.log: equality assertion passed before unrelated result-key error"
+  },
+  "receipts": {
+    "before_calls": 7,
+    "warm_calls": 1,
+    "replay_calls": 1,
+    "before": {
+      "scanned": 2,
+      "created": 0,
+      "replayed": 2,
+      "skipped_other": 0
+    },
+    "warm": {
+      "scanned": 2,
+      "created": 0,
+      "replayed": 2,
+      "skipped_other": 0,
+      "cache_hits": 2,
+      "full_scan": false
+    },
+    "replay": {
+      "scanned": 2,
+      "created": 0,
+      "replayed": 2,
+      "skipped_other": 0,
+      "cache_hits": 2,
+      "full_scan": false
+    },
+    "integrity": "ok"
+  },
+  "lifecycle": {
+    "before_calls": 5,
+    "warm_calls": 5,
+    "incremental_calls": 5,
+    "incremental": [
+      {
+        "provider": "zohoapis",
+        "module": "Accounts",
+        "status": 200,
+        "elapsed_ms": 318,
+        "conditional": true,
+        "records": 50
+      },
+      {
+        "provider": "zohoapis",
+        "module": "Contacts",
+        "status": 200,
+        "elapsed_ms": 520,
+        "conditional": true,
+        "records": 54
+      },
+      {
+        "provider": "zohoapis",
+        "module": "Deals",
+        "status": 200,
+        "elapsed_ms": 368,
+        "conditional": true,
+        "records": 12
+      },
+      {
+        "provider": "zohoapis",
+        "module": "Service_Locations",
+        "status": 200,
+        "elapsed_ms": 509,
+        "conditional": true,
+        "records": 20
+      },
+      {
+        "provider": "zohoapis",
+        "module": "Services",
+        "status": 200,
+        "elapsed_ms": 493,
+        "conditional": true,
+        "records": 25
+      }
+    ],
+    "stats": {
+      "full_reads": 0,
+      "delta_reads": 5,
+      "unchanged": 0
+    },
+    "equivalent": true,
+    "first_events": {
+      "added": 0,
+      "total": 25,
+      "service_count": 13
+    },
+    "replay_events": {
+      "added": 0,
+      "total": 25,
+      "service_count": 13
+    },
+    "integrity": "ok"
+  }
+}

@@ -142,7 +142,7 @@ class FormReceiptLedger:
             pass
         else:
             os.close(fd)
-        db = sqlite3.connect(self.path)
+        db = sqlite3.connect(self.path, timeout=10)
         db.row_factory = sqlite3.Row
         return db
 
@@ -199,7 +199,52 @@ class FormReceiptLedger:
                     BEGIN SELECT RAISE(ABORT,'connector receipt is immutable'); END;
                 CREATE TRIGGER IF NOT EXISTS connector_receipts_no_delete BEFORE DELETE ON connector_receipts
                     BEGIN SELECT RAISE(ABORT,'connector receipt is immutable'); END;
+                CREATE INDEX IF NOT EXISTS idx_form_receipts_occurred ON form_receipts(occurred_at);
+                CREATE INDEX IF NOT EXISTS idx_connector_receipts_canonical ON connector_receipts(canonical_id);
+                CREATE TABLE IF NOT EXISTS mail_poll_state (
+                    account_id TEXT PRIMARY KEY, successful_at TEXT NOT NULL,
+                    full_scan_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS mail_message_cache (
+                    account_id TEXT NOT NULL, message_id TEXT NOT NULL,
+                    metadata_hash TEXT NOT NULL, classification TEXT NOT NULL,
+                    seen_at TEXT NOT NULL, PRIMARY KEY(account_id,message_id)
+                );
+                CREATE INDEX IF NOT EXISTS idx_mail_cache_seen ON mail_message_cache(seen_at);
             """)
+
+    def poll_state(self, account_id):
+        self.initialize()
+        with self._connect() as db:
+            row = db.execute("SELECT * FROM mail_poll_state WHERE account_id=?", (account_id,)).fetchone()
+        return dict(row) if row else None
+
+    def cached_message(self, account_id, message_id, metadata_hash):
+        with self._connect() as db:
+            row = db.execute("SELECT classification FROM mail_message_cache WHERE "
+                "account_id=? AND message_id=? AND metadata_hash=?", (account_id,message_id,metadata_hash)).fetchone()
+            if row and row[0] == "receipt" and not db.execute(
+                    "SELECT 1 FROM form_receipts WHERE provider_message_id=?", (message_id,)).fetchone():
+                return None
+        return row[0] if row else None
+
+    def cache_message(self, account_id, message_id, metadata_hash, classification, clock):
+        # Discovery optimization only; never ownership, approval or write evidence.
+        if classification not in {"receipt", "unsupported"}:
+            raise ValueError("Unknown Mail cache classification")
+        with self._connect() as db:
+            db.execute("INSERT INTO mail_message_cache VALUES(?,?,?,?,?) ON CONFLICT(account_id,message_id) "
+                "DO UPDATE SET metadata_hash=excluded.metadata_hash,classification=excluded.classification,"
+                "seen_at=excluded.seen_at", (account_id,message_id,metadata_hash,classification,clock.isoformat()))
+
+    def complete_poll(self, account_id, clock, *, full_scan):
+        with self._connect() as db:
+            prior = db.execute("SELECT full_scan_at FROM mail_poll_state WHERE account_id=?", (account_id,)).fetchone()
+            full_at = clock.isoformat() if full_scan or not prior else prior[0]
+            db.execute("INSERT INTO mail_poll_state VALUES(?,?,?) ON CONFLICT(account_id) DO UPDATE SET "
+                "successful_at=excluded.successful_at,full_scan_at=excluded.full_scan_at", (account_id,clock.isoformat(),full_at))
+            # Only expendable lookup metadata. Immutable receipts/links/history remain untouched.
+            db.execute("DELETE FROM mail_message_cache WHERE seen_at<?", ((clock-timedelta(days=30)).isoformat(),))
 
     def record(self, receipt):
         self.initialize()
@@ -390,8 +435,20 @@ def collect_form_mail(client, ledger, *, account_id=ACCOUNT_ID, now=None, days=7
     clock = now or datetime.now(timezone.utc)
     if clock.utcoffset() is None or not 1 <= days <= 30:
         raise ValueError("Bounded aware collection time required")
+    clock = clock.astimezone(timezone.utc)
     local = clock.astimezone(TORONTO)
-    begin = local - timedelta(days=days)
+    account_id = str(account_id)
+    state = ledger.poll_state(account_id)
+    full_scan = (not state or clock < datetime.fromisoformat(state["successful_at"])
+                 or clock-datetime.fromisoformat(state["full_scan_at"]) >= timedelta(days=1))
+    # Two-day overlap protects delayed indexing; daily full sweep preserves the
+    # original seven-day coverage. Downtime starts from the durable checkpoint.
+    begin = local - timedelta(days=days) if full_scan else (
+        datetime.fromisoformat(state["successful_at"]).astimezone(TORONTO)-timedelta(days=2))
+    if state and clock-datetime.fromisoformat(state["successful_at"]) > timedelta(days=days):
+        begin = datetime.fromisoformat(state["successful_at"]).astimezone(TORONTO)-timedelta(days=2)
+    if local-begin > timedelta(days=30):
+        raise ValueError("Mail checkpoint requires an explicit bounded backfill; preserved without advancing")
     search = f"sender:{SENDER}::fromDate:{begin:%d-%b-%Y}::toDate:{(local + timedelta(days=1)):%d-%b-%Y}"
     found = []
     for page in range(5):
@@ -405,7 +462,8 @@ def collect_form_mail(client, ledger, *, account_id=ACCOUNT_ID, now=None, days=7
             break
     else:
         raise ValueError("Form Mail search exceeded bound")
-    outcome = {"scanned": len(found), "created": 0, "replayed": 0, "skipped_other": 0}
+    outcome = {"scanned": len(found), "created": 0, "replayed": 0, "skipped_other": 0,
+               "cache_hits": 0, "full_scan": full_scan}
     for item in found:
         if str(item.get("fromAddress") or "").casefold() != SENDER:
             outcome["skipped_other"] += 1
@@ -414,6 +472,15 @@ def collect_form_mail(client, ledger, *, account_id=ACCOUNT_ID, now=None, days=7
         folder = str(item.get("folderId") or "")
         if not re.fullmatch(r"[0-9]{1,30}", message_id) or not re.fullmatch(r"[0-9]{1,30}", folder):
             raise ValueError("Form Mail result lacks stable provider identity")
+        # Folder/read flags change without changing a received message. Bind the
+        # account and stable provider metadata, never arbitrary subject/body text.
+        metadata_hash = hashlib.sha256(json.dumps({k:item.get(k) for k in (
+            "messageId", "fromAddress", "toAddress", "receivedTime")},sort_keys=True).encode()).hexdigest()
+        cached = ledger.cached_message(account_id,message_id,metadata_hash)
+        if cached and not full_scan:
+            outcome["cache_hits"] += 1
+            outcome["replayed" if cached == "receipt" else "skipped_other"] += 1
+            continue
         base = f"/api/accounts/{account_id}/folders/{folder}/messages/{message_id}"
         details = _body(client.request("mail", "GET", base + "/details"), "details")
         content = _body(client.request("mail", "GET", base + "/content"), "content")
@@ -425,9 +492,12 @@ def collect_form_mail(client, ledger, *, account_id=ACCOUNT_ID, now=None, days=7
                                           headers=headers, now=clock)
         except UnsupportedFormNotification:
             outcome["skipped_other"] += 1
+            ledger.cache_message(account_id,message_id,metadata_hash,"unsupported",clock)
             continue
         result = ledger.record(receipt)
+        ledger.cache_message(account_id,message_id,metadata_hash,"receipt",clock)
         outcome["created" if result == "CREATED" else "replayed"] += 1
+    ledger.complete_poll(account_id,clock,full_scan=full_scan)
     return outcome
 
 

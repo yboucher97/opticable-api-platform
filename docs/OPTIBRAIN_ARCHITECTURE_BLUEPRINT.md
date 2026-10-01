@@ -161,6 +161,8 @@ Runtime code reviewed does not turn CRM/email text into shell commands. SQL data
 
 ## State, timers, observability and efficiency
 
+Bounded P1 read/scheduler cleanup is documented in [phase13-p1-cleanup.md](phase13-p1-cleanup.md); its before/after provider evidence supersedes historical efficiency observations. Receipt checkpoints skip known Mail bodies; operations use exact-ID request-local batches; scheduled lifecycle uses conditional display snapshots with daily full checks and hourly cadence. These caches never authorize mutations. Expendable metrics/metadata are bounded; business evidence and owner P0 requirements remain unchanged. Development runtime is root-private archive/quarantine, all masks retained.
+
 The canonical timer table is [phase13-timer-matrix.md](phase13-timer-matrix.md). Five application systemd timers are active. There are also Cloudflare and GitHub schedules. Development dispatch/status/usage units are distinct and remain MASKED.
 
 Five active workflow SQLite files serve different purposes: automation.db, phase9-form-receipts.db, phase9-intake.db, phase10-service-events.db and phase12-autonomy.db. Historical lifecycle-events and staging/recovery DBs add three snapshots to the corrected backup. The core event engine uses leases, replay identities and bounded redrive; Phase 12 uses BEGIN IMMEDIATE plus a root flock. Root JSON registries use atomic replacement but have no shared cross-script lock. No automatic ledger retention is established.
