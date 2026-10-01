@@ -15,6 +15,8 @@ from workflow.automation.customer_lifecycle import (
 )
 from workflow.automation.test_lab_boundary import validate_lab_request
 from workflow.automation.lifecycle_events import sync_verified_lab_events
+from workflow.automation.service_inventory import project_service, build_recurring_view
+from workflow.automation.service_events import reconcile_service_events
 from workflow.operator_phase7_api import install_phase7_canary_routes
 
 NOW = datetime.fromisoformat("2026-10-01T12:00:00-04:00")
@@ -170,19 +172,29 @@ class LifecycleTests(unittest.TestCase):
             self.assertEqual(answer.status_code, 200)
             self.assertIn("Customer lifecycle", answer.text)
             self.assertEqual(answer.headers["cache-control"], "private, no-store, max-age=0")
+            recurring = "/v1/operator/phase10/recurring-services"
+            self.assertEqual(http.get(recurring).status_code, 401)
+            answer = http.get(recurring, headers={"Cf-Access-Jwt-Assertion": "controlled-test-token"})
+            self.assertEqual(answer.status_code, 200)
+            self.assertIn("Recurring services", answer.text)
 
     def test_protected_record_dry_run_denied_before_transport(self):
         baseline = {"schema": 1, "modules": {m: {"status": "complete", "ids": ["999"]}
                    for m in ("Leads", "Accounts", "Contacts", "Deals", "Tasks", "Events", "Calls", "Notes")}}
         import hashlib
         with tempfile.TemporaryDirectory() as tmp:
-            b, r = Path(tmp) / "baseline.json", Path(tmp) / "registry.json"
+            b, r, sb = Path(tmp) / "baseline.json", Path(tmp) / "registry.json", Path(tmp) / "service-baseline.json"
             b.write_text(json.dumps(baseline))
+            sb.write_text(json.dumps({"schema": 1, "modules": {"Services": ["888"],
+                "Service_Locations": ["777"], "Installations": []}}))
             r.write_text(json.dumps({"schema": 1, "baseline_sha256": hashlib.sha256(b.read_bytes()).hexdigest(),
-                                     "records": {"Accounts": ["101"]}}))
+                                     "service_baseline_sha256": hashlib.sha256(sb.read_bytes()).hexdigest(),
+                                     "records": {"Accounts": ["101"], "Services": ["202"],
+                                                 "Service_Locations": ["303"]}}))
             env = {"OPTIBRAIN_PHASE8_TEST_LAB": "phase8-protected-test-lab-v1"}
             with patch("workflow.automation.test_lab_boundary.BASELINE", b), patch(
                     "workflow.automation.test_lab_boundary.REGISTRY", r), patch(
+                    "workflow.automation.test_lab_boundary.SERVICE_BASELINE", sb), patch(
                     "workflow.automation.test_lab_boundary.os.geteuid", return_value=0), patch.dict(
                     "os.environ", env):
                 body = {"data": [{"id": "999", "OptiBrain_Test": True}], "trigger": []}
@@ -193,6 +205,73 @@ class LifecycleTests(unittest.TestCase):
                 self.assertEqual(validate_lab_request("PUT", "/crm/v8/Accounts/101", allowed,
                                                        {"If-Unmodified-Since": "2026-10-01T12:00:00+00:00"}),
                                  ("Accounts", "101"))
+                protected_service = {"data": [{"id": "888", "OptiBrain_Test": True}], "trigger": []}
+                with self.assertRaisesRegex(ValueError, "protected"):
+                    validate_lab_request("PUT", "/crm/v8/Services/888", protected_service,
+                                         {"If-Unmodified-Since": "2026-10-01T12:00:00+00:00"})
+                test_service = {"data": [{"id": "202", "OptiBrain_Test": True,
+                                           "Linked_Service_Location": {"id": "303"}}], "trigger": []}
+                self.assertEqual(validate_lab_request("PUT", "/crm/v8/Services/202", test_service,
+                                                       {"If-Unmodified-Since": "2026-10-01T12:00:00+00:00"}),
+                                 ("Services", "202"))
+                cross_link = {"data": [{"id": "202", "OptiBrain_Test": True,
+                                          "Linked_Service_Location": {"id": "777"}}], "trigger": []}
+                with self.assertRaisesRegex(ValueError, "outside Test Lab"):
+                    validate_lab_request("PUT", "/crm/v8/Services/202", cross_link,
+                                         {"If-Unmodified-Since": "2026-10-01T12:00:00+00:00"})
+
+    def test_service_revenue_maintenance_renewal_and_dormancy(self):
+        site = {"id": "303", "Name": MARKER + " — Site", "Linked_Account": {"id": "101"}}
+        raw = {"id": "202", "Name": MARKER + " — PTP link", "Service_Type": "Other",
+               "Service_Stage": "Active", "Contract_Type": "Recurring Service",
+               "OptiBrain_Installed_On": "2023-01-01", "OptiBrain_Last_Service_On": "2024-01-01",
+               "OptiBrain_Recurrence": "Annual", "OptiBrain_Recurring_Amount_CAD": 1200,
+               "OptiBrain_Renewal_On": "2027-01-01", "OptiBrain_Maintenance_Due": "2027-03-01"}
+        old = project_service(raw, site, today=NOW.date(), test_only=True)
+        self.assertEqual((old["mrr_cad"], old["arr_cad"]), ("100.00", "1200.00"))
+        self.assertFalse(analyze_customer(account(), [], [], now=NOW, test_only=True,
+                                          service_rows=[old])["dormant"])
+        due = project_service({**raw, "OptiBrain_Renewal_On": "2026-10-25",
+                               "OptiBrain_Maintenance_Due": "2026-09-25"},
+                              site, today=NOW.date(), test_only=True)
+        decision = analyze_customer(account(), [], [], now=NOW, test_only=True, service_rows=[due])
+        self.assertEqual((due["renewal_status"], due["maintenance_status"]), ("DUE", "DUE"))
+        self.assertEqual(decision["action"], "Review recurring-service renewal")
+        self.assertEqual(build_recurring_view({"scope": "lab", "read_at": "now",
+            "service_rows": [due]})["mrr_cad"], "100.00")
+        cancelled = project_service({**raw, "Service_Stage": "Cancelled"}, site,
+                                    today=NOW.date(), test_only=True)
+        self.assertFalse(cancelled["active_recurring"])
+        self.assertIsNone(cancelled["mrr_cad"])
+
+    def test_automatic_service_events_replay_and_transitions(self):
+        site = {"id": "303", "Name": MARKER + " — Site", "Linked_Account": {"id": "101"}}
+        raw = {"id": "202", "Name": MARKER + " — PTP link", "Service_Stage": "Active",
+               "Contract_Type": "Recurring Service", "OptiBrain_Installed_On": "2025-01-01",
+               "OptiBrain_Last_Service_On": "2025-01-01", "OptiBrain_Recurrence": "Annual",
+               "OptiBrain_Recurring_Amount_CAD": 1200,
+               "OptiBrain_Renewal_On": "2027-01-01", "OptiBrain_Maintenance_Due": "2027-03-01",
+               "Service_Contract_Signed_Date": "2025-01-01T12:00:00-05:00"}
+        def view(data, when=NOW):
+            return {"scope": "lab", "writes_enabled": False,
+                    "rows": [{"account_id": "101", "test_only": True}],
+                    "service_rows": [project_service(data, site,
+                        today=when.astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date(), test_only=True)]}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "events.db"
+            first = reconcile_service_events(view(raw), path, now=NOW)
+            self.assertEqual(first["added"], 2)
+            self.assertEqual(reconcile_service_events(view(raw), path, now=NOW)["added"], 0)
+            due = {**raw, "OptiBrain_Maintenance_Due": "2026-09-25",
+                   "OptiBrain_Renewal_On": "2026-10-25"}
+            self.assertEqual(reconcile_service_events(view(due), path, now=NOW)["added"], 2)
+            self.assertEqual(reconcile_service_events(view(due), path, now=NOW)["added"], 0)
+            complete = {**due, "OptiBrain_Last_Service_On": "2026-10-01",
+                        "OptiBrain_Maintenance_Due": "2027-04-01"}
+            self.assertEqual(reconcile_service_events(view(complete), path, now=NOW)["added"], 1)
+            renewed = {**complete, "OptiBrain_Renewal_On": "2027-10-25",
+                       "Service_Contract_Signed_Date": "2026-10-01T12:00:00-04:00"}
+            self.assertEqual(reconcile_service_events(view(renewed), path, now=NOW)["added"], 1)
 
 
 if __name__ == "__main__":

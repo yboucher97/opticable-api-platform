@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh OptiBrain service lifecycle events every 30 minutes
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=30min
+AccuracySec=1min
+Unit=opticable-phase10-service-events.service
+
+[Install]
+WantedBy=timers.target

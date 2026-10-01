@@ -26,12 +26,17 @@ class FirewallTests(unittest.TestCase):
                      for module in boundary.MODULES}}
         baseline["modules"]["Leads"] = {"status": "complete", "count": 1, "ids": ["111"]}
         (root / "PROTECTED_PREEXISTING_RECORDS.json").write_text(json.dumps(baseline))
+        service_baseline = root / "service-protected-baseline.json"
+        service_baseline.write_text(json.dumps({"schema": 1, "modules":
+            {module: [] for module in boundary.SERVICE_MODULES}}))
         registry = {"schema": 1, "baseline_sha256": hashlib.sha256(
             (root / "PROTECTED_PREEXISTING_RECORDS.json").read_bytes()).hexdigest(),
+            "service_baseline_sha256": hashlib.sha256(service_baseline.read_bytes()).hexdigest(),
             "records": {module: [] for module in boundary.MODULES}}
         registry["records"]["Leads"] = ["222"]
         (root / "registry.json").write_text(json.dumps(registry))
         self.patches = [patch.object(boundary, "BASELINE", root / "PROTECTED_PREEXISTING_RECORDS.json"),
+                        patch.object(boundary, "SERVICE_BASELINE", service_baseline),
                         patch.object(boundary, "REGISTRY", root / "registry.json"),
                         patch.object(boundary.os, "geteuid", return_value=0),
                         patch.dict(os.environ, {"OPTIBRAIN_PHASE8_TEST_LAB": boundary.POLICY})]

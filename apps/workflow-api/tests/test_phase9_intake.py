@@ -92,13 +92,18 @@ class IntakeLedgerTests(unittest.TestCase):
         baseline["modules"]["Leads"] = {"status": "complete", "count": 1, "ids": ["111"]}
         baseline_path = root / "PROTECTED_PREEXISTING_RECORDS.json"
         baseline_path.write_text(json.dumps(baseline))
+        service_baseline_path = root / "service-protected-baseline.json"
+        service_baseline_path.write_text(json.dumps({"schema": 1, "modules":
+            {module: [] for module in boundary.SERVICE_MODULES}}))
         registry = {"schema": 1, "baseline_sha256": hashlib.sha256(baseline_path.read_bytes()).hexdigest(),
+                    "service_baseline_sha256": hashlib.sha256(service_baseline_path.read_bytes()).hexdigest(),
                     "records": {module: [] for module in boundary.MODULES}}
         registry["records"]["Leads"] = ["222"]
         registry_path = root / "registry.json"
         registry_path.write_text(json.dumps(registry))
         header = {"If-Unmodified-Since": "2026-09-30T18:00:00-04:00"}
         with patch.object(boundary, "BASELINE", baseline_path), patch.object(boundary, "REGISTRY", registry_path), \
+             patch.object(boundary, "SERVICE_BASELINE", service_baseline_path), \
              patch.object(boundary.os, "geteuid", return_value=0), \
              patch.dict(os.environ, {"OPTIBRAIN_PHASE8_TEST_LAB": boundary.POLICY}):
             body = {"data": [{"id": "111", "Description": "OPTIBRAIN TEST — PHASE 9"}], "trigger": []}

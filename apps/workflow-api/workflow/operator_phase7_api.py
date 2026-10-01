@@ -20,6 +20,7 @@ from .automation.sales_operator_view import (
 )
 from .automation.sales_queue import build_sales_queue, render_sales_queue
 from .automation.customer_lifecycle import build_customer_lifecycle, render_customer_lifecycle
+from .automation.service_inventory import build_recurring_view, render_recurring_view
 from .automation.phase9_intake import IntakeLedger
 from .automation.phase9_form_receipts import FormReceiptLedger
 from .automation.outbound_approval import OutboundApproval, OutboundApprovalLedger
@@ -156,6 +157,24 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         except ZohoGatewayError as exc:
             raise HTTPException(status_code=503, detail="Fresh provider evidence unavailable") from exc
         return HTMLResponse(render_customer_lifecycle(view), headers={
+            "Cache-Control": "private, no-store, max-age=0", "Pragma": "no-cache",
+            "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
+        })
+
+    @app.get("/v1/operator/phase10/recurring-services", tags=["operator-phase10"],
+             response_class=HTMLResponse)
+    async def recurring_services(scope: str = "live",
+            cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
+        identity(cf_access_jwt_assertion)
+        try:
+            lifecycle = build_customer_lifecycle(client, scope=scope, now=now())
+            view = build_recurring_view(lifecycle)
+        except (ValueError, OSError) as exc:
+            raise HTTPException(status_code=409, detail="Fresh service evidence needs review") from exc
+        except ZohoGatewayError as exc:
+            raise HTTPException(status_code=503, detail="Fresh provider evidence unavailable") from exc
+        return HTMLResponse(render_recurring_view(view), headers={
             "Cache-Control": "private, no-store, max-age=0", "Pragma": "no-cache",
             "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
             "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",

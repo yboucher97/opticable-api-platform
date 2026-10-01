@@ -12,6 +12,7 @@ import json
 from zoneinfo import ZoneInfo
 
 from .providers.crm_leads import records
+from .service_inventory import read_inventory
 
 TORONTO = ZoneInfo("America/Toronto")
 LAB_REGISTRY = Path("/etc/optibrain/phase8-test-lab-registry.json")
@@ -80,11 +81,15 @@ def _service_kind(name):
     return "other"
 
 
-def analyze_customer(account, contacts, deals, *, now, test_only):
+def analyze_customer(account, contacts, deals, *, now, test_only, service_rows=None):
     if now.utcoffset() is None:
         raise ValueError("Lifecycle clock requires timezone")
     today = now.astimezone(TORONTO).date()
-    completed = [d for d in deals if d.get("Stage") in COMPLETE_STAGES]
+    service_rows = service_rows or []
+    linked_deals = {s["deal_id"] for s in service_rows if s.get("deal_id")}
+    # A CRM Service supersedes its source Deal for inventory; never count both.
+    inventory_deals = [d for d in deals if str(d["id"]) not in linked_deals]
+    completed = [d for d in inventory_deals if d.get("Stage") in COMPLETE_STAGES]
     active = [d for d in deals if d.get("Stage") in ACTIVE_PROJECT_STAGES]
     recurring = [d for d in completed if str(d.get("OptiBrain_Recurrence") or "").strip()]
     installed = [d for d in completed if d.get("OptiBrain_Installed_On")]
@@ -96,6 +101,8 @@ def analyze_customer(account, contacts, deals, *, now, test_only):
             _day(d.get(key))
     service_days = [_day(d.get("OptiBrain_Last_Service_On") or d.get("OptiBrain_Installed_On"))
                     for d in installed]
+    service_days.extend(_day(s.get("last_service_on") or s.get("installed_on"))
+                        for s in service_rows if s.get("last_service_on") or s.get("installed_on"))
     last_service = max(service_days) if service_days else None
     maintenance = sorted((d for d in installed if d.get("OptiBrain_Maintenance_Due")
                           and _day(d["OptiBrain_Maintenance_Due"]) <= today),
@@ -103,24 +110,47 @@ def analyze_customer(account, contacts, deals, *, now, test_only):
     renewal = sorted((d for d in recurring if d.get("OptiBrain_Renewal_On")
                       and _day(d["OptiBrain_Renewal_On"]) <= today + timedelta(days=45)),
                      key=lambda d: d["OptiBrain_Renewal_On"])
-    dormant = bool(installed and last_service and last_service < today - timedelta(days=540)
-                   and not active and not any(d.get("OptiBrain_Recurrence") for d in completed))
+    service_maintenance = sorted((s for s in service_rows if s["maintenance_status"] == "DUE"),
+                                 key=lambda s: s["maintenance_due_on"])
+    service_renewal = sorted((s for s in service_rows if s["renewal_status"] in {"DUE", "OVERDUE"}),
+                             key=lambda s: s["renewal_on"])
+    active_recurring = [s for s in service_rows if s["active_recurring"]]
+    known_installed = bool(installed or any(s["installed_on"] for s in service_rows))
+    dormant = bool(known_installed and last_service and last_service < today - timedelta(days=540)
+                   and not active and not recurring and not active_recurring)
     kinds = {_service_kind(_service_name(d)) for d in completed}
-    descriptions = " ".join(str(d.get("Description") or "") for d in completed).casefold()
+    kinds.update({"cabling" if s["category"] == "Structured cabling" else
+                  "cameras" if s["category"] == "Cameras/CCTV" else
+                  "wifi" if s["category"] == "Commercial Wi-Fi" else "other"
+                  for s in service_rows if s["installed_on"]})
+    # Keep project context when its Deal is superseded by a linked Service.
+    descriptions = " ".join(str(d.get("Description") or "") for d in deals).casefold()
     cross_sell = bool("cabling" in kinds and "wifi" not in kinds
                       and ("wireless" in descriptions or "wi-fi" in descriptions or "wifi" in descriptions))
     upsell = bool("cameras" in kinds and ("expansion" in descriptions or "coverage gap" in descriptions)
                   and not any("expansion" in str(d.get("Deal_Name") or "").casefold()
                               and d.get("Stage") in OPEN_STAGES for d in deals))
-    stage = ("ACTIVE PROJECT" if active else "RENEWAL DUE" if renewal else
-             "MAINTENANCE / SUPPORT" if maintenance else "RECURRING SERVICE" if recurring else
+    stage = ("ACTIVE PROJECT" if active else "RENEWAL DUE" if renewal or service_renewal else
+             "MAINTENANCE / SUPPORT" if maintenance or service_maintenance else
+             "RECURRING SERVICE" if recurring or active_recurring else
              "DORMANT CUSTOMER" if dormant else "PROJECT COMPLETE" if completed else
+             "PROJECT COMPLETE" if known_installed else
              "ACTIVE OPPORTUNITY" if any(d.get("Stage") in OPEN_STAGES for d in deals) else "UNKNOWN")
-    if renewal:
+    if service_renewal:
+        chosen = service_renewal[0]
+        action, why, review = ("Review recurring-service renewal",
+                               f"{chosen['category']} renewal is {chosen['renewal_status'].lower()} for {_local_day(chosen['renewal_on'])}.",
+                               chosen["renewal_on"])
+    elif renewal:
         chosen = renewal[0]
         action, why, review = ("Review recurring-service renewal",
                                f"{_service_name(chosen)} renews on {_local_day(chosen['OptiBrain_Renewal_On'])}.",
                                chosen["OptiBrain_Renewal_On"])
+    elif service_maintenance:
+        chosen = service_maintenance[0]
+        action, why, review = ("Offer a maintenance health-check review",
+                               f"Installed {chosen['category']} at {chosen['site']} needs maintenance since {_local_day(chosen['maintenance_due_on'])}.",
+                               chosen["maintenance_due_on"])
     elif maintenance:
         chosen = maintenance[0]
         action, why, review = ("Offer a maintenance health-check review",
@@ -144,9 +174,9 @@ def analyze_customer(account, contacts, deals, *, now, test_only):
         action, why, review = ("No action — monitor", "No verified lifecycle trigger supports outreach now.", None)
     if not test_only and action != "No action — monitor":
         why += " Read-only suggestion; confirm service facts before any customer action."
-    confidence = ("VERIFIED" if test_only and (active or completed) else
-                  "POSSIBLE" if not test_only and completed else "INSUFFICIENT DATA")
-    if not test_only and not installed:
+    confidence = ("VERIFIED" if test_only and (active or completed or known_installed) else
+                  "POSSIBLE" if not test_only and (completed or known_installed) else "INSUFFICIENT DATA")
+    if not test_only and not known_installed:
         # A historical Deal stage alone does not prove an installation or service interval.
         if stage not in {"ACTIVE PROJECT", "ACTIVE OPPORTUNITY"}:
             stage, action, why, review, confidence = ("UNKNOWN", "No action — monitor",
@@ -157,7 +187,8 @@ def analyze_customer(account, contacts, deals, *, now, test_only):
         "contact": str(contacts[0].get("Full_Name") or "") if len(contacts) == 1 else None,
         "contact_state": "VERIFIED" if len(contacts) == 1 else "AMBIGUOUS" if contacts else "UNKNOWN",
         "stage": stage, "confidence": confidence, "test_only": test_only,
-        "services": sorted({_service_name(d) for d in completed if _service_name(d)}),
+        "services": sorted({_service_name(d) for d in completed if _service_name(d)} |
+                           {s["category"] for s in service_rows if s["installed_on"]}),
         "active_opportunities": [str(d.get("Deal_Name") or "") for d in deals if d.get("Stage") in OPEN_STAGES],
         "recurring": [{"deal_id": str(d["id"]), "service": _service_name(d),
                        "cadence": str(d.get("OptiBrain_Recurrence") or ""),
@@ -165,17 +196,23 @@ def analyze_customer(account, contacts, deals, *, now, test_only):
                        "next_review": _local_day(d.get("OptiBrain_Renewal_On")),
                        "renewal": _local_day(d.get("OptiBrain_Renewal_On")),
                        "status": "TEST ONLY" if test_only else "REVIEW"}
-                      for d in recurring],
+                      for d in recurring] +
+                     [{"deal_id": s["deal_id"], "service": s["category"],
+                       "cadence": s["cadence"], "start": _local_day(s["installed_on"]),
+                       "next_review": _local_day(s["renewal_on"]),
+                       "renewal": _local_day(s["renewal_on"]), "status": s["stage"],
+                       "mrr_cad": s["mrr_cad"]} for s in active_recurring],
         "last_service": _local_day(last_service.isoformat()) if last_service else None,
         "last_crm_activity": _local(max((d["Last_Activity_Time"] for d in deals
                                          if d.get("Last_Activity_Time")),
                                         key=_instant, default=None)),
-        "maintenance_due": bool(maintenance), "renewal_due": bool(renewal), "dormant": dormant,
+        "maintenance_due": bool(maintenance or service_maintenance),
+        "renewal_due": bool(renewal or service_renewal), "dormant": dormant,
         "cross_sell": cross_sell, "upsell": upsell, "action": action, "reason": why,
         "next_review": _local_day(review),
         "source": {"first": source_deal.get("First_Source") if source_deal else None,
                    "campaign": source_deal.get("First_Campaign") if source_deal else None},
-        "deal_ids": [str(d["id"]) for d in deals],
+        "deal_ids": [str(d["id"]) for d in deals], "service_rows": service_rows,
     }
 
 
@@ -189,6 +226,7 @@ def build_customer_lifecycle(client, *, scope="live", now=None, registry_path=LA
     contacts = _list(client, "Contacts", CONTACT_FIELDS)
     deals = _list(client, "Deals", DEAL_FIELDS)
     owned = {"Accounts": set(), "Contacts": set(), "Deals": set()}
+    registry = {}
     if scope == "lab":
         registry = json.loads(Path(registry_path).read_text())
         owned = {module: set(registry.get("records", {}).get(module) or [])
@@ -196,6 +234,8 @@ def build_customer_lifecycle(client, *, scope="live", now=None, registry_path=LA
     selected = ([a for a in accounts if a.get("OptiBrain_Test") is True
                  and str(a["id"]) in owned["Accounts"]] if scope == "lab" else
                 [a for a in accounts if a.get("OptiBrain_Test") is not True])
+    service_rows = read_inventory(client, selected, deals, scope=scope,
+                                  registry=registry, now=clock)
     rows = []
     for account in selected:
         identity = str(account["id"])
@@ -208,7 +248,8 @@ def build_customer_lifecycle(client, *, scope="live", now=None, registry_path=LA
         if scope == "lab" and not str(account.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE "):
             raise ValueError("Lab Account marker changed")
         rows.append(analyze_customer(account, related_contacts, related_deals,
-                                     now=clock, test_only=scope == "lab"))
+                                     now=clock, test_only=scope == "lab",
+                                     service_rows=[s for s in service_rows if s["account_id"] == identity]))
     order = {"Review recurring-service renewal": 0, "Offer a maintenance health-check review": 1,
              "Review dormant customer relationship": 2, "Review camera-system expansion": 3,
              "Review managed Wi-Fi need": 4, "Track active project delivery": 5,
@@ -223,7 +264,8 @@ def build_customer_lifecycle(client, *, scope="live", now=None, registry_path=LA
                         "upsell": sum(x["upsell"] for x in rows),
                         "active_recurring": sum(bool(x["recurring"]) for x in rows),
                         "no_action": sum(x["action"] == "No action — monitor" for x in rows)},
-            "rows": rows, "writes_enabled": False, "revenue_totals": None}
+            "rows": rows, "service_rows": service_rows,
+            "writes_enabled": False, "revenue_totals": None}
 
 
 def render_customer_lifecycle(view):
@@ -232,12 +274,16 @@ def render_customer_lifecycle(view):
     cards = []
     for row in view["rows"]:
         services = ", ".join(row["services"]) or "Unknown"
+        installed_sites = "; ".join(f"{s['category']} at {s['site']}"
+                                    for s in row["service_rows"] if s["installed_on"]) or "None verified"
         recurring = "; ".join(f"{x['service']} · {x['cadence']} · started {x['start'] or 'unknown'}"
                               f" · renewal {x['renewal'] or 'unknown'}"
+                              f" · MRR CAD {x.get('mrr_cad') or 'unknown'}"
                               for x in row["recurring"]) or "None verified"
         cards.append(f"<article><h2>{h(row['account'])}</h2><p>{h(row['stage'])} · {h(row['confidence'])}"
                      f"{' · TEST ONLY' if row['test_only'] else ' · READ-ONLY'}<br>Contact: {h(row['contact'])}"
-                     f" · Services: {h(services)}<br>Last verified service: {h(row['last_service'])}"
+                     f" · Services: {h(services)}<br>Installed at: {h(installed_sites)}"
+                     f" · Last verified service: {h(row['last_service'])}"
                      f" · Last CRM activity: {h(row['last_crm_activity'])}"
                      f" · Recurring: {h(recurring)}<br>First source: {h(row['source']['first'])}"
                      f" · Campaign: {h(row['source']['campaign'])}</p>"

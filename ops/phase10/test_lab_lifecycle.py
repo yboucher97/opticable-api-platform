@@ -18,6 +18,7 @@ ROOT = Path("/var/lib/optibrain/phase10/test-lab")
 STATE = ROOT / "registry.json"
 LAB = Path("/var/lib/optibrain/phase8/test-lab/registry.json")
 BASELINE = Path("/var/lib/optibrain/phase8/test-lab/PROTECTED_PREEXISTING_RECORDS.json")
+SERVICE_BASELINE = Path("/var/lib/optibrain/phase10/service-protected-baseline.json")
 PROJECTION = Path("/etc/optibrain/phase8-test-lab-registry.json")
 MARKER = "OPTIBRAIN TEST — PHASE 10"
 
@@ -86,11 +87,13 @@ def read(client, module, identity):
 
 
 def matches(actual, row):
+    visible = (actual.get("Description") or actual.get("Name") or "")
     if (actual.get("OptiBrain_Test") is not True
-            or not str(actual.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")):
+            or not str(visible).startswith("OPTIBRAIN TEST — PHASE ")):
         return False
     for field, expected in row.items():
-        if field in {"Account_Name", "Contact_Name"} and isinstance(expected, dict):
+        if field in {"Account_Name", "Contact_Name", "Linked_Account", "Primary_Contact",
+                     "Linked_Deal", "Linked_Service_Location"} and isinstance(expected, dict):
             if str((actual.get(field) or {}).get("id")) != expected["id"]:
                 return False
         elif field != "id" and actual.get(field) != expected:
@@ -139,7 +142,9 @@ def write(client, lab, state, key, module, row, *, identity=None):
     history[key]["id"] = got
     atomic(STATE, state)
     if not identity:
-        if got in set(load(BASELINE)["modules"][module]["ids"]):
+        protected = (load(SERVICE_BASELINE)["modules"][module] if module in {"Services", "Service_Locations", "Installations"}
+                     else load(BASELINE)["modules"][module]["ids"])
+        if got in set(protected):
             raise ValueError("Provider created protected ID")
         lab["records"][module].append(got)
         atomic(LAB, lab)
@@ -211,9 +216,85 @@ def transition(client, lab, state, negative):
         print(name, field, value, flush=True)
 
 
+SERVICE_SCENARIOS = {
+    "cabling_cross_sell": [("Cabling installation", "Cabling Installation", "Installation", "2026-05-01", "2026-08-01", None, None, None, None)],
+    "camera_maintenance": [("Camera system", "Camera Installation", "Installation", "2025-11-01", "2026-03-01", "2027-03-01", None, None, None)],
+    "recurring_service": [
+        ("Managed Wi-Fi support", "Wifi Support", "Recurring Service", "2024-02-01", "2024-03-01", None, "2027-06-01", "Monthly", 300.0),
+        ("AI loss prevention subscription", "Other", "Recurring Service", "2026-02-01", "2026-09-20", None, "2027-06-01", "Monthly", 200.0),
+    ],
+    "renewal_due": [
+        ("PTP link service", "Other", "Recurring Service", "2025-11-01", "2026-08-01", None, "2027-01-01", "Annual", 1200.0),
+        ("IP telephony support", "VoIP Support", "Recurring Service", "2026-01-01", "2026-09-01", None, "2027-08-01", "Monthly", 90.0),
+    ],
+    "dormant": [("Completed cabling", "Cabling Installation", "Installation", "2023-01-01", "2024-01-01", None, None, None, None)],
+    "camera_upsell": [("Camera system", "Camera Installation", "Installation", "2026-05-01", "2026-09-01", None, None, None, None)],
+    "no_action": [("Access control", "Access Control Installation", "Installation", "2026-08-01", "2026-09-20", "2027-03-01", None, None, None)],
+    "active_project": [("Temporary jobsite Wi-Fi", "Other", "Recurring Service", "2026-09-01", "2026-09-20", None, "2026-12-01", "Monthly", 150.0)],
+}
+
+
+def seed_services(client, lab, state):
+    for scenario_name, items in SERVICE_SCENARIOS.items():
+        scenario = state["scenarios"][scenario_name]
+        aid, cid, did = scenario["account_id"], scenario["contact_id"], scenario["deal_id"]
+        account = read(client, "Accounts", aid)
+        if not matches(account, {"OptiBrain_Test": True}):
+            raise ValueError("Service location Account is not a verified Test Lab relationship")
+        location = write(client, lab, state, "service_site:" + scenario_name,
+                         "Service_Locations", {"Name": f"{MARKER} — {scenario_name.replace('_', ' ').title()} Site",
+                                               "OptiBrain_Test": True,
+                                               "Linked_Account": {"id": aid},
+                                               "Primary_Contact": {"id": cid}})
+        lid = str(location["id"])
+        scenario["site_id"] = lid
+        scenario["service_ids"] = []
+        atomic(STATE, state)
+        for index, (name, type_name, contract, installed, last, maintenance, renewal, cadence, amount) in enumerate(items):
+            row = {"Name": f"{MARKER} — {name}", "OptiBrain_Test": True,
+                   "Linked_Service_Location": {"id": lid}, "Linked_Deal": {"id": did},
+                   "Service_Type": type_name, "Service_Stage": "Active",
+                   "Contract_Type": contract, "OptiBrain_Installed_On": installed,
+                   "OptiBrain_Last_Service_On": last}
+            if maintenance: row["OptiBrain_Maintenance_Due"] = maintenance
+            if renewal: row["OptiBrain_Renewal_On"] = renewal
+            if cadence:
+                row["OptiBrain_Recurrence"] = cadence
+                row["OptiBrain_Recurring_Amount_CAD"] = amount
+                row["Service_Contract_Signed_Date"] = "2025-11-01T12:00:00-04:00"
+            service = write(client, lab, state, f"service:{scenario_name}:{index}", "Services", row)
+            scenario["service_ids"].append(str(service["id"]))
+            atomic(STATE, state)
+            print(scenario_name, "service", service["id"], flush=True)
+
+
+def service_transition(client, lab, state, mode):
+    maintenance = state["scenarios"]["camera_maintenance"]["service_ids"][0]
+    renewal = state["scenarios"]["renewal_due"]["service_ids"][0]
+    if mode == "maintenance_due":
+        write(client, lab, state, "service_transition:maintenance_due", "Services",
+              {"OptiBrain_Maintenance_Due": "2026-09-25"}, identity=maintenance)
+    elif mode == "maintenance_complete":
+        write(client, lab, state, "service_transition:maintenance_complete", "Services",
+              {"OptiBrain_Last_Service_On": "2026-10-01",
+               "OptiBrain_Maintenance_Due": "2027-04-01"}, identity=maintenance)
+    elif mode == "renewal_due":
+        write(client, lab, state, "service_transition:renewal_due", "Services",
+              {"OptiBrain_Renewal_On": "2026-10-25"}, identity=renewal)
+    elif mode == "renewal_overdue":
+        write(client, lab, state, "service_transition:renewal_overdue", "Services",
+              {"OptiBrain_Renewal_On": "2026-09-20"}, identity=renewal)
+    elif mode == "renewed":
+        write(client, lab, state, "service_transition:renewed", "Services",
+              {"OptiBrain_Renewal_On": "2027-10-25",
+               "Service_Contract_Signed_Date": "2026-10-01T12:00:00-04:00"}, identity=renewal)
+
+
 def main():
-    if os.geteuid() != 0 or len(sys.argv) != 2 or sys.argv[1] not in {"seed", "negative", "restore"}:
-        raise SystemExit("Root and one explicit seed/negative/restore operation required")
+    modes = {"seed", "negative", "restore", "seed-services", "maintenance_due", "maintenance_complete",
+             "renewal_due", "renewal_overdue", "renewed"}
+    if os.geteuid() != 0 or len(sys.argv) != 2 or sys.argv[1] not in modes:
+        raise SystemExit("Root and one explicit Test Lab operation required")
     baseline = load(BASELINE)
     lab = load(LAB)
     if lab.get("baseline_sha256") != hashlib.sha256(BASELINE.read_bytes()).hexdigest():
@@ -225,11 +306,15 @@ def main():
                                                 "operations": {}, "scenarios": {}}
     if state["protected_baseline_sha256"] != lab["baseline_sha256"]:
         raise ValueError("Phase 10 Test Lab baseline changed")
+    if lab.get("service_baseline_sha256") != hashlib.sha256(SERVICE_BASELINE.read_bytes()).hexdigest():
+        raise ValueError("Protected service baseline changed")
     atomic(STATE, state)
     client = provider()
     if sys.argv[1] == "seed": seed(client, lab, state)
     elif sys.argv[1] == "negative": transition(client, lab, state, True)
-    else: transition(client, lab, state, False)
+    elif sys.argv[1] == "restore": transition(client, lab, state, False)
+    elif sys.argv[1] == "seed-services": seed_services(client, lab, state)
+    else: service_transition(client, lab, state, sys.argv[1])
 
 
 if __name__ == "__main__":

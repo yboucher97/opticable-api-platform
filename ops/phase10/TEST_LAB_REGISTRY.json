@@ -21,5 +21,27 @@
   "records_created_this_mission": {"accounts": 7, "contacts": 7, "deals": 7, "tasks": 0},
   "crm_updates_this_mission": 6,
   "books_writes": 0,
-  "customer_emails": 0
+  "customer_emails": 0,
+  "mission2_service_inventory": {
+    "protected_existing_services": 12,
+    "protected_existing_service_locations": 12,
+    "protected_existing_installations": 0,
+    "service_baseline_sha256": "caa7b20022d0c7a4b8b2270f4addff700e0516a384e585f6a3133471525e1e62",
+    "root_baseline": "/var/lib/optibrain/phase10/service-protected-baseline.json",
+    "lab_service_count": 10,
+    "lab_site_count": 8,
+    "synthetic_mrr_cad_at_seed": "840.00",
+    "synthetic_arr_cad_at_seed": "10080.00",
+    "scenarios": {
+      "active_project": {"site": "5062683000007933004", "services": ["5062683000007934011"]},
+      "cabling_cross_sell": {"site": "5062683000007900018", "services": ["5062683000007901007"]},
+      "camera_maintenance": {"site": "5062683000007889011", "services": ["5062683000007889013"]},
+      "camera_upsell": {"site": "5062683000007932003", "services": ["5062683000007932005"]},
+      "dormant": {"site": "5062683000007906013", "services": ["5062683000007902025"]},
+      "no_action": {"site": "5062683000007913020", "services": ["5062683000007920010"]},
+      "recurring_service": {"site": "5062683000007911003", "services": ["5062683000007917018", "5062683000007929004"]},
+      "renewal_due": {"site": "5062683000007933002", "services": ["5062683000007902023", "5062683000007929006"]}
+    },
+    "cleanup_policy": "Retain as TEST_ONLY regression evidence; never use synthetic MRR/ARR as real financial totals"
+  }
 }

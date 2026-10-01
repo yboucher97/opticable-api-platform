@@ -612,3 +612,29 @@ still display them and must not be used as real customer counts. Creating native
 filtered Account/Contact views is the next test-exclusion gap. No autonomous
 Codex dispatch, customer email, protected-record mutation or Books write was
 introduced.
+
+## Phase 10 service inventory extension — 2026-10-01
+
+The manually initiated second Phase 10 mission reused native Zoho
+`Service_Locations` and `Services` for Account→site→service→source Deal evidence.
+Before Test Lab writes, 12 existing Services and 12 Service Locations were
+captured in `/var/lib/optibrain/phase10/service-protected-baseline.json` and
+pinned into the existing Test Lab registry. The original 99-record baseline
+remains unchanged. Only registered TEST_ONLY service/site IDs can be changed;
+all existing service records are read-only. Eight marked Test sites and ten
+marked Test services now exercise one-time installation, maintenance, managed
+Wi-Fi, PTP, VoIP, AI loss prevention, camera expansion, dormancy and a temporary
+jobsite service. Exact IDs are in `ops/phase10/TEST_LAB_REGISTRY.json`.
+
+The authenticated `/v1/operator/phase10/recurring-services` route reads fresh
+Zoho Service and Service Location records. The lifecycle route uses those facts
+with Deal context for a single action per Account. Explicit active contracts
+and cadence/amount yield synthetic Lab MRR/ARR; no Books or real company
+financial values are inferred. `scope=live` excludes Test Lab records and
+leaves incomplete protected service history unknown. Operator dates use
+America/Toronto. The application-owned 30-minute
+`opticable-phase10-service-events.timer` reconciles read-only Test Lab Service
+state into a local replay-safe event ledger; it does not invoke Codex or write
+to Zoho. Native Zoho Account/Contact `All` defaults still contain Lab records;
+do not use their unfiltered counts as business metrics. See
+`docs/phase10-lifecycle-foundation.md` for the service model and evidence rules.
