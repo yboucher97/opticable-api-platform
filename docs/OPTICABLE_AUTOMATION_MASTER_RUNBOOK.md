@@ -567,3 +567,16 @@ latest source became `phase9_ai_return_test`, and campaign became
 `opticable_phase9_closure_return_test`. Both provider receipts replay to their
 original immutable events. Root evidence is retained under
 `/var/lib/optibrain/phase9/closure/`.
+
+During closure validation, short-lived root inspection processes and the
+five-minute collector exhausted Zoho's token-refresh rate limit because each
+new process refreshed independently. The collector was paused while this was
+fixed. `ZohoOAuthManager` now uses a protected cross-process lock and persists
+the access token with an expiry in the existing Zoho credential file; normal
+collector runs reuse that token until its safe refresh window. The lock is
+`/var/lib/opticable-api-platform/shared/zoho-oauth.lock`, owned by the API
+service identity and mode 0600. Credential writes preserve the refresh token
+and use an atomic replacement, mode 0640. Keep the OAuth credential and lock
+accessible to `opticable-workflow-api`; do not run frequent standalone refresh
+probes. The receipt timer must be re-enabled only after one successful
+collector run and API/provider readback following Zoho's cooldown.

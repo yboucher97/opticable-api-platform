@@ -20,6 +20,8 @@ Closure proof on 2026-10-01: one actual browser submission through `/fr/contact/
 
 The same alias returned through the active AI connector under inquiry `d6aa615a-4004-4650-b341-c070c61b4e84`; provider acknowledgement and CRM readback confirmed `updated_lead` on the **same** Lead, first source `zoho_form`, latest traffic source `phase9_ai_return_test`, campaign `opticable_phase9_closure_return_test`, and second immutable event `OB-I-55B46DF5A6629BFF0464E68F`. Replaying both original provider receipts locally returns `REPLAY`, leaving one form event, one connector event and one CRM enrichment. A real Form-only repeat remains unproven and is never assumed safe.
 
+The five-minute collector previously used a fresh OAuth manager in each process, causing a Zoho refresh request for each run. Manual read-only validation added enough short-lived processes to hit Zoho's refresh throttle. The OAuth manager now shares an expiry-aware token in the existing protected credential file, with a cross-process lock and atomic writes. The collector timer was temporarily paused during the provider cooldown; it is only restored after a successful provider read on the final release. This changes token handling only, not CRM write authority.
+
 ## Current source inventory
 
 | Source | Entrypoint and data | CRM destination / dedupe | Status |

@@ -31,6 +31,7 @@ _HASH = re.compile(r"[0-9a-f]{64}\Z")
 _PINNED_SOURCES = frozenset({
     "workflow/api.py", "workflow/phase7_registration.py",
     "workflow/operator_access.py", "workflow/operator_phase7_api.py",
+    "workflow/zoho_oauth.py",
     "workflow/operator_phase7_create_api.py",
     "workflow/automation/phase7_lead_create.py",
     "workflow/automation/phase7_crm_approval.py",

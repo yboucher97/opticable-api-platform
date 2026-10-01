@@ -3,11 +3,14 @@ from __future__ import annotations
 import base64
 from dataclasses import dataclass
 from datetime import datetime, timezone
+import fcntl
 import hashlib
 import hmac
 import json
+import os
 from pathlib import Path
 import secrets
+import stat
 import threading
 import time
 from typing import Any
@@ -138,47 +141,85 @@ class ZohoOAuthManager:
 
     def access_token(self) -> str:
         now = time.time()
-        if self._access_token and self._access_token_expires_at > now + 60:
+        if self._access_token and self._access_token_expires_at > now + 90:
             return self._access_token
 
         with self._token_lock:
             now = time.time()
-            if self._access_token and self._access_token_expires_at > now + 60:
+            if self._access_token and self._access_token_expires_at > now + 90:
                 return self._access_token
+            # A process-local cache makes every five-minute oneshot refresh its
+            # own token. Serialize across API and collector processes, then
+            # reuse one protected, expiry-aware credential for the token hour.
+            lock_path = self.settings.credentials_path.with_suffix(".lock")
+            fd = os.open(lock_path, os.O_CREAT | os.O_RDWR | os.O_CLOEXEC | os.O_NOFOLLOW, 0o600)
+            try:
+                info = os.fstat(fd)
+                if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1
+                        or stat.S_IMODE(info.st_mode) != 0o600
+                        or info.st_uid not in {os.geteuid(), self.settings.credentials_path.stat().st_uid}):
+                    raise ValueError("Zoho OAuth refresh lock is not trusted")
+                fcntl.flock(fd, fcntl.LOCK_EX)
+                saved = self.load_saved_credentials()
+                if not saved:
+                    raise ValueError("Zoho OAuth is not connected.")
+                token = str(saved.get("access_token") or "").strip()
+                expiry = float(saved.get("access_token_expires_at") or 0)
+                if token and expiry > time.time() + 90:
+                    self._access_token = token
+                    self._access_token_expires_at = expiry
+                    return token
+                refresh_token = str(saved.get("refresh_token") or "").strip()
+                if not refresh_token:
+                    if token:
+                        return token  # Legacy direct-token connection.
+                    raise ValueError("Zoho OAuth credentials do not contain a refresh token.")
+                timeout = httpx.Timeout(60.0, connect=20.0)
+                with httpx.Client(timeout=timeout) as client:
+                    response = client.post(self.token_url, data={
+                        "grant_type": "refresh_token", "refresh_token": refresh_token,
+                        "client_id": self.settings.client_id, "client_secret": self.settings.client_secret})
+                if response.status_code >= 400:
+                    raise ValueError(
+                        f"Zoho token refresh failed with status {response.status_code}: {response.text}")
+                payload = response.json()
+                token = str(payload.get("access_token") or "").strip()
+                if not token:
+                    raise ValueError(f"Zoho token refresh did not return an access token: {payload}")
+                expires_in = int(payload.get("expires_in_sec") or payload.get("expires_in") or 3600)
+                if not 180 <= expires_in <= 86400:
+                    raise ValueError("Zoho token lifetime is outside safe bounds")
+                expiry = time.time() + expires_in
+                saved["access_token"] = token
+                saved["access_token_expires_at"] = expiry
+                self._write_credentials(saved)
+                self._access_token = token
+                self._access_token_expires_at = expiry
+                return token
+            finally:
+                fcntl.flock(fd, fcntl.LOCK_UN)
+                os.close(fd)
 
-            saved = self.load_saved_credentials()
-            if not saved:
-                raise ValueError("Zoho OAuth is not connected.")
-            refresh_token = str(saved.get("refresh_token") or "").strip()
-            if not refresh_token:
-                access_token = str(saved.get("access_token") or "").strip()
-                if access_token:
-                    return access_token
-                raise ValueError("Zoho OAuth credentials do not contain a refresh token.")
-
-            timeout = httpx.Timeout(60.0, connect=20.0)
-            with httpx.Client(timeout=timeout) as client:
-                response = client.post(
-                    self.token_url,
-                    data={
-                        "grant_type": "refresh_token",
-                        "refresh_token": refresh_token,
-                        "client_id": self.settings.client_id,
-                        "client_secret": self.settings.client_secret,
-                    },
-                )
-            if response.status_code >= 400:
-                raise ValueError(
-                    f"Zoho token refresh failed with status {response.status_code}: {response.text}"
-                )
-            payload = response.json()
-            token = str(payload.get("access_token") or "").strip()
-            if not token:
-                raise ValueError(f"Zoho token refresh did not return an access token: {payload}")
-            expires_in = int(payload.get("expires_in_sec") or payload.get("expires_in") or 3600)
-            self._access_token = token
-            self._access_token_expires_at = time.time() + max(300, expires_in)
-            return token
+    def _write_credentials(self, payload: dict[str, Any]) -> None:
+        target = self.settings.credentials_path
+        original = target.stat() if target.exists() else None
+        temporary = target.with_name("." + target.name + "." + secrets.token_hex(8) + ".tmp")
+        fd = os.open(temporary, os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_CLOEXEC | os.O_NOFOLLOW, 0o640)
+        try:
+            os.fchmod(fd, 0o640)
+            if original is not None and os.geteuid() == 0:
+                os.fchown(fd, original.st_uid, original.st_gid)
+            with os.fdopen(fd, "w", encoding="utf-8") as stream:
+                fd = -1
+                json.dump(payload, stream, indent=2)
+                stream.write("\n")
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temporary, target)
+        finally:
+            if fd >= 0:
+                os.close(fd)
+            temporary.unlink(missing_ok=True)
 
     def load_saved_credentials(self) -> dict[str, Any] | None:
         path = self.settings.credentials_path
@@ -208,8 +249,10 @@ class ZohoOAuthManager:
             "expires_in": payload.get("expires_in"),
             "expires_in_sec": payload.get("expires_in_sec"),
         }
-        target.write_text(json.dumps(persisted, indent=2) + "\n", encoding="utf-8")
-        target.chmod(0o640)
+        if persisted["access_token"]:
+            expires_in = int(payload.get("expires_in_sec") or payload.get("expires_in") or 3600)
+            persisted["access_token_expires_at"] = time.time() + expires_in
+        self._write_credentials(persisted)
         return target
 
     def status(self) -> ZohoConnectionStatus:
