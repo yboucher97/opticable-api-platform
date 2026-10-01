@@ -243,8 +243,11 @@ def enrich_form_leads(client, ledger: FormReceiptLedger, *, go_live, baseline_pa
             continue
         if state and state["state"] == "VERIFIED":
             if receipt_row["test_only"]:
-                _record_test_intake(ledger, json.loads(receipt_row["evidence_json"]),
-                    _one(client, f"/crm/v8/Leads/{receipt_row['canonical_id']}"))
+                intake_path = ledger.path.parent / "phase9-intake.db"
+                prior = IntakeLedger(intake_path).trace(str(receipt_row["canonical_id"])) if intake_path.exists() else None
+                if not prior or not any(item.get("inquiry_id") == event for item in prior["events"]):
+                    _record_test_intake(ledger, json.loads(receipt_row["evidence_json"]),
+                        _one(client, f"/crm/v8/Leads/{receipt_row['canonical_id']}"))
             continue
         result["eligible"] += 1
         receipt = json.loads(receipt_row["evidence_json"])

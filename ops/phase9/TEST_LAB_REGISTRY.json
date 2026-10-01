@@ -98,5 +98,23 @@
     "real_customer_emails": 0,
     "books_writes": 0,
     "retention": "Retain controlled records and append-only receipts; no blind retry of documented intakes"
+  },
+  "closure": {
+    "controlled_email": "hckyan97+obp9closure1@gmail.com",
+    "french_form_id": "i6pIlfoGOFER0OCZ4oUH_KMxVWRZKC9Of8vbyNAjR0g",
+    "form_notification_id": "1790856101554162800",
+    "form_receipt_id": "OB-I-0BF42F3190C4B699D4DFC4CA",
+    "lead_id": "5062683000007940001",
+    "form_enrichment": "one ATTEMPTED, one VERIFIED, exact CRM readback",
+    "test_feedback_event": "OB-F-8B147B3E7881CAD292797A28",
+    "ai_return_inquiry_id": "d6aa615a-4004-4650-b341-c070c61b4e84",
+    "ai_return_receipt_id": "OB-I-55B46DF5A6629BFF0464E68F",
+    "first_source": "zoho_form",
+    "latest_source": "phase9_ai_return_test",
+    "latest_campaign": "opticable_phase9_closure_return_test",
+    "historical_protected_mutations": 0,
+    "real_customer_emails": 0,
+    "books_writes": 0,
+    "evidence_root": "/var/lib/optibrain/phase9/closure/"
   }
 }

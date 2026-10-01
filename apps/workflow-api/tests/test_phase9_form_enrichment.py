@@ -122,6 +122,18 @@ class FormEnrichmentTests(unittest.TestCase):
         self.assertEqual(enrich_form_leads(client, self.ledger, go_live=self.go_live)["verified"], 1)
         self.assertEqual(client.puts, 1)
 
+    def test_feedback_failure_after_verified_write_recovers_without_second_put(self):
+        client = Provider(self.lead, self.receipt["occurred_at"])
+        with patch("workflow.automation.phase9_form_enrichment._record_test_intake",
+                   side_effect=PermissionError("ledger unavailable")):
+            with self.assertRaises(PermissionError):
+                enrich_form_leads(client, self.ledger, go_live=self.go_live)
+        self.assertEqual(self.ledger.enrichment_state(self.receipt["event_id"])["state"], "VERIFIED")
+        self.assertEqual(enrich_form_leads(client, self.ledger, go_live=self.go_live)["attempted"], 0)
+        self.assertEqual(client.puts, 1)
+        trace = IntakeLedger(self.ledger.path.parent / "phase9-intake.db").trace("777")
+        self.assertEqual([item["kind"] for item in trace["feedback"]], ["LEAD_CREATED"])
+
     def test_transport_rejects_unjournaled_protected_and_mismatched_field(self):
         body = {"data": [{"id": "999", "Email": self.receipt["submitted_email"]}],
                 "trigger": [], "skip_feature_execution": [{"name": "cadences"}]}

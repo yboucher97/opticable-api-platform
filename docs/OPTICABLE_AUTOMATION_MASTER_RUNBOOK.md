@@ -549,3 +549,21 @@ provider writer is enabled by this collector. Durable instants remain aware;
 operator views display America/Toronto. Native Zoho Forms mapping should still
 be corrected later through a supported Forms admin path when available; its
 current omission is not silently treated as resolved.
+
+One closure browser submission on 2026-10-01 produced Zoho Forms Mail
+`1790856101554162800`, receipt `OB-I-0BF42F3190C4B699D4DFC4CA`, and
+new TEST_ONLY Lead `5062683000007940001`. Browser detachment after the click
+was reconciled through Mail, CRM and the ledger; the form was **not** resubmitted.
+The Lead initially lacked Email/source. The collector made one guarded PUT,
+read back Email `hckyan97+obp9closure1@gmail.com`, `zoho_form` first/latest
+source, the receipt inquiry ID and TEST_ONLY marker, and journaled VERIFIED.
+Its first feedback-ledger write failed because `phase9-intake.db` was root-owned;
+the DB was preserved, assigned to `opticable-workflow-api` mode 0600, and
+the next collector run recorded `LEAD_CREATED` without another CRM write.
+Maintain this DB ownership on rebuilds. The controlled AI return inquiry
+`d6aa615a-4004-4650-b341-c070c61b4e84` updated the same Lead and produced
+event `OB-I-55B46DF5A6629BFF0464E68F`; first source stayed `zoho_form`,
+latest source became `phase9_ai_return_test`, and campaign became
+`opticable_phase9_closure_return_test`. Both provider receipts replay to their
+original immutable events. Root evidence is retained under
+`/var/lib/optibrain/phase9/closure/`.
