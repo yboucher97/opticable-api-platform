@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "authority": "TEST_ONLY records; protected pre-existing CRM baseline remains read-only",
+  "protected_baseline_count": 99,
+  "protected_baseline_sha256": "b928cd44884169e150cbf7481edf07c5943bd7bc8989be667467936fda702d33",
+  "live_registry": "/var/lib/optibrain/phase10/test-lab/registry.json",
+  "operation_journal": "/var/lib/optibrain/phase10/test-lab/registry.json#operations",
+  "lifecycle_events": "/var/lib/optibrain/phase10/test-lab/lifecycle-events.db",
+  "test_marker": "OptiBrain_Test=true; visible OPTIBRAIN TEST — PHASE marker",
+  "cleanup_policy": "Retain as isolated Phase 10-12 regression evidence; never include in real metrics or outreach",
+  "scenarios": {
+    "active_project": {"account": "5062683000007928001", "contact": "5062683000007929001", "deal": "5062683000007913007", "expected": "ACTIVE PROJECT", "source": "Phase 9 source-attributed relationship reused"},
+    "cabling_cross_sell": {"account": "5062683000007889009", "contact": "5062683000007920006", "deal": "5062683000007915011", "expected": "CROSS-SELL — managed Wi-Fi review"},
+    "camera_maintenance": {"account": "5062683000007918004", "contact": "5062683000007918006", "deal": "5062683000007913014", "expected": "MAINTENANCE DUE"},
+    "recurring_service": {"account": "5062683000007930018", "contact": "5062683000007900007", "deal": "5062683000007907003", "expected": "RECURRING SERVICE — monitor"},
+    "renewal_due": {"account": "5062683000007896047", "contact": "5062683000007938002", "deal": "5062683000007916004", "expected": "RENEWAL DUE"},
+    "dormant": {"account": "5062683000007908021", "contact": "5062683000007917004", "deal": "5062683000007895004", "expected": "DORMANT CUSTOMER"},
+    "camera_upsell": {"account": "5062683000007917007", "contact": "5062683000007938005", "deal": "5062683000007895010", "expected": "UPSELL — camera expansion review"},
+    "no_action": {"account": "5062683000007916010", "contact": "5062683000007928003", "deal": "5062683000007895016", "expected": "NO ACTION — monitor"}
+  },
+  "records_created_this_mission": {"accounts": 7, "contacts": 7, "deals": 7, "tasks": 0},
+  "crm_updates_this_mission": 6,
+  "books_writes": 0,
+  "customer_emails": 0
+}

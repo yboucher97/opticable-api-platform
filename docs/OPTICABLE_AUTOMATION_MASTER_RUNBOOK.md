@@ -581,3 +581,34 @@ restricted shared file. Keep these files accessible to
 `opticable-workflow-api`; do not run frequent standalone refresh
 probes. The receipt timer must be re-enabled only after one successful
 collector run and API/provider readback following Zoho's cooldown.
+
+## Phase 10 customer lifecycle foundation — 2026-10-01
+
+The manually initiated Phase 10 mission added five narrowly scoped Deal facts
+for installation, last service, maintenance due, renewal and recurring cadence.
+The authenticated `/v1/operator/phase10/customer-lifecycle` view reads bounded
+Accounts, Contacts and Deals. `scope=live` excludes `OptiBrain_Test=true`;
+`scope=lab` requires the registered test IDs and visible marker. It displays
+Montreal business dates, one next action and its provider-backed reason. No
+customer write or outreach route was enabled.
+
+Seven new TEST_ONLY Account→Contact→Deal chains and the existing Phase 9 chain
+proved active project, completed cabling cross-sell, camera maintenance,
+recurring service, renewal, dormancy, camera expansion and no-action behavior.
+Zoho readback proved dormant and maintenance flags clear after new service or
+future dates; moving a synthetic renewal into its 45-day window raised renewal
+review. The synthetic dates were restored where needed so the Lab queue retains
+the positive examples. Root evidence and the one-attempt operation journal live
+under `/var/lib/optibrain/phase10/test-lab/`; the replay-stable lifecycle event
+ledger added 19 events once and zero on a second sync. The protected 99-record
+baseline remains unchanged. A sparse real historical Deal was evaluated
+read-only and correctly remained `INSUFFICIENT DATA` for installed-service
+history. See `docs/phase10-lifecycle-foundation.md` for exact decision rules.
+
+The recurring section does not claim booked revenue or financial totals.
+OptiBrain's live lifecycle counts exclude Test Lab data. Existing filtered Zoho
+Lead/Deal operational views exclude tests; native Account/Contact default views
+still display them and must not be used as real customer counts. Creating native
+filtered Account/Contact views is the next test-exclusion gap. No autonomous
+Codex dispatch, customer email, protected-record mutation or Books write was
+introduced.
