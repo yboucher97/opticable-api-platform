@@ -1,5 +1,5 @@
 import { NonRetryableError } from "cloudflare:workflows";
-import { lifecycleSchedules, deliverEvent } from "./runtime-policy.js";
+import { lifecycleSchedules, deliverEvent, workflowInstanceId } from "./runtime-policy.js";
 import { WorkflowEntrypoint, WorkflowEvent, WorkflowStep } from "cloudflare:workers";
 
 type BusinessEvent = {
@@ -131,7 +131,7 @@ export default {
     for (const message of batch.messages) {
       const event = normalizeEvent(message.body);
       try {
-        await env.BUSINESS_WORKFLOW.create({ id: event.event_id, params: event });
+        await env.BUSINESS_WORKFLOW.create({ id: await workflowInstanceId(event.event_id), params: event });
         message.ack();
       } catch (error) {
         const msg = error instanceof Error ? error.message.toLowerCase() : "";

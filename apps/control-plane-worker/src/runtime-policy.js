@@ -76,3 +76,13 @@ export async function deliverEvent(env, event, PermanentError) {
   try { body = JSON.parse(text); } catch {}
   return {status: response.status, body};
 }
+
+export async function workflowInstanceId(eventId) {
+  // Preserve historical valid instance IDs and the original business event ID.
+  // Provider IDs disallow ':' in the scheduler's Toronto slots. Hash invalid
+  // IDs instead of sanitizing them, which would collapse distinct identities.
+  if (/^[a-zA-Z0-9_][a-zA-Z0-9_-]{0,99}$/.test(eventId) && !/^cf_[0-9a-f]{64}$/.test(eventId))
+    return eventId;
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(eventId));
+  return 'ob-' + Array.from(new Uint8Array(digest), b=>b.toString(16).padStart(2,'0')).join('');
+}

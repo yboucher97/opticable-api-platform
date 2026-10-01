@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {lifecycleSchedules, deliverEvent} from '../src/runtime-policy.js';
+import {lifecycleSchedules, deliverEvent, workflowInstanceId} from '../src/runtime-policy.js';
 
 test('one scheduler owns observers; retired draft/digest producers never enqueue', () => {
   for (let ms=Date.parse('2026-10-01T04:00:00Z');ms<Date.parse('2026-10-02T04:00:00Z');ms+=900000) {
@@ -20,6 +20,21 @@ test('one scheduler owns observers; retired draft/digest producers never enqueue
 test('Toronto finance slot stays 07:15 across DST', () => {
   for (const time of ['2026-10-01T11:15:00Z','2026-12-01T12:15:00Z'])
     assert.ok(lifecycleSchedules(Date.parse(time)).some(x=>x.event_type.includes('finance')));
+});
+
+test('provider instance identity preserves old IDs and safely maps every scheduled slot', async () => {
+  assert.equal(await workflowInstanceId('mailbox-poll-123'),'mailbox-poll-123');
+  const original='schedule-customer-lifecycle-mailbox-poll-requested-mail-2026-10-01T19:00';
+  const mapped=await workflowInstanceId(original);
+  assert.match(mapped,/^[a-zA-Z0-9_][a-zA-Z0-9_-]{0,99}$/);
+  assert.equal(mapped,await workflowInstanceId(original));
+  assert.notEqual(mapped,await workflowInstanceId(original.replace(':','-')));
+  const ids=[];
+  for (let i=0;i<96;i++) for (const intent of lifecycleSchedules(Date.parse('2026-10-01T04:00:00Z')+i*900000)) {
+    const id=await workflowInstanceId(`schedule-${intent.event_type}-${intent.bucket}`);
+    assert.match(id,/^[a-zA-Z0-9_][a-zA-Z0-9_-]{0,99}$/);ids.push(id);
+  }
+  assert.equal(new Set(ids).size,ids.length);
 });
 
 test('delivery preserves idempotency and avoids retrying permanent failures or leaking bodies', async () => {
