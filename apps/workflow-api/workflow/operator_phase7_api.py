@@ -19,9 +19,13 @@ from .automation.sales_operator_view import (
     CONTROLLED_LEAD_ID, build_sales_operator_view, render_sales_operator_view,
 )
 from .automation.sales_queue import build_sales_queue, render_sales_queue
+from .automation.phase9_intake import IntakeLedger
 from .automation.outbound_approval import OutboundApproval, OutboundApprovalLedger
 from .operator_access import AccessIdentityVerifier
 from .zoho_gateway import ZohoGatewayError
+from html import escape
+from pathlib import Path
+import json
 
 
 class IssueCrmCanaryRequest(BaseModel):
@@ -134,6 +138,49 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
             "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
             "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
         })
+
+    @app.get("/v1/operator/phase9/source-trace/{lead_id}", tags=["operator-phase9"],
+             response_class=HTMLResponse)
+    async def source_trace(lead_id: str,
+            cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
+        identity(cf_access_jwt_assertion)
+        if not re.fullmatch(r"[0-9]{1,30}", lead_id):
+            raise HTTPException(status_code=404, detail="Trace not found")
+        try:
+            registry = json.loads(Path("/etc/optibrain/phase8-test-lab-registry.json").read_text())
+            if lead_id not in set(registry.get("records", {}).get("Leads") or []):
+                raise ValueError("Trace is outside registered Test Lab")
+            trace = IntakeLedger(Path(store.db_path).parent / "phase9-intake.db").trace(lead_id)
+            if trace is None:
+                raise HTTPException(status_code=404, detail="Trace not found")
+            result = client.request("zohoapis", "GET", f"/crm/v8/Leads/{lead_id}")
+            rows = (result.get("data") or {}).get("data") or []
+            if len(rows) != 1 or rows[0].get("OptiBrain_Test") is not True or not str(rows[0].get("Description") or "").startswith("OPTIBRAIN TEST — PHASE "):
+                raise ValueError("CRM Test Lab identity changed")
+        except (OSError, ValueError, KeyError) as exc:
+            raise HTTPException(status_code=409, detail="Fresh Test Lab trace needs review") from exc
+        except ZohoGatewayError as exc:
+            raise HTTPException(status_code=503, detail="Fresh provider evidence unavailable") from exc
+        h = lambda value: escape(str(value or "—"), quote=True)
+        lead = rows[0]
+        events = "".join(
+            f"<li><b>{h(e['source'])}</b> · {h(e['occurred_at_montreal'])} · "
+            f"{h(e['event_id'])} · {h(e['crm_action'])} · campaign {h(e['campaign'])}</li>"
+            for e in trace["events"])
+        outcomes = "".join(
+            f"<li><b>{h(e['kind'])}</b> · {h(e['related_module'])} {h(e['related_id'])}</li>"
+            for e in trace["feedback"])
+        html = ("<!doctype html><html lang='en'><meta charset='utf-8'>"
+                "<title>OptiBrain source trace</title>"
+                "<style>body{font:16px/1.5 system-ui;max-width:850px;margin:2rem auto;padding:0 1rem;color:#182536}"
+                "li{margin:.5rem 0}small{color:#526174}</style>"
+                f"<h1>Source to opportunity · TEST ONLY</h1><p>{h(lead.get('Full_Name'))} · Lead {h(lead_id)}</p>"
+                f"<p><b>First touch:</b> {h(trace['first_touch'])} · <b>Latest touch:</b> {h(trace['latest_touch'])}</p>"
+                f"<h2>Intakes</h2><ol>{events}</ol><h2>Outcomes</h2><ol>{outcomes}</ol>"
+                "<small>Verified Test Lab CRM identity. Internal audit only; external conversion export disabled.</small></html>")
+        return HTMLResponse(html, headers={"Cache-Control": "private, no-store, max-age=0",
+                                           "Pragma": "no-cache", "X-Frame-Options": "DENY",
+                                           "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'"})
 
     @app.post("/v1/operator/phase7/crm-approvals", tags=["operator-phase7"],
               dependencies=[Depends(guard)])

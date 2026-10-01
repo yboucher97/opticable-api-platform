@@ -13,14 +13,15 @@ from .providers.crm_leads import records
 from .sales_operator_view import CONTROLLED_LEAD_ID, build_sales_operator_view
 from .followup_mail import read_controlled_mail
 from .sales_lab import enhance_lab_queue
+from .phase9_intake import IntakeLedger
 
 TORONTO = ZoneInfo("America/Toronto")
 ACTIVE = {"Not Contacted", "Attempted to Contact", "Contact in Future", "Pre-Qualified"}
 INACTIVE = {"Junk Lead", "Lost Lead", "Not Qualified", "Converted"}
-FIELDS = ("id,Full_Name,Company,Email,Phone,Mobile,Lead_Status,Converted__s,"
+FIELDS = ("id,Full_Name,Last_Name,Company,Email,Phone,Mobile,Lead_Status,Converted__s,"
           "Created_Time,Modified_Time,Next_Followup_At,Ingestion_Source,Lead_Source,"
           "Service_Types,City,State,Street,Scope,Project_Timeline,Description,Email_Opt_Out,"
-          "OptiBrain_Test,Last_Activity_Time")
+          "OptiBrain_Test,Last_Activity_Time,First_Source,Last_Source,First_Campaign,Last_Campaign,Last_Touch_Time")
 LAB_REGISTRY = Path("/etc/optibrain/phase8-test-lab-registry.json")
 
 
@@ -254,7 +255,7 @@ def build_sales_queue(client, db_path, *, account_id, from_address, now=None,
         if found != owned:
             raise ValueError("Test Lab Lead list incomplete or changed")
         leads = [x for x in leads if str(x.get("id")) in owned]
-        if any(x.get("OptiBrain_Test") is not True or not str(x.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE 8") for x in leads):
+        if any(x.get("OptiBrain_Test") is not True or not str(x.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ") for x in leads):
             raise ValueError("Test Lab Lead marker mismatch")
         lab_contacts = set(registry.get("records", {}).get("Contacts") or [])
         lab_accounts = set(registry.get("records", {}).get("Accounts") or [])
@@ -291,9 +292,22 @@ def build_sales_queue(client, db_path, *, account_id, from_address, now=None,
                 now=clock, expected_message_id=meta["message_id"])
         view = analyze_queue(leads, contacts, accounts, None, now=clock,
                              leads_complete=True, relationships_complete=True)
-        return enhance_lab_queue(view, leads, contacts, accounts, deals, tasks, mail_by_id, now=clock)
+        view = enhance_lab_queue(view, leads, contacts, accounts, deals, tasks, mail_by_id, now=clock)
+        ledger_path = Path(db_path).parent / "phase9-intake.db"
+        for row in view["rows"]:
+            lead = next(x for x in leads if str(x["id"]) == row["id"])
+            trace = (IntakeLedger(ledger_path).trace(row["id"]) if ledger_path.exists()
+                     and str(lead.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE 9") else None)
+            row["attribution"] = {"first_source": trace["first_touch"] if trace else lead.get("First_Source") or "Unknown",
+                                  "latest_source": trace["latest_touch"] if trace else lead.get("Last_Source") or "Unknown",
+                                  "traffic_source": lead.get("Last_Source"),
+                                  "campaign": lead.get("Last_Campaign") or lead.get("First_Campaign"),
+                                  "last_intake": local(lead.get("Last_Touch_Time"))}
+        return view
     leads = [x for x in leads if x.get("OptiBrain_Test") is not True
-             and not str(x.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE 8")]
+             and not str(x.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")
+             and not str(x.get("Last_Name") or "").startswith("OPTIBRAIN TEST — PHASE ")
+             and not str(x.get("Company") or "").startswith("OPTIBRAIN TEST — PHASE ")]
     controlled = None
     if any(str(x["id"]) == CONTROLLED_LEAD_ID for x in leads):
         controlled = build_sales_operator_view(client, db_path, account_id=account_id,
@@ -350,7 +364,13 @@ def render_sales_queue(view):
             f" · <b>CRM deadline:</b> {h(item['deadline'])}</p>"
             f"<p><b>Missing:</b> {missing}</p>"
             + relation_html)
-        rows[-1] += f"<p class='note'>{h(item['last_activity'])}</p>{mail_html}{draft_html}</article>"
+        attribution = item.get("attribution") or {}
+        attribution_html = (f"<p><b>First source:</b> {h(attribution.get('first_source'))} · "
+                            f"<b>Latest source:</b> {h(attribution.get('latest_source'))} · "
+                            f"<b>Traffic source:</b> {h(attribution.get('traffic_source'))} · "
+                            f"<b>Campaign:</b> {h(attribution.get('campaign'))} · "
+                            f"<b>Last intake:</b> {h(attribution.get('last_intake'))}</p>") if attribution else ""
+        rows[-1] += f"{attribution_html}<p class='note'>{h(item['last_activity'])}</p>{mail_html}{draft_html}</article>"
     note = ("All records are OptiBrain-owned TEST_ONLY data. Source categories are simulated; CRM/Mail/Task evidence is live."
             if view.get('scope') == 'lab' else
             "Read only. Mail checked only for the controlled Lead; other inbox states require review.")

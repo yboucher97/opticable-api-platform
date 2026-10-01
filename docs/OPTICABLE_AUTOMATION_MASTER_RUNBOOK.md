@@ -451,3 +451,16 @@ alias and primary sender share one mailbox; cross-provider delivery was not
 tested. Evidence and IDs are in the Test Lab registry and
 `docs/phase8-test-lab.md`. The persistent autonomous development worker
 remains disabled.
+
+## Phase 9 intake foundation — 2026-09-30
+
+The active AI evaluation page posts to `connect.opticable.ca/public/lead`;
+the main contact page embeds a Zoho Form. The connector already has canonical
+`Inquiry_ID` replay protection and CRM first/latest attribution fields.
+Phase 9 adds an immutable, provider-reconciled Test Lab intake/feedback ledger,
+root-journaled public-route validation, a protected operator source trace, and
+first/latest source context in the existing sales queue. Details and current
+limitations are in `docs/phase9-intake-foundation.md`. The pre-existing CRM
+baseline stays read-only; provider mutation is limited to OptiBrain-owned
+TEST_ONLY records. No autonomous development dispatch or ad conversion export
+is enabled.

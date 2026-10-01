@@ -18,7 +18,7 @@ ROOT = Path("/var/lib/optibrain/phase8/test-lab")
 BASELINE = ROOT / "PROTECTED_PREEXISTING_RECORDS.json"
 REGISTRY = ROOT / "registry.json"
 MODULES = frozenset({"Leads", "Contacts", "Accounts", "Deals", "Tasks", "Events", "Calls", "Notes"})
-MARKER = "OPTIBRAIN TEST — PHASE 8"
+MARKER = "OPTIBRAIN TEST — PHASE "
 
 
 def _read(path):
@@ -98,6 +98,7 @@ def validate_lab_request(method, path, body, headers):
     if "Email" in row and row["Email"]:
         address = str(row["Email"]).casefold()
         if not (address.endswith("@optibrain.invalid")
+                or re.fullmatch(r"hckyan97\+obp9[a-z0-9]+@gmail\.com", address)
                 or address in {"hckyan97+obp8wait@gmail.com", "info@opticable.ca"}):
             raise ValueError("Test Lab email is not synthetic or verified operator-controlled")
     if module == "Tasks" and not str(row.get("Subject") or "").startswith(MARKER) and method == "POST":
