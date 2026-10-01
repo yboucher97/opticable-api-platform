@@ -1,0 +1,1526 @@
+[
+  {
+    "file": "apps/workflow-api/workflow/ai_router.py",
+    "line": 77,
+    "function": "_openai",
+    "call": "httpx.post",
+    "args": [
+      "'https://api.openai.com/v1/responses'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/ai_router.py",
+    "line": 112,
+    "function": "_anthropic",
+    "call": "httpx.post",
+    "args": [
+      "'https://api.anthropic.com/v1/messages'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/ai_router.py",
+    "line": 134,
+    "function": "_gemini",
+    "call": "httpx.post",
+    "args": [
+      "f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/zoho_gateway.py",
+    "line": 165,
+    "function": "_local_request",
+    "call": "httpx.request",
+    "args": [
+      "method",
+      "url"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/zoho_gateway.py",
+    "line": 225,
+    "function": "_standby_request",
+    "call": "httpx.post",
+    "args": [
+      "f'{self.settings.base_url}/internal/v1/zoho/request'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/apollo_api.py",
+    "line": 41,
+    "function": "request",
+    "call": "httpx.request",
+    "args": [
+      "method",
+      "self.BASE + path"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/operator_outbound_api.py",
+    "line": 120,
+    "function": "install_operator_outbound_routes.issue_approval",
+    "call": "app.post",
+    "args": [
+      "'/v1/operator/outbound/approvals'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/operator_outbound_api.py",
+    "line": 197,
+    "function": "install_operator_outbound_routes.consume_approval",
+    "call": "app.post",
+    "args": [
+      "'/v1/operator/outbound/approvals/{approval_id}/consume'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/cloudflare_api.py",
+    "line": 40,
+    "function": "request",
+    "call": "httpx.request",
+    "args": [
+      "method",
+      "self.BASE + path"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/operator_phase7_create_api.py",
+    "line": 60,
+    "function": "install_phase7_create_routes.review",
+    "call": "app.post",
+    "args": [
+      "'/v1/operator/phase7/lead-create/review'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/operator_phase7_create_api.py",
+    "line": 73,
+    "function": "install_phase7_create_routes.issue",
+    "call": "app.post",
+    "args": [
+      "'/v1/operator/phase7/lead-create/approvals'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/operator_phase7_create_api.py",
+    "line": 91,
+    "function": "install_phase7_create_routes.consume",
+    "call": "app.post",
+    "args": [
+      "'/v1/operator/phase7/lead-create/approvals/{approval_id}/consume'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/operator_phase7_api.py",
+    "line": 124,
+    "function": "install_phase7_canary_routes.issue_business_approval",
+    "call": "app.post",
+    "args": [
+      "'/v1/operator/phase12/approvals'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/operator_phase7_api.py",
+    "line": 415,
+    "function": "install_phase7_canary_routes.issue",
+    "call": "app.post",
+    "args": [
+      "'/v1/operator/phase7/crm-approvals'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/operator_phase7_api.py",
+    "line": 436,
+    "function": "install_phase7_canary_routes.consume",
+    "call": "app.post",
+    "args": [
+      "'/v1/operator/phase7/crm-approvals/{approval_id}/consume'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/operator_phase7_api.py",
+    "line": 461,
+    "function": "install_phase7_canary_routes.issue_outbound",
+    "call": "app.post",
+    "args": [
+      "'/v1/operator/phase7/outbound-approvals'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/operator_phase7_api.py",
+    "line": 485,
+    "function": "install_phase7_canary_routes.consume_outbound",
+    "call": "app.post",
+    "args": [
+      "'/v1/operator/phase7/outbound-approvals/{approval_id}/consume'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/zoho_oauth.py",
+    "line": 125,
+    "function": "exchange_code",
+    "call": "client.post",
+    "args": [
+      "self.token_url"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/zoho_oauth.py",
+    "line": 186,
+    "function": "access_token",
+    "call": "client.post",
+    "args": [
+      "self.token_url"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/workdrive.py",
+    "line": 49,
+    "function": "upload_bytes",
+    "call": "client.post",
+    "args": [
+      "f'{self._api_base_url()}/upload'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/workdrive.py",
+    "line": 211,
+    "function": "_create_child_folder_id",
+    "call": "client.post",
+    "args": [
+      "f'{self._api_base_url()}/files'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/workdrive.py",
+    "line": 255,
+    "function": "_move_folder",
+    "call": "client.patch",
+    "args": [
+      "f'{self._api_base_url()}/files/{folder_id}'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/workdrive.py",
+    "line": 290,
+    "function": "_get_access_token",
+    "call": "client.post",
+    "args": [
+      "f'{self.oauth_settings.accounts_base_url}/oauth/v2/token'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/universal_inbox_dry_run.py",
+    "line": 129,
+    "function": "classify_batch",
+    "call": "decision.update",
+    "args": [
+      "{'messageId': message.get('messageId'), 'subject': message.get('subject'), 'fromAddress': message.get('fromAddress'), 'toAddress': message.get('toAddress')}"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/windsor_api.py",
+    "line": 73,
+    "function": "execute_action",
+    "call": "httpx.post",
+    "args": [
+      "f'{self.settings.base_url}/{connector}/actions'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/clients.py",
+    "line": 20,
+    "function": "create_job",
+    "call": "httpx.post",
+    "args": [
+      "f'{self.settings.base_url}/webhooks/zoho/wifi-pdfs'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/clients.py",
+    "line": 52,
+    "function": "create_job",
+    "call": "httpx.post",
+    "args": [
+      "f'{self.settings.base_url}/api/webhooks/run'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/clients.py",
+    "line": 73,
+    "function": "create_job_from_raw",
+    "call": "httpx.post",
+    "args": [
+      "f'{self.settings.base_url}/api/webhooks/run'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/clients.py",
+    "line": 111,
+    "function": "_discovery_params",
+    "call": "params.update",
+    "args": [
+      "extra"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/google_oauth.py",
+    "line": 107,
+    "function": "exchange_code",
+    "call": "client.post",
+    "args": [
+      "self.TOKEN_URL"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/google_oauth.py",
+    "line": 181,
+    "function": "access_token",
+    "call": "client.post",
+    "args": [
+      "self.TOKEN_URL"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/google_api.py",
+    "line": 90,
+    "function": "request",
+    "call": "httpx.request",
+    "args": [
+      "normalized_method",
+      "url"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 156,
+    "function": "_update_automation_recovery_state",
+    "call": "_automation_recovery_state.update",
+    "args": [
+      "updates"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 967,
+    "function": "_upload_omada_live_site_artifacts",
+    "call": "workdrive_client.upload_file",
+    "args": [
+      "artifact_path",
+      "workdrive_folder_id"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1216,
+    "function": "automation_reload_workflows",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/workflows/reload'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1234,
+    "function": "automation_ingest_event",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/events'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1248,
+    "function": "lifecycle_ingest_lead",
+    "call": "app.post",
+    "args": [
+      "'/v1/lifecycle/leads'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1271,
+    "function": "lifecycle_ingest_email",
+    "call": "app.post",
+    "args": [
+      "'/v1/lifecycle/emails'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1290,
+    "function": "lifecycle_create_meeting",
+    "call": "app.post",
+    "args": [
+      "'/v1/lifecycle/meetings'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1311,
+    "function": "automation_smoke_test",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/smoke-test'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1340,
+    "function": "automation_desired_state_validate",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/desired-state/validate'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1351,
+    "function": "automation_desired_state_plan",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/desired-state/plan'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1352,
+    "function": "automation_desired_state_plan",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/desired-state/drift'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1362,
+    "function": "automation_desired_state_apply",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/desired-state/apply'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1452,
+    "function": "automation_redrive_run",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/runs/{run_id}/redrive'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1474,
+    "function": "automation_cleanup_terminal_claims",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/maintenance/cleanup-terminal-claims'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1616,
+    "function": "omada_create_job",
+    "call": "app.post",
+    "args": [
+      "'/v1/omada/jobs'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1643,
+    "function": "omada_create_job_from_workdrive",
+    "call": "app.post",
+    "args": [
+      "'/v1/omada/workdrive/jobs'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1821,
+    "function": "google_admin_api",
+    "call": "google_api_client.request",
+    "args": [
+      "service",
+      "method",
+      "resource_path"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 1984,
+    "function": "_create_job_from_payload",
+    "call": "job_store.create",
+    "args": [
+      "job_id",
+      "{'building_name': batch.building_name, 'record_count': len(batch.records), 'credential_mode': batch.credential_mode, 'workflow_mode': batch.workflow_mode, 'omada_operation': batch.omada_operation, 'template_name': batch.template_name, 'site_name': batch.site_name or batch.building_name}"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 2012,
+    "function": "create_site_workflow_job",
+    "call": "app.post",
+    "args": [
+      "PRIMARY_JOB_CREATE_PATH"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 2013,
+    "function": "create_site_workflow_job",
+    "call": "app.post",
+    "args": [
+      "WORKFLOW_CANONICAL_PATH"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 2014,
+    "function": "create_site_workflow_job",
+    "call": "app.post",
+    "args": [
+      "'/webhooks/zoho/site-and-password'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 2015,
+    "function": "create_site_workflow_job",
+    "call": "app.post",
+    "args": [
+      "'/webhooks/zoho/site-workflow'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/api.py",
+    "line": 2016,
+    "function": "create_site_workflow_job",
+    "call": "app.post",
+    "args": [
+      "'/v1/site-and-password/webhooks/zoho'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/ovh_api.py",
+    "line": 82,
+    "function": "request",
+    "call": "httpx.request",
+    "args": [
+      "method",
+      "url"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/pipeline.py",
+    "line": 66,
+    "function": "process",
+    "call": "self._get_workdrive_client().upload_file",
+    "args": [
+      "omada_plan_written",
+      "batch.workdrive_folder_id"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/pipeline.py",
+    "line": 69,
+    "function": "process",
+    "call": "self._get_workdrive_client().upload_file",
+    "args": [
+      "operation_plan_written",
+      "batch.workdrive_folder_id"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/pipeline.py",
+    "line": 142,
+    "function": "_upload_omada_live_site_artifacts",
+    "call": "workdrive_client.upload_file",
+    "args": [
+      "artifact_path",
+      "parent_folder_id"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/github_api.py",
+    "line": 73,
+    "function": "_refresh_installation_token",
+    "call": "httpx.post",
+    "args": [
+      "f'{self.BASE}/app/installations/{self.settings.installation_id}/access_tokens'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/github_api.py",
+    "line": 115,
+    "function": "request",
+    "call": "httpx.request",
+    "args": [
+      "method",
+      "self.BASE + path"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/phase7_crm_executor.py",
+    "line": 47,
+    "function": "execute_approved_canary",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "'PUT'",
+      "path"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/event_api.py",
+    "line": 65,
+    "function": "install_event_routes.promote_backfill",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/sync/promote-backfill'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/event_api.py",
+    "line": 85,
+    "function": "install_event_routes.replay_batch",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/events/replay-batch'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/event_api.py",
+    "line": 117,
+    "function": "install_event_routes.replay_event",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/events/{event_id}/replay'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/event_api.py",
+    "line": 128,
+    "function": "install_event_routes.webhook",
+    "call": "app.post",
+    "args": [
+      "'/v1/automation/webhooks/{endpoint_name}'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/phase9_form_enrichment.py",
+    "line": 117,
+    "function": "_expected",
+    "call": "expected.update",
+    "args": [
+      "{'OptiBrain_Test': True, 'Description': 'OPTIBRAIN TEST \u2014 PHASE 9\\n' + note}"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/phase9_form_enrichment.py",
+    "line": 289,
+    "function": "enrich_form_leads",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "'PUT'",
+      "path"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/customer_lifecycle.py",
+    "line": 122,
+    "function": "analyze_customer",
+    "call": "kinds.update",
+    "args": [
+      "{'cabling' if s['category'] == 'Structured cabling' else 'cameras' if s['category'] == 'Cameras/CCTV' else 'wifi' if s['category'] == 'Commercial Wi-Fi' else 'other' for s in service_rows if s['installed_on']}"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/sales_lab.py",
+    "line": 159,
+    "function": "enhance_lab_queue",
+    "call": "row.update",
+    "args": []
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/sales_lab.py",
+    "line": 162,
+    "function": "enhance_lab_queue",
+    "call": "row.update",
+    "args": []
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/sales_lab.py",
+    "line": 165,
+    "function": "enhance_lab_queue",
+    "call": "row.update",
+    "args": []
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/sales_lab.py",
+    "line": 168,
+    "function": "enhance_lab_queue",
+    "call": "row.update",
+    "args": []
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/sales_lab.py",
+    "line": 171,
+    "function": "enhance_lab_queue",
+    "call": "row.update",
+    "args": []
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/sales_lab.py",
+    "line": 174,
+    "function": "enhance_lab_queue",
+    "call": "row.update",
+    "args": []
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/sales_lab.py",
+    "line": 179,
+    "function": "enhance_lab_queue",
+    "call": "row.update",
+    "args": []
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/sales_lab.py",
+    "line": 185,
+    "function": "enhance_lab_queue",
+    "call": "row.update",
+    "args": []
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/sales_lab.py",
+    "line": 189,
+    "function": "enhance_lab_queue",
+    "call": "row.update",
+    "args": []
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/phase7_lead_create.py",
+    "line": 302,
+    "function": "execute_approved_create",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "'POST'",
+      "'/crm/v8/Leads'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/sales_decision.py",
+    "line": 218,
+    "function": "_safe_action",
+    "call": "allowed.update",
+    "args": [
+      "{'quote_review', 'site_visit'}"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/outbound_approval.py",
+    "line": 246,
+    "function": "_record",
+    "call": "metadata.update",
+    "args": [
+      "extra or {}"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/desired_state.py",
+    "line": 300,
+    "function": "apply",
+    "call": "evidence.update",
+    "args": [
+      "adapter.intent_evidence(resource, change)"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/desired_state.py",
+    "line": 317,
+    "function": "apply",
+    "call": "evidence.update",
+    "args": []
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/engine.py",
+    "line": 286,
+    "function": "_action_set",
+    "call": "context.setdefault('vars', {}).update",
+    "args": [
+      "values"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/reconcilers/zoho_metadata.py",
+    "line": 148,
+    "function": "apply",
+    "call": "self.client.request",
+    "args": [
+      "'zohoapis'",
+      "method",
+      "self.path + ('/' + identity if identity else '')"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/reconcilers/zoho_crm.py",
+    "line": 291,
+    "function": "apply",
+    "call": "self.client.request",
+    "args": [
+      "'zohoapis'",
+      "'POST'",
+      "'/crm/v8/settings/fields'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/reconcilers/zoho_crm.py",
+    "line": 309,
+    "function": "apply",
+    "call": "self.client.request",
+    "args": [
+      "'zohoapis'",
+      "'PATCH'",
+      "f'/crm/v8/settings/fields/{field_id}'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/reconcilers/zoho_crm.py",
+    "line": 335,
+    "function": "apply",
+    "call": "self.client.request",
+    "args": [
+      "'zohoapis'",
+      "'DELETE'",
+      "f'/crm/v8/settings/fields/{field_id}'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/reconcilers/zoho_notification.py",
+    "line": 150,
+    "function": "apply",
+    "call": "self.client.request",
+    "args": [
+      "'zohoapis'",
+      "'POST' if change.action == 'create' else 'PATCH'",
+      "'/crm/v8/actions/watch'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/google.py",
+    "line": 32,
+    "function": "register_google_actions.run",
+    "call": "client.request",
+    "args": [
+      "service",
+      "method",
+      "path"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/universal_inbox.py",
+    "line": 27,
+    "function": "register_universal_inbox_actions.observe",
+    "call": "result.update",
+    "args": [
+      "{'mail_mutations': 0, 'crm_mutations': 0, 'books_mutations': 0, 'outbound_sends': 0}"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/zoho.py",
+    "line": 39,
+    "function": "register_zoho_actions.request",
+    "call": "client.request",
+    "args": [
+      "service",
+      "method",
+      "path"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/lifecycle.py",
+    "line": 73,
+    "function": "_lead_payload",
+    "call": "payload.update",
+    "args": [
+      "{'First_Name': lead.get('first_name'), 'Company': lead.get('company'), 'Email': lead.get('email'), 'Phone': lead.get('phone'), 'Mobile': lead.get('mobile'), 'Street': address.get('street'), 'City': address.get('city'), 'State': address.get('state_province'), 'Zip_Code': address.get('postal_code'), 'Country': address.get('country'), 'Description': lead.get('message'), 'First_Source': attr.get('source') or lead.get('source'), 'First_Medium': attr.get('medium'), 'First_Campaign': attr.get('campaign'), 'First_Campaign_ID': attr.get('campaign_id'), 'First_Term': attr.get('term'), 'First_Content': attr.get('content'), 'First_Landing_URL': attr.get('landing_url'), 'First_Referrer': attr.get('referrer'), 'First_Site': attr.get('site'), 'First_Touch_Time': lead.get('occurred_at')}"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/lifecycle.py",
+    "line": 101,
+    "function": "_lead_payload",
+    "call": "payload.update",
+    "args": [
+      "{'Email': lead.get('email'), 'Phone': lead.get('phone'), 'Mobile': lead.get('mobile')}"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/lifecycle_extended.py",
+    "line": 157,
+    "function": "_contact_payload",
+    "call": "payload.update",
+    "args": [
+      "{'First_Name': lead.get('first_name'), 'Last_Name': lead.get('last_name'), 'Mailing_Street': address.get('street'), 'Mailing_City': address.get('city'), 'Mailing_State': address.get('state_province'), 'Mailing_Zip': address.get('postal_code'), 'Mailing_Country': address.get('country'), 'Description': lead.get('message'), 'First_Source': attr.get('source') or lead.get('source'), 'First_Medium': attr.get('medium'), 'First_Campaign': attr.get('campaign'), 'First_Campaign_ID': attr.get('campaign_id'), 'First_Term': attr.get('term'), 'First_Content': attr.get('content'), 'First_Landing_URL': attr.get('landing_url'), 'First_Referrer': attr.get('referrer'), 'First_Touch_Time': lead.get('occurred_at')}"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/lifecycle_extended.py",
+    "line": 213,
+    "function": "_deal_payload",
+    "call": "payload.update",
+    "args": [
+      "{'Deal_Name': f'{subject} - {service}'[:120], 'Stage': 'Qualification', 'Description': lead.get('message'), 'First_Source': attr.get('source') or lead.get('source'), 'First_Medium': attr.get('medium'), 'First_Campaign': attr.get('campaign'), 'First_Campaign_ID': attr.get('campaign_id'), 'First_Term': attr.get('term'), 'First_Content': attr.get('content'), 'First_Landing_URL': attr.get('landing_url'), 'First_Referrer': attr.get('referrer'), 'First_Touch_Time': lead.get('occurred_at')}"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/mail_drafts.py",
+    "line": 12,
+    "function": "save_mail_draft",
+    "call": "client.request",
+    "args": [
+      "'mail'",
+      "'POST'",
+      "f'/api/accounts/{account_id}/messages'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/crm_leads.py",
+    "line": 182,
+    "function": "register_crm_lead_actions.write_once",
+    "call": "evidence.update",
+    "args": []
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/crm_leads.py",
+    "line": 188,
+    "function": "register_crm_lead_actions.write_once",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "method",
+      "path"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/crm_leads.py",
+    "line": 191,
+    "function": "register_crm_lead_actions.write_once",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "method",
+      "path"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/ovh.py",
+    "line": 27,
+    "function": "register_ovh_actions.request",
+    "call": "client.request",
+    "args": [
+      "path",
+      "method"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/outbound_mail.py",
+    "line": 138,
+    "function": "register_outbound_mail_action.send",
+    "call": "client.request",
+    "args": [
+      "'mail'",
+      "'POST'",
+      "path"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/lifecycle_phase2.py",
+    "line": 342,
+    "function": "register_lifecycle_phase2_actions.send_contract",
+    "call": "client.request",
+    "args": [
+      "'sign'",
+      "'POST'",
+      "f'/templates/{config['template_id']}/createdocument'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/lifecycle_phase2.py",
+    "line": 509,
+    "function": "register_lifecycle_phase2_actions.build_digest",
+    "call": "client.request",
+    "args": [
+      "'mail'",
+      "'POST'",
+      "f'/api/accounts/{account_id}/messages'"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/core_external.py",
+    "line": 34,
+    "function": "register_core_external_actions.register.run",
+    "call": "client.request",
+    "args": [
+      "path",
+      "method"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/lifecycle_mailbox.py",
+    "line": 230,
+    "function": "register_lifecycle_mailbox_actions.observe_universal_inbox",
+    "call": "result.update",
+    "args": [
+      "{'mail_mutations': 0, 'crm_mutations': 0, 'books_mutations': 0, 'outbound_sends': 0}"
+    ]
+  },
+  {
+    "file": "apps/workflow-api/workflow/automation/providers/lifecycle_mailbox.py",
+    "line": 263,
+    "function": "register_lifecycle_mailbox_actions.send_approved_reply",
+    "call": "client.request",
+    "args": [
+      "'mail'",
+      "'POST'",
+      "f'/api/accounts/{account_id}/messages/{message_id}'"
+    ]
+  },
+  {
+    "file": "apps/password-pdf-service/wifi_pdf/workdrive.py",
+    "line": 89,
+    "function": "_get_access_token",
+    "call": "client.post",
+    "args": [
+      "self.settings.accounts_base_url"
+    ]
+  },
+  {
+    "file": "apps/password-pdf-service/wifi_pdf/workdrive.py",
+    "line": 132,
+    "function": "upload_file",
+    "call": "client.post",
+    "args": [
+      "f'{self.settings.api_base_url}/upload'"
+    ]
+  },
+  {
+    "file": "apps/password-pdf-service/wifi_pdf/workdrive.py",
+    "line": 341,
+    "function": "_move_folder",
+    "call": "client.patch",
+    "args": [
+      "f'{self.settings.api_base_url}/files/{folder_id}'"
+    ]
+  },
+  {
+    "file": "apps/password-pdf-service/wifi_pdf/workdrive.py",
+    "line": 367,
+    "function": "_create_child_folder_id",
+    "call": "client.post",
+    "args": [
+      "f'{self.settings.api_base_url}/files'"
+    ]
+  },
+  {
+    "file": "apps/password-pdf-service/wifi_pdf/zoho_crm.py",
+    "line": 40,
+    "function": "update_generated_password_fields",
+    "call": "client.put",
+    "args": [
+      "f'{self.crm_settings.api_base_url}/{self.crm_settings.module_api_name}/{record_id}'"
+    ]
+  },
+  {
+    "file": "apps/password-pdf-service/wifi_pdf/zoho_crm.py",
+    "line": 76,
+    "function": "_get_access_token",
+    "call": "client.post",
+    "args": [
+      "self.auth_settings.accounts_base_url"
+    ]
+  },
+  {
+    "file": "apps/password-pdf-service/wifi_pdf/api.py",
+    "line": 103,
+    "function": "create_wifi_pdfs",
+    "call": "job_store.create",
+    "args": [
+      "job_id",
+      "{'building_name': batch.building_name, 'record_count': len(batch.records), 'template_name': batch.template_name, 'workdrive_enabled': settings.workdrive.enabled}"
+    ]
+  },
+  {
+    "file": "apps/password-pdf-service/wifi_pdf/api.py",
+    "line": 85,
+    "function": "create_wifi_pdfs",
+    "call": "app.post",
+    "args": [
+      "'/webhooks/zoho/wifi-pdfs'"
+    ]
+  },
+  {
+    "file": "apps/password-pdf-service/wifi_pdf/pipeline.py",
+    "line": 165,
+    "function": "process_batch",
+    "call": "client.upload_file",
+    "args": [
+      "path",
+      "folder_id"
+    ]
+  },
+  {
+    "file": "ops/phase6/release_trust.py",
+    "line": 33,
+    "function": "sha",
+    "call": "h.update",
+    "args": [
+      "b"
+    ]
+  },
+  {
+    "file": "ops/phase6/validate.py",
+    "line": 21,
+    "function": "main",
+    "call": "os.environ.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase6/production_campaign.py",
+    "line": 86,
+    "function": "__init__",
+    "call": "self.result.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase6/production_campaign.py",
+    "line": 395,
+    "function": "main",
+    "call": "result.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase6/isolated_drill.py",
+    "line": 43,
+    "function": "run",
+    "call": "result.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase6/recovery_compatibility.py",
+    "line": 17,
+    "function": "child",
+    "call": "os.environ.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase4/production_campaign.py",
+    "line": 56,
+    "function": "sha",
+    "call": "value.update",
+    "args": [
+      "block"
+    ]
+  },
+  {
+    "file": "ops/phase4/production_campaign.py",
+    "line": 283,
+    "function": "mark",
+    "call": "self.result.update",
+    "args": [
+      "values"
+    ]
+  },
+  {
+    "file": "ops/phase4/production_campaign.py",
+    "line": 404,
+    "function": "recover_baseline",
+    "call": "result.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase4/production_campaign.py",
+    "line": 447,
+    "function": "recover_baseline",
+    "call": "result.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase4/production_campaign.py",
+    "line": 459,
+    "function": "blocked",
+    "call": "result.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase4/production_campaign.py",
+    "line": 654,
+    "function": "promote",
+    "call": "self.result.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase4/production_campaign.py",
+    "line": 695,
+    "function": "blocked_with_evidence",
+    "call": "fallback.update",
+    "args": [
+      "campaign.result"
+    ]
+  },
+  {
+    "file": "ops/phase4/production_campaign.py",
+    "line": 696,
+    "function": "blocked_with_evidence",
+    "call": "fallback.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase4/isolated_drill.py",
+    "line": 52,
+    "function": "inventory",
+    "call": "value.update",
+    "args": [
+      "json.dumps(row, sort_keys=True, separators=(',', ':')).encode() + b'\\n'"
+    ]
+  },
+  {
+    "file": "ops/phase4/isolated_drill.py",
+    "line": 163,
+    "function": "api_drill",
+    "call": "httpx.post",
+    "args": [
+      "url + '/v1/automation/events'"
+    ]
+  },
+  {
+    "file": "ops/phase4/resume_production_closeout.py",
+    "line": 86,
+    "function": "verify_legacy",
+    "call": "digest.update",
+    "args": [
+      "encoded + b'\\n'"
+    ]
+  },
+  {
+    "file": "ops/phase4/resume_production_closeout.py",
+    "line": 97,
+    "function": "__init__",
+    "call": "self.result.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase4/resume_production_closeout.py",
+    "line": 324,
+    "function": "execute",
+    "call": "self.result.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase9/test_lab_outcome.py",
+    "line": 78,
+    "function": "grant_write",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "method",
+      "path"
+    ]
+  },
+  {
+    "file": "ops/phase9/test_lab_outcome.py",
+    "line": 121,
+    "function": "main",
+    "call": "journal['qualification'].update",
+    "args": []
+  },
+  {
+    "file": "ops/phase9/test_lab_manual.py",
+    "line": 84,
+    "function": "main",
+    "call": "row.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase9/test_lab_manual.py",
+    "line": 96,
+    "function": "main",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "'POST'",
+      "'/crm/v8/Leads'"
+    ]
+  },
+  {
+    "file": "ops/phase9/test_lab_manual.py",
+    "line": 120,
+    "function": "main",
+    "call": "state['manual_events'][scenario].update",
+    "args": []
+  },
+  {
+    "file": "ops/phase9/test_lab_intake.py",
+    "line": 165,
+    "function": "mark_new",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "'PUT'",
+      "f'/crm/v8/Leads/{lead_id}'"
+    ]
+  },
+  {
+    "file": "ops/phase9/test_lab_intake.py",
+    "line": 207,
+    "function": "main",
+    "call": "http.post",
+    "args": [
+      "'https://connect.opticable.ca/public/lead'"
+    ]
+  },
+  {
+    "file": "ops/phase9/test_lab_intake.py",
+    "line": 234,
+    "function": "main",
+    "call": "state['events'][scenario].update",
+    "args": []
+  },
+  {
+    "file": "ops/phase9/form_cross_source_return.py",
+    "line": 59,
+    "function": "main",
+    "call": "http.post",
+    "args": [
+      "'https://connect.opticable.ca/public/lead'"
+    ]
+  },
+  {
+    "file": "ops/phase9/form_cross_source_return.py",
+    "line": 62,
+    "function": "main",
+    "call": "state.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase9/form_cross_source_return.py",
+    "line": 73,
+    "function": "main",
+    "call": "state.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase9/prove_possible_duplicate.py",
+    "line": 54,
+    "function": "main",
+    "call": "http.post",
+    "args": [
+      "'https://connect.opticable.ca/public/lead'"
+    ]
+  },
+  {
+    "file": "ops/phase9/prove_possible_duplicate.py",
+    "line": 57,
+    "function": "main",
+    "call": "journal.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase9/prove_possible_duplicate.py",
+    "line": 66,
+    "function": "main",
+    "call": "journal.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase9/adopt_form_test_lead.py",
+    "line": 78,
+    "function": "main",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "'PUT'",
+      "f'/crm/v8/Leads/{LEAD_ID}'"
+    ]
+  },
+  {
+    "file": "ops/phase9/adopt_form_test_lead.py",
+    "line": 100,
+    "function": "main",
+    "call": "journal.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase8/test_lab_transitions.py",
+    "line": 67,
+    "function": "main.update",
+    "call": "c.request",
+    "args": [
+      "'zohoapis'",
+      "'PUT'",
+      "f'/crm/v8/{module}/{identity}'"
+    ]
+  },
+  {
+    "file": "ops/phase8/test_lab_seed.py",
+    "line": 119,
+    "function": "main",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "'POST'",
+      "'/crm/v8/Leads'"
+    ]
+  },
+  {
+    "file": "ops/phase8/test_lab_relations.py",
+    "line": 31,
+    "function": "create",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "'POST'",
+      "f'/crm/v8/{module}'"
+    ]
+  },
+  {
+    "file": "ops/phase8/create_test_artifacts.py",
+    "line": 199,
+    "function": "main",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "'POST'",
+      "'/crm/v8/Tasks'"
+    ]
+  },
+  {
+    "file": "ops/phase8/test_lab_mail.py",
+    "line": 60,
+    "function": "main",
+    "call": "c.request",
+    "args": [
+      "'mail'",
+      "'POST'",
+      "f'/api/accounts/{ACCOUNT}/messages'"
+    ]
+  },
+  {
+    "file": "ops/phase11/test_lab_operations.py",
+    "line": 170,
+    "function": "write",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "method",
+      "path"
+    ]
+  },
+  {
+    "file": "ops/phase12/approved_test_mail.py",
+    "line": 122,
+    "function": "main.execute",
+    "call": "client.request",
+    "args": [
+      "'mail'",
+      "'POST'",
+      "f'/api/accounts/{ACCOUNT}/messages'"
+    ]
+  },
+  {
+    "file": "ops/phase5/production_provider.py",
+    "line": 98,
+    "function": "run",
+    "call": "httpx.post",
+    "args": [
+      "url"
+    ]
+  },
+  {
+    "file": "ops/phase5/production_provider.py",
+    "line": 100,
+    "function": "run",
+    "call": "httpx.post",
+    "args": [
+      "url"
+    ]
+  },
+  {
+    "file": "ops/phase5/production_campaign.py",
+    "line": 43,
+    "function": "__init__",
+    "call": "self.result.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase5/production_campaign.py",
+    "line": 126,
+    "function": "configuration",
+    "call": "self.environment.update",
+    "args": []
+  },
+  {
+    "file": "ops/phase5/production_campaign.py",
+    "line": 332,
+    "function": "execute",
+    "call": "self.result.update",
+    "args": []
+  },
+  {
+    "file": "ops/admin/optibrain-admin.py",
+    "line": 439,
+    "function": "sanitize_environment",
+    "call": "os.environ.update",
+    "args": [
+      "{'PATH': SAFE_PATH, 'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8'}"
+    ]
+  },
+  {
+    "file": "ops/admin/optibrain-admin-update.py",
+    "line": 432,
+    "function": "main",
+    "call": "updater.update",
+    "args": []
+  },
+  {
+    "file": "ops/backup/optibrain-restore-drill.py",
+    "line": 24,
+    "function": "digest",
+    "call": "h.update",
+    "args": [
+      "block"
+    ]
+  },
+  {
+    "file": "ops/backup/optibrain-phase2a-upload.py",
+    "line": 27,
+    "function": "sha",
+    "call": "h.update",
+    "args": [
+      "block"
+    ]
+  },
+  {
+    "file": "ops/backup/optibrain-phase2a-upload.py",
+    "line": 96,
+    "function": "transfer",
+    "call": "h.update",
+    "args": [
+      "block"
+    ]
+  },
+  {
+    "file": "ops/phase10/test_lab_lifecycle.py",
+    "line": 134,
+    "function": "write",
+    "call": "client.request",
+    "args": [
+      "'zohoapis'",
+      "method",
+      "path"
+    ]
+  }
+]

@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 readonly BACKUP_FORMAT_VERSION="1"
-readonly SCRIPT_VERSION="1.0.1"
+readonly SCRIPT_VERSION="1.0.2"
 readonly REPO_DEFAULT="/opt/opticable-api-platform"
 readonly DEST_DEFAULT="/var/backups/optibrain"
 readonly CONFIG_DEFAULT="/etc/optibrain/backup.conf"
@@ -240,7 +240,7 @@ copy_workflow_state_without_database() {
   relative_db="$(realpath --relative-to="${source}" "${db_path}" 2>/dev/null || true)"
   record_source_metadata "${source}" "${target}" "${relative_db}"
   mkdir -p "${staging}/${target}"
-  tar_args=(--exclude='./*.db-wal' --exclude='./*.db-shm')
+  tar_args=(--exclude='./*.db' --exclude='./*.db-wal' --exclude='./*.db-shm')
   if [[ -n "${relative_db}" && "${relative_db}" != ../* ]]; then
     tar_args+=("--exclude=./${relative_db}" "--exclude=./${relative_db}-wal" "--exclude=./${relative_db}-shm")
   fi
@@ -253,6 +253,15 @@ if [[ "${OPTIBRAIN_SKIP_LIVE_STATE:-false}" != "true" ]]; then
   copy_if_present "${PASSWORD_PDF_STATE_DIR}" state/var/lib/opticable-password-pdf
   copy_if_present "${OMADA_STATE_DIR}" state/var/lib/opticable-omada-site
   copy_if_present "${PLATFORM_SHARED_DIR}" state/var/lib/opticable-api-platform/shared
+  # Root-owned protection, crosswalk, action, document and recovery state is
+  # required for a safe restore. Exclude encrypted backup cache recursion.
+  if [[ -d /var/lib/optibrain ]]; then
+    record_source_metadata /var/lib/optibrain state/var/lib/optibrain phase2a
+    mkdir -p "${staging}/state/var/lib/optibrain"
+    tar -C /var/lib/optibrain --exclude='./phase2a' --exclude='./*.db' --exclude='./*.db-wal' --exclude='./*.db-shm' -cf - . \
+      | tar -C "${staging}/state/var/lib/optibrain" --no-same-owner --no-same-permissions -xf -
+    copy_if_present /var/lib/optibrain/phase2a/state.json state/var/lib/optibrain/phase2a/state.json
+  fi
 fi
 
 if [[ "${OPTIBRAIN_SKIP_LIVE_STATE:-false}" != "true" && "${OPTIBRAIN_SKIP_LIVE_CONFIG:-false}" != "true" ]]; then
@@ -264,6 +273,24 @@ if [[ "${OPTIBRAIN_SKIP_LIVE_STATE:-false}" != "true" && "${OPTIBRAIN_SKIP_LIVE_
     /etc/systemd/system/opticable-omada-site.service; do
     [[ -e "${path}" ]] && copy_if_present "${path}" "system${path}"
   done
+  for path in /etc/systemd/system/optibrain-*.service /etc/systemd/system/optibrain-*.timer \
+    /etc/systemd/system/optibrain-*.service.d /etc/systemd/system/optibrain-*.timer.d \
+    /etc/systemd/system/opticable-*.service /etc/systemd/system/opticable-*.timer \
+    /etc/systemd/system/opticable-*.service.d /etc/systemd/system/opticable-*.timer.d \
+    /usr/local/lib/optibrain /usr/local/lib/optibrain-backup; do
+    [[ -e "${path}" ]] && copy_if_present "${path}" "system${path}"
+  done
+fi
+
+# Every additional application .db receives an online SQLite snapshot. Copying
+# an open database while omitting its WAL is not a recoverable backup.
+if [[ "${OPTIBRAIN_SKIP_LIVE_STATE:-false}" != "true" ]]; then
+  while IFS= read -r -d '' extra_db; do
+    [[ "${extra_db}" == "${db_path}" ]] && continue
+    target="${staging}/state${extra_db}"
+    mkdir -p "$(dirname "${target}")"
+    sqlite_backup "${extra_db}" "${target}" "${target}.integrity"
+  done < <(find "${WORKFLOW_STATE_DIR}" /var/lib/optibrain -path /var/lib/optibrain/phase2a -prune -o -type f -name '*.db' -print0)
 fi
 
 sqlite_result="${staging}/database/integrity.txt"
@@ -285,12 +312,15 @@ files = []
 for path in sorted(p for p in root.rglob("*") if p.is_file() and p != root / "manifest.json"):
     files.append({"path": path.relative_to(root).as_posix(), "size": path.stat().st_size, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
 manifest = {
-    "backup_format_version": "1", "backup_script_version": "1.0.1", "timestamp": timestamp,
+    "backup_format_version": "1", "backup_script_version": "1.0.2", "timestamp": timestamp,
     "hostname": socket.getfqdn(), "production_git_sha": git_sha, "application_version": app_version,
     "included_components": ["source_release", "sqlite_database", "persistent_state", "generated_operational_state", "etc_configuration", "systemd_units", "caddy_configuration", "credential_metadata"],
     "database_integrity": pathlib.Path(sqlite_result_path).read_text(encoding="utf-8"),
     "source_metadata": [json.loads(line) for line in (root / "metadata.jsonl").read_text(encoding="utf-8").splitlines()] if (root / "metadata.jsonl").exists() else [],
-    "sqlite_databases": [{"backup_path": "database/automation.db", "integrity": "ok"}], "files": files,
+    "sqlite_databases": [{"backup_path": "database/automation.db", "integrity": "ok"}] + [
+        {"backup_path": p.relative_to(root).as_posix(), "integrity": "ok"}
+        for p in sorted((root / "state").rglob("*.db")) if pathlib.Path(str(p) + ".integrity").is_file()
+    ], "files": files,
 }
 (root / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
