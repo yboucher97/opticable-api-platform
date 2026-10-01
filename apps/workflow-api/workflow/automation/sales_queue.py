@@ -240,8 +240,8 @@ def build_sales_queue(client, db_path, *, account_id, from_address, now=None,
     if scope not in {"live", "lab"}:
         raise ValueError("Unknown sales queue scope")
     leads, complete = _list(client, "Leads", FIELDS, 100)
-    contacts, contacts_complete = _list(client, "Contacts", "id,Email,Full_Name,Account_Name", 100)
-    accounts, accounts_complete = _list(client, "Accounts", "id,Account_Name", 100)
+    contacts, contacts_complete = _list(client, "Contacts", "id,Email,Full_Name,Account_Name,Description,OptiBrain_Test", 100)
+    accounts, accounts_complete = _list(client, "Accounts", "id,Account_Name,Description,OptiBrain_Test", 100)
     if not complete:
         raise ValueError("CRM Lead list exceeded bounded queue size; incomplete dedupe is unsafe")
     if scope == "lab":
@@ -263,7 +263,7 @@ def build_sales_queue(client, db_path, *, account_id, from_address, now=None,
         lab_tasks = set(registry.get("records", {}).get("Tasks") or [])
         contacts = [x for x in contacts if str(x.get("id")) in lab_contacts]
         accounts = [x for x in accounts if str(x.get("id")) in lab_accounts]
-        deals, deals_complete = _list(client, "Deals", "id,Account_Name,Contact_Name,Deal_Name", 100)
+        deals, deals_complete = _list(client, "Deals", "id,Account_Name,Contact_Name,Deal_Name,Description,OptiBrain_Test", 100)
         tasks, tasks_complete = _list(client, "Tasks", "id,Subject,What_Id,Status,Due_Date,Description", 100)
         if not (contacts_complete and accounts_complete and deals_complete and tasks_complete):
             raise ValueError("Test Lab relationship or Task list incomplete")
@@ -274,6 +274,9 @@ def build_sales_queue(client, db_path, *, account_id, from_address, now=None,
                 or {str(x["id"]) for x in deals} != lab_deals
                 or {str(x["id"]) for x in tasks} != lab_tasks):
             raise ValueError("Test Lab related record list incomplete")
+        if any(x.get("OptiBrain_Test") is not True or not str(x.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")
+               for x in contacts + accounts + deals):
+            raise ValueError("Test Lab related record marker mismatch")
         mail_by_id = {}
         scenarios = registry.get("scenarios") or {}
         for item in scenarios.values():
@@ -302,12 +305,17 @@ def build_sales_queue(client, db_path, *, account_id, from_address, now=None,
                                   "latest_source": trace["latest_touch"] if trace else lead.get("Last_Source") or "Unknown",
                                   "traffic_source": lead.get("Last_Source"),
                                   "campaign": lead.get("Last_Campaign") or lead.get("First_Campaign"),
-                                  "last_intake": local(lead.get("Last_Touch_Time"))}
+                                  "last_intake": local(lead.get("Last_Touch_Time")),
+                                  "has_trace": trace is not None}
         return view
     leads = [x for x in leads if x.get("OptiBrain_Test") is not True
              and not str(x.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")
              and not str(x.get("Last_Name") or "").startswith("OPTIBRAIN TEST — PHASE ")
              and not str(x.get("Company") or "").startswith("OPTIBRAIN TEST — PHASE ")]
+    contacts = [x for x in contacts if x.get("OptiBrain_Test") is not True
+                and not str(x.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")]
+    accounts = [x for x in accounts if x.get("OptiBrain_Test") is not True
+                and not str(x.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")]
     controlled = None
     if any(str(x["id"]) == CONTROLLED_LEAD_ID for x in leads):
         controlled = build_sales_operator_view(client, db_path, account_id=account_id,
@@ -370,8 +378,10 @@ def render_sales_queue(view):
                             f"<b>Traffic source:</b> {h(attribution.get('traffic_source'))} · "
                             f"<b>Campaign:</b> {h(attribution.get('campaign'))} · "
                             f"<b>Last intake:</b> {h(attribution.get('last_intake'))}</p>") if attribution else ""
+        if attribution.get("has_trace"):
+            attribution_html += f"<p><a href='/v1/operator/phase9/source-trace/{h(item['id'])}'>View source to opportunity trace</a></p>"
         rows[-1] += f"{attribution_html}<p class='note'>{h(item['last_activity'])}</p>{mail_html}{draft_html}</article>"
-    note = ("All records are OptiBrain-owned TEST_ONLY data. Source categories are simulated; CRM/Mail/Task evidence is live."
+    note = ("All records are OptiBrain-owned TEST_ONLY data. Source labels distinguish observed intake from simulated Phase 8 scenarios."
             if view.get('scope') == 'lab' else
             "Read only. Mail checked only for the controlled Lead; other inbox states require review.")
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">

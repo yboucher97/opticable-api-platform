@@ -155,8 +155,46 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
                 raise HTTPException(status_code=404, detail="Trace not found")
             result = client.request("zohoapis", "GET", f"/crm/v8/Leads/{lead_id}")
             rows = (result.get("data") or {}).get("data") or []
-            if len(rows) != 1 or rows[0].get("OptiBrain_Test") is not True or not str(rows[0].get("Description") or "").startswith("OPTIBRAIN TEST — PHASE "):
+            if (len(rows) != 1 or str(rows[0].get("id")) != lead_id
+                    or rows[0].get("OptiBrain_Test") is not True
+                    or not str(rows[0].get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")):
                 raise ValueError("CRM Test Lab identity changed")
+            verified_chain = None
+            for outcome in trace["feedback"]:
+                if outcome["kind"] != "OPPORTUNITY_CREATED":
+                    continue
+                deal_id = outcome["related_id"]
+                if deal_id not in set(registry.get("records", {}).get("Deals") or []):
+                    raise ValueError("Opportunity is outside Test Lab")
+                deal_response = client.request("zohoapis", "GET", f"/crm/v8/Deals/{deal_id}")
+                deal_rows = (deal_response.get("data") or {}).get("data") or []
+                if (len(deal_rows) != 1 or str(deal_rows[0].get("id")) != deal_id
+                        or deal_rows[0].get("OptiBrain_Test") is not True
+                        or not str(deal_rows[0].get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")):
+                    raise ValueError("Opportunity provider marker changed")
+                deal = deal_rows[0]
+                contact_id = str((deal.get("Contact_Name") or {}).get("id") or "")
+                related_account_id = str((deal.get("Account_Name") or {}).get("id") or "")
+                if (contact_id not in set(registry.get("records", {}).get("Contacts") or [])
+                        or related_account_id not in set(registry.get("records", {}).get("Accounts") or [])):
+                    raise ValueError("Opportunity relationship escaped Test Lab")
+                contact_result = client.request("zohoapis", "GET", f"/crm/v8/Contacts/{contact_id}")
+                account_result = client.request("zohoapis", "GET", f"/crm/v8/Accounts/{related_account_id}")
+                contacts = (contact_result.get("data") or {}).get("data") or []
+                accounts = (account_result.get("data") or {}).get("data") or []
+                if (len(contacts) != 1 or len(accounts) != 1
+                        or str(contacts[0].get("id")) != contact_id
+                        or str(accounts[0].get("id")) != related_account_id
+                        or contacts[0].get("OptiBrain_Test") is not True
+                        or accounts[0].get("OptiBrain_Test") is not True
+                        or not str(contacts[0].get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")
+                        or str((contacts[0].get("Account_Name") or {}).get("id")) != related_account_id
+                        or str(contacts[0].get("Email") or "").casefold() != str(rows[0].get("Email") or "").casefold()
+                        or not str(accounts[0].get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")
+                        or deal.get("Amount") not in (None, 0, 0.0)
+                        or any(deal.get(key) != rows[0].get(key) for key in ("First_Source", "First_Campaign"))):
+                    raise ValueError("Opportunity relationship/source readback mismatch")
+                verified_chain = (contact_id, related_account_id, deal_id)
         except (OSError, ValueError, KeyError) as exc:
             raise HTTPException(status_code=409, detail="Fresh Test Lab trace needs review") from exc
         except ZohoGatewayError as exc:
@@ -168,18 +206,24 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
             f"{h(e['event_id'])} · {h(e['crm_action'])} · campaign {h(e['campaign'])}</li>"
             for e in trace["events"])
         outcomes = "".join(
-            f"<li><b>{h(e['kind'])}</b> · {h(e['related_module'])} {h(e['related_id'])}</li>"
+            f"<li><b>{h(e['kind'])}</b> · {h(e.get('occurred_at_montreal'))} · "
+            f"{h(e['related_module'])} {h(e['related_id'])}</li>"
             for e in trace["feedback"])
+        chain_html = (f"<p><b>Verified CRM relationship:</b> Contact {h(verified_chain[0])} "
+                      f"→ Account {h(verified_chain[1])} → Deal {h(verified_chain[2])}. "
+                      "The Lead to Contact match is by exact controlled email; no Lead conversion is claimed.</p>"
+                      if verified_chain else "<p>No linked opportunity verified yet.</p>")
         html = ("<!doctype html><html lang='en'><meta charset='utf-8'>"
                 "<title>OptiBrain source trace</title>"
                 "<style>body{font:16px/1.5 system-ui;max-width:850px;margin:2rem auto;padding:0 1rem;color:#182536}"
                 "li{margin:.5rem 0}small{color:#526174}</style>"
                 f"<h1>Source to opportunity · TEST ONLY</h1><p>{h(lead.get('Full_Name'))} · Lead {h(lead_id)}</p>"
                 f"<p><b>First touch:</b> {h(trace['first_touch'])} · <b>Latest touch:</b> {h(trace['latest_touch'])}</p>"
-                f"<h2>Intakes</h2><ol>{events}</ol><h2>Outcomes</h2><ol>{outcomes}</ol>"
+                f"<h2>Intakes</h2><ol>{events}</ol><h2>Outcomes</h2><ol>{outcomes}</ol>{chain_html}"
                 "<small>Verified Test Lab CRM identity. Internal audit only; external conversion export disabled.</small></html>")
         return HTMLResponse(html, headers={"Cache-Control": "private, no-store, max-age=0",
                                            "Pragma": "no-cache", "X-Frame-Options": "DENY",
+                                           "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
                                            "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'"})
 
     @app.post("/v1/operator/phase7/crm-approvals", tags=["operator-phase7"],

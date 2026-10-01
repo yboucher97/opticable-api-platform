@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "live_root_registry": "/var/lib/optibrain/phase9/test-lab/registry.json",
+  "protected_baseline_sha256": "b928cd44884169e150cbf7481edf07c5943bd7bc8989be667467936fda702d33",
+  "canonical_test_lead": "5062683000007898003",
+  "controlled_email": "hckyan97+obp9intake1@gmail.com",
+  "events": [
+    {"scenario": "new_ai", "inquiry_id": "d1004f23-331e-43a4-91c0-feff5d8e28c6", "event_id": "OB-I-B43CBF69AA7860FD7BB1D489", "lead_id": "5062683000007898003", "action": "created_lead"},
+    {"scenario": "replay_new_ai", "inquiry_id": "d1004f23-331e-43a4-91c0-feff5d8e28c6", "event_id": "OB-I-B43CBF69AA7860FD7BB1D489", "lead_id": "5062683000007898003", "action": "duplicate_lead"},
+    {"scenario": "return_ai", "inquiry_id": "9c2fcea7-e0d1-465f-abca-c9e90efeb211", "event_id": "OB-I-950EB3BE3530D4F12A3B97C5", "lead_id": "5062683000007898003", "action": "updated_lead"},
+    {"scenario": "cross_main_origin", "inquiry_id": "4b12c52f-4f43-426c-9b9d-e2db72ce3e64", "event_id": "OB-I-4EF59EE43B55C8EBE10EF2F8", "lead_id": "5062683000007898003", "action": "updated_lead"},
+    {"scenario": "manual_crm", "inquiry_id": "56f20bc0-0681-450f-b498-ae132a891131", "event_id": "OB-I-74A3DFF7B8F5AACCF0226C23", "lead_id": "5062683000007920003", "action": "created_lead"},
+    {"scenario": "unknown_source", "inquiry_id": "5e333ea8-d6d7-49ba-adf8-eb46e4423346", "event_id": "OB-I-C800B8FD55F52C3CA811E1A7", "lead_id": "5062683000007914005", "action": "created_lead"}
+  ],
+  "related": {"account_id": "5062683000007928001", "contact_id": "5062683000007929001", "deal_id": "5062683000007913007", "deal_amount": null},
+  "all_test_only": true,
+  "external_conversion_exports": 0,
+  "failed_attempts_live_evidence": "/var/lib/optibrain/phase9/test-lab/registry.json",
+  "retention": "Retain as clearly excluded Test Lab evidence for future Phase 9-12 regression; no autonomous dispatch"
+}

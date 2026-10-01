@@ -105,7 +105,8 @@ class IntakeLedger:
         if (not ID.fullmatch(crm_id) or crm.get("OptiBrain_Test") is not True
                 or not str(crm.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")
                 or str(crm.get("Inquiry_ID") or "") != inquiry
-                or str(crm.get("Ingestion_Source") or "") != source
+                or (str(crm.get("Ingestion_Source") or "") != source
+                    if source != "unknown" else bool(crm.get("Ingestion_Source")))
                 or str(crm.get("Email") or "").strip().casefold() != email):
             raise ValueError("Provider readback does not prove exact TEST_ONLY intake")
         at = instant(receipt["occurred_at"])
@@ -161,11 +162,17 @@ class IntakeLedger:
             raise ValueError("Invalid canonical ID")
         with self._connect(read_only=True) as db:
             events = [dict(r) for r in db.execute("SELECT * FROM intake_events WHERE canonical_id=? ORDER BY occurred_at,event_id", (canonical_id,))]
-            feedback = [dict(r) for r in db.execute("SELECT * FROM feedback_events WHERE canonical_id=? ORDER BY occurred_at,feedback_id", (canonical_id,))]
+            feedback = [dict(r) for r in db.execute("SELECT * FROM feedback_events WHERE canonical_id=? "
+                "ORDER BY occurred_at, CASE kind WHEN 'LEAD_CREATED' THEN 0 "
+                "WHEN 'QUALIFIED_LEAD' THEN 1 WHEN 'QUOTE_READY' THEN 2 "
+                "WHEN 'OPPORTUNITY_CREATED' THEN 3 WHEN 'WON' THEN 4 WHEN 'LOST' THEN 5 ELSE 9 END, feedback_id",
+                (canonical_id,))]
         if not events:
             return None
         for event in events:
             event["occurred_at_montreal"] = datetime.fromisoformat(event["occurred_at"]).astimezone(TORONTO).isoformat()
+        for outcome in feedback:
+            outcome["occurred_at_montreal"] = datetime.fromisoformat(outcome["occurred_at"]).astimezone(TORONTO).isoformat()
         return {"canonical_id": str(canonical_id), "first_touch": events[0]["source"],
                 "latest_touch": events[-1]["source"], "events": events,
                 "feedback": feedback, "test_only": True, "external_exports_enabled": False}

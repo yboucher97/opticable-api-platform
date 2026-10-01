@@ -464,3 +464,18 @@ limitations are in `docs/phase9-intake-foundation.md`. The pre-existing CRM
 baseline stays read-only; provider mutation is limited to OptiBrain-owned
 TEST_ONLY records. No autonomous development dispatch or ad conversion export
 is enabled.
+
+Five provider-backed Phase 9 Test Lab intakes now include a new AI-site Lead,
+same-identity AI and main-origin returns, explicit manual CRM intake, and
+unknown-source intake. The three public submissions reused Lead
+`5062683000007898003`; exact replay reused its event ID without another Lead.
+Zoho preserved first traffic/source fields and updated latest touch. Synthetic
+qualification, quote readiness, and Contact→Account→Deal links are audited in
+the immutable internal feedback ledger. The Deal has no amount or Books entry.
+`OptiBrain_Test=true` is present on all registered Test Lab Leads, Contacts,
+Accounts, and Deals; native Zoho reports must filter this flag. One initial
+public create failed on Zoho's datetime format and reconciled to zero records;
+the connector fix was deployed. Zoho Search indexing lag required bounded list
+readback for a subsequent successful create. Source-record IDs are now scoped
+to their intake source. The main site's embedded Zoho Form mapping and fully
+automatic event delivery to OptiBrain remain future Phase 9 work.

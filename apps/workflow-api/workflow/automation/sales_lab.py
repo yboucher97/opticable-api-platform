@@ -96,9 +96,10 @@ def enhance_lab_queue(view, leads, contacts, accounts, deals, tasks, mail_by_id,
             raise ValueError("Test Lab Lead marker missing")
         row["test_only"] = True
         source = str(lead.get("Ingestion_Source") or "")
-        row["source"] = SOURCE.get(source, {"ai_website": "AI website", "opticable_website": "Main-origin connector", "manual_crm": "Manual CRM"}.get(source, "Unknown test source"))
-        row["source_basis"] = ("CRM Ingestion_Source from provider-backed intake" if source in {"ai_website", "opticable_website"}
-                               else "CRM Ingestion_Source on synthetic record; channel is simulated")
+        row["source"] = SOURCE.get(source, {"ai_website": "AI website", "opticable_website": "Main-origin connector", "manual_crm": "Manual CRM"}.get(source, "Unknown" if not source else "Unrecognized source"))
+        row["source_basis"] = ("CRM Ingestion_Source from provider-backed intake" if source in {"ai_website", "opticable_website", "manual_crm"}
+                               else "No source metadata in CRM" if not source else
+                               "CRM Ingestion_Source on synthetic record; channel is simulated")
         task = _task_for(row["id"], tasks)
         deadline = aware(lead["Next_Followup_At"]) if lead.get("Next_Followup_At") else None
         if task and deadline and task.get("Due_Date") != deadline.astimezone(TORONTO).date().isoformat():

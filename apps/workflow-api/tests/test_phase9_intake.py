@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 import hashlib
 import json
@@ -6,9 +7,14 @@ import sqlite3
 import tempfile
 import unittest
 from unittest.mock import patch
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 from workflow.automation.phase9_intake import IntakeLedger, event_id, source_info
 from workflow.automation import test_lab_boundary as boundary
+from workflow.automation.sales_lab import enhance_lab_queue
+from workflow.automation.sales_queue import analyze_queue, render_sales_queue
+from workflow.operator_phase7_api import install_phase7_canary_routes
 import importlib.util
 
 _spec = importlib.util.spec_from_file_location("phase9_test_lab_intake", Path(__file__).resolve().parents[3] / "ops/phase9/test_lab_intake.py")
@@ -73,6 +79,11 @@ class IntakeLedgerTests(unittest.TestCase):
         self.assertEqual(source_info("manual_crm"), ("manual", "Manual CRM"))
         self.assertEqual(event_id("ai_website", "a"), event_id("ai_website", "a"))
         self.assertNotEqual(event_id("ai_website", "a"), event_id("ai_website", "b"))
+        receipt = {**self.receipt, "source": "unknown", "inquiry_id": "unknown-a",
+                   "request": {"inquiry_id": "unknown-a", "email": self.crm["Email"]}}
+        crm = {**self.crm, "Inquiry_ID": "unknown-a", "Ingestion_Source": None}
+        self.assertEqual(self.ledger.record(receipt, crm)["decision"], "NEW IDENTITY")
+        self.assertEqual(self.ledger.trace("123456")["first_touch"], "unknown")
 
     def test_phase9_test_marker_keeps_protected_record_firewall(self):
         root = Path(self.temp.name)
@@ -106,6 +117,77 @@ class IntakeLedgerTests(unittest.TestCase):
                         "info": {"more_records": False}}}
                 raise AssertionError(self_path)
         self.assertEqual(test_lab_intake.find(Client(), "Leads", "Inquiry_ID", "abc")[0]["id"], "222")
+
+    def test_operator_trace_requires_identity_and_escapes_provider_text(self):
+        class Verifier:
+            def verify(self, token):
+                if token != "authorized":
+                    raise ValueError("missing")
+                return type("Principal", (), {"subject": "operator"})()
+        class Client:
+            def request(self, service, method, path, **kwargs):
+                records = {
+                    "/crm/v8/Leads/123456": {"id": "123456", "Full_Name": "<Test>",
+                        "Email": "test@example.invalid", "First_Source": "phase9_test",
+                        "First_Campaign": "opticable_phase9_test", "OptiBrain_Test": True,
+                        "Description": "OPTIBRAIN TEST — PHASE 9"},
+                    "/crm/v8/Contacts/234567": {"id": "234567", "Email": "test@example.invalid",
+                        "Account_Name": {"id": "345678"}, "OptiBrain_Test": True,
+                        "Description": "OPTIBRAIN TEST — PHASE 9"},
+                    "/crm/v8/Accounts/345678": {"id": "345678", "OptiBrain_Test": True,
+                        "Description": "OPTIBRAIN TEST — PHASE 9"},
+                    "/crm/v8/Deals/456789": {"id": "456789", "OptiBrain_Test": True,
+                        "Description": "OPTIBRAIN TEST — PHASE 9", "Amount": None,
+                        "Contact_Name": {"id": "234567"}, "Account_Name": {"id": "345678"},
+                        "First_Source": "phase9_test", "First_Campaign": "opticable_phase9_test"},
+                }
+                return {"data": {"data": [records[path]]}}
+        class Store:
+            db_path = Path("/tmp/automation.db")
+        app = FastAPI()
+        install_phase7_canary_routes(app, verifier=Verifier(), client=Client(), store=Store(),
+                                     account_id="1", from_address="operator@example.com",
+                                     allowed_origin="https://optibrain.example.com")
+        trace = {"canonical_id": "123456", "first_touch": "ai_website",
+                 "latest_touch": "opticable_website", "events": [{"source": "ai_website",
+                 "occurred_at_montreal": "2026-09-30T20:00:00-04:00", "event_id": "OB-I-X",
+                 "crm_action": "created_lead", "campaign": "test"}],
+                 "feedback": [{"kind": "OPPORTUNITY_CREATED", "related_module": "Deals",
+                     "related_id": "456789", "occurred_at_montreal": "2026-09-30T20:30:00-04:00"}]}
+        original_read = Path.read_text
+        def read_registry(path, *args, **kwargs):
+            if str(path) == "/etc/optibrain/phase8-test-lab-registry.json":
+                return json.dumps({"records": {"Leads": ["123456"],
+                    "Contacts": ["234567"], "Accounts": ["345678"], "Deals": ["456789"]}})
+            return original_read(path, *args, **kwargs)
+        with patch.object(Path, "read_text", read_registry), patch.object(IntakeLedger, "trace", return_value=trace):
+            api = TestClient(app)
+            self.assertEqual(api.get("/v1/operator/phase9/source-trace/123456").status_code, 401)
+            response = api.get("/v1/operator/phase9/source-trace/123456",
+                               headers={"Cf-Access-Jwt-Assertion": "authorized"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("ai_website", response.text)
+        self.assertIn("opticable_website", response.text)
+        self.assertIn("&lt;Test&gt;", response.text)
+        self.assertNotIn("<Test>", response.text)
+        self.assertIn("Verified CRM relationship", response.text)
+        self.assertIn("no Lead conversion is claimed", response.text)
+
+    def test_unknown_crm_source_stays_unknown_in_operator_queue(self):
+        lead = {"id": "123456", "Full_Name": "Test", "Last_Name": "Test",
+                "Company": "OPTIBRAIN TEST — PHASE 9 — Lab", "Email": "x@optibrain.invalid",
+                "Description": "OPTIBRAIN TEST — PHASE 9", "OptiBrain_Test": True,
+                "Lead_Status": "Not Contacted", "Converted__s": False,
+                "Created_Time": "2026-09-30T20:00:00-04:00",
+                "Modified_Time": "2026-09-30T20:00:00-04:00",
+                "Ingestion_Source": None, "Next_Followup_At": None}
+        now = datetime.fromisoformat("2026-09-30T21:00:00-04:00")
+        initial = analyze_queue([lead], [], [], None, now=now,
+                                leads_complete=True, relationships_complete=True)
+        view = enhance_lab_queue(initial, [lead], [], [], [], [], {}, now=now)
+        self.assertEqual(view["rows"][0]["source"], "Unknown")
+        self.assertIn("No source metadata", view["rows"][0]["source_basis"])
+        self.assertIn("Unknown", render_sales_queue(view))
 
 
 if __name__ == "__main__":
