@@ -1,0 +1,224 @@
+{
+  "baseline_sha256": "b928cd44884169e150cbf7481edf07c5943bd7bc8989be667467936fda702d33",
+  "created_at_utc": "2026-09-30T23:32:09.266095+00:00",
+  "records": {
+    "Accounts": [
+      "5062683000007917001"
+    ],
+    "Calls": [],
+    "Contacts": [
+      "5062683000007902002"
+    ],
+    "Deals": [
+      "5062683000007909002"
+    ],
+    "Events": [],
+    "Leads": [
+      "5062683000007913001",
+      "5062683000007914001",
+      "5062683000007896004",
+      "5062683000007915001",
+      "5062683000007906010",
+      "5062683000007916001",
+      "5062683000007895002",
+      "5062683000007915003",
+      "5062683000007908018"
+    ],
+    "Notes": [],
+    "Tasks": [
+      "5062683000007915005",
+      "5062683000007918001",
+      "5062683000007901002"
+    ]
+  },
+  "related": {
+    "account": {
+      "id": "5062683000007917001",
+      "module": "Accounts"
+    },
+    "contact": {
+      "id": "5062683000007902002",
+      "module": "Contacts"
+    },
+    "deal": {
+      "id": "5062683000007909002",
+      "module": "Deals"
+    },
+    "task_overdue": {
+      "id": "5062683000007915005",
+      "module": "Tasks"
+    },
+    "task_replied": {
+      "id": "5062683000007901002",
+      "module": "Tasks"
+    },
+    "task_waiting": {
+      "id": "5062683000007918001",
+      "module": "Tasks"
+    }
+  },
+  "scenarios": {
+    "duplicate_a": {
+      "cleanup": "retain for Phase 9-12 regression; exclude from live metrics",
+      "email": "duplicate@optibrain.invalid",
+      "expected": {
+        "next_action": "Review possible duplicate identity",
+        "priority": "MEDIUM",
+        "state": "POSSIBLE DUPLICATE"
+      },
+      "lead_id": "5062683000007915003",
+      "records_created": [
+        "5062683000007915003"
+      ],
+      "scenario": "duplicate_a",
+      "source": "test_ai_website"
+    },
+    "duplicate_b": {
+      "cleanup": "retain for Phase 9-12 regression; exclude from live metrics",
+      "email": "duplicate@optibrain.invalid",
+      "expected": {
+        "next_action": "Review possible duplicate identity",
+        "priority": "MEDIUM",
+        "state": "POSSIBLE DUPLICATE"
+      },
+      "lead_id": "5062683000007908018",
+      "records_created": [
+        "5062683000007908018"
+      ],
+      "scenario": "duplicate_b",
+      "source": "test_zoho_form"
+    },
+    "incomplete": {
+      "cleanup": "retain for Phase 9-12 regression; exclude from live metrics",
+      "email": "incomplete@optibrain.invalid",
+      "expected": {
+        "next_action": "Ask for missing project details before quoting",
+        "priority": "MEDIUM",
+        "state": "NEEDS INFORMATION"
+      },
+      "lead_id": "5062683000007916001",
+      "records_created": [
+        "5062683000007916001"
+      ],
+      "scenario": "incomplete",
+      "source": "test_zoho_form"
+    },
+    "low": {
+      "cleanup": "retain for Phase 9-12 regression; exclude from live metrics",
+      "email": "early@optibrain.invalid",
+      "expected": {
+        "next_action": "Qualify only if the prospect confirms a project",
+        "priority": "LOW",
+        "state": "LOW PRIORITY"
+      },
+      "lead_id": "5062683000007895002",
+      "records_created": [
+        "5062683000007895002"
+      ],
+      "scenario": "low",
+      "source": "test_main_website"
+    },
+    "overdue": {
+      "cleanup": "retain for Phase 9-12 regression; exclude from live metrics",
+      "email": "overdue@optibrain.invalid",
+      "expected": {
+        "next_action": "Review missed follow-up obligation now",
+        "priority": "HIGH",
+        "state": "NEGLECTED / OVERDUE"
+      },
+      "lead_id": "5062683000007896004",
+      "records_created": [
+        "5062683000007896004",
+        "5062683000007915005"
+      ],
+      "scenario": "overdue",
+      "source": "test_zoho_form"
+    },
+    "quote": {
+      "cleanup": "retain for Phase 9-12 regression; exclude from live metrics",
+      "email": "quote@optibrain.invalid",
+      "expected": {
+        "next_action": "Review scope and prepare a human quote",
+        "priority": "HIGH",
+        "state": "QUOTE READY"
+      },
+      "lead_id": "5062683000007914001",
+      "records_created": [
+        "5062683000007914001"
+      ],
+      "relationships": {
+        "account": "5062683000007917001",
+        "contact": "5062683000007902002",
+        "deal": "5062683000007909002"
+      },
+      "scenario": "quote",
+      "source": "test_main_website"
+    },
+    "replied": {
+      "cleanup": "retain for Phase 9-12 regression; exclude from live metrics",
+      "email": "info@opticable.ca",
+      "expected": {
+        "next_action": "Review linked inbound and respond; provider case unavailable now",
+        "priority": "PENDING",
+        "state": "REPLIED \u2014 NEEDS RESPONSE only after verified inbound"
+      },
+      "lead_id": "5062683000007906010",
+      "mail": {
+        "account_id": "1083319000000008002",
+        "message_id": "1790811285655138300",
+        "recipient": "info@opticable.ca",
+        "sender": "yboucher@opticable.ca",
+        "sent_at": "2026-09-30T23:34:45.651000+00:00",
+        "state": "sent",
+        "subject": "OPTIBRAIN TEST \u2014 PHASE 8 \u2014 REPLIED \u2014 5062683000007906010"
+      },
+      "records_created": [
+        "5062683000007906010",
+        "5062683000007901002"
+      ],
+      "scenario": "replied",
+      "source": "test_email_manual"
+    },
+    "urgent": {
+      "cleanup": "retain for Phase 9-12 regression; exclude from live metrics",
+      "email": "urgent@optibrain.invalid",
+      "expected": {
+        "next_action": "Review scope and prepare a human quote",
+        "priority": "HIGH",
+        "state": "QUOTE READY"
+      },
+      "lead_id": "5062683000007913001",
+      "records_created": [
+        "5062683000007913001"
+      ],
+      "scenario": "urgent",
+      "source": "test_ai_website"
+    },
+    "waiting": {
+      "cleanup": "retain for Phase 9-12 regression; exclude from live metrics",
+      "email": "hckyan97+obp8wait@gmail.com",
+      "expected": {
+        "next_action": "Wait until the scheduled follow-up; monitor for reply",
+        "priority": "LOW",
+        "state": "WAITING FOR REPLY"
+      },
+      "lead_id": "5062683000007915001",
+      "mail": {
+        "account_id": "1083319000000008002",
+        "message_id": "1790811284026155000",
+        "recipient": "hckyan97+obp8wait@gmail.com",
+        "sender": "yboucher@opticable.ca",
+        "sent_at": "2026-09-30T23:34:44.022000+00:00",
+        "state": "sent",
+        "subject": "OPTIBRAIN TEST \u2014 PHASE 8 \u2014 WAITING \u2014 5062683000007915001"
+      },
+      "records_created": [
+        "5062683000007915001",
+        "5062683000007918001"
+      ],
+      "scenario": "waiting",
+      "source": "test_email_manual"
+    }
+  },
+  "schema": 1
+}

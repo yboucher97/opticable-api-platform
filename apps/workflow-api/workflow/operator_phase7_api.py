@@ -119,12 +119,12 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
 
     @app.get("/v1/operator/phase8/sales-queue", tags=["operator-phase8"],
              response_class=HTMLResponse)
-    async def sales_queue(
+    async def sales_queue(scope: str = "live",
             cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
         identity(cf_access_jwt_assertion)
         try:
             view = build_sales_queue(client, store.db_path, account_id=account_id,
-                                     from_address=from_address, now=now())
+                                     from_address=from_address, now=now(), scope=scope)
         except (ValueError, LookupError) as exc:
             raise HTTPException(status_code=409, detail="Fresh sales evidence needs review") from exc
         except ZohoGatewayError as exc:

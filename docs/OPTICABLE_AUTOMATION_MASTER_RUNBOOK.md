@@ -417,3 +417,30 @@ failure is now surfaced as provider unavailable (HTTP 503 on the sales queue)
 instead of a misleading Lead-evidence conflict (HTTP 409). No automatic
 write retry or provider replay is added. Reuse long-lived service clients
 and keep manual provider checks bounded.
+
+## Phase 8 protected Test Lab and operating queue — 2026-09-30
+
+The protected pre-mission CRM ID inventory and the nine synthetic Test Lab
+scenarios are recorded in `ops/phase8/PROTECTED_PREEXISTING_RECORDS.json`,
+`ops/phase8/TEST_LAB_REGISTRY.json`, and `docs/phase8-test-lab.md`. Root-owned
+live state and provider reconciliation evidence are under
+`/var/lib/optibrain/phase8/test-lab/`. Pre-existing records, including the
+original controlled Lead, remain read-only. The root-only, single-call Test Lab
+CRM boundary rejects protected IDs and relationships before transport. It
+allows only registered Test Lab targets and clearly marked creations. Production
+has no Test Lab write flag.
+
+The authenticated sales queue's default scope excludes marked Test Lab Leads;
+`?scope=lab` displays only provider-backed Test Lab IDs. Zoho gained
+`OptiBrain_Test`, `Scope`, and `Project_Timeline` fields after checking that
+they did not already exist. Use `OptiBrain_Test is not true` to exclude
+synthetic records from real sales, marketing, and revenue reports. The queue
+uses CRM/Task data and exact thread-bound Zoho Mail evidence for explainable
+priority, quote readiness, missed follow-ups, relationship suggestions, and
+unsent context-aware drafts. It displays business times in America/Toronto.
+The Test Lab verified quote-ready→needs-information→quote-ready and
+neglected→not-neglected→neglected transitions through readback of owned CRM
+records. Two controlled outbound messages exist in Sent; no inbound reply has
+been verified for the reply-path scenario. Do not label it REPLIED until a
+thread-bound inbound exists. The persistent autonomous development worker
+remains disabled.

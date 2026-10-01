@@ -189,12 +189,17 @@ class QueueRouteTests(unittest.TestCase):
         client = TestClient(app)
         path = "/v1/operator/phase8/sales-queue"
         self.assertEqual(client.get(path).status_code, 401)
+        self.assertEqual(client.get(path + "?scope=lab").status_code, 401)
         with patch("workflow.operator_phase7_api.build_sales_queue", return_value={
                 "label": "Sample", "sample_count": 0, "read_at": "Sep 30, 2026 6:00 PM EDT",
                 "summary": {key: 0 for key in ("needs_attention_now", "waiting_for_reply",
                     "replies_needing_response", "followup_due", "overdue", "potentially_quote_ready",
-                    "missing_critical_information", "new_or_unreviewed")}, "rows": []}):
+                    "missing_critical_information", "new_or_unreviewed")}, "rows": []}) as builder:
             response = client.get(path, headers={"Cf-Access-Jwt-Assertion": "human"})
+            self.assertEqual(builder.call_args.kwargs["scope"], "live")
+            self.assertEqual(client.get(path + "?scope=lab", headers={
+                "Cf-Access-Jwt-Assertion": "human"}).status_code, 200)
+            self.assertEqual(builder.call_args.kwargs["scope"], "lab")
         self.assertEqual(response.status_code, 200)
         self.assertIn("What should I work on now?", response.text)
         self.assertIn("no-store", response.headers["cache-control"])

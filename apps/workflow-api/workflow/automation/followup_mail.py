@@ -107,7 +107,7 @@ def _new_information(body: str) -> list[str]:
 
 def read_controlled_mail(client, *, account_id: str, from_address: str,
                          recipient: str, prior_outbound: dict | None,
-                         now: datetime) -> dict:
+                         now: datetime, expected_message_id: str = CONTROLLED_MESSAGE_ID) -> dict:
     """GET the known Sent message, then search exact sender and bind replies by headers."""
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("Mail read clock requires an offset")
@@ -117,14 +117,15 @@ def read_controlled_mail(client, *, account_id: str, from_address: str,
         return {"reply_state": "AMBIGUOUS", "reason": "A unique approved outbound send is unavailable",
                 "last_outbound": None, "last_inbound": None, "new_information": [], "search_complete": False}
     item = prior_outbound["latest"]
-    if (item.get("provider_message_id") != CONTROLLED_MESSAGE_ID
+    if (not re.fullmatch(r"[0-9]{1,30}", str(expected_message_id or ""))
+            or item.get("provider_message_id") != expected_message_id
             or item.get("account_id") != account_id
             or item.get("from_address", "").casefold() != from_address.casefold()):
         return {"reply_state": "AMBIGUOUS", "reason": "Approved outbound identity differs from the controlled Mail account",
                 "last_outbound": None, "last_inbound": None, "new_information": [], "search_complete": False}
-    base = f"/api/accounts/{account_id}/folders/{SENT_FOLDER_ID}/messages/{CONTROLLED_MESSAGE_ID}"
+    base = f"/api/accounts/{account_id}/folders/{SENT_FOLDER_ID}/messages/{expected_message_id}"
     sent = _data(client.request("mail", "GET", base + "/details"), dict)
-    if (str(sent.get("messageId")) != CONTROLLED_MESSAGE_ID
+    if (str(sent.get("messageId")) != expected_message_id
             or str(sent.get("folderId")) != SENT_FOLDER_ID
             or _addresses(sent.get("fromAddress")) != (from_address.casefold(),)
             or _addresses(sent.get("toAddress")) != (recipient.casefold(),)):
@@ -143,7 +144,7 @@ def read_controlled_mail(client, *, account_id: str, from_address: str,
             or abs((audit_time - sent_receipt).total_seconds()) > 120
             or sent_receipt > now + timedelta(minutes=2)):
         raise ValueError("Sent time evidence disagrees")
-    outbound = {"message_id": CONTROLLED_MESSAGE_ID, "internet_message_id": internet_id,
+    outbound = {"message_id": expected_message_id, "internet_message_id": internet_id,
                 "sent_at": sent_receipt.isoformat(), "sent_at_local": local(sent_receipt),
                 "recipient": recipient, "subject": str(sent.get("subject") or "")[:200],
                 "provider_sent_date_disagrees": False}
