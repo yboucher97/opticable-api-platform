@@ -68,3 +68,53 @@ No Codex worker, autonomous task queue or new timer was installed. The existing
 production API, backups, receipt collector and Phase 10 lifecycle timer remain
 normal application services. WorkDrive provider folders, calendar dispatch and
 automatic inbox-to-project routing are deferred optional integrations.
+
+## Guarded accepted Deal onboarding closure
+
+The manually invoked `ops/phase11/onboard_test_deal.py` accepts only a registered
+`OPTIBRAIN TEST` Deal at `Contracts Signed` with an owned Account, linked Contact,
+nonempty service scope, and exactly one owned site for that Account and Contact.
+Missing or ambiguous relationships fail closed. A real protected Deal cannot pass
+the CRM write firewall. This is a reusable one-shot onboarding operation, not a
+timer or permission for real accepted Deals. Future real onboarding needs explicit
+authorization and a separately reviewed real-record write boundary.
+
+The operation records an immutable `OB-J` project crosswalk to the source Deal,
+creates one pending Service relationship and one requested Installation work order,
+and creates the six-category deterministic local document root. Each CRM mutation
+is journaled before transport and checked by exact provider readback. Replaying
+onboarding reuses the same project, site, Service, work order, folder, document and
+events. An ambiguous provider acknowledgement stops for reconciliation. The
+first work order can be scheduled only at an aware future Montreal time with a
+bounded duration and a clearly marked test assignment. Overlapping active work
+for the same assignee is rejected. The provider `Scheduled_Date` and
+`Assigned_To` fields are the schedule source; the local project holds duration.
+
+The closure scenario used new Test Deal `5062683000007918009` and reused the
+registered Test Lab warehouse Account, Contact and site. Project
+`OB-J-3C80B6CE886D` created one work order `5062683000007920012`, one pending
+Service `5062683000007911007`, and two synthetic hash-checked documents. The
+work order moved Requested → Scheduled → In Progress → Completed, then the
+Service became Active and the Deal Closed Won. This is simulated completion;
+no field work or revenue is asserted. The operator queue and project detail
+read fresh Zoho state and show assignment, schedule, scope, canonical IDs,
+provider IDs, document root and installed-service handoff. All business times
+display in America/Toronto.
+
+The one-shot reconciliation compares meaningful provider fields instead of
+`Modified_Time`. A guarded direct provider assignment edit outside onboarding
+produced one `WORK_ORDER_ASSIGNMENT_CHANGED` event; a second reconciliation
+produced zero. Broader automatic observation of arbitrary outside edits is not
+installed. The Test Lab event ledger has 11 unique closure events, and all nine
+CRM writes in this mission were read back. Exact evidence is in
+`ops/phase11/CLOSURE_TEST_LAB.json` and the root-only
+`/var/lib/optibrain/phase11/test-lab/closure-evidence.json`.
+
+The one protected historical Deal sampled read-only was at `Quote Accepted` with
+Account and Contact links but no service scope or site evidence. It is not ready
+for this onboarding rule. The minimum future real handoff requires accepted
+stage, Account, linked Contact, unambiguous site, and concrete service scope;
+schedule and responsibility can be set after project creation. WorkDrive team
+discovery returned HTTP 415 in the one bounded attempt, so the isolated local
+folder remains the document destination. Calendar and inbox routing remain
+optional. All Test Lab objects stay excluded from the live operations queue.

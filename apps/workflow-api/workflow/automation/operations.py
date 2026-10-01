@@ -180,6 +180,8 @@ def build_operations(client, *, scope: str, projection_path: Path = PROJECTION,
                            "name": row.get("Name"), "status": status,
                            "scheduled_at": row.get("Scheduled_Date"),
                            "scheduled": local_time(row.get("Scheduled_Date")),
+                           "assignment": row.get("Assigned_To"),
+                           "duration_minutes": record.get("duration_minutes") if installation_id == record.get("work_orders", [None])[0] else None,
                            "service_id": internal("Services", _ref(row, "Linked_Service")),
                            "action": action, "reason": why, "result": row.get("Completion_Notes")})
         tickets = []
@@ -216,12 +218,14 @@ def build_operations(client, *, scope: str, projection_path: Path = PROJECTION,
         projects.append({"id": project_id, "customer_id": internal("Accounts", ids["Accounts"]),
                          "contact_id": internal("Contacts", ids["Contacts"]),
                          "site_id": internal("Service_Locations", ids["Service_Locations"]),
+                         "provider_ids": ids,
                          "account": rows["Accounts"].get("Account_Name"),
                          "contact": rows["Contacts"].get("Full_Name"),
                          "site": rows["Service_Locations"].get("Name"),
                          "deal": rows["Deals"].get("Deal_Name"), "deal_id": ids["Deals"],
                          "source_lead_id": source_lead_id,
                          "source": rows["Deals"].get("First_Source"),
+                         "scope": record.get("scope") or rows["Deals"].get("Service_Types"),
                          "status": record["status"], "scheduled": local_time(record.get("scheduled")),
                          "action": action, "reason": why, "work_orders": orders, "tickets": tickets,
                          "services": services, "tasks": tasks, "documents": record.get("documents", []),
@@ -251,6 +255,7 @@ def render_operations(view: dict) -> str:
     for p in view["projects"]:
         blocks.append(f"<article><h2><a href='/v1/operator/phase11/project/{h(p['id'])}'>{h(p['id'])}</a> · {h(p['account'])}</h2>"
                       f"<p>{h(p['site'])} · {h(p['status'])} · {h(p['deal'])}</p>"
+                      f"<p>Scope: {h(p['scope'])} · Schedule: {h(p['scheduled'])} · Assigned: {h(p['work_orders'][0].get('assignment') if p['work_orders'] else None)}</p>"
                       f"<p><b>Next:</b> {h(p['action'])} — {h(p['reason'])}</p>"
                       f"<small>{len(p['work_orders'])} work orders · {len(p['tickets'])} tickets · "
                       f"{len(p['services'])} services · {len(p['tasks'])} tasks · {len(p['documents'])} documents</small></article>")
@@ -267,9 +272,9 @@ def render_project(project: dict) -> str:
     def section(title, rows, formatter):
         return f"<h2>{h(title)}</h2><ul>" + "".join(f"<li>{formatter(row)}</li>" for row in rows) + "</ul>"
     orders = section("Work orders", project["work_orders"], lambda w:
-                     f"{h(w['id'])} · {h(w['status'])} · {h(w['scheduled'])} · {h(w['action'])}")
-    services = section("Installed services", project["services"], lambda s:
-                       f"{h(s['id'])} · {h(s['name'])} · installed {h(s['installed_on'])}")
+                     f"{h(w['id'])} (Zoho {h(w['provider_id'])}) · {h(w['status'])} · {h(w['scheduled'])} · {h(w.get('duration_minutes'))} min · assigned {h(w.get('assignment'))} · {h(w['action'])}")
+    services = section("Services and installation handoff", project["services"], lambda s:
+                       f"{h(s['id'])} (Zoho {h(s['provider_id'])}) · {h(s['name'])} · {h(s['stage'])} · installed {h(s['installed_on'])}")
     tickets = section("Service tickets", project["tickets"], lambda t:
                       f"{h(t['id'])} · {h(t['subject'])} · {h(t['status'])}")
     docs = section("Documents", project["documents"], lambda d:
@@ -281,6 +286,9 @@ def render_project(project: dict) -> str:
     return ("<!doctype html><html lang='en'><meta charset='utf-8'><title>OptiBrain project</title>"
             "<style>body{font:16px/1.45 system-ui;max-width:1100px;margin:2rem auto;padding:0 1rem;color:#182536}</style>"
             f"<h1>{h(project['id'])} · {h(project['account'])}</h1><p>{h(project['site'])} · {h(project['status'])}</p>"
+            f"<p>Contact: {h(project['contact'])} · Scope: {h(project['scope'])} · Schedule: {h(project['scheduled'])}</p>"
+            f"<p>Canonical customer {h(project['customer_id'])} · contact {h(project['contact_id'])} · site {h(project['site_id'])}</p>"
+            f"<p>Zoho Account {h(project['provider_ids']['Accounts'])} · Contact {h(project['provider_ids']['Contacts'])} · Site {h(project['provider_ids']['Service_Locations'])}</p>"
             f"<p>Source opportunity {h(project['deal_id'])} · {h(project['source'])}"
             + (f" · <a href='/v1/operator/phase9/source-trace/{h(project['source_lead_id'])}'>intake/source trace</a>"
                if project.get("source_lead_id") else "") + "</p>"

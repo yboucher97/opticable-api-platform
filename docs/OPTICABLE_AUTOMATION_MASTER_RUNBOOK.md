@@ -663,3 +663,14 @@ snapshots remain read-only. A terminal-event replay defect was fixed and its
 pre-repair ledger preserved; subsequent replays added zero events. No Codex
 worker or new timer was installed. See `docs/phase11-operations-foundation.md`
 for model, evidence and limitations.
+
+The Phase 11 closure used one new accepted TEST_ONLY Deal and the manual
+`ops/phase11/onboard_test_deal.py` command. It verified exact Deal→Account→Contact→
+site resolution, one canonical project and initial work order, a Montreal-aware
+assigned schedule, simulated completion, installed-Service handoff, two synthetic
+documents and replay-safe events. An outside guarded provider assignment edit
+was observed once by reconciliation. Project `OB-J-3C80B6CE886D` is retained
+as Test Lab evidence in `ops/phase11/CLOSURE_TEST_LAB.json`. No real Deal was
+onboarded; protected records remain read-only. WorkDrive provider folders,
+generic outside-edit polling, calendar and email routing are deferred. The
+autonomous Codex worker remains disabled.

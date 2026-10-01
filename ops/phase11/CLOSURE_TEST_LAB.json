@@ -1,0 +1,120 @@
+{
+  "assignment": "OPTIBRAIN TEST — Internal lab crew B",
+  "books_writes": 0,
+  "captured_at_utc": "2026-10-01T14:53:16.108795+00:00",
+  "case_baseline_sha256": "a614fddfc8c18d0b31292812e79329aa87434fe01564083bddcef44a15c3a3a0",
+  "deal_stage": "Closed Won",
+  "documents": [
+    {
+      "category": "QUOTE",
+      "name": "2026-10-01_OB-J-3C80B6CE886D_QuoteScope.txt",
+      "sha256": "f63a46a6962b900ec80363abd09635b4fd07936773e8c545796d276d95bc6e41"
+    },
+    {
+      "category": "SERVICE REPORT",
+      "name": "2026-10-01_OB-J-3C80B6CE886D_ServiceReport.txt",
+      "sha256": "cd42b5bb4b25adf615cf722d2a109ae1cfe53f52d6cd59b7f8157a73fae71f50"
+    }
+  ],
+  "duration_minutes": 180,
+  "event_replay_additional_events": 0,
+  "events": [
+    {
+      "id": "OB-E-066837E5AD929FA11A8D",
+      "kind": "DOCUMENT_ADDED",
+      "object": "OB-J-3C80B6CE886D"
+    },
+    {
+      "id": "OB-E-DD2D4072E391C4AB6D0B",
+      "kind": "DEAL_ACCEPTED",
+      "object": "OB-J-3C80B6CE886D"
+    },
+    {
+      "id": "OB-E-C96AB36993B18FB23A47",
+      "kind": "PROJECT_CREATED",
+      "object": "OB-J-3C80B6CE886D"
+    },
+    {
+      "id": "OB-E-0D27E8E2880D25FA84AD",
+      "kind": "WORK_ORDER_CREATED",
+      "object": "OB-WO-FCA4F1EC72F1"
+    },
+    {
+      "id": "OB-E-3358C63631B200B709B4",
+      "kind": "WORK_ORDER_SCHEDULED",
+      "object": "OB-WO-FCA4F1EC72F1"
+    },
+    {
+      "id": "OB-E-0503D07DE7C557B87EDE",
+      "kind": "WORK_ORDER_ASSIGNMENT_CHANGED",
+      "object": "OB-WO-FCA4F1EC72F1"
+    },
+    {
+      "id": "OB-E-1CEB589C0D4B65DBFA8E",
+      "kind": "WORK_ORDER_STARTED",
+      "object": "OB-WO-FCA4F1EC72F1"
+    },
+    {
+      "id": "OB-E-F1F910DB8F9F05A2F9E2",
+      "kind": "WORK_ORDER_COMPLETED",
+      "object": "OB-WO-FCA4F1EC72F1"
+    },
+    {
+      "id": "OB-E-F9FAC1D9EDE71C4C0A94",
+      "kind": "DOCUMENT_ADDED",
+      "object": "OB-J-3C80B6CE886D"
+    },
+    {
+      "id": "OB-E-2DFD3D42397E0C4E2132",
+      "kind": "SERVICE_INSTALLED",
+      "object": "OB-SV-A06AE0EDDD9D"
+    },
+    {
+      "id": "OB-E-1C296E50E7431B67336F",
+      "kind": "PROJECT_COMPLETED",
+      "object": "OB-J-3C80B6CE886D"
+    }
+  ],
+  "external_edit_observed_kind": "WORK_ORDER_ASSIGNMENT_CHANGED",
+  "folder": {
+    "id": "OB-J-3C80B6CE886D",
+    "path": "/var/lib/optibrain/phase11/test-lab/files/OB-C-A75299408744/OB-S-6B29616A514F/OB-J-3C80B6CE886D",
+    "provider": "local"
+  },
+  "installed_on": "2026-10-01",
+  "journal_keys": [
+    "closure:deal",
+    "onboard:5062683000007918009:completed",
+    "onboard:5062683000007918009:deal-closed",
+    "onboard:5062683000007918009:external_assignment",
+    "onboard:5062683000007918009:scheduled",
+    "onboard:5062683000007918009:service",
+    "onboard:5062683000007918009:service-active",
+    "onboard:5062683000007918009:started",
+    "onboard:5062683000007918009:work"
+  ],
+  "mission": "Phase 11 closure",
+  "onboarding_replay_additional_objects": 0,
+  "physical_work_performed": false,
+  "project_id": "OB-J-3C80B6CE886D",
+  "project_status": "COMPLETED",
+  "protected_baseline_sha256": "b928cd44884169e150cbf7481edf07c5943bd7bc8989be667467936fda702d33",
+  "protected_record_mutations": 0,
+  "provider": {
+    "Accounts": "5062683000007928001",
+    "Contacts": "5062683000007929001",
+    "Deals": "5062683000007918009",
+    "Service_Locations": "5062683000007933004"
+  },
+  "provider_write_acknowledgements_verified": true,
+  "provider_writes_this_mission": 9,
+  "real_customer_outreach": 0,
+  "scheduled_montreal": "2026-10-01T10:50:00-04:00",
+  "schema": 1,
+  "service_baseline_sha256": "caa7b20022d0c7a4b8b2270f4addff700e0516a384e585f6a3133471525e1e62",
+  "service_id": "5062683000007911007",
+  "service_stage": "Active",
+  "work_order_id": "5062683000007920012",
+  "work_order_status": "Completed",
+  "workdrive_provider_destination": "deferred: GET /workdrive/api/v1/teams returned HTTP 415; no safe isolated team root"
+}

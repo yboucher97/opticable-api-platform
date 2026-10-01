@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 
@@ -214,7 +215,7 @@ def event(state, project, kind, internal_id, provider_version):
     events = project.setdefault("events", [])
     terminal_once = {"PROJECT_CREATED", "PROJECT_COMPLETED", "WORK_ORDER_CREATED",
                      "WORK_ORDER_COMPLETED", "SERVICE_INSTALLED", "SERVICE_TICKET_OPENED",
-                     "SERVICE_TICKET_RESOLVED", "TASK_ROUTED"}
+                     "SERVICE_TICKET_RESOLVED", "TASK_ROUTED", "DEAL_ACCEPTED"}
     if kind in terminal_once and any(x["kind"] == kind and x["object"] == internal_id for x in events):
         return False
     if any(x["id"] == identity for x in events): return False
@@ -238,8 +239,10 @@ def folders(state, project):
 
 def document(state, project, name, content):
     base = folders(state, project)
-    if name != Path(name).name or not name.startswith("2026-10-01_" + project["id"]):
+    if (name != Path(name).name or
+            not re.fullmatch(r"\d{4}-\d{2}-\d{2}_" + re.escape(project["id"]) + r"_[A-Za-z0-9_.-]+", name)):
         raise ValueError("Document name must be safe and project-scoped")
+    datetime.strptime(name[:10], "%Y-%m-%d")
     category = classify_document(name)
     folder = {"QUOTE": "01 Quote", "PLAN": "02 Plans", "PHOTO": "03 Photos",
               "WORK ORDER": "04 Work Orders", "SERVICE REPORT": "05 Service Reports"}.get(category, "06 Closeout")
