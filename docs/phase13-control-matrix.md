@@ -1,16 +1,50 @@
-> Remediation override: every runtime provider mutation now meets the universal transport gate or is forbidden. Of the 23 inventoried families, **one has current executable TEST_ONLY transport (central Task)** and **22 are forbidden/retired/disabled at transport**. Scheduled writes remain killed; real authority is zero. Historical per-family classifications below describe the audit starting state, not current permissions. Native Forms is an additional external producer requiring owner containment confirmation. See [phase13-p0-remediation.md](phase13-p0-remediation.md).
+# Phase 13 authoritative mutation/control matrix
 
-# Phase 13 mutation and control matrix
+Current disposition after P0 remediation, 2026-10-01. Read [the final report](phase13-remediation-final-report.md). Inventory includes dynamic/direct provider transports, create/update/convert/merge and POST/PUT/PATCH/DELETE, not just conveniently named executors. Native Forms is a separate external producer. Raw call sites remain in phase13-evidence/mutation-call-sites.json and Git history.
 
-Observed 2026-10-01 against deployed code, compiled connector, effective workflow definitions, root units, provider reads and journals. Protected/real business records were read only. The raw candidate call-site inventory is in docs/phase13-evidence/mutation-call-sites.json; it includes dynamic transports and false-positive local .update calls and is not a count of business writes.
+## Current control coverage
 
-## Coverage denominator
+23 code executor families were found. At audit three families contained a central executor (3/23 =13.0%); that was not universal policy coverage. **Now only ONE provider-write family is admissible and it is central (1/1 =100%). The other22 families have no active business-write authority and are disabled/forbidden at transport.** Test root and runner kills remain OFF. This denominator measures executor families, not test coverage, call volume or real readiness. Native Forms is outside it and needs MANUAL-01.
 
-The table defines **23 consequential executor families** across application Python, manual mission scripts, the independent connector and legacy infrastructure. Three have a Phase 12 central executor: scheduled Test follow-up, Test project onboarding, and controlled Test R3 Mail (**3/23 = 13.0%**). That number measures represented executor families, not lines, API methods, execution volume or universal protection. One currently enabled scheduled CRM-write family exists: Test follow-up; **1/1 is central**. No real-business scheduled CRM executor is enabled. Native Forms is an additional external producer, not included in the code-executor denominator.
+All Zoho non-GET operations require the universal root control and one-use central context before OAuth and recheck before HTTP. Only exact registered TEST_ONLY `crm.task.create` is admitted, with root fresh locked off-host claim, attempted immutable journal evidence, exact client/body/path/action, fresh target and independent lower CRM/Test ownership fence. Lower legacy grants cannot override this. Missing/corrupt/untrusted controls deny. Books, Mail/Sign/drafts, real targets and every other action class are forbidden. GET executable/action/Creator/traversal/query-embedded/method-override paths are blocked. No automatic mutation retry or standby failover.
 
-Several families contain multiple concrete call sites. Central proposal generation does not make all related legacy executors central. A transport fence is separate from central policy. The classifications below apply to the actual executor, not to its name or risk-tier enum.
+| # | Family | Current authority / central classification | Provider reconciliation / future requirement |
+|---|---|---|---|
+|1|crm_leads normalize/upsert/Task|FORBIDDEN; legacy guard retained, MUST MIGRATE before real use|New central exact ownership/fresh state/effect contract|
+|2|Phase7 update canary|FORBIDDEN; SAFE LEGACY GUARD retained, no transport|Pinned one-use evidence not real authority|
+|3|Phase7 new Lead create|FORBIDDEN; SAFE LEGACY GUARD retained|Provider state-loss-safe create claim/reconciliation required|
+|4|Forms fallback enrichment|DISABLED +FORBIDDEN; MUST MIGRATE|Existing exact receipt/timeline/identity/version/replay guard is not universal policy; root OFF|
+|5|Phase8 seed/transitions/relationships|FORBIDDEN; legacy Test guards retained|Manual historical evidence readable; no new legacy effect|
+|6|Phase8 manual Task artifact|FORBIDDEN; legacy guard retained|Use only admitted central Task if separately technically authorized|
+|7|Phase9 adoption/intake/outcome scripts|FORBIDDEN; legacy Test guards retained|Source namespace/immutable receipt claim required before reuse|
+|8|Phase10 Services/Sites/Deals writes|FORBIDDEN; legacy guards retained|Each step centralized before future use|
+|9|Phase11 Work Order/Case/Service/relations|FORBIDDEN; legacy guards retained|Partial-step recovery/compensation required|
+|10|Phase12 exact Lead follow-up Task|CENTRALIZED; TEST_ONLY ONLY; root killfalse and runner auto0|Locked R2 conditional claim; exact action marker/target/hash; readback/result; empty-local-journal recovery proven|
+|11|Phase12 accepted-Deal onboarding|FORBIDDEN despite central proposal/executor code|Multi-step transport/recovery not admitted; MUST MIGRATE before real use|
+|12|CRM field/schema mutators|UNUSED /DEPRECATE in runtime; FORBIDDEN|Technical mission administration separate explicit root authority|
+|13|CRM workflow/webform/watch adapters|FORBIDDEN in runtime; narrow watch rotation completed as root administration|Provider current credential/expiry verified; renewal not generic business authority|
+|14|Public connector intake create/update|FORBIDDEN before OAuth; MUST MIGRATE if reopened|Former first-match/latest-field/KV-after-effect design unsafe; public ingestion suspended|
+|15|Generic connector Zoho/Books/MCP write|FORBIDDEN before OAuth|Caller confirm/Books boolean never sufficient|
+|16|PDF CRM password-field writer|RETIRED at source +configOFF; UNUSED /DEPRECATE|Direct mutation raises before transport|
+|17|Mail draft/email analysis/digest|DISABLED +FORBIDDEN|Thread/draft ambiguity needs central effect recovery before any reuse|
+|18|Legacy outbound send/reply|FORBIDDEN; legacy exact guards retained|No general send/reply/forward/draft authority|
+|19|Phase12 approved Test Mail|FORBIDDEN at universal transport, approval machinery retained|Kill before one-use consume; exact actor/target/payload/expiry/state; real human flow unproven|
+|20|Sign contract send|DISABLED +FORBIDDEN|Shared-key/approved_to_send boolean not human approval|
+|21|WorkDrive folders/upload/move; core/PDF|RETIRED direct mutators +FORBIDDEN|Keep local documents; future provider ownership/hash/recovery contract|
+|22|Omada/core legacy password/site jobs|RETIRED routes403; Omada health-only|No infrastructure jobs, sessions/uploads/run queues opened|
+|23|Generic Google/Zoho/CF/GH/OVH/Apollo runtime mutators|FORBIDDEN; CF/GH technical administration root one-use only|Service UID cannot mint technical authority; no unattended business grant|
 
-For a non-overlapping primary classification of this table: CENTRALIZED3; SAFE LEGACY GUARD9; MUST MIGRATE8; UNUSED/DEPRECATE2; FORBIDDEN1. Some rows also describe a forbidden sub-capability or a disabled legacy caller. These counts do not include the independent native Forms producer and do not imply authority to activate a legacy family.
+Native Zoho Forms can create/update CRM without passing through either core or connector. Available supported API/scopes cannot prove native integration deactivation; exact owner UI steps are MANUAL-01, BLOCKS P0 CLOSURE. Do not label this producer OFF until provider owner readback exists.
+
+## Independent lower and evidence controls
+
+Protected IDs override TEST_ONLY flags, root registry entries and name markers. Protected-ID spoof is denied before provider auth/transport. Cross-record target relationships are freshly checked. The admitted Task must link an exact registered nonprotected Lead and stable action marker/payload hash. The fresh R2 claim is consumed once, an existing/uncertain claim only permits read-only reconciliation, and a locked duplicate returns reconciliation-only even when R2 reports ObjectLockedByBucketPolicy. Journal/run context precedes attempted/transport; immutable envelope and append-only hash chain permit reconstruction. Legacy histories remain incomplete.
+
+Mail POST/PUT/PATCH/DELETE and Books/Sign operations were tested with intercepted transport: all denied before OAuth/HTTP. No real send or financial test. The old R3 Test script cannot expose a general send endpoint or override root kill. Unset shared-key auth503, wrong401, URL key400; operator Access validates JWT/issuer/audience/allowed identity. Real human interactive approval remains a future gate, not evidence inferred from local fixtures.
+
+## Historical call-site detail
+
+The following preserves the original audit classifications and describes the former protections; **current authority is the table above**. Keeping this detail prevents mistakenly treating a central proposal as a migrated legacy executor. Historical 'enabled' entries are not authorization.
 
 | # | Executor / module / action / caller | Phase 12 coverage / classification | Lower protection | Idempotency / reconciliation | Current real authority |
 |---|---|---|---|---|---|
@@ -38,32 +72,5 @@ For a non-overlapping primary classification of this table: CENTRALIZED3; SAFE L
 | 22 | Omada runPlan / API runs start / core site-password jobs | MUST MIGRATE BEFORE REAL AUTONOMY | Public /api/runs/start lacked auth; webhook token only covered some routes | In-memory queue/report + persisted plans; no central infrastructure approval | External non-health and job-create aliases blocked |
 | 23 | Generic Zoho/Google/provider administration actions and desired-state apply | MUST MIGRATE / FORBIDDEN for consequential unattended changes | API key, reason/confirm, service/path allowlists; CRM/Books gateway independently blocks | Core operation audit; variable provider evidence | No scheduled general mutator found; privileged legacy/manual capability remains |
 
-Native Zoho Forms creates CRM Leads independently of these executors, demonstrated by existing Test notification/timeline evidence. Its current native integration configuration and protected-record update behavior were not independently proven. It is a P0 ownership/control review, not evidence of a Phase 12-controlled write. No native Forms configuration was changed during this audit.
 
-## Concrete transport inventory
-
-CRM capability searches included POST, PUT, PATCH, DELETE, create, update, convert and merge, and direct HTTP clients. Findings extend beyond workflow naming:
-
-- Core controlled calls: providers/crm_leads.py write_once; phase7_crm_executor.py execute_approved_canary; phase7_lead_create.py execute_approved_create; phase9_form_enrichment.py enrich_form_leads.
-- Administration: reconcilers/zoho_crm.py field create/update/delete; reconcilers/zoho_metadata.py dynamic create/update/delete; reconcilers/zoho_notification.py watch create/update. Gateway and generic workflow CRM fences deny their unrestricted execution.
-- Manual Test calls: ops/phase8/test_lab_seed.py, test_lab_transitions.py, test_lab_relations.py, create_test_artifacts.py; ops/phase9/test_lab_manual.py, test_lab_intake.py, test_lab_outcome.py, adopt_form_test_lead.py; ops/phase10/test_lab_lifecycle.py; ops/phase11/test_lab_operations.py. Phase 12 imports the latter writer, so it is also a live scheduled transport dependency.
-- Direct bypass: apps/password-pdf-service/wifi_pdf/zoho_crm.py; independent connector src/index.js crmCreate/crmUpdate and generic Zoho request handlers. These do not use Python CRM authority.
-- Legacy lifecycle upsert/promote/meeting/quote helpers are registered but hit blocked_legacy before CRM transport. Their payload/dedupe helper code remains dead debt. Convert/merge are risk-policy concepts and blocked legacy paths, not verified universal central implementations. No active automatic merge executor was found.
-
-## Mail and financial safety
-
-Mail draft creation is a provider mutation. Historical core audit contains 59 successful email_reply_drafted entries. This disproves a broad interpretation that all Mail mutations were OFF before Phase 13. No evidence of a real customer send was generated by this audit; legacy reply/send paths are disabled or narrowly pinned. Forward/reply primitives can be reached through generic connector/provider tools in principle; the connector now rejects all their mutation methods, not merely a route named send.
-
-Python ZohoGateway rejects Books paths and four Books-synced CRM financial modules before OAuth. Canonical mutation paths reject escapes/dot segments/method overrides. Direct dry checks covered four methods on Books, four on synced finance, protected CRM update without grant, and a root Test grant spoofing a protected target. All ten were denied without OAuth or transport. Thirty connector denial cases passed with zero network calls, including financial approval booleans and executable/unaudited GET paths. GET alone cannot establish read-only behavior; the connector additionally limits service/path/override capabilities.
-
-No invoice, payment, credit, estimate or subscription write was performed. Services recurrence/contract values are local CRM operational facts, not Books invoice/subscription execution. Future real R3 approvals cannot authorize Books, bulk mail, deletes or infrastructure under the present Phase 12 policy.
-
-## Journal and approval limits
-
-One-use approvals bind action ID/type, target, payload hash, approver and an expiry within one hour. State/version is revalidated before execution; replay/stale requests fail. The current production Access configuration is consistent and anonymous/forged requests fail, but the actual human issuance-to-dispatch browser flow remains unproven. Fixture principals and root mission actor strings are not proof of a live human authorization session.
-
-The journal has useful reconstruction fields but lacks an immutable full envelope for unscheduled actions and a complete transition/response ledger. Root manual operation journals store hashes and acknowledged IDs, not every original request/response. Reconciliation following loss of local attempt state must be designed before real writes. dispatch_approved also lacks an independent Policy kill check. The runner's kill switch keeps safety reconciliation and reads operating, but it does not retroactively govern every legacy/API/approved executor.
-
-## Containment rules
-
-Do not reopen the public connector, legacy site/password/Omada jobs, PDF provider writes, form enrichment, legacy Mail drafts or Sign sends by changing a flag alone. Preserve the Caddy ordered route block, root workflow override, worker retirement conditions and corrected backup helper during deployment/restore. Reopening requires the exact ownership, central policy, provider reconciliation, authenticated authorization and recovery gates in the backlog.
+Do not reopen forbidden executors by flags alone. New real action classes require exact owner authorization and every gate in the final report. Phase14 has not begun.

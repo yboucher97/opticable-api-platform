@@ -77,7 +77,7 @@ class RemoteEffects:
                                    ContentType='application/json',IfNoneMatch='*')
         except Exception as exc:
             code=str(getattr(exc,'response',{}).get('Error',{}).get('Code',''))
-            if code in {'PreconditionFailed','412','ConditionalRequestConflict','409'}:
+            if code in {'PreconditionFailed','412','ConditionalRequestConflict','409','ObjectLockedByBucketPolicy'}:
                 if not self.get(action,'claim'): raise ValueError('Existing claim is not readable')
                 return FreshClaim(action.action_id,action.payload_hash,key,False)
             # Even an upload timeout may have committed. Do not retry or grant.

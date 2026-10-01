@@ -1,4 +1,4 @@
-> Phase 13 P0 remediation supersedes historical safety statements below. The current transport, credential, scheduler and recovery controls are specified in [phase13-p0-remediation.md](phase13-p0-remediation.md). Exact deployed SHA is the root deployment receipt; read it with `sudo cat /var/lib/optibrain/phase13-remediation/deployment.json`. Historical phase percentages are not readiness evidence.
+> Current authority: [Phase 13 final remediation report](phase13-remediation-final-report.md). Exact deployed SHA is the root deployment receipt: `sudo cat /var/lib/optibrain/phase13-remediation/deployment.json`. Historical phase percentages are not readiness evidence.
 
 # OptiBrain architecture blueprint
 
@@ -8,9 +8,9 @@ Authoritative Phase 13 audit, 2026-10-01, America/Toronto. This describes the de
 
 OptiBrain connects business intake, CRM identity, sales assistance, service lifecycle and delivery evidence to operator review. Zoho CRM owns business records. OptiBrain owns local receipts, execution evidence, crosswalks and approval state. Those local stores are safety-critical, not disposable caches.
 
-The deployed core is ee7629f7e7954e1ee782c6481d4aaef37349d10f, API 1.11.0. Core production, local main and remote main matched independently. Phase 13 documentation and the backup correction are on the manual audit branch; core production code has not been advanced. The independent connector was emergency-fixed in its own repository, PRs 30–32, final merge at aa1e084b06184df73847639700a8e540bd433293.
+The original core was ee7629f7e7954e1ee782c6481d4aaef37349d10f. The first P0 remediation main/deployed release was 852e5f7c815c90e56e701436f73ee4133f51a673 (PR89); the completion release includes this blueprint. API remains 1.11.0. Production, local main and remote main are verified against the root exact-SHA deployment receipt, rather than a hardcoded historical report. The independent connector was emergency-fixed in its own repository, PRs 30–32, final merge at aa1e084b06184df73847639700a8e540bd433293.
 
-Persistent Codex development autonomy is retired. Application read/reconciliation/backup timers continue. Only registered TEST_ONLY follow-up Tasks have scheduled provider-write authority. Real customer sends and financial writes have no audit authorization. Native Zoho Forms ingestion is a separate provider-managed producer; the universal claim that every automatic provider write is OFF is not proven.
+Persistent Codex development autonomy is retired. Application read/reconciliation/backup timers continue. Only one exact central registered TEST_ONLY follow-up Task executor can obtain provider-write authority; both root and runner write switches currently remain OFF. Real customer sends and financial writes have no audit authorization. Native Zoho Forms ingestion is a separate provider-managed producer; the universal claim that every automatic provider write is OFF is not proven.
 
 ## Data and control flows
 
@@ -41,8 +41,10 @@ flowchart TD
   POLICY --> JOURNAL[Business action journal]
   APPROVAL --> JOURNAL
   JOURNAL --> RUNNER[Bounded TEST_ONLY runner]
-  RUNNER --> FENCE[Root exact-call CRM firewall]
-  FENCE --> CRM
+  RUNNER --> CLAIM[Locked atomic off-host effect claim]
+  CLAIM --> GATE[Root universal control / exact central context]
+  GATE --> FENCE[Independent exact-call CRM / Test ownership firewall]
+  FENCE -. TEST_ONLY; currently killed .-> CRM
   CRM --> RECON[Exact provider readback / reconciliation]
   RECON --> JOURNAL
   JOURNAL --> EXC[Exceptions / stale / ambiguous outcome]
@@ -52,7 +54,7 @@ flowchart TD
   ID --> OP
   EXC --> OP
   CF[Cloudflare cron / queue / durable workflow] --> ENGINE[Core event workflow engine]
-  GH[GitHub lifecycle scheduler] --> CF
+  GH[GitHub health monitor; duplicate business schedules disabled] --> OP
   ENGINE --> MAIL
   ENGINE --> LIFE
   ENGINE -. legacy mutating workflows suspended .-> CRM
@@ -62,7 +64,7 @@ flowchart TD
   AGE --> R2[Off-host R2 object and readback hash]
 ```
 
-Solid edges describe reads, local evidence writes, or existing authorized Test writes; the native Forms-to-CRM edge is independently evidenced provider ingestion, outside the Python firewall. The engine retains read-only Mail, Sign and Books observers. Its legacy draft/digest/contract-send workflows were disabled during Phase 13. Operator recommendations do not themselves invoke transport.
+Solid edges describe reads and local evidence writes; the native Forms-to-CRM edge is independently evidenced provider ingestion, outside the Python firewall. The engine retains read-only Mail, Sign and Books observers. Its legacy draft/digest/contract-send workflows were disabled during Phase 13. Operator recommendations do not themselves invoke transport.
 
 ## Deployed components
 
@@ -75,15 +77,15 @@ Solid edges describe reads, local evidence writes, or existing authorized Test w
 | Connector | Cloudflare opticable-ai-connector; separate GitHub repository | ACTIVE bounded reads; every non-GET/HEAD request and executable/unaudited read path rejected before OAuth/transport |
 | Control plane | Cloudflare opticable-control-plane, cron, business queue, DLQ, durable workflow | ACTIVE event dispatch/retry; not the development worker |
 | Public website | Cloudflare opticable-website; ai.opticable.ca and main-site forms | ACTIVE public UI; connector-backed CRM ingestion currently suspended |
-| Installed runner | /usr/local/lib/optibrain/phase12-run-test-lab.py | ACTIVE scheduled Test-only Task execution; root, bounded, flock, provider ownership revalidation |
+| Installed runner | /usr/local/lib/optibrain/phase12-run-test-lab.py | ACTIVE read/reconciliation; Test Task writes killed; root, bounded, flock, provider ownership revalidation |
 | Installed backup helpers | /usr/local/lib/optibrain-backup | ACTIVE backup 1.0.2 after Phase 13 scope correction |
-| Development controller | /opt/optibrain-agent and legacy control/runtime files | RETIRED; six units inactive (five disabled, usage.service static) and require an absent root authorization file |
+| Development controller | /opt/optibrain-agent and legacy control/runtime files | RETIRED; six units MASKED/inactive, originals archived and authorization file absent |
 | Old worktrees/branches | /home/optibrain, /tmp, /var/tmp, Git refs | DISABLED/ARCHIVAL; no active dispatcher; review before deletion |
 | Camplan / plan2 | Cloudflare opticable-camplan, opticable-plan2 | Adjacent deployed applications; not a grant of CRM/autonomy authority |
 | Preview workers | website-test and website preview/design/performance workers | ORPHANED/UNKNOWN lifecycle; deprecation review needed |
 | hoplajeux-reservation-email | Cloudflare account inventory | Separate application; outside OptiBrain business authority |
 
-The Omada dist tree is a generated deployed artifact. Hashes are recorded; an exact reproducible build association to current main was not independently proven. Python service sources were inspected directly. Git alone is insufficient to describe root-installed helpers or provider workers.
+The Omada dist tree is a generated deployed artifact. Intrinsic health-only containment was compiled from reviewed remediation source and TypeScript build is now a CI requirement. Generated artifacts and root-installed helpers still need independent deployment/hash verification. Python service sources were inspected directly. Git alone is insufficient to describe root-installed helpers or provider workers.
 
 ## System of record and canonical concepts
 
@@ -132,13 +134,13 @@ Operations is provider-backed for three Test projects. The live operations endpo
 
 ## Consequential-action boundary
 
-Phase 12 is a sound narrow Test dispatcher, not a universal firewall. Its automatic dispatch checks risk, ownership, kill policy, exact fresh target, semantic Modified_Time and expected state before one attempt. Ambiguous acknowledgements become reconciliation work; there is no automatic second mutation or mutation failover. A separate lower CRM firewall binds an exact method/path/body/headers call.
+The universal transport fence admits only one exact central TEST_ONLY `crm.task.create` action; every other business mutator is disabled or forbidden before OAuth. Fixed root-owned `/etc/optibrain/mutation-control.json` must have trusted ancestry/owner/mode, a valid schema and exact Test authorization. Missing, malformed or substituted state denies. Root `test_writes_enabled=false`, `real_canary_allowed=false` and runner `OPTIBRAIN_BUSINESS_AUTO_WRITES=0` keep execution OFF. An approval, feature flag or legacy lower grant cannot override this fence. API runs unprivileged and cannot mint the root central/technical scopes.
 
-The controlled R3 Test Mail path binds sender, recipient, subject/body hash, approval, target and fresh evidence. It is a manually invoked restricted script; there is no general Phase 12 HTTP send endpoint. One-use expiry is at most one hour. Actual authenticated human approval through Cloudflare Access was not exercised. Remediation adds explicit policy revalidation before approval consumption; production R3 transport is forbidden independently.
+The central dispatcher records an immutable full envelope, append-only hash-chained decisions/transitions/provider intent/response/reconciliation, and run/trigger context before attempted transport. It checks ownership, policy/risk, exact fresh target/version/state; the independent lower CRM firewall binds exact method/path/body/headers. The context is consumed before OAuth and revalidated before HTTP. Ambiguous provider acknowledgment never triggers a second mutation or mutation failover. Old incomplete histories remain explicitly incomplete.
 
-Actions record request/action IDs, target, risk, decision, hash, version, ownership, attempt, provider ID, timestamps and limited effect/reconciliation detail. Scheduled envelopes preserve full action input. Unscheduled actions do not retain a complete immutable execution envelope or full transition/provider-response history; source trigger/run linkage is optional. Existing local state is sufficient for sampled Test reconstruction, not a complete real-business audit contract.
+The historical R3 Test approval machinery binds action/payload/target/actor/expiry/one-use and now rechecks kill policy before consumption. Actual Access-based human issuance was not exercised. EVERY Mail/Sign/draft/R3 provider write remains forbidden independently; no general unrestricted send endpoint exists.
 
-Restore must not resume provider writers from stale local journals. The runner resolves acknowledged Task IDs from local root operations state; new Task attempts are fenced by atomic off-host claims and exact provider action markers. Existing claims are reconciliation-only after local state loss. Keep the Test runner disabled during disaster recovery until all effects in the backup gap are reconciled.
+Atomic conditional R2 claims under `business-effects/v1/<action_id>/` precede the admitted Task transport. An indefinite bucket lock protects claim/result objects. Existing, unavailable or ambiguous claims cannot grant a retry; exact provider action marker/target/hash readback and stored result permit reconciliation after stale backup or local journal loss. A real registered Test Task was created once and recovered from an empty journal without a second create. The runner reconciles before testing the kill policy. Restore keeps writers OFF until backup-gap effects are reconciled. This contract is not proof for disabled future create/send/onboarding classes.
 
 ## Security, secrets and network
 
@@ -146,35 +148,34 @@ SSH is key-only, root SSH login disabled. UFW exposes TCP 22/80/443. Caddy also 
 
 Operator routes require verified Cloudflare Access RS256/JWKS issuer and audience plus an allowed human identity. The production audience matched the actual admin.opticable.ca Access application. Forged JWT/email headers failed. Shared-key authentication now fails closed when unset. OAuth query credentials are rejected; header credentials are required.
 
-Environment files and OAuth credentials are private. /var/lib application parents are 0750 and root safety state is under root 0700. Some child DB/document files are 0644 but effective parent traversal prevents public reading. Core/PDF service sandboxing is weaker than timer sandboxing. Root runner imports owner-writable checkout/venv code; owner already has sudo, but the long-term privilege model needs simplification.
+Environment files and OAuth credentials are private. /var/lib application parents are 0750 and root safety state is under root 0700. Some child DB/document files are 0644 but effective parent traversal prevents public reading. Core service hardening prevents privilege escalation, drops capabilities and limits writable state paths. Release dependencies are installed unprivileged and made root-owned/immutable before the guarded deployment. Root runner still imports application source from an operator-admin-controlled checkout; the long-term privilege model and source ownership should be simplified. PDF/controller execution is intrinsically retired.
 
 Current credential literals were absent from 1,348 core and 85 connector reachable historical Git blobs and checked shell history. This is not proof against every historical/rotated secret. Connector client secret and key have been migrated to Cloudflare secret bindings. One inventory-filter error exposed the CRM channel credential in tool output; stored evidence was redacted. The channel credential has been rotated and the old credential rejected; and do not copy that output into documentation.
 
 A separate operational scan found the current shared API key in historical
 uvicorn URL access records. Raw HTTP access logging was disabled in the root API
 override; business audit and service error journals remain active. Existing
-private journal evidence was preserved. Completed cross-client API-key rotation
-and removal of URL credentials remain P0 requirements.
+private journal evidence was preserved. Cross-client API-key rotation and removal of URL credentials are complete: the new key works, old key returns401; GitHub/Cloudflare secret updates and current binding types were independently reconciled. The current provider watch credential matches local configuration; its expiry is2026-10-07T19:38:19Z. Do not print keys or restore revoked values from historical archives.
 
 Runtime code reviewed does not turn CRM/email text into shell commands. SQL data is parameterized; dynamic PRAGMA identifiers come from static schema tables. HTML operator views escape provider text. Phase 11 names are project-scoped and reject traversal; root-only ancestry protects the present symlink boundary. Legacy job stores and uploads need authenticated, bounded, atomic storage before reopening.
 
 ## State, timers, observability and efficiency
 
-The canonical timer table is [phase13-timer-matrix.md](phase13-timer-matrix.md). Five application systemd timers are active. There are also Cloudflare and GitHub schedules. Development dispatch/status/usage units are distinct and remain disabled.
+The canonical timer table is [phase13-timer-matrix.md](phase13-timer-matrix.md). Five application systemd timers are active. There are also Cloudflare and GitHub schedules. Development dispatch/status/usage units are distinct and remain MASKED.
 
 Five active workflow SQLite files serve different purposes: automation.db, phase9-form-receipts.db, phase9-intake.db, phase10-service-events.db and phase12-autonomy.db. Historical lifecycle-events and staging/recovery DBs add three snapshots to the corrected backup. The core event engine uses leases, replay identities and bounded redrive; Phase 12 uses BEGIN IMMEDIATE plus a root flock. Root JSON registries use atomic replacement but have no shared cross-script lock. No automatic ledger retention is established.
 
-Three Mail schedulers (Cloudflare, combined GitHub lifecycle and separate GitHub mailbox poll) overlap and use different event identities. Four active GitHub cron workflows were confirmed, including separate owner digest and monitoring. The receipt collector re-fetches three resources for each already-known Form message in a seven-day window every five minutes. With two messages this is about 2,016 Zoho Mail GETs/day before other observers. Lifecycle reconciliation adds about 240 CRM list calls/day at one page/module. Operator projections scan CRM lists and Mail; operations reads have N+1 per-object behavior. Bounds generally fail closed rather than run unbounded, but do not provide scalable pagination/caching. Local OAuth file/cache coordination reduces refresh storms; legacy PDF clients refresh per job when enabled.
+Three duplicate GitHub business schedules (combined lifecycle, mailbox poll and owner digest) were disabled remotely and their cron triggers removed. Cloudflare is the canonical business observer scheduler; GitHub retains health monitoring. The receipt collector re-fetches three resources for each already-known Form message in a seven-day window every five minutes. With two messages this is about 2,016 Zoho Mail GETs/day before other observers. Lifecycle reconciliation adds about 240 CRM list calls/day at one page/module. Operator projections scan CRM lists and Mail; operations reads have N+1 per-object behavior. Bounds generally fail closed rather than run unbounded, but do not provide scalable pagination/caching. Local OAuth file/cache coordination reduces refresh storms; legacy PDF clients refresh per job when enabled.
 
-Journals, execution-health endpoints, systemd results and GitHub health checks exist. They are not a consolidated operator or alerting surface. GitHub cron is not guaranteed every 15 minutes; sampled runs had long gaps. Latest core deployment workflow failed even though independently guarded production matched main. The lifecycle schedule had a failed dispatch. Successful no-ops do not flood the Phase 12 exception view, but stale/denied fixtures persist and resolution/acknowledgement ownership is incomplete.
+Journals, execution-health endpoints, systemd results and GitHub health checks exist. They are not a consolidated operator or alerting surface. GitHub cron is not guaranteed every 15 minutes; sampled runs had long gaps. Exact-head CI and guarded remediation deployment succeeded; the earlier workflow failure was a missing manual release authorization, subsequently reconciled and rerun successfully. Retired duplicate schedule failures are historical evidence. Successful no-ops do not flood the Phase 12 exception view, but stale/denied fixtures persist and resolution/acknowledgement ownership is incomplete.
 
 ## Backup and recovery contract
 
-Local backup 1.0.2 now captures source identity, online SQLite snapshots, application state, root protection/crosswalk/journal/document state, /etc configuration, custom application/development timer units and drop-ins, and installed helpers. It excludes encrypted cache recursion. Archives are root-only, checksummed and verified. Phase 13 restored 1,279 files, 1,460 metadata entries and eight databases from the corrected archive in isolation; all passed. Services were not started in the restore location.
+Local backup1.0.2 captures source identity, online SQLite snapshots, application/root protection/crosswalk/journal/document state, /etc configuration, custom units/drop-ins, six retirement masks as explicit metadata, installed helpers and SSH recovery identity. It excludes encrypted-cache recursion. Archives are private, checksummed and verified. The first deployed remediation generation20261001T202728Z restored1,329 files,1,516 metadata entries and eight databases with six masks, all integrity checks PASS. Completion release receives a fresh generation; its exact ID/hashes are in the final receipt and `/var/lib/optibrain/phase2a/state.json`.
 
-AGE ciphertext was independently downloaded from R2 and matched its hash. The private identity is intentionally held offline. Fresh decryption of the current generation and full replacement-host boot were NOT proven. Current timers give nominal daily RPO; maximum loss includes all local safety evidence created since the last successful generation. Provider CRM/Mail remain external sources of effect truth. RTO has not been measured and must not be advertised as guaranteed.
+AGE ciphertext was independently downloaded from R2 and matched its hash. A temporary-key encrypt→upload→download→decrypt→restore roundtrip passed and the temporary private key/plaintext were removed. Restored source/config/state booted the actual unprivileged API with fresh dependencies inside isolated mount/network/PID namespaces, localhost only, no provider network, all writers OFF; health200/auth401/legacy403. The real owner-held offline identity was unavailable, so decryption for that recipient remains MANUAL-02. New OS installation, public DNS/TLS cutover and real provider OAuth reconnect were not executed; RTO is not guaranteed.
 
-Retention configuration says seven generations, but preserve-existing disables local pruning; off-host cache also accumulates. Restore instructions must keep development units retired and all real mutators OFF; reapply Phase 13 root/Caddy/connector controls before exposing traffic. Restore root registries before enabling any Test writer, then reconcile the backup gap. Provider tokens may require reauthorization after loss/revocation. Cloudflare/GitHub deployed state must be independently recovered, not inferred from the core Git bundle.
+Nominal local-state RPO is daily. Off-host effect claims independently protect the admitted Task against backup-gap replay. Retention says seven generations, but preserve-existing disables pruning and encrypted caches accumulate; bounded retention/alerts are P1. On restore, keep development masks and all writers OFF, restore trusted controls/manifests/registries before traffic, preserve rotated credentials, and reconcile provider effects after the recovered generation before selective read/backup timer restart. The native Forms producer needs owner containment independently of restoring Python code. Cloudflare/GitHub versions/bindings and offline key custody must be recovered independently of the core Git bundle.
 
 ## Future direction
 

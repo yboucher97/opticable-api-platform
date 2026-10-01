@@ -1,0 +1,131 @@
+{
+  "captured_at": "2026-10-01T20:35:32.155396+00:00",
+  "production_sha": "852e5f7c815c90e56e701436f73ee4133f51a673",
+  "protected_records_compared": 123,
+  "protected_mutations": 0,
+  "issues": [],
+  "denial_probes": {
+    "mail:POST": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "mail:PUT": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "mail:PATCH": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "mail:DELETE": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "sign:POST": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "sign:PUT": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "sign:PATCH": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "sign:DELETE": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "zohoapis:POST": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "zohoapis:PUT": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "zohoapis:PATCH": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "zohoapis:DELETE": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "legacy_lower_grant": "DENIED_BEFORE_AUTH_AND_TRANSPORT",
+    "protected_spoof": "DENIED_BEFORE_PROVIDER"
+  },
+  "routes": {
+    "/v1/automation/workflows": 401,
+    "/v1/operator/phase12/autonomy": 401,
+    "/v1/operator/phase12/approvals": 401,
+    "/webhooks/zoho/site-workflow": 403,
+    "/jobs/test": 403,
+    "/v1/omada/jobs": 403,
+    "authenticated:/v1/automation/workflows": 200,
+    "authenticated:/health": 200,
+    "url_credentials": 400
+  },
+  "units": {
+    "optibrain-agent-dispatch.service": {
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ActiveState": "inactive",
+      "UnitFileState": "masked"
+    },
+    "optibrain-agent-status.service": {
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ActiveState": "inactive",
+      "UnitFileState": "masked"
+    },
+    "optibrain-agent-usage.service": {
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ActiveState": "inactive",
+      "UnitFileState": "masked"
+    },
+    "optibrain-agent-dispatch.timer": {
+      "Result": "success",
+      "ActiveState": "inactive",
+      "UnitFileState": "masked"
+    },
+    "optibrain-agent-status.timer": {
+      "Result": "success",
+      "ActiveState": "inactive",
+      "UnitFileState": "masked"
+    },
+    "optibrain-agent-usage.timer": {
+      "Result": "success",
+      "ActiveState": "inactive",
+      "UnitFileState": "masked"
+    },
+    "opticable-phase12-test-runner.service": {
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ActiveState": "inactive",
+      "UnitFileState": "disabled"
+    },
+    "optibrain-backup.timer": {
+      "Result": "success",
+      "ActiveState": "active",
+      "UnitFileState": "enabled"
+    },
+    "optibrain-phase2a-upload.timer": {
+      "Result": "success",
+      "ActiveState": "active",
+      "UnitFileState": "enabled"
+    },
+    "opticable-phase9-intake-receipts.timer": {
+      "Result": "success",
+      "ActiveState": "active",
+      "UnitFileState": "enabled"
+    },
+    "opticable-phase10-service-events.timer": {
+      "Result": "success",
+      "ActiveState": "active",
+      "UnitFileState": "enabled"
+    },
+    "opticable-phase12-test-runner.timer": {
+      "Result": "success",
+      "ActiveState": "active",
+      "UnitFileState": "enabled"
+    }
+  },
+  "mutation_control": {
+    "schema": 1,
+    "test_writes_enabled": false,
+    "allowed_actions": [
+      "crm.task.create"
+    ],
+    "real_canary_allowed": false
+  },
+  "real_auto_writes": false,
+  "live_isolation": {
+    "sales": {
+      "live_lab_ids": [],
+      "scope": null
+    },
+    "lifecycle": {
+      "live_lab_ids": [],
+      "scope": "live"
+    },
+    "operations": {
+      "live_lab_ids": [],
+      "scope": "live"
+    }
+  },
+  "backup": {
+    "generation": "20261001T202728Z",
+    "source_sha256": "9b37c94a4cb5be5f2bac6907bfcf17754e6fda10f5a464b1360f6b72c7a4be84",
+    "encrypted_sha256": "801cf07d3b16930e676d39c8640defb856a25bd03debeb881afa2719baa5148f",
+    "object_key": "backups/2026/10/01/20261001T202728Z.tar.gz.age",
+    "verification_status": "download_hash_verified",
+    "offline_restore_verified": false
+  }
+}

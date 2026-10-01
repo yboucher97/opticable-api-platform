@@ -1,3 +1,5 @@
+> Historical independent audit snapshot. Current disposition and deployed remediation are in [phase13-remediation-final-report.md](phase13-remediation-final-report.md). The original readiness C and test-failure statements below are superseded by independently validated remediation, not erased from history.
+
 # PHASE 13 INDEPENDENT AUDIT
 
 **PASS WITH REQUIRED REMEDIATION — audit COMPLETE. Overall readiness C: NOT READY — MATERIAL ARCHITECTURAL REMEDIATION REQUIRED.**

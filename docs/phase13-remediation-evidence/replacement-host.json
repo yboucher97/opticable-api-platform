@@ -1,0 +1,28 @@
+{
+  "result": "PASS",
+  "restored_api_version": "1.11.0",
+  "service_user": "opticable-workflow-api",
+  "network": "isolated loopback only; no provider transport",
+  "production_overwrites": 0,
+  "writers_enabled": false,
+  "unauth_operator_status": 401,
+  "legacy_job_status": 403,
+  "restored_source_sha": "852e5f7c815c90e56e701436f73ee4133f51a673",
+  "fresh_dependencies": "PASS",
+  "archive_validation": {
+    "result": "PASS",
+    "source_sha256": "9b37c94a4cb5be5f2bac6907bfcf17754e6fda10f5a464b1360f6b72c7a4be84",
+    "generation": "20261001T202728Z",
+    "source_commit": "852e5f7c815c90e56e701436f73ee4133f51a673",
+    "files_verified": 1329,
+    "legacy_files_covered_by_archive_hash_only": 0,
+    "metadata_entries_validated": 1516,
+    "legacy_transient_sqlite_metadata_omissions": 0,
+    "databases_restored": 8,
+    "retired_unit_masks_restored": 6,
+    "critical_configs_restored": 3,
+    "source_extraction": "PASS",
+    "scope": "isolated archive/database/config/source validation; no services started"
+  },
+  "scope": "application boot from restored state/config/source with existing pinned packages; fresh dependency install; new OS, DNS/TLS and owner-recipient decryption not simulated"
+}
