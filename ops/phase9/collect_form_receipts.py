@@ -16,6 +16,7 @@ from workflow.automation.phase9_form_receipts import (
     FormReceiptLedger, collect_form_mail, collect_connector_receipts,
     reconcile_form_crm,
 )
+from workflow.automation.phase9_form_enrichment import POLICY as ENRICHMENT_POLICY, enrich_form_leads
 
 
 def main():
@@ -24,11 +25,17 @@ def main():
     ledger = FormReceiptLedger(Path(settings.automation.db_path).parent / "phase9-form-receipts.db")
     mail_result = collect_form_mail(client, ledger)
     crm_result = reconcile_form_crm(client, ledger)
+    enrichment = None
+    if os.environ.get("OPTIBRAIN_PHASE9_FORM_ENRICHMENT") == ENRICHMENT_POLICY:
+        go_live = os.environ.get("OPTIBRAIN_PHASE9_FORM_GO_LIVE")
+        if not go_live:
+            raise ValueError("Form enrichment go-live fence is missing")
+        enrichment = enrich_form_leads(client, ledger, go_live=go_live)
     with httpx.Client(timeout=30, follow_redirects=False) as http:
         connector_result = collect_connector_receipts(
             http, ledger, base_url=settings.zoho_gateway.base_url,
             api_key=os.environ.get("OPTIBRAIN_RECEIPT_EXPORT_KEY"))
-    print(json.dumps({"form_mail": mail_result, "form_crm": crm_result,
+    print(json.dumps({"form_mail": mail_result, "form_crm": crm_result, "enrichment": enrichment,
                       "connector": connector_result}, sort_keys=True))
 
 

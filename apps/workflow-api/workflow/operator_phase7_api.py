@@ -152,12 +152,14 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
             raise HTTPException(status_code=404, detail="Trace not found")
         try:
             registry = json.loads(Path("/etc/optibrain/phase8-test-lab-registry.json").read_text())
-            if lead_id not in set(registry.get("records", {}).get("Leads") or []):
+            provider_path = Path(store.db_path).parent / "phase9-form-receipts.db"
+            verified_form_ids = (FormReceiptLedger(provider_path).verified_test_ids()
+                                 if provider_path.exists() else set())
+            if lead_id not in (set(registry.get("records", {}).get("Leads") or []) | verified_form_ids):
                 raise ValueError("Trace is outside registered Test Lab")
             trace = IntakeLedger(Path(store.db_path).parent / "phase9-intake.db").trace(lead_id)
             if trace is None:
                 raise HTTPException(status_code=404, detail="Trace not found")
-            provider_path = Path(store.db_path).parent / "phase9-form-receipts.db"
             provider_events = FormReceiptLedger(provider_path).timeline(lead_id) if provider_path.exists() else []
             result = client.request("zohoapis", "GET", f"/crm/v8/Leads/{lead_id}")
             rows = (result.get("data") or {}).get("data") or []

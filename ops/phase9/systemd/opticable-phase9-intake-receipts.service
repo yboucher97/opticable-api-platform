@@ -10,6 +10,7 @@ Group=opticable-workflow-api
 WorkingDirectory=/opt/opticable-api-platform/apps/workflow-api
 EnvironmentFile=/etc/opticable-workflow-api.env
 EnvironmentFile=/etc/optibrain/phase9-receipt-export.env
+EnvironmentFile=-/etc/optibrain/phase9-form-enrichment.env
 ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python /opt/opticable-api-platform/ops/phase9/collect_form_receipts.py
 NoNewPrivileges=yes
 PrivateTmp=yes

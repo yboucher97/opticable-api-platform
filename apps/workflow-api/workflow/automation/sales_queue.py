@@ -250,6 +250,9 @@ def build_sales_queue(client, db_path, *, account_id, from_address, now=None,
         if registry.get("schema") != 1:
             raise ValueError("Test Lab registry invalid")
         owned = set(registry.get("records", {}).get("Leads") or [])
+        provider_path = Path(db_path).parent / "phase9-form-receipts.db"
+        if provider_path.exists():
+            owned |= FormReceiptLedger(provider_path).verified_test_ids()
         if not owned:
             raise ValueError("No registered Test Lab Leads")
         found = {str(x.get("id")) for x in leads if str(x.get("id")) in owned}
@@ -298,7 +301,6 @@ def build_sales_queue(client, db_path, *, account_id, from_address, now=None,
                              leads_complete=True, relationships_complete=True)
         view = enhance_lab_queue(view, leads, contacts, accounts, deals, tasks, mail_by_id, now=clock)
         ledger_path = Path(db_path).parent / "phase9-intake.db"
-        provider_path = Path(db_path).parent / "phase9-form-receipts.db"
         provider_ledger = FormReceiptLedger(provider_path) if provider_path.exists() else None
         for row in view["rows"]:
             lead = next(x for x in leads if str(x["id"]) == row["id"])

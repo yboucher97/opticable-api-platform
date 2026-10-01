@@ -521,3 +521,31 @@ must not be used for unfiltered business counts. The Test Lab Deal amount is
 null. Email-to-CRM automatic intake and ad conversion export remain unverified.
 The 99-record protected pre-existing CRM baseline remains read-only; autonomous
 Codex dispatch remains disabled.
+
+## Phase 9 active-form normalization — 2026-10-01
+
+The French Form's historical Lead `5062683000007935001` was created by
+`zoho_forms` at 2026-09-30 22:00:40 EDT with null Email and source/touch fields.
+Zoho's CRM timeline shows the first field update at 22:27:13 EDT from the
+historical guarded TEST_ONLY repair. This locates the defect in the native
+Forms-to-CRM create mapping. Current Forms OAuth grants read access only; no
+supported authenticated integration-admin write path was available.
+
+The five-minute receipt collector now has a release-gated fallback for **new**
+Form Leads after `/etc/optibrain/phase9-form-enrichment.env` go-live. It first
+records authenticated provider Mail evidence and an immutable `OB-I-*` receipt.
+It then requires one exact CRM match, a `zoho_forms` creation-only timeline,
+unchanged provider version, no existing exact email in Leads/Contacts, and the
+hash-pinned 99-record protected baseline before one trigger-free Lead PUT.
+It fills only missing Email/source/touch/inquiry fields; TEST_ONLY submissions
+also receive the canonical marker. An append-only ATTEMPTED journal precedes
+transport; a lost acknowledgement is read back and never blindly retried.
+Ambiguous evidence remains read-only for review. The old Form-created Lead is
+before the go-live fence and will not be patched again. See
+`docs/phase9-intake-foundation.md` for the exact field and evidence contract.
+
+No customer email, Books write, autonomous Codex dispatch, or unrestricted
+provider writer is enabled by this collector. Durable instants remain aware;
+operator views display America/Toronto. Native Zoho Forms mapping should still
+be corrected later through a supported Forms admin path when available; its
+current omission is not silently treated as resolved.

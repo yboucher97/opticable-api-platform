@@ -183,6 +183,9 @@ def reviewed_canary_call(client, method, path, body, headers, approval, ledger, 
 
 def _enabled(value):
     policy = value.get('policy') if isinstance(value, dict) else None
+    from .phase9_form_enrichment import POLICY as FORM_POLICY
+    if policy == FORM_POLICY:
+        return os.environ.get('OPTIBRAIN_PHASE9_FORM_ENRICHMENT') == FORM_POLICY
     from .test_lab_boundary import POLICY as LAB_POLICY
     if policy == LAB_POLICY:
         return os.geteuid() == 0 and os.environ.get('OPTIBRAIN_PHASE8_TEST_LAB') == LAB_POLICY
@@ -217,8 +220,11 @@ def require_authority(client, service, method, path, body, headers):
     if not _enabled(value) or value.get('client') is not client or value.get('used') is not False or value.get('hash') != fingerprint(method,path,body,headers):
         raise ValueError('CRM mutation requires exact single-use reconciler authority')
     from .test_lab_boundary import POLICY as LAB_POLICY, validate_lab_request
+    from .phase9_form_enrichment import POLICY as FORM_POLICY, validate_form_request
     if value['policy'] == LAB_POLICY:
         validate_lab_request(method,path,body,headers)
+    elif value['policy'] == FORM_POLICY:
+        validate_form_request(method,path,body,headers,value)
     elif value['policy'] == PHASE8_TEST_TASK_POLICY:
         validate_phase8_test_task(method,path,body,headers)
     elif value['policy'] == CREATE_POLICY:
@@ -236,8 +242,11 @@ def verify_transport_authority(client, service, method, path, body, headers):
     if not _enabled(value) or value.get('client') is not client or value.get('used') is not True or value.get('hash') != fingerprint(method, path, body, headers):
         raise ValueError('CRM transport authority changed before the provider call')
     from .test_lab_boundary import POLICY as LAB_POLICY, validate_lab_request
+    from .phase9_form_enrichment import POLICY as FORM_POLICY, validate_form_request
     if value['policy'] == LAB_POLICY:
         validate_lab_request(method,path,body,headers)
+    elif value['policy'] == FORM_POLICY:
+        validate_form_request(method,path,body,headers,value)
     elif value['policy'] == PHASE8_TEST_TASK_POLICY:
         validate_phase8_test_task(method,path,body,headers)
     elif value['policy'] == CREATE_POLICY:

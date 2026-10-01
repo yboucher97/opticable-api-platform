@@ -1,8 +1,8 @@
-"""Read-only Zoho Forms notification intake with immutable provider evidence.
+"""Zoho Forms notification intake with immutable provider evidence.
 
 Mail is an acknowledgement of the active embedded form, not proof of a CRM
-write. Unlinked receipts remain visible for operator review. This module never
-calls a CRM mutation and never guesses a canonical identity from a phone alone.
+write. Unlinked receipts remain visible for operator review. A separate
+guarded reconciler may enrich a uniquely proven, newly created Lead.
 """
 from __future__ import annotations
 
@@ -178,6 +178,16 @@ class FormReceiptLedger:
                     BEGIN SELECT RAISE(ABORT,'form provider match is immutable'); END;
                 CREATE TRIGGER IF NOT EXISTS form_provider_matches_no_delete BEFORE DELETE ON form_provider_matches
                     BEGIN SELECT RAISE(ABORT,'form provider match is immutable'); END;
+                CREATE TABLE IF NOT EXISTS form_enrichment_journal (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT, event_id TEXT NOT NULL,
+                    crm_id TEXT NOT NULL, state TEXT NOT NULL, payload_hash TEXT NOT NULL,
+                    evidence_json TEXT NOT NULL, recorded_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_form_enrichment_event ON form_enrichment_journal(event_id,id);
+                CREATE TRIGGER IF NOT EXISTS form_enrichment_no_update BEFORE UPDATE ON form_enrichment_journal
+                    BEGIN SELECT RAISE(ABORT,'form enrichment journal is append only'); END;
+                CREATE TRIGGER IF NOT EXISTS form_enrichment_no_delete BEFORE DELETE ON form_enrichment_journal
+                    BEGIN SELECT RAISE(ABORT,'form enrichment journal is append only'); END;
                 CREATE TABLE IF NOT EXISTS connector_receipts (
                     event_id TEXT PRIMARY KEY, source TEXT NOT NULL, inquiry_id TEXT NOT NULL,
                     occurred_at TEXT NOT NULL, submitted_email TEXT, request_hash TEXT NOT NULL,
@@ -239,6 +249,45 @@ class FormReceiptLedger:
                 "LEFT JOIN form_provider_matches m ON m.event_id=r.event_id "
                 "ORDER BY r.occurred_at DESC LIMIT ?", (limit,)).fetchall()
         return [dict(row) for row in rows]
+
+    def enrichment_state(self, event_id_value):
+        self.initialize()
+        with self._connect() as db:
+            row = db.execute("SELECT * FROM form_enrichment_journal WHERE event_id=? "
+                "ORDER BY id DESC LIMIT 1", (event_id_value,)).fetchone()
+        return dict(row) if row else None
+
+    def journal_enrichment(self, event_id_value, crm_id, state, payload_hash, evidence):
+        if state not in {"ATTEMPTED", "VERIFIED", "REVIEW"} or not re.fullmatch(r"[0-9]{1,30}", str(crm_id)):
+            raise ValueError("Invalid form enrichment journal identity")
+        if not re.fullmatch(r"[a-f0-9]{64}", str(payload_hash)):
+            raise ValueError("Invalid form enrichment payload hash")
+        self.initialize()
+        with self._connect() as db:
+            match = db.execute("SELECT crm_id FROM form_provider_matches WHERE event_id=?", (event_id_value,)).fetchone()
+            if not match or match["crm_id"] != str(crm_id):
+                raise ValueError("Enrichment has no immutable exact provider match")
+            previous = db.execute("SELECT state,payload_hash FROM form_enrichment_journal WHERE event_id=? "
+                "ORDER BY id DESC LIMIT 1", (event_id_value,)).fetchone()
+            if previous and previous["state"] in {"VERIFIED", "REVIEW"}:
+                raise ValueError("Enrichment is terminal")
+            if previous and (previous["state"] != "ATTEMPTED" or state == "ATTEMPTED"
+                             or previous["payload_hash"] != payload_hash):
+                raise ValueError("Ambiguous form enrichment replay")
+            db.execute("INSERT INTO form_enrichment_journal(event_id,crm_id,state,payload_hash,evidence_json,recorded_at) "
+                "VALUES(?,?,?,?,?,?)", (event_id_value, str(crm_id), state, payload_hash,
+                json.dumps(evidence, sort_keys=True, separators=(",", ":")),
+                datetime.now(timezone.utc).isoformat()))
+
+    def verified_test_ids(self):
+        """Service-owned TEST_ONLY form Leads verified after guarded enrichment."""
+        self.initialize()
+        with self._connect() as db:
+            rows = db.execute("SELECT j.crm_id FROM form_enrichment_journal j "
+                "JOIN form_receipts r ON r.event_id=j.event_id "
+                "WHERE j.state='VERIFIED' AND r.test_only=1 AND NOT EXISTS ("
+                "SELECT 1 FROM form_enrichment_journal n WHERE n.event_id=j.event_id AND n.id>j.id)").fetchall()
+        return {str(row["crm_id"]) for row in rows}
 
     def match_provider(self, event_id_value, crm):
         """Record a read-only, unique provider match; no CRM update is implied."""
@@ -383,18 +432,23 @@ def collect_form_mail(client, ledger, *, account_id=ACCOUNT_ID, now=None, days=7
 
 
 def reconcile_form_crm(client, ledger):
-    """Read-only exact form-to-CRM matching, bounded to one complete Lead page."""
+    """Read-only exact form-to-CRM matching over a bounded complete Lead inventory."""
     pending = [row for row in ledger.list(100) if not row["canonical_id"]]
     if not pending:
         return {"pending": 0, "matched": 0, "ambiguous": 0}
-    response = client.request("zohoapis", "GET", "/crm/v8/Leads",
-                              query={"fields": "id,Email,Phone,Company,First_Name,Last_Name,Created_Time",
-                                     "per_page": 100, "page": 1})
-    data = response.get("data") or {}
-    if (response.get("ok") is not True or not isinstance(data.get("data"), list)
-            or (data.get("info") or {}).get("more_records")):
-        raise ValueError("Bounded CRM Lead inventory unavailable")
-    leads = data["data"]
+    leads = []
+    for page in range(1, 6):
+        response = client.request("zohoapis", "GET", "/crm/v8/Leads",
+            query={"fields": "id,Email,Phone,Company,First_Name,Last_Name,Created_Time",
+                   "per_page": 200, "page": page})
+        data = response.get("data") or {}
+        if response.get("ok") is not True or not isinstance(data.get("data"), list):
+            raise ValueError("Bounded CRM Lead inventory unavailable")
+        leads.extend(data["data"])
+        if not (data.get("info") or {}).get("more_records"):
+            break
+    else:
+        raise ValueError("CRM Lead inventory exceeded bound")
     result = {"pending": len(pending), "matched": 0, "ambiguous": 0}
     for receipt in pending:
         fields = json.loads(receipt["evidence_json"])["fields"]
