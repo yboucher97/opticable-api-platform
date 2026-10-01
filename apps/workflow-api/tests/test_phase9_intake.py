@@ -9,6 +9,11 @@ from unittest.mock import patch
 
 from workflow.automation.phase9_intake import IntakeLedger, event_id, source_info
 from workflow.automation import test_lab_boundary as boundary
+import importlib.util
+
+_spec = importlib.util.spec_from_file_location("phase9_test_lab_intake", Path(__file__).resolve().parents[3] / "ops/phase9/test_lab_intake.py")
+test_lab_intake = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(test_lab_intake)
 
 
 class IntakeLedgerTests(unittest.TestCase):
@@ -90,6 +95,17 @@ class IntakeLedgerTests(unittest.TestCase):
                 boundary.validate_lab_request("PUT", "/crm/v8/Leads/111", body, header)
             body["data"][0]["id"] = "222"
             self.assertEqual(boundary.validate_lab_request("PUT", "/crm/v8/Leads/222", body, header), ("Leads", "222"))
+
+    def test_reconciliation_uses_complete_crm_list_when_search_index_is_stale(self):
+        class Client:
+            def request(self, service, method, path, **kwargs):
+                self_path = path
+                if path == "/crm/v8/Leads":
+                    return {"ok": True, "status": 200, "data": {"data": [
+                        {"id": "222", "Email": "hckyan97+obp9intake1@gmail.com", "Inquiry_ID": "abc"}],
+                        "info": {"more_records": False}}}
+                raise AssertionError(self_path)
+        self.assertEqual(test_lab_intake.find(Client(), "Leads", "Inquiry_ID", "abc")[0]["id"], "222")
 
 
 if __name__ == "__main__":

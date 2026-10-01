@@ -73,8 +73,18 @@ def rows(response):
 
 
 def find(client, module, field, value):
-    return rows(client.request("zohoapis", "GET", f"/crm/v8/{module}/search",
-                               query={"criteria": f"({field}:equals:{value})"}))
+    # Zoho Search is eventually consistent after a successful create/update.
+    # A complete bounded list is the independent reconciliation source.
+    names = {"Leads": "id,Email,Inquiry_ID", "Contacts": "id,Email,Inquiry_ID",
+             "Deals": "id,Inquiry_ID"}
+    if module not in names or field not in {"Email", "Inquiry_ID"}:
+        raise ValueError("Unsupported bounded CRM identity lookup")
+    response = client.request("zohoapis", "GET", f"/crm/v8/{module}",
+                              query={"fields": names[module], "per_page": 100, "page": 1})
+    found = rows(response)
+    if ((response.get("data") or {}).get("info") or {}).get("more_records"):
+        raise ValueError("CRM identity list exceeds bounded safety check")
+    return [row for row in found if str(row.get(field) or "").casefold() == str(value).casefold()]
 
 
 def read_lead(client, lead_id):
@@ -99,6 +109,11 @@ def protect(client, state, scenario):
         raise ValueError("Identity not registered Test Lab owned")
     if email_matches and str(email_matches[0]["id"]) in baseline["modules"]["Leads"]["ids"]:
         raise ValueError("Protected Lead collision")
+    if expected:
+        indexed = rows(client.request("zohoapis", "GET", "/crm/v8/Leads/search",
+                                      query={"email": EMAIL}))
+        if {str(row.get("id")) for row in indexed} != {expected}:
+            raise ValueError("Provider search index has not converged; do not risk duplicate Lead")
     return expected
 
 
@@ -140,7 +155,7 @@ def mark_new(client, lead_id):
     lead = read_lead(client, lead_id)
     if lead.get("OptiBrain_Test") is True and str(lead.get("Description") or "").startswith(MARKER):
         return lead
-    if str(lead.get("Email") or "").casefold() != EMAIL or not str(lead.get("Last_Name") or "").startswith(MARKER):
+    if str(lead.get("Email") or "").casefold() != EMAIL or not str(lead.get("Company") or "").startswith(MARKER):
         raise ValueError("Unmarked Lead identity is not the controlled Test Lab alias")
     body = {"data": [{"id": lead_id, "Description": MARKER + "\n" + str(lead.get("Description") or ""),
                        "OptiBrain_Test": True}], "trigger": [],
