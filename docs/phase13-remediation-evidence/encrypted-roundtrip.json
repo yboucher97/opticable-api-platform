@@ -1,0 +1,20 @@
+{
+  "result": "PASS",
+  "source_sha256": "66a19da3cc4087eddebc87b7d87f55fa63eb91f42f8f82241abaeb36c3f5a7e6",
+  "generation": "20261001T201439Z",
+  "source_commit": "ee7629f7e7954e1ee782c6481d4aaef37349d10f",
+  "files_verified": 1323,
+  "legacy_files_covered_by_archive_hash_only": 0,
+  "metadata_entries_validated": 1510,
+  "legacy_transient_sqlite_metadata_omissions": 0,
+  "databases_restored": 8,
+  "retired_unit_masks_restored": 6,
+  "critical_configs_restored": 3,
+  "source_extraction": "PASS",
+  "scope": "isolated archive/database/config/source validation; no services started",
+  "encrypted_offhost_roundtrip": "PASS",
+  "ciphertext_sha256": "a9a451c9d7e479bfaef3ea556ef48fc170e0df6c95bf75c424f1ab7b76e61f6c",
+  "offhost_object_key": "drills/phase13/49e1a64ef0c642998dda3fddbb59bb3e.tar.gz.age",
+  "recipient_scope": "temporary isolated drill identity; owner recipient NOT verified",
+  "production_overwrites": 0
+}

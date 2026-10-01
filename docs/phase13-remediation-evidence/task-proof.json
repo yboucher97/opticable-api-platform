@@ -1,0 +1,19 @@
+{
+  "action_id": "349a1be6be22628fddf8a4d8b04c7546",
+  "provider_id": "5062683000007945002",
+  "first_state": "succeeded",
+  "lost_local_state_recovery": "succeeded",
+  "duplicate_claim": "DENIED_LOCKED_OFFHOST_OBJECT",
+  "execution_history_integrity": "PASS",
+  "event_kinds": [
+    "prepared",
+    "transition",
+    "transport_intent",
+    "provider_response",
+    "transition"
+  ],
+  "crm_creates": 1,
+  "protected_mutations": 0,
+  "real_sends": 0,
+  "root_kill_off_after_validation": true
+}

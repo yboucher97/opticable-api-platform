@@ -1,0 +1,94 @@
+{
+  "at": "2026-10-01T20:53:47.976298+00:00",
+  "external_business_mutations": 0,
+  "credential_rotations": 0,
+  "prior_deployment_retries": 0,
+  "pr89": {
+    "number": 89,
+    "state": "closed",
+    "merge_commit_sha": "852e5f7c815c90e56e701436f73ee4133f51a673",
+    "merged": true
+  },
+  "open_remediation_prs": [],
+  "remote_main": "852e5f7c815c90e56e701436f73ee4133f51a673",
+  "key_active": true,
+  "github_key_metadata": {
+    "name": "OPTICABLE_CORE_API_KEY",
+    "updated_at": "2026-10-01T19:38:51Z"
+  },
+  "connector_bindings": [
+    {
+      "name": "CONNECTOR_API_KEY",
+      "type": "secret_text"
+    },
+    {
+      "name": "ZOHO_CLIENT_SECRET",
+      "type": "secret_text"
+    }
+  ],
+  "control_plane_key": [
+    {
+      "name": "CORE_API_KEY",
+      "type": "secret_text"
+    }
+  ],
+  "effect_lock": [
+    {
+      "id": "optibrain-business-effects-indefinite",
+      "enabled": true,
+      "prefix": "business-effects/v1/",
+      "condition": {
+        "type": "Indefinite"
+      }
+    }
+  ],
+  "disabled_schedules": {
+    "customer-lifecycle-digest.yml": "disabled_manually",
+    "customer-lifecycle-mailbox-poll.yml": "disabled_manually",
+    "schedule-customer-lifecycle.yml": "disabled_manually"
+  },
+  "application_queues": [
+    {
+      "name": "opticable-business-events",
+      "consumers": 1
+    },
+    {
+      "name": "opticable-business-events-dlq",
+      "consumers": 0
+    }
+  ],
+  "crm_watch": {
+    "current_credential_matches": true,
+    "expiry": "2026-10-07T16:38:19-04:00"
+  },
+  "existing_test_task": {
+    "state": "succeeded",
+    "provider_id": "5062683000007945002",
+    "history_integrity": "PASS",
+    "provider_exists": true,
+    "subject_action_marker": true,
+    "claim_exists": true,
+    "result_exists": true
+  },
+  "journal_state_counts": {
+    "deferred": 1,
+    "denied": 3,
+    "stale": 5,
+    "succeeded": 7
+  },
+  "uncertain_actions": [],
+  "mutation_control": {
+    "schema": 1,
+    "test_writes_enabled": false,
+    "allowed_actions": [
+      "crm.task.create"
+    ],
+    "real_canary_allowed": false
+  },
+  "recovered_execution_queues": "PAUSED; no queue resumed; persistent development units remain masked",
+  "healthy_endpoints": {
+    "https://connect.opticable.ca/health": 200,
+    "https://opticable-control-plane.yboucher.workers.dev/health": 200,
+    "https://optibrain.opticable.ca/health": 200
+  }
+}

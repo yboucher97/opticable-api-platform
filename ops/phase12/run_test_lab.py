@@ -159,6 +159,7 @@ def run_once(*, now: datetime | None = None) -> dict:
                 continue
             before_attempts = (journal.get(action.action_id) or {}).get("attempts", 0)
             result = dispatch(action, ownership=row["ownership"], policy=Policy.from_environment(),
+                run_id=run_id, source_trigger=scheduled['source_trigger'],
                 journal=journal, fresh=lambda: fresh(client, lab, baseline, action),
                 execute=lambda: execute_task(client, state, lab, action),
                 reconcile=lambda: verified_task(client, state, lab, action))

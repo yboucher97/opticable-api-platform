@@ -384,6 +384,7 @@ class BusinessJournal:
 
     def annotate(self, action_id: str, values: dict) -> None:
         safe = {k: str(v)[:160] for k, v in values.items() if k in {"run_id", "source_trigger", "reconciliation"}}
+        safe = self._scrub(safe)
         with self._db() as db:
             db.execute("BEGIN IMMEDIATE")
             row = db.execute("SELECT detail_json FROM actions WHERE action_id=?", (action_id,)).fetchone()
@@ -391,6 +392,7 @@ class BusinessJournal:
             detail = {**json.loads(row["detail_json"]), **safe}
             db.execute("UPDATE actions SET detail_json=? WHERE action_id=?",
                        (json.dumps(detail, separators=(",", ":")), action_id))
+            self._append(db,action_id,'execution_context',safe)
 
     def prepare(self, action: Action, decision: Decision) -> dict:
         now = utc_now()
@@ -563,7 +565,8 @@ class BusinessJournal:
 
 def dispatch(action: Action, *, ownership: Ownership, policy: Policy,
              journal: BusinessJournal, fresh: Callable[[], dict],
-             execute: Callable[[], str], reconcile: Callable[[], str | None]) -> dict:
+             execute: Callable[[], str], reconcile: Callable[[], str | None],
+             run_id: str | None = None, source_trigger: str | None = None) -> dict:
     """Execute once; uncertain provider results remain RECONCILE, never retried."""
     decision = decide(action, ownership, policy)
     row = journal.prepare(action, decision)
@@ -571,6 +574,9 @@ def dispatch(action: Action, *, ownership: Ownership, policy: Policy,
         return row  # A prior proposed row cannot bypass a newly disabled policy.
     if row["state"] != "proposed":
         return row
+    # Context precedes attempted/transport so a crash cannot lose run linkage.
+    journal.annotate(action.action_id,{'run_id':run_id or uuid4().hex,
+        'source_trigger':source_trigger or 'manual:central-dispatch'})
     if decision.risk == "R0":
         fresh()  # Read-only observer: no mutating callback or kill-switch dependency.
         return journal.transition(action.action_id, from_states=("proposed",), to="succeeded",
@@ -628,7 +634,8 @@ def reconcile_ambiguous(action: Action, journal: BusinessJournal,
 def dispatch_approved(action: Action, *, approval_id: str, actor: str,
                       journal: BusinessJournal, fresh: Callable[[], dict],
                       execute: Callable[[], str], reconcile: Callable[[], str | None],
-                      policy: Policy | None = None) -> dict:
+                      policy: Policy | None = None, run_id: str | None = None,
+                      source_trigger: str | None = None) -> dict:
     """Claim a Test Lab R3 approval before transport; exact readback or exception."""
     policy=policy or Policy.from_environment()
     if (not policy.automatic_mutations or not policy.approved_test_send
@@ -638,6 +645,8 @@ def dispatch_approved(action: Action, *, approval_id: str, actor: str,
     if (not row or row["state"] != "approval_required" or row["risk"] != "R3"
             or row["ownership"] != "TEST_ONLY" or row["payload_hash"] != action.payload_hash):
         raise ValueError("Exact approved Test Lab proposal required")
+    journal.annotate(action.action_id,{'run_id':run_id or uuid4().hex,
+        'source_trigger':source_trigger or 'manual:approved-dispatch'})
     journal.claim_approval(approval_id, action, actor=actor)
     try:
         current = fresh()

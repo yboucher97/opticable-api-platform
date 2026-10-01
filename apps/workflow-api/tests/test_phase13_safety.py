@@ -127,3 +127,19 @@ class Safety(unittest.TestCase):
                 for method in ['POST','PUT','PATCH','DELETE']:
                     with self.assertRaises(Exception):self.client.request('zohoapis',method,path,body={},reason='test',confirm=True)
             self.oauth.status.assert_not_called();transport.assert_not_called()
+    def test_execution_context_is_durable_before_mutating_callback(self):
+        def execute():
+            proof=self.journal.reconstruction(self.action.action_id)
+            detail=json.loads(proof['action']['detail_json'])
+            self.assertEqual(detail['run_id'],'phase13:run:fixture')
+            self.assertEqual(detail['source_trigger'],'phase13:trigger:fixture')
+            self.assertIn('execution_context',[x['kind'] for x in proof['events']])
+            return '700'
+        row=dispatch(self.action,ownership='TEST_ONLY',policy=self.policy,journal=self.journal,
+            fresh=lambda:{'id':'501','ownership':'TEST_ONLY'},execute=execute,reconcile=lambda:'700',
+            run_id='phase13:run:fixture',source_trigger='phase13:trigger:fixture')
+        self.assertEqual(row['state'],'succeeded')
+    def test_locked_duplicate_claim_is_reconciliation_only(self):
+        self.store.claim(self.action)
+        self.store.client.put_object=Mock(side_effect=ObjectError('ObjectLockedByBucketPolicy'))
+        self.assertFalse(self.store.claim(self.action).fresh)
