@@ -126,13 +126,19 @@ class LabDecisionTests(unittest.TestCase):
             "sent_at": "2026-09-30T18:00:00-04:00", "sent_at_local": "Sep 30, 2026 6:00 PM EDT",
             "recipient": item["Email"], "subject": "TEST"},
             "last_inbound": {"received_at_local": "Sep 30, 2026 6:30 PM EDT",
-                             "summary": "Site address: 500 Test Street"},
-            "new_information": ["Site address: 500 Test Street (from reply; verify)"]}
+                             "summary": "Site address: 500 Test Street; Scope: 12 access points"},
+            "reply_facts": {"site address": "500 Test Street", "scope": "12 access points"},
+            "new_information": ["Site address: 500 Test Street (from reply; verify)",
+                                "Scope: 12 access points (from reply; verify)"]}
         row = self.evaluate([item], [task("333", "222", "2026-10-02")], {"222": mail})["rows"][0]
         self.assertEqual(row["state"], "REPLIED — NEEDS RESPONSE")
         self.assertEqual(row["priority"], "HIGH")
         self.assertNotIn("follow up on my previous note", row["draft"]["body"])
         self.assertIn("500 Test Street", row["draft"]["body"])
+        self.assertIn("12 access points", row["draft"]["body"])
+        self.assertIn("Verify project scope from reply", row["missing"])
+        self.assertEqual(row["quote"], "NEEDS INFORMATION")
+        self.assertIn("verify it", row["quote_reason"].lower())
 
     def test_low_requires_noncommercial_evidence_and_duplicate_blocks_draft(self):
         incomplete = lead("222", email="new@optibrain.invalid")

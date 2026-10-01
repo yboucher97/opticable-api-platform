@@ -89,20 +89,32 @@ def _plain_body(response) -> str:
     return "\n".join(lines).strip()[:4000]
 
 
-def _new_information(body: str) -> list[str]:
-    """Only lift explicit labelled facts; they remain unconfirmed until reviewed."""
-    names = {"service": "Service", "site address": "Site address",
-             "camera count": "Camera count", "timeline": "Timeline"}
-    found = []
+def _reply_facts(body: str) -> dict[str, str]:
+    """Lift only explicit labelled facts from a thread-bound reply."""
+    names = {"service", "site address", "scope", "camera count", "timeline"}
+    found = {}
+    conflicts = set()
     for line in body.splitlines()[:30]:
         if ":" not in line:
             continue
         key, value = line.split(":", 1)
         key = key.strip().casefold()
         value = value.strip()[:120]
-        if key in names and value and len(value) >= 2:
-            found.append(f"{names[key]}: {value} (from reply; verify)")
-    return found[:4]
+        if key in names and len(value) >= 2 and key not in conflicts:
+            if key in found and found[key] != value:
+                found.pop(key, None)  # Conflicting claims cannot become decision inputs.
+                conflicts.add(key)
+            elif key not in found:
+                found[key] = value
+    return found
+
+
+def _new_information(body: str) -> list[str]:
+    """Preserve reply provenance in operator-facing evidence."""
+    labels = {"service": "Service", "site address": "Site address", "scope": "Scope",
+              "camera count": "Camera count", "timeline": "Timeline"}
+    return [f"{labels[key]}: {value} (from reply; verify)"
+            for key, value in _reply_facts(body).items()]
 
 
 def read_controlled_mail(client, *, account_id: str, from_address: str,
@@ -188,7 +200,9 @@ def read_controlled_mail(client, *, account_id: str, from_address: str,
             continue
         if received <= sent_receipt:
             continue
-        if folder_id == SENT_FOLDER_ID or received > now + timedelta(minutes=2):
+        if folder_id == SENT_FOLDER_ID:
+            continue  # A shared-mailbox alias also has a Sent copy; it is not inbound.
+        if received > now + timedelta(minutes=2):
             ambiguous = True
             continue
         path = f"/api/accounts/{account_id}/folders/{folder_id}/messages/{message_id}"
@@ -212,9 +226,12 @@ def read_controlled_mail(client, *, account_id: str, from_address: str,
             ambiguous = True
             continue
         body = _plain_body(client.request("mail", "GET", path + "/content"))
+        summary = re.sub(r"\s+", " ", body)
+        if len(summary) > 220:
+            summary = summary[:219].rsplit(" ", 1)[0] + "…"
         inbound.append({"message_id": message_id, "received_at": received.isoformat(),
-                        "received_at_local": local(received), "summary": re.sub(r"\s+", " ", body)[:220],
-                        "new_information": _new_information(body)})
+                        "received_at_local": local(received), "summary": summary,
+                        "new_information": _new_information(body), "facts": _reply_facts(body)})
     if ambiguous:
         return {"reply_state": "AMBIGUOUS", "reason": "Incoming Mail identity or thread linkage needs human review",
                 "last_outbound": outbound, "last_inbound": None,
@@ -223,7 +240,8 @@ def read_controlled_mail(client, *, account_id: str, from_address: str,
     return {"reply_state": "REPLIED" if latest else "NO_REPLY_YET",
             "reason": "Reply headers reference the known outbound message" if latest else "No exact-sender inbound found after the known outbound",
             "last_outbound": outbound, "last_inbound": latest,
-            "new_information": latest["new_information"] if latest else [], "search_complete": True}
+            "new_information": latest["new_information"] if latest else [],
+            "reply_facts": latest["facts"] if latest else {}, "search_complete": True}
 
 
 def followup_status(mail: dict, *, deadline: datetime | None, now: datetime,

@@ -158,13 +158,25 @@
       "cleanup": "retain for Phase 9-12 regression; exclude from live metrics",
       "email": "info@opticable.ca",
       "expected": {
-        "next_action": "Review linked inbound and respond; provider case unavailable now",
-        "priority": "PENDING",
-        "state": "REPLIED \u2014 NEEDS RESPONSE only after verified inbound"
+        "next_action": "Review linked reply, confirm new details, and respond",
+        "priority": "HIGH",
+        "state": "REPLIED \u2014 NEEDS RESPONSE"
       },
       "lead_id": "5062683000007906010",
       "mail": {
         "account_id": "1083319000000008002",
+        "inbound_reply": {
+          "in_reply_to": "<1a0f4aba6cb.30e79b51611845.950091666202969045@opticable.ca>",
+          "message_id": "1790814018711152600",
+          "received_at_utc": "2026-10-01T00:20:18.706000+00:00",
+          "recipient": "yboucher@opticable.ca",
+          "references": [
+            "<1a0f4aba6cb.30e79b51611845.950091666202969045@opticable.ca>"
+          ],
+          "sender": "info@opticable.ca",
+          "sent_copy_id": "1790814016763138300",
+          "state": "provider_verified"
+        },
         "message_id": "1790811285655138300",
         "recipient": "info@opticable.ca",
         "sender": "yboucher@opticable.ca",

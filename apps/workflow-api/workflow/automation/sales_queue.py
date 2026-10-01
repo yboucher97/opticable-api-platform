@@ -333,6 +333,9 @@ def render_sales_queue(view):
                      if outbound else "")
         mail_html += (f"<p><b>Last inbound:</b> {h(inbound.get('received_at_local'))} · {h(inbound.get('summary'))}</p>"
                       if inbound else "")
+        if item.get('new_from_reply'):
+            mail_html += (f"<p><b>New from linked reply (verify):</b> "
+                          + "; ".join(h(value) for value in item['new_from_reply']) + "</p>")
         relation_html = (f"<p><b>Identity:</b> {h(item['duplicate'])} · {h(relation['state'])} {links}</p>"
                          f"<p class='note'>{h(relation.get('basis'))}</p>"
                          + (f"<p class='note'>Verified links: {verified}</p>" if verified else ""))

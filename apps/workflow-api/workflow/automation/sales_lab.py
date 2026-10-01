@@ -48,15 +48,20 @@ def _draft(lead, row, mail, followup):
     place = str(lead.get("City") or "Montreal").strip()
     missing = row["missing"]
     if mail and mail["reply_state"] == "REPLIED":
-        inbound = mail["last_inbound"] or {}
-        summary = str(inbound.get("summary") or "").strip()[:220]
-        learned = "; ".join(mail.get("new_information") or [])
+        facts = mail.get("reply_facts") or {}
+        site = str(facts.get("site address") or "").rstrip(". ")
+        scope = str(facts.get("scope") or "").rstrip(". ")
+        timeline = str(facts.get("timeline") or "").rstrip(". ")
+        details = (f" I noted the site at {site}." if site else "")
+        details += (f" The scope you described is {scope[0].lower() + scope[1:]}." if scope else "")
+        details += (f" Your stated timeline is {timeline[0].lower() + timeline[1:]}." if timeline else "")
+        unanswered = [item for item in missing if not item.startswith("Verify ")]
         body = ("DRAFT — NOT SENT\nReview the verified reply before use.\n\n"
-                "Hello,\n\nThank you for the update about " + service + ". "
-                + ("I noted: " + learned + ". " if learned else "I will review the details you shared. ")
-                + ("Could you also confirm " + ", ".join(missing[:3]).lower() + "?" if missing else
-                   "I will review the next steps with the Opticable team.")
-                + "\n\nThe Opticable team\n\nReply context: " + summary)
+                "Hello,\n\nThank you for the update about your " + service + " project."
+                + (details if details else " I will review the details you shared.") + " "
+                + ("Could you also confirm " + ", ".join(unanswered[:3]).lower() + "?" if unanswered else
+                   "I will review whether a site visit is needed and follow up on quote next steps.")
+                + "\n\nThe Opticable team")
         subject = "Re: your Opticable test inquiry"
     elif row["quote"] == "READY FOR QUOTE":
         body = ("DRAFT — NOT SENT\nSynthetic recipient; operator review required.\n\n"
@@ -101,6 +106,16 @@ def enhance_lab_queue(view, leads, contacts, accounts, deals, tasks, mail_by_id,
         mail = mail_by_id.get(row["id"])
         reply = mail["reply_state"] if mail else "NO OUTBOUND RECORDED"
         row["reply"] = reply
+        row["new_from_reply"] = list(mail.get("new_information") or []) if reply == "REPLIED" else []
+        if reply == "REPLIED":
+            facts = mail.get("reply_facts") or {}
+            for field, key in (("Service requirements", "service"), ("Site address", "site address"),
+                               ("Project scope", "scope"), ("Target timeline", "timeline")):
+                if field in row["missing"] and facts.get(key):
+                    row["missing"][row["missing"].index(field)] = "Verify " + field.lower() + " from reply"
+            if facts.get("scope") and not lead.get("Scope"):
+                row["quote_reason"] = ("The linked reply supplies project scope; verify it and record it in CRM "
+                                       "before preparing a human quote.")
         row["last_activity"] = ("Verified inbound " + mail["last_inbound"]["received_at_local"]
                                 if mail and mail.get("last_inbound") else
                                 "Verified outbound " + mail["last_outbound"]["sent_at_local"]
@@ -141,9 +156,8 @@ def enhance_lab_queue(view, leads, contacts, accounts, deals, tasks, mail_by_id,
             row.update(priority="MEDIUM", action="Review possible duplicate identity",
                        reason="Two Test Lab Leads have the same exact email; no automatic merge or outreach.")
         elif followup == "REPLIED — REVIEW RESPONSE":
-            learned = "; ".join(mail.get("new_information") or [])
-            row.update(priority="HIGH", action="Review the linked inbound reply and respond",
-                       reason=("Verified thread-bound reply. " + ("New: " + learned if learned else "Read its details before replying.")))
+            row.update(priority="HIGH", action="Review the linked reply, confirm new details, and respond",
+                       reason="Verified thread-bound reply supplies new project details; review them before responding.")
         elif followup == "AMBIGUOUS":
             row.update(priority="MEDIUM", action="Resolve Mail identity before outreach",
                        reason="The exact thread association is ambiguous; suppress automated outreach.")
@@ -171,7 +185,9 @@ def enhance_lab_queue(view, leads, contacts, accounts, deals, tasks, mail_by_id,
         else:
             row.update(priority="MEDIUM", action="Ask for missing project details before quoting",
                        reason="Open inquiry needs " + ", ".join(row["missing"][:3]).lower() + ".")
-        row["qualification"] = ("Quote review" if row["quote"] == "READY FOR QUOTE" else
+        row["qualification"] = ("Reply received — confirm reported scope" if reply == "REPLIED" and
+                                (mail.get("reply_facts") or {}).get("scope") and not lead.get("Scope") else
+                                "Quote review" if row["quote"] == "READY FOR QUOTE" else
                                 "Discovery needed" if row["status"] in ACTIVE else "Status review")
         row["draft"] = _draft(lead, row, mail, followup)
         row["mail"] = {"last_outbound": mail.get("last_outbound"), "last_inbound": mail.get("last_inbound"),

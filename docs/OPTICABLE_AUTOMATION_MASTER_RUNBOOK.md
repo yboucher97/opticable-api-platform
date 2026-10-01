@@ -440,7 +440,14 @@ priority, quote readiness, missed follow-ups, relationship suggestions, and
 unsent context-aware drafts. It displays business times in America/Toronto.
 The Test Lab verified quote-ready→needs-information→quote-ready and
 neglected→not-neglected→neglected transitions through readback of owned CRM
-records. Two controlled outbound messages exist in Sent; no inbound reply has
-been verified for the reply-path scenario. Do not label it REPLIED until a
-thread-bound inbound exists. The persistent autonomous development worker
+records. Two controlled outbound messages exist in Sent. The reply-path Lead
+`5062683000007906010` received one provider-backed TEST_ONLY reply from the
+verified `info@opticable.ca` alias on September 30 at 8:20 PM EDT. Zoho Inbox
+message `1790814018711152600` has `In-Reply-To` and `References` matching
+outbound `1790811285655138300`. The queue shows REPLIED — NEEDS RESPONSE,
+new scope and timing from the reply, a contextual unsent draft, and no generic
+chase. Reply-reported scope still requires human review before a quote. The
+alias and primary sender share one mailbox; cross-provider delivery was not
+tested. Evidence and IDs are in the Test Lab registry and
+`docs/phase8-test-lab.md`. The persistent autonomous development worker
 remains disabled.

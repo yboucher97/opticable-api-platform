@@ -258,6 +258,16 @@ class SalesOperatorViewTests(unittest.TestCase):
         self.assertEqual(view["follow_up"]["status"], "AMBIGUOUS")
         self.assertIsNone(view["draft"]["body"])
 
+    def test_sent_copy_of_alias_reply_does_not_hide_linked_inbound(self):
+        self.add_reply(body="Service: Wi-Fi\nScope: 12 access points\nTimeline: Within three weeks")
+        self.crm.inbound.append({"messageId": "1790800000000000002",
+                                 "folderId": "1083319000000008022",
+                                 "fromAddress": "hckyan97@gmail.com",
+                                 "receivedTime": "1790800000001"})
+        view = self.view(datetime.fromisoformat("2026-10-02T18:00:00-04:00"))
+        self.assertEqual(view["evidence"]["mail"]["reply_state"], "REPLIED")
+        self.assertIn("Scope: 12 access points", " ".join(view["new_from_reply"]))
+
     def test_inbound_details_time_drift_is_ambiguous(self):
         self.add_reply()
         original = self.crm.request
