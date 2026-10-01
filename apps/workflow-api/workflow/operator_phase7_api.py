@@ -20,12 +20,16 @@ from .automation.sales_operator_view import (
 )
 from .automation.sales_queue import build_sales_queue, render_sales_queue
 from .automation.phase9_intake import IntakeLedger
+from .automation.phase9_form_receipts import FormReceiptLedger
 from .automation.outbound_approval import OutboundApproval, OutboundApprovalLedger
 from .operator_access import AccessIdentityVerifier
 from .zoho_gateway import ZohoGatewayError
 from html import escape
 from pathlib import Path
+from zoneinfo import ZoneInfo
 import json
+
+TORONTO = ZoneInfo("America/Toronto")
 
 
 class IssueCrmCanaryRequest(BaseModel):
@@ -153,6 +157,8 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
             trace = IntakeLedger(Path(store.db_path).parent / "phase9-intake.db").trace(lead_id)
             if trace is None:
                 raise HTTPException(status_code=404, detail="Trace not found")
+            provider_path = Path(store.db_path).parent / "phase9-form-receipts.db"
+            provider_events = FormReceiptLedger(provider_path).timeline(lead_id) if provider_path.exists() else []
             result = client.request("zohoapis", "GET", f"/crm/v8/Leads/{lead_id}")
             rows = (result.get("data") or {}).get("data") or []
             if (len(rows) != 1 or str(rows[0].get("id")) != lead_id
@@ -201,10 +207,18 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
             raise HTTPException(status_code=503, detail="Fresh provider evidence unavailable") from exc
         h = lambda value: escape(str(value or "—"), quote=True)
         lead = rows[0]
+        history = [e for e in trace["events"] if not (provider_events and e["source"] == "zoho_form"
+                   and str(e.get("inquiry_id") or "").startswith("OB-I-"))]
+        history += [{**e, "crm_action": e["action"],
+                     "occurred_at_montreal": datetime.fromisoformat(e["occurred_at"]).astimezone(
+                         TORONTO).isoformat()} for e in provider_events]
+        history = sorted({e["event_id"]: e for e in history}.values(),
+                         key=lambda e: (datetime.fromisoformat(e.get("occurred_at") or e["occurred_at_montreal"]),
+                                        e["event_id"]))
         events = "".join(
             f"<li><b>{h(e['source'])}</b> · {h(e['occurred_at_montreal'])} · "
             f"{h(e['event_id'])} · {h(e['crm_action'])} · campaign {h(e['campaign'])}</li>"
-            for e in trace["events"])
+            for e in history)
         outcomes = "".join(
             f"<li><b>{h(e['kind'])}</b> · {h(e.get('occurred_at_montreal'))} · "
             f"{h(e['related_module'])} {h(e['related_id'])}</li>"
@@ -218,9 +232,67 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
                 "<style>body{font:16px/1.5 system-ui;max-width:850px;margin:2rem auto;padding:0 1rem;color:#182536}"
                 "li{margin:.5rem 0}small{color:#526174}</style>"
                 f"<h1>Source to opportunity · TEST ONLY</h1><p>{h(lead.get('Full_Name'))} · Lead {h(lead_id)}</p>"
-                f"<p><b>First touch:</b> {h(trace['first_touch'])} · <b>Latest touch:</b> {h(trace['latest_touch'])}</p>"
+                f"<p><b>First touch:</b> {h(history[0]['source'] if provider_events else trace['first_touch'])} · "
+                f"<b>Latest touch:</b> {h(history[-1]['source'] if provider_events else trace['latest_touch'])}</p>"
                 f"<h2>Intakes</h2><ol>{events}</ol><h2>Outcomes</h2><ol>{outcomes}</ol>{chain_html}"
                 "<small>Verified Test Lab CRM identity. Internal audit only; external conversion export disabled.</small></html>")
+        return HTMLResponse(html, headers={"Cache-Control": "private, no-store, max-age=0",
+                                           "Pragma": "no-cache", "X-Frame-Options": "DENY",
+                                           "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
+                                           "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'"})
+
+    @app.get("/v1/operator/phase9/intake-receipts", tags=["operator-phase9"],
+             response_class=HTMLResponse)
+    async def intake_receipts(
+            cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
+        identity(cf_access_jwt_assertion)
+        try:
+            ledger = FormReceiptLedger(Path(store.db_path).parent / "phase9-form-receipts.db")
+            receipts = ledger.list(100)
+            connector = ledger.list_connector(100)
+        except (OSError, ValueError) as exc:
+            raise HTTPException(status_code=503, detail="Intake receipts unavailable") from exc
+        h = lambda value: escape(str(value if value is not None else "—"), quote=True)
+        pending = sum(1 for row in receipts if not row["canonical_id"]
+                      or (row["provider_match_status"] == "MATCHED_MISSING_EMAIL"
+                          and not row["reviewed_test_link"]))
+        items = []
+        for row in receipts:
+            evidence = json.loads(row["evidence_json"])
+            at = datetime.fromisoformat(row["occurred_at"]).astimezone(
+                TORONTO).strftime("%b %-d, %Y %-I:%M %p %Z")
+            state = (f"CRM Lead {h(row['canonical_id'])} matched read-only" if row["canonical_id"]
+                     else "Needs identity and CRM review — no automatic customer record change")
+            if row["provider_match_status"] == "MATCHED_MISSING_EMAIL":
+                state += " · form-to-CRM email mapping missing at creation"
+            if row["reviewed_test_link"]:
+                state += " · TEST ONLY identity reviewed"
+                state += (f" · <a href='/v1/operator/phase9/source-trace/{h(row['canonical_id'])}'>source trace</a>")
+            items.append(f"<li><b>{h(evidence['fields'].get('company'))}</b> · {h(at)}"
+                         f"<br>From {h(evidence['source_detail'])} · {h(row['submitted_email'])}"
+                         f"<br>{state}<br><small>Receipt {h(row['event_id'])} · Zoho Mail {h(row['provider_message_id'])}"
+                         f" · campaign {h(evidence.get('campaign') or 'Unknown')}</small></li>")
+        connector_items = []
+        for row in connector:
+            evidence = json.loads(row["evidence_json"])
+            at = datetime.fromisoformat(row["occurred_at"]).astimezone(
+                TORONTO).strftime("%b %-d, %Y %-I:%M %p %Z")
+            campaign = (evidence.get("attribution") or {}).get("last_campaign") or "Unknown"
+            result = ("POSSIBLE DUPLICATE — review; no automatic merge" if row["action"] == "possible_duplicate"
+                      else row["action"].replace("_", " "))
+            connector_items.append(f"<li><b>{h(row['source'])}</b> · {h(at)}"
+                                   f"<br>{h(row['submitted_email'])} · {h(result)}"
+                                   f"<br>Canonical CRM: {h(row['canonical_id'])} · Review candidate: {h(row['possible_duplicate_id'])}"
+                                   f"<br><small>Receipt {h(row['event_id'])} · campaign {h(campaign)}</small></li>")
+        html = ("<!doctype html><html lang='en'><meta charset='utf-8'><title>OptiBrain intake receipts</title>"
+                "<style>body{font:16px/1.5 system-ui;max-width:900px;margin:2rem auto;padding:0 1rem;color:#182536}"
+                "li{margin:1.2rem 0;padding:.8rem;border:1px solid #ccd;border-radius:.4rem}small{color:#526174}</style>"
+                f"<h1>Intake receipts</h1><p><b>{pending} main-form submissions need CRM review</b> · "
+                f"{len(receipts)} form and {len(connector)} connector receipts shown</p>"
+                "<p>Verified Zoho Forms notifications. A receipt proves form delivery to Mail; it does not claim CRM creation. "
+                "Original source and campaign remain Unknown when the notification omits them.</p>"
+                f"<h2>Main-site Zoho Form</h2><ol>{''.join(items)}</ol>"
+                f"<h2>AI / connector intakes</h2><ol>{''.join(connector_items)}</ol></html>")
         return HTMLResponse(html, headers={"Cache-Control": "private, no-store, max-age=0",
                                            "Pragma": "no-cache", "X-Frame-Options": "DENY",
                                            "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",

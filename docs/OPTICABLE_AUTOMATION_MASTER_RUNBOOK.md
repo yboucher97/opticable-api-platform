@@ -478,4 +478,46 @@ public create failed on Zoho's datetime format and reconciled to zero records;
 the connector fix was deployed. Zoho Search indexing lag required bounded list
 readback for a subsequent successful create. Source-record IDs are now scoped
 to their intake source. The main site's embedded Zoho Form mapping and fully
-automatic event delivery to OptiBrain remain future Phase 9 work.
+automatic event delivery to OptiBrain remained future Phase 9 work at this
+checkpoint.
+
+## Phase 9 active form and automatic receipt evidence — 2026-09-30
+
+The main site's French contact page embeds Zoho Form
+`i6pIlfoGOFER0OCZ4oUH_KMxVWRZKC9Of8vbyNAjR0g`; English embeds
+`5kpuPyq6HG3cmmNAHG_2cFprnp16uoMzojC7Fxq42xo`. One controlled browser
+submission through the French form produced authenticated Zoho Forms Mail
+notification `1790820040661162800` and Lead `5062683000007935001`.
+The native form-to-CRM mapping omitted Email and source/touch fields. The
+read-only receipt collector records the original omission and matches a
+unique CRM candidate by name, company, phone and creation time. It does not
+patch real customer records. Only this registered TEST_ONLY Lead was repaired
+under the protected-record firewall. Correct the native Zoho Forms mapping
+before treating future form Leads as fully attributed or email-deduped.
+
+The connector now exports immutable public-intake acknowledgements through a
+dedicated read-only credential. A five-minute `opticable-phase9-intake-receipts`
+timer polls that export and authenticated Zoho Forms Mail into
+`phase9-form-receipts.db`; no Codex process or CRM write runs in this timer.
+The authenticated `/v1/operator/phase9/intake-receipts` route shows provider
+receipts, missing CRM fields and duplicate-review states. Source trace and the
+Phase 8 Lab queue combine this chronology with the original feedback ledger.
+Replay of the same provider identity is idempotent; conflicting evidence fails
+closed. Store evidence as aware UTC instants and display Montreal time.
+
+The Form-created Test Lead returned via the actual AI connector under inquiry
+`bf53b28c-9e39-4507-ab60-a534665df473`: the same Lead was updated, first
+source stayed `zoho_form`, latest source became `phase9_ai_return_test`, and
+campaign `opticable_phase9_form_to_ai_test` was retained. A separate controlled
+alias with the same test phone yielded `possible_duplicate` under inquiry
+`cf2597db-2ab7-4c67-b0e2-1cb65fc666a3`; no Lead was merged or changed.
+Exact IDs and journals are in `ops/phase9/TEST_LAB_REGISTRY.json` and
+`/var/lib/optibrain/phase9/mission2/`.
+
+Zoho public filtered views `Opticable Live Leads` and `Opticable Live
+Opportunities` exclude `OptiBrain_Test=true`. Zoho did not persist attempted
+criteria changes to built-in default views; those still include test rows and
+must not be used for unfiltered business counts. The Test Lab Deal amount is
+null. Email-to-CRM automatic intake and ad conversion export remain unverified.
+The 99-record protected pre-existing CRM baseline remains read-only; autonomous
+Codex dispatch remains disabled.

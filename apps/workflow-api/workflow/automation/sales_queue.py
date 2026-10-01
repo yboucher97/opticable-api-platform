@@ -14,6 +14,7 @@ from .sales_operator_view import CONTROLLED_LEAD_ID, build_sales_operator_view
 from .followup_mail import read_controlled_mail
 from .sales_lab import enhance_lab_queue
 from .phase9_intake import IntakeLedger
+from .phase9_form_receipts import FormReceiptLedger
 
 TORONTO = ZoneInfo("America/Toronto")
 ACTIVE = {"Not Contacted", "Attempted to Contact", "Contact in Future", "Pre-Qualified"}
@@ -297,16 +298,28 @@ def build_sales_queue(client, db_path, *, account_id, from_address, now=None,
                              leads_complete=True, relationships_complete=True)
         view = enhance_lab_queue(view, leads, contacts, accounts, deals, tasks, mail_by_id, now=clock)
         ledger_path = Path(db_path).parent / "phase9-intake.db"
+        provider_path = Path(db_path).parent / "phase9-form-receipts.db"
+        provider_ledger = FormReceiptLedger(provider_path) if provider_path.exists() else None
         for row in view["rows"]:
             lead = next(x for x in leads if str(x["id"]) == row["id"])
             trace = (IntakeLedger(ledger_path).trace(row["id"]) if ledger_path.exists()
                      and str(lead.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE 9") else None)
-            row["attribution"] = {"first_source": trace["first_touch"] if trace else lead.get("First_Source") or "Unknown",
-                                  "latest_source": trace["latest_touch"] if trace else lead.get("Last_Source") or "Unknown",
+            provider_events = provider_ledger.timeline(row["id"]) if provider_ledger else []
+            historical = trace["events"] if trace else []
+            # The old Test Lab ledger used its own ID for a form notification;
+            # the provider notification is the authoritative event for that submission.
+            if any(event["source"] == "zoho_form" for event in provider_events):
+                historical = [event for event in historical if not (event["source"] == "zoho_form"
+                    and str(event.get("inquiry_id") or "").startswith("OB-I-"))]
+            all_events = {event["event_id"]: event for event in historical + provider_events}
+            chronology = sorted(all_events.values(), key=lambda event: (aware(event["occurred_at"]), event["event_id"]))
+            row["attribution"] = {"first_source": chronology[0]["source"] if chronology else lead.get("First_Source") or "Unknown",
+                                  "latest_source": chronology[-1]["source"] if chronology else lead.get("Last_Source") or "Unknown",
                                   "traffic_source": lead.get("Last_Source"),
                                   "campaign": lead.get("Last_Campaign") or lead.get("First_Campaign"),
-                                  "last_intake": local(lead.get("Last_Touch_Time")),
-                                  "has_trace": trace is not None}
+                                  "last_intake": local(chronology[-1]["occurred_at"] if chronology else lead.get("Last_Touch_Time")),
+                                  "intake_count": len(chronology),
+                                  "has_trace": bool(chronology or trace)}
         return view
     leads = [x for x in leads if x.get("OptiBrain_Test") is not True
              and not str(x.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")
@@ -377,6 +390,7 @@ def render_sales_queue(view):
                             f"<b>Latest source:</b> {h(attribution.get('latest_source'))} · "
                             f"<b>Traffic source:</b> {h(attribution.get('traffic_source'))} · "
                             f"<b>Campaign:</b> {h(attribution.get('campaign'))} · "
+                            f"<b>Recorded intakes:</b> {h(attribution.get('intake_count'))} · "
                             f"<b>Last intake:</b> {h(attribution.get('last_intake'))}</p>") if attribution else ""
         if attribution.get("has_trace"):
             attribution_html += f"<p><a href='/v1/operator/phase9/source-trace/{h(item['id'])}'>View source to opportunity trace</a></p>"
