@@ -181,6 +181,17 @@ EOF
 copy_if_present() {
   local source="$1" target="$2"
   [[ -e "${source}" ]] || return 0
+  if [[ -L "${source}" && "${source}" == /etc/systemd/system/optibrain-agent-* && "$(readlink "${source}")" == /dev/null ]]; then
+    # Encode retired unit masks as regular metadata; never extract an absolute
+    # symlink from an archive. Recovery explicitly replays these masks.
+    mkdir -p "${staging}/system"
+    python3 - "${staging}/system/systemd-masks.json" "$(basename "${source}")" <<'PY'
+import json,pathlib,sys
+p=pathlib.Path(sys.argv[1]);units=json.loads(p.read_text()) if p.exists() else []
+p.write_text(json.dumps(sorted(set(units+[sys.argv[2]]))))
+PY
+    return 0
+  fi
   record_source_metadata "${source}" "${target}"
   if [[ -d "${source}" && ! -L "${source}" ]]; then
     mkdir -p "${staging}/${target}"
@@ -277,7 +288,9 @@ if [[ "${OPTIBRAIN_SKIP_LIVE_STATE:-false}" != "true" && "${OPTIBRAIN_SKIP_LIVE_
     /etc/systemd/system/optibrain-*.service.d /etc/systemd/system/optibrain-*.timer.d \
     /etc/systemd/system/opticable-*.service /etc/systemd/system/opticable-*.timer \
     /etc/systemd/system/opticable-*.service.d /etc/systemd/system/opticable-*.timer.d \
-    /usr/local/lib/optibrain /usr/local/lib/optibrain-backup; do
+    /usr/local/lib/optibrain /usr/local/lib/optibrain-backup \
+    /usr/local/sbin/opticable-api-deploy-root /usr/local/sbin/opticable-api-deploy-command \
+    /etc/ssh /home/opticable-deploy/.ssh/authorized_keys; do
     [[ -e "${path}" ]] && copy_if_present "${path}" "system${path}"
   done
 fi

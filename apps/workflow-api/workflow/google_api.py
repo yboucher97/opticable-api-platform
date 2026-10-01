@@ -52,6 +52,10 @@ class GoogleApiClient:
             raise ValueError(f"Unsupported Google API service: {service}")
 
         normalized_method = method.upper().strip()
+        from .automation.mutation_control import safe_read
+        if normalized_method != 'GET':
+            raise ValueError('Google business mutations are forbidden before authentication')
+        safe_read(service, '/' + path.strip().lstrip('/'), headers)
         if normalized_method not in {"GET", "POST", "PUT", "PATCH", "DELETE"}:
             raise ValueError(f"Unsupported Google API method: {normalized_method}")
 
@@ -109,6 +113,6 @@ class GoogleApiClient:
         }
         if not response.is_success:
             raise GoogleApiError(
-                f"Google {service} API returned HTTP {response.status_code}: {json.dumps(data)[:2000]}"
+                f"Google {service} API returned HTTP {response.status_code}"
             )
         return result

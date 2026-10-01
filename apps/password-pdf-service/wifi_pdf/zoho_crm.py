@@ -17,6 +17,7 @@ class ZohoCrmClient:
         self._access_token: str | None = None
 
     def update_generated_password_fields(self, record_id: str, passwords: list[str]) -> dict[str, Any]:
+        raise RuntimeError('Legacy PDF CRM writer retired; provider mutations are forbidden')
         if not record_id:
             raise ConfigurationError("CRM update requested but no crm_record_id was provided.")
 

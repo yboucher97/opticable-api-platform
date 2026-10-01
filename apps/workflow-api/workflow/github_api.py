@@ -81,7 +81,7 @@ class GithubApiClient:
         except json.JSONDecodeError:
             data = response.text
         if not response.is_success or not isinstance(data, dict) or not data.get("token"):
-            raise GithubApiError(f"GitHub App token request failed HTTP {response.status_code}: {str(data)[:2000]}")
+            raise GithubApiError(f"GitHub App token request failed HTTP {response.status_code}")
         expires_raw = str(data.get("expires_at") or "")
         try:
             expires_at = datetime.fromisoformat(expires_raw.replace("Z", "+00:00")).timestamp()
@@ -112,6 +112,9 @@ class GithubApiClient:
         method = str(method or "GET").upper().strip()
         if method not in {"GET", "POST", "PUT", "PATCH", "DELETE"}:
             raise ValueError(f"Unsupported GitHub method: {method}")
+        from .automation.mutation_control import require_technical_admin, safe_read
+        safe_read('github', path)
+        require_technical_admin(self, 'github', method, path, body)
         response = httpx.request(
             method,
             self.BASE + path,
@@ -133,5 +136,5 @@ class GithubApiClient:
             "accepted_permissions": response.headers.get("X-Accepted-GitHub-Permissions"),
         }
         if not response.is_success:
-            raise GithubApiError(f"GitHub API returned HTTP {response.status_code}: {str(data)[:2000]}")
+            raise GithubApiError(f"GitHub API returned HTTP {response.status_code}")
         return result

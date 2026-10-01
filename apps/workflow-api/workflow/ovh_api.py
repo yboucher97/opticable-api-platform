@@ -79,6 +79,8 @@ class OvhApiClient:
         if body_text:
             headers["Content-Type"] = "application/json"
 
+        if str(method or 'GET').upper().strip() != 'GET':
+            raise ValueError('Runtime provider mutations are forbidden')
         response = httpx.request(
             method,
             url,

@@ -1,7 +1,7 @@
 id: customer.lifecycle.digest
 name: Customer lifecycle executive digest
 version: 1
-enabled: true
+enabled: false
 description: Builds a daily or weekly owner digest using CRM plus Zoho Books observations and saves it as a mail draft.
 trigger:
   event_types:

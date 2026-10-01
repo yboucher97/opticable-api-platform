@@ -185,7 +185,7 @@ class ZohoGatewayClient:
         }
         if not acceptable:
             raise ZohoGatewayError(
-                f"Zoho {service} API returned HTTP {response.status_code}: {json.dumps(data)[:2000]}",
+                f"Zoho {service} API returned HTTP {response.status_code}",
                 response=response,
             )
         return result
@@ -238,7 +238,7 @@ class ZohoGatewayClient:
             data = {"raw": response.text}
         if not response.is_success:
             raise ZohoGatewayError(
-                f"Standby Zoho gateway returned HTTP {response.status_code}: {json.dumps(data)[:2000]}",
+                f"Standby Zoho gateway returned HTTP {response.status_code}",
                 response=response,
             )
         if isinstance(data, dict):
@@ -266,10 +266,15 @@ class ZohoGatewayClient:
         if mutation and ('%' in path or '?' in path or '#' in path or any(part in {'.','..'} for part in path.split('/'))):
             raise ValueError('Mutation path must be canonical and cannot contain escapes')
         require_authority(self, service, normalized_method, path, body, headers)
+        from .automation.mutation_control import require_business_transport, record_business_response
+        if mutation and (query or content_type != 'application/json'):
+            raise ValueError('Mutation query parameters and alternate encodings are forbidden')
+        require_business_transport(self, service, normalized_method, path, body, headers)
 
         def standby() -> dict[str, Any]:
             verify_transport_authority(self, service, normalized_method, path, body, headers)
-            return self._standby_request(
+            require_business_transport(self, service, normalized_method, path, body, headers, recheck=True)
+            result = self._standby_request(
                 service,
                 normalized_method,
                 path,
@@ -280,6 +285,8 @@ class ZohoGatewayClient:
                 reason=reason,
                 confirm=confirm,
             )
+            if mutation: record_business_response(result)
+            return result
 
         # These failures occur before any local provider request is sent, so a
         # configured standby may be used without creating duplicate-write risk.
@@ -302,7 +309,8 @@ class ZohoGatewayClient:
 
         try:
             verify_transport_authority(self, service, normalized_method, path, body, headers)
-            return self._local_request(
+            require_business_transport(self, service, normalized_method, path, body, headers, recheck=True)
+            result = self._local_request(
                 service,
                 normalized_method,
                 path,
@@ -312,6 +320,8 @@ class ZohoGatewayClient:
                 content_type=content_type,
                 access_token=access_token,
             )
+            if mutation: record_business_response(result)
+            return result
         except httpx.TransportError as exc:
             # Once a mutation reaches the HTTP transport boundary, we cannot
             # prove whether Zoho applied it.  Never issue a second mutation via

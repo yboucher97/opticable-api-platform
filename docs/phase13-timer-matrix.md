@@ -1,3 +1,5 @@
+> Remediation override: six development units are **MASKED**; five application timers remain active; the Test runner has both root universal and environment write switches OFF. Three GitHub business schedules are disabled and their cron triggers removed; Cloudflare is the canonical business observer scheduler. GitHub health monitoring remains active. Last-run evidence is in remediation completion JSON. Historical table below remains the original audit snapshot.
+
 # Phase 13 authoritative timer matrix
 
 Snapshot 2026-10-01, America/Toronto. Five OptiBrain application systemd timers are active. Ordinary OS housekeeping timers are not OptiBrain automation. Codex development units are separate and remain inactive (five disabled, usage.service static).

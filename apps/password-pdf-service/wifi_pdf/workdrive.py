@@ -35,6 +35,7 @@ class ZohoWorkDriveClient:
         return folder_id
 
     def resolve_upload_folder_id(self, request_folder_id: str | None) -> str:
+        raise RuntimeError('Legacy WorkDrive writer retired; provider mutations are forbidden')
         parent_folder_id = self.resolve_folder_id(request_folder_id)
         cached_folder_id = self._prepared_upload_folders.get(parent_folder_id)
         if cached_folder_id:
@@ -118,6 +119,7 @@ class ZohoWorkDriveClient:
         )
 
     def upload_file(self, path: Path, folder_id: str) -> dict[str, Any]:
+        raise RuntimeError('Legacy WorkDrive upload retired; provider mutations are forbidden')
         timeout = httpx.Timeout(60.0, connect=20.0)
         with httpx.Client(timeout=timeout) as client:
             headers = self._get_auth_headers(client)
@@ -338,6 +340,7 @@ class ZohoWorkDriveClient:
         new_parent_id: str,
         new_name: str,
     ) -> None:
+        raise RuntimeError('Legacy WorkDrive provider writer retired')
         response = client.patch(
             f"{self.settings.api_base_url}/files/{folder_id}",
             headers={**headers, "Content-Type": "application/vnd.api+json"},
@@ -364,6 +367,7 @@ class ZohoWorkDriveClient:
         parent_folder_id: str,
         target_folder_name: str,
     ) -> str:
+        raise RuntimeError('Legacy WorkDrive provider writer retired')
         response = client.post(
             f"{self.settings.api_base_url}/files",
             headers={**headers, "Content-Type": "application/vnd.api+json"},

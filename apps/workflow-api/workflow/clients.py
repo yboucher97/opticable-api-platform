@@ -64,6 +64,7 @@ class OmadaClient:
         return response.json()
 
     def create_job_from_raw(self, content: bytes, content_type: str | None = None, file_name: str | None = None) -> dict[str, Any]:
+        raise RuntimeError('Legacy Omada executor retired')
         headers = self._auth_headers()
         if content_type:
             headers["Content-Type"] = content_type

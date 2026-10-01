@@ -1,3 +1,5 @@
+> Remediation override: every runtime provider mutation now meets the universal transport gate or is forbidden. Of the 23 inventoried families, **one has current executable TEST_ONLY transport (central Task)** and **22 are forbidden/retired/disabled at transport**. Scheduled writes remain killed; real authority is zero. Historical per-family classifications below describe the audit starting state, not current permissions. Native Forms is an additional external producer requiring owner containment confirmation. See [phase13-p0-remediation.md](phase13-p0-remediation.md).
+
 # Phase 13 mutation and control matrix
 
 Observed 2026-10-01 against deployed code, compiled connector, effective workflow definitions, root units, provider reads and journals. Protected/real business records were read only. The raw candidate call-site inventory is in docs/phase13-evidence/mutation-call-sites.json; it includes dynamic transports and false-positive local .update calls and is not a count of business writes.

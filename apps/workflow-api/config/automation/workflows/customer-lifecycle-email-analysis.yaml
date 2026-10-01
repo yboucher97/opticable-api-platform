@@ -1,7 +1,7 @@
 id: customer.lifecycle.email-analysis
 name: Customer lifecycle - email analysis
 version: 1
-enabled: true
+enabled: false
 description: Resolve inbound sender against CRM, analyze the message, and save a safe draft reply when appropriate. Never auto-sends.
 trigger:
   event_types:

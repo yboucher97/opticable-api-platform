@@ -1,3 +1,5 @@
+> Phase 13 P0 remediation supersedes historical safety statements below. The current transport, credential, scheduler and recovery controls are specified in [phase13-p0-remediation.md](phase13-p0-remediation.md). Exact deployed SHA is the root deployment receipt; read it with `sudo cat /var/lib/optibrain/phase13-remediation/deployment.json`. Historical phase percentages are not readiness evidence.
+
 # OptiBrain architecture blueprint
 
 Authoritative Phase 13 audit, 2026-10-01, America/Toronto. This describes the deployed system and its containment, not a proposed finished product. Read alongside [the audit](phase13-independent-audit.md), [controls](phase13-control-matrix.md), [timers](phase13-timer-matrix.md), and [remediation backlog](phase14-optimization-backlog.md). Earlier phase percentages are not accepted as readiness measures.
@@ -132,26 +134,26 @@ Operations is provider-backed for three Test projects. The live operations endpo
 
 Phase 12 is a sound narrow Test dispatcher, not a universal firewall. Its automatic dispatch checks risk, ownership, kill policy, exact fresh target, semantic Modified_Time and expected state before one attempt. Ambiguous acknowledgements become reconciliation work; there is no automatic second mutation or mutation failover. A separate lower CRM firewall binds an exact method/path/body/headers call.
 
-The controlled R3 Test Mail path binds sender, recipient, subject/body hash, approval, target and fresh evidence. It is a manually invoked restricted script; there is no general Phase 12 HTTP send endpoint. One-use expiry is at most one hour. Actual authenticated human approval through Cloudflare Access was not exercised. dispatch_approved does not accept/recheck the automatic-write Policy, so the kill switch is not universal across approval paths.
+The controlled R3 Test Mail path binds sender, recipient, subject/body hash, approval, target and fresh evidence. It is a manually invoked restricted script; there is no general Phase 12 HTTP send endpoint. One-use expiry is at most one hour. Actual authenticated human approval through Cloudflare Access was not exercised. Remediation adds explicit policy revalidation before approval consumption; production R3 transport is forbidden independently.
 
 Actions record request/action IDs, target, risk, decision, hash, version, ownership, attempt, provider ID, timestamps and limited effect/reconciliation detail. Scheduled envelopes preserve full action input. Unscheduled actions do not retain a complete immutable execution envelope or full transition/provider-response history; source trigger/run linkage is optional. Existing local state is sufficient for sampled Test reconstruction, not a complete real-business audit contract.
 
-Restore must not resume provider writers from stale local journals. The runner resolves acknowledged Task IDs from local root operations state; loss of an attempt newer than backup is not independently reconciled by a provider-side unique request key. Keep the Test runner disabled during disaster recovery until all effects in the backup gap are reconciled.
+Restore must not resume provider writers from stale local journals. The runner resolves acknowledged Task IDs from local root operations state; new Task attempts are fenced by atomic off-host claims and exact provider action markers. Existing claims are reconciliation-only after local state loss. Keep the Test runner disabled during disaster recovery until all effects in the backup gap are reconciled.
 
 ## Security, secrets and network
 
 SSH is key-only, root SSH login disabled. UFW exposes TCP 22/80/443. Caddy also listens UDP 443 but UFW has no corresponding allow rule. All application sockets and the Caddy admin API bind localhost. The api01.opticable.ca virtual host remains configured but did not resolve publicly during the audit.
 
-Operator routes require verified Cloudflare Access RS256/JWKS issuer and audience plus an allowed human identity. The production audience matched the actual admin.opticable.ca Access application. Forged JWT/email headers failed. Shared API-key routes remain a separate privilege boundary and generally fail open when a key is absent, unlike strict inspection/operator routes; current production keys are set. OAuth browser connect routes accept keys in URL queries, which should be replaced before expanded use.
+Operator routes require verified Cloudflare Access RS256/JWKS issuer and audience plus an allowed human identity. The production audience matched the actual admin.opticable.ca Access application. Forged JWT/email headers failed. Shared-key authentication now fails closed when unset. OAuth query credentials are rejected; header credentials are required.
 
 Environment files and OAuth credentials are private. /var/lib application parents are 0750 and root safety state is under root 0700. Some child DB/document files are 0644 but effective parent traversal prevents public reading. Core/PDF service sandboxing is weaker than timer sandboxing. Root runner imports owner-writable checkout/venv code; owner already has sudo, but the long-term privilege model needs simplification.
 
-Current credential literals were absent from 1,348 core and 85 connector reachable historical Git blobs and checked shell history. This is not proof against every historical/rotated secret. Connector settings still contain client secret and connector key as Cloudflare plain_text bindings; move them to provider secret bindings. One inventory-filter error exposed the CRM channel credential in tool output; stored evidence was redacted. Rotate it under a controlled provider-channel remediation, and do not copy that output into documentation.
+Current credential literals were absent from 1,348 core and 85 connector reachable historical Git blobs and checked shell history. This is not proof against every historical/rotated secret. Connector client secret and key have been migrated to Cloudflare secret bindings. One inventory-filter error exposed the CRM channel credential in tool output; stored evidence was redacted. The channel credential has been rotated and the old credential rejected; and do not copy that output into documentation.
 
 A separate operational scan found the current shared API key in historical
 uvicorn URL access records. Raw HTTP access logging was disabled in the root API
 override; business audit and service error journals remain active. Existing
-private journal evidence was preserved. Controlled cross-client API-key rotation
+private journal evidence was preserved. Completed cross-client API-key rotation
 and removal of URL credentials remain P0 requirements.
 
 Runtime code reviewed does not turn CRM/email text into shell commands. SQL data is parameterized; dynamic PRAGMA identifiers come from static schema tables. HTML operator views escape provider text. Phase 11 names are project-scoped and reject traversal; root-only ancestry protects the present symlink boundary. Legacy job stores and uploads need authenticated, bounded, atomic storage before reopening.

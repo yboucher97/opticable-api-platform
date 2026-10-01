@@ -14,6 +14,17 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def main():
+    if os.geteuid() == 0:
+        # Fixtures deliberately exercise unprivileged authentication and Git.
+        # A root invocation runs the SAME suite as the checkout owner, never
+        # skips those assertions or imports candidate code with root authority.
+        import pwd
+        uid=ROOT.stat().st_uid
+        if uid == 0:
+            raise SystemExit('Validate an unprivileged isolated checkout, not root-owned production')
+        user=pwd.getpwuid(uid).pw_name
+        os.execve('/usr/sbin/runuser',['runuser','-u',user,'--',sys.executable,'-I',str(Path(__file__).resolve()),*sys.argv[1:]],
+                  {'PATH':'/usr/bin:/bin','LANG':'C.UTF-8'})
     parser = argparse.ArgumentParser()
     parser.add_argument("--suite", choices=("focused", "full", "approval"), default="full")
     args = parser.parse_args()

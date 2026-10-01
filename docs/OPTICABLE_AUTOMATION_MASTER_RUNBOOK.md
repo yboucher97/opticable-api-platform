@@ -788,3 +788,20 @@ autonomy view includes runner status and counters. A single exact controlled
 Test Mail send may be executed only with the manual mission's one-use R3
 approval and Sent-folder verification. See `docs/phase12-closure.md` for
 policy, ownership, approved-send distinction and remaining legacy migrations.
+
+
+## Phase 13 P0 remediation — authoritative current safety and recovery
+
+Follow [phase13-p0-remediation.md](phase13-p0-remediation.md) and [OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md](OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md). Historical phase notes are evidence, not permission. The root release receipt at `/var/lib/optibrain/phase13-remediation/deployment.json` determines the deployed SHA. Production/local/remote main must match. The API retains 1.11.0 for this safety patch.
+
+Persistent development dispatch/status/usage services and timers are MASKED. Never unmask them during recovery. Restore their six masks from `system/systemd-masks.json` and retain the absent authorization file. Application readers, reconciliation and backups are separate. Both `/etc/optibrain/mutation-control.json` and `/etc/optibrain/phase12-runner.env` have Test provider writes OFF; real canary authority is hard false. No environment/approval can enable legacy CRM/Mail/Sign/Google/Books/WorkDrive/controller writes.
+
+Use `/usr/local/sbin/opticable-api-deploy-root <exact-main-SHA>` only with a fresh root-owned manual release authorization, live successful exact-head CI, prevalidated immutable environment in `/opt/optibrain-releases/<SHA>/venv` and pinned rollback archive. The helper restores code/manifest/environment on failure and verifies health. It never rolls back credential values to revoked credentials. Historical per-phase root release helpers are recovery history; the generic manual gate supersedes their dispatcher.
+
+The shared core key and CRM channel verification credential have been rotated. Dependencies use the replacement; old credentials fail. Core header authentication fails closed. OAuth query API keys are rejected. Connector client secret/key are secret bindings. Never publish root env files, raw provider records, SQLite payloads or restored credentials.
+
+Recovery starts with all provider writers OFF and development units masked. The local archive captures root protection/registries/documents/journals, online SQLite snapshots, configuration/service drop-ins, SSH identity and installed helper. Run `sudo /usr/local/lib/optibrain-backup/optibrain-backup.sh --preserve-existing`, then the encrypted uploader service. Verify and restore only into an isolated location. Restore critical ownership/modes from the manifest; never replay extracted configuration directly into production without review.
+
+R2 `business-effects/v1/` is an indefinite locked execution ledger separate from rolling backup generations. Preserve it across VPS replacement. A missing local attempt never permits deleting or resetting a remote claim. Existing or uncertain claims are reconciliation-only; compare exact provider Task marker, target, fields and payload hash, then adopt the verified provider ID. Never retry a claim merely because provider search is empty. Missing/unavailable R2 blocks new execution. Legacy tasks without markers require their known IDs and historical operations registry; they are read-only observations.
+
+Native Zoho Forms can write CRM outside this application gate. Owner deactivation/verification of its two native CRM integrations is required before universal provider-write closure. Read-only Mail receipt collection can continue. The actual offline AGE owner identity and genuine Access human login/approval have distinct proof requirements; the manual checklist defines their readiness effects. No real canary may run without separate explicit owner authorization.

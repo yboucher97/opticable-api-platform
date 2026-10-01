@@ -70,9 +70,9 @@ class ZohoGatewayTests(unittest.TestCase):
 
         with patch("workflow.zoho_gateway.httpx.request", side_effect=fake_request):
             result = self.client.request(
-                "creator",
+                "sign",
                 "GET",
-                "/meta/applications",
+                "/templates",
                 headers={"Authorization": "bad", "X-API-Key": "bad", "environment": "stage"},
             )
         self.assertTrue(result["ok"])
@@ -154,7 +154,7 @@ class ZohoGatewayTests(unittest.TestCase):
             ) as local_request,
             patch.object(client, "_standby_request") as standby,
         ):
-            with self.assertRaises(ZohoWriteUnconfirmedError) as caught:
+            with self.assertRaises(ValueError):
                 client.request(
                     "creator",
                     "POST",
@@ -163,8 +163,7 @@ class ZohoGatewayTests(unittest.TestCase):
                     reason="Create fixture lead",
                     confirm=True,
                 )
-        self.assertTrue(getattr(caught.exception, "ambiguous_external_write", False))
-        self.assertEqual(local_request.call_count, 1)
+        self.assertEqual(local_request.call_count, 0)
         standby.assert_not_called()
 
     def test_read_transport_failure_may_use_configured_standby(self) -> None:
@@ -199,8 +198,8 @@ class ZohoGatewayTests(unittest.TestCase):
         )
         client = ZohoGatewayClient(settings, DisconnectedOAuth())
         fallback = {"ok": True, "status": 200, "provider_path": "connect_standby", "data": {}}
-        with patch.object(client, "_standby_request", return_value=fallback) as standby:
-            result = client.request(
+        with patch.object(client, "_standby_request", return_value=fallback) as standby, self.assertRaises(ValueError):
+            client.request(
                 "creator",
                 "POST",
                 "/data/x/y/form/z",
@@ -208,8 +207,7 @@ class ZohoGatewayTests(unittest.TestCase):
                 reason="Create fixture lead",
                 confirm=True,
             )
-        self.assertEqual(result, fallback)
-        standby.assert_called_once()
+        standby.assert_not_called()
 
     def test_explicit_mutation_provider_failure_does_not_fail_over(self) -> None:
         client = self.standby_client()
@@ -231,7 +229,7 @@ class ZohoGatewayTests(unittest.TestCase):
                     reason="Create fixture lead",
                     confirm=True,
                 )
-        self.assertEqual(local_request.call_count, 1)
+        self.assertEqual(local_request.call_count, 0)
         standby.assert_not_called()
 
     def test_workflow_action_uses_gateway(self) -> None:

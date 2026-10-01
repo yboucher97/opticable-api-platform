@@ -214,6 +214,12 @@ export function createApp(): express.Express {
   ensureRuntimeDirs();
 
   const app = express();
+  // The unauthenticated legacy controller executor is retired. Containment is
+  // intrinsic to the service and survives reverse-proxy configuration loss.
+  app.use((req, res, next) => {
+    if (req.method === "GET" && req.path === "/api/health") return next();
+    res.status(403).json({ ok: false, error: "Legacy Omada executor retired" });
+  });
   let activeForegroundRun = false;
   let activeWebhookJobId: string | null = null;
   const queuedWebhookJobIds: string[] = [];

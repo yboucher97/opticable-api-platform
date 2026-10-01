@@ -38,6 +38,8 @@ class ApolloApiClient:
         method = str(method or "GET").upper().strip()
         if method not in {"GET", "POST", "PUT", "PATCH", "DELETE"}:
             raise ValueError(f"Unsupported Apollo method: {method}")
+        if str(method or 'GET').upper().strip() != 'GET':
+            raise ValueError('Runtime provider mutations are forbidden')
         response = httpx.request(
             method,
             self.BASE + path,
