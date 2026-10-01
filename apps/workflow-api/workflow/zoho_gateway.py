@@ -162,6 +162,8 @@ class ZohoGatewayClient:
                 kwargs["json"] = body
             request_headers["Content-Type"] = content_type
 
+        from .automation.provider_usage import record_call
+        record_call(service, method, path)
         response = httpx.request(method, url, **kwargs)
         content_type_response = response.headers.get("content-type", "")
         try:

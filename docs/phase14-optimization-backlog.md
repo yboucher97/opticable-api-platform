@@ -2,6 +2,10 @@
 
 No work below was begun as Phase 14. The immediate next mission should be **Phase13 closure verification after the owner actions**, with a human-issued instruction; optional simplification remains Phase14 and has not begun. Medium/low optimization waits until that remediation is accepted. Every next mission retains real/protected mutations 0 unless the owner separately authorizes an exact canary.
 
+## Bounded Phase13 P1 progress (not formal Phase14)
+
+[The parallel P1 mission](phase13-p1-cleanup.md) addresses known-message receipt polling, operations N+1 reads, hourly conditional lifecycle observation, provider-call budgets, expendable metadata/metrics retention, CLI job locks/timeouts, permanent-error backoff and archived development runtime. Exact provider proof confirms22→9 operations calls and7→1 unchanged receipt calls. Five active SQLite stores are intentionally retained. Existing backup-generation/cache preservation, broader source/ID contracts, operator consolidation and unified alerts remain future work. The historical36-test failure item below was resolved by P0 remediation; preserve meaningful current release gates instead of treating that old count as active failures.
+
 ## P0 — current closure and future real-action qualification
 
 **Technically closable active P0 controls were implemented in Phase13**, as specified in [the final report](phase13-remediation-final-report.md). Universal transport is root-owned and admits only one exact central TestTask; all other business writers forbidden. State-loss-safe Task claims/readback, immutable execution evidence, kill/approval revalidation, fail-closed auth, route/worker/scheduler containment, credential rotation, secret bindings, backup scope, fresh isolated recovery and durable exact-SHA deployment are complete.
@@ -13,7 +17,7 @@ Before future real autonomy, qualify the exact action/eligible nonprotected targ
 ## P1 — important simplification and reliability
 
 1. Maintain the completed duplicate schedule retirement: Cloudflare canonical business observer, three GitHub business schedules disabled/cron removed; GitHub health retained. Consolidate failure/event ownership and monitor unexpected schedule reactivation.
-2. Establish bounded backup and encrypted-cache retention, disk thresholds and alerting; preserve at least two independently verified generations. Add a local interprocess backup lock and explicit Phase 9/10/backup timeouts. Do not delete existing recovery archives as an audit shortcut.
+2. Establish bounded backup and encrypted-cache retention, disk thresholds and alerting; preserve at least two independently verified generations. Local backup flock and explicit Phase9/10/backup timeouts are COMPLETE in bounded P1. Do not delete existing recovery archives as an audit shortcut.
 3. Consolidate source-of-truth contracts: Services/Service_Locations canonical; distinguish legacy technical sheets and Deal recurrence facts; prevent double counting and repair source/namespace uniqueness inconsistencies.
 4. Define provider-neutral ID namespace, collision budget and migration rules. Preserve crosswalk immutability; never regenerate an ID from a replacement provider ID. Define a canonical Lead→Contact relationship instead of relying solely on Description/source_lead_id.
 5. Add consolidated exception ownership, acknowledgement/resolve/reconcile states and suppression for ordinary permanent denials/no-ops. Retain audit transitions. Tie runner/provider/backup health to meaningful human-visible detection.
@@ -38,7 +42,7 @@ WorkDrive document migration, native Forms UI mapping cosmetics, Desk, Gmail, Ca
 
 ## Deprecate / archive / remove later
 
-- Root development controller, queue/status/usage mailers, retired runtime files and installed units after preserving evidence; keep all six masks and absent authorization file meanwhile.
+- Development runtime archive/quarantine COMPLETE in bounded P1; retain evidence and all six masks. Source helper deletion and deeper release simplification remain future review.
 - General blocked CRM upsert/promote/meeting/quote payload helpers and uncentral legacy mutators after replacements are accepted.
 - Duplicate historical release/campaign helpers, phase-specific recovery tools and redundant fixture/test scripts. Retain real recovery tags and exact release evidence.
 - Old staging/recovery SQLite copies and phase registries that duplicate authoritative state; do not discard attempt history needed to prevent replay.

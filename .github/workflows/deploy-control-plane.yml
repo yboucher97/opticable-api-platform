@@ -1,15 +1,15 @@
 name: Deploy Durable Control Plane
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Validate API Platform"]
+    types: [completed]
     branches: [main]
-    paths:
-      - "apps/control-plane-worker/**"
-      - ".github/workflows/deploy-control-plane.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: opticable-control-plane-production
@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
@@ -24,17 +25,30 @@ jobs:
         working-directory: apps/control-plane-worker
 
     steps:
+      - name: Require successful validation for the exact release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = context.payload.workflow_run?.head_sha || context.sha;
+            const main = await github.rest.git.getRef({...context.repo, ref: "heads/main"});
+            if (main.data.object.sha !== sha) throw new Error("Candidate is no longer main");
+            const runs = await github.rest.actions.listWorkflowRuns({...context.repo, workflow_id: "validate-api-platform.yml", head_sha: sha, per_page: 30});
+            if (!runs.data.workflow_runs.some(r => r.conclusion === "success" && r.head_branch === "main"))
+              throw new Error("Exact release has no successful main validation");
+
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Validate Worker
-        run: npm run check
+        run: npm test && npm run check
 
       - name: Verify deployment secrets
         shell: bash

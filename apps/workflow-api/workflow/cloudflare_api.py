@@ -40,6 +40,8 @@ class CloudflareApiClient:
         from .automation.mutation_control import require_technical_admin, safe_read
         safe_read('cloudflare', path)
         require_technical_admin(self, 'cloudflare', method, path, body)
+        from .automation.provider_usage import record_call
+        record_call("cloudflare", method, path)
         response = httpx.request(
             method,
             self.BASE + path,

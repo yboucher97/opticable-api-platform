@@ -120,6 +120,12 @@ def execute_task(client, state, lab, action: Action) -> str:
 
 
 def run_once(*, now: datetime | None = None) -> dict:
+    from workflow.automation.provider_usage import ProviderUsage
+    with ProviderUsage(DB,'phase12-test-runner',runs_per_day=48,soft_budget=16):
+        return _run_once(now=now)
+
+
+def _run_once(*, now: datetime | None = None) -> dict:
     if os.geteuid() != 0: raise PermissionError("Exact Test Lab firewall requires root")
     began = monotonic(); clock = now or datetime.now(timezone.utc)
     fd = lock()

@@ -20,6 +20,36 @@ MARKER = "OPTIBRAIN TEST — PHASE "
 PREFIXES = {"Accounts": "OB-C", "Contacts": "OB-P", "Service_Locations": "OB-S",
             "Deals": "OB-J", "Installations": "OB-WO", "Cases": "OB-T", "Services": "OB-SV",
             "Tasks": "OB-TK"}
+READ_FIELDS = {
+    "Accounts":"id,Account_Name,OptiBrain_Test",
+    "Contacts":"id,Full_Name,Account_Name,OptiBrain_Test",
+    "Service_Locations":"id,Name,Linked_Account,Primary_Contact,OptiBrain_Test",
+    "Deals":"id,Deal_Name,Account_Name,Contact_Name,Description,First_Source,Service_Types,OptiBrain_Test",
+    "Leads":"id,Description,OptiBrain_Test",
+    "Services":"id,Name,Linked_Service_Location,Linked_Deal,Service_Stage,OptiBrain_Installed_On,OptiBrain_Test",
+    "Installations":"id,Name,Linked_Service,Installation_Status,Scheduled_Date,Assigned_To,Completion_Notes",
+    "Cases":"id,Subject,Description,Account_Name,Related_To,Deal_Name,Status,Solution",
+    "Tasks":"id,Subject,Description,What_Id,$se_module,Status,Due_Date",
+}
+
+
+def _batch(client, module, identities):
+    """Exact-ID bounded reads; no cache survives this display request."""
+    ids=sorted(set(identities))
+    if any(not re.fullmatch(r'[0-9]{1,30}',str(i)) for i in ids):
+        raise ValueError('Invalid operational provider identity')
+    found={}
+    for start in range(0,len(ids),100):
+        expected=set(ids[start:start+100])
+        result=client.request('zohoapis','GET',f'/crm/v8/{module}',
+            query={'ids':','.join(sorted(expected)),'fields':READ_FIELDS[module],'per_page':100})
+        data=result.get('data') or {};rows=data.get('data')
+        if (result.get('ok') is not True or not isinstance(rows,list)
+                or (data.get('info') or {}).get('more_records') or len(rows)!=len(expected)
+                or {str(r.get('id')) for r in rows}!=expected):
+            raise ValueError('Exact operational batch incomplete or ambiguous')
+        found.update({str(row['id']):row for row in rows})
+    return found
 
 
 def stable_id(module: str, identity: str) -> str:
@@ -56,14 +86,6 @@ def classify_document(name: str) -> str:
         if token in name:
             return kind
     return "OTHER"
-
-
-def _one(client, module: str, identity: str) -> dict:
-    response = client.request("zohoapis", "GET", f"/crm/v8/{module}/{identity}")
-    rows = (response.get("data") or {}).get("data") or []
-    if response.get("ok") is not True or len(rows) != 1 or str(rows[0].get("id")) != identity:
-        raise ValueError("Exact operational provider read failed")
-    return rows[0]
 
 
 def _ref(row: dict, field: str) -> str:
@@ -128,6 +150,18 @@ def build_operations(client, *, scope: str, projection_path: Path = PROJECTION,
             or not isinstance(projection.get("crosswalk"), dict)):
         raise ValueError("Operations projection invalid")
     crosswalk = projection["crosswalk"]
+    requested={module:set() for module in READ_FIELDS}
+    for record in projection['projects'].values():
+        for module in ('Accounts','Contacts','Service_Locations','Deals'):
+            requested[module].add(record['provider'][module])
+        if record.get('source_lead_id'):requested['Leads'].add(record['source_lead_id'])
+        for module,key in [('Services','services'),('Installations','work_orders'),('Cases','tickets'),('Tasks','tasks')]:
+            requested[module].update(record.get(key,[]))
+    # Never issue an unbounded module scan or read an unregistered Lab target.
+    if any(not ids <= set(registry.get('records',{}).get(module,[])) for module,ids in requested.items()):
+        raise ValueError('Operational batch escaped registered Test ownership')
+    batch_rows={module:_batch(client,module,ids) for module,ids in requested.items() if ids}
+    def one(module,identity):return batch_rows[module][identity]
     def internal(module: str, provider_id: str) -> str:
         matches = [key for key, value in crosswalk.items()
                    if value.get("module") == module and value.get("provider_id") == provider_id
@@ -144,7 +178,7 @@ def build_operations(client, *, scope: str, projection_path: Path = PROJECTION,
         ids = record["provider"]
         if internal("Deals", ids["Deals"]) != project_id:
             raise ValueError("Project identity changed")
-        rows = {module: _one(client, module, ids[module]) for module in
+        rows = {module: one(module, ids[module]) for module in
                 ("Accounts", "Contacts", "Service_Locations", "Deals")}
         if not all(_owned(row, module, registry) for module, row in rows.items()):
             raise ValueError("Operational project escaped Test Lab")
@@ -156,13 +190,13 @@ def build_operations(client, *, scope: str, projection_path: Path = PROJECTION,
             raise ValueError("Operational customer/site relationship changed")
         source_lead_id = record.get("source_lead_id")
         if source_lead_id:
-            lead = _one(client, "Leads", source_lead_id)
+            lead = one("Leads", source_lead_id)
             if (not _owned(lead, "Leads", registry)
                     or source_lead_id not in str(rows["Deals"].get("Description") or "")):
                 raise ValueError("Source Lead relationship changed")
         services = []
         for service_id in record.get("services", []):
-            row = _one(client, "Services", service_id)
+            row = one("Services", service_id)
             if not _owned(row, "Services", registry) or _ref(row, "Linked_Service_Location") != ids["Service_Locations"] or _ref(row, "Linked_Deal") != ids["Deals"]:
                 raise ValueError("Installed Service relationship changed")
             services.append({"id": internal("Services", service_id), "provider_id": service_id,
@@ -171,7 +205,7 @@ def build_operations(client, *, scope: str, projection_path: Path = PROJECTION,
         service_ids = {x["provider_id"] for x in services}
         orders = []
         for installation_id in record.get("work_orders", []):
-            row = _one(client, "Installations", installation_id)
+            row = one("Installations", installation_id)
             if not _owned(row, "Installations", registry) or _ref(row, "Linked_Service") not in service_ids:
                 raise ValueError("Work Order relationship changed")
             status = str(row.get("Installation_Status") or "Requested")
@@ -186,7 +220,7 @@ def build_operations(client, *, scope: str, projection_path: Path = PROJECTION,
                            "action": action, "reason": why, "result": row.get("Completion_Notes")})
         tickets = []
         for case_id in record.get("tickets", []):
-            row = _one(client, "Cases", case_id)
+            row = one("Cases", case_id)
             if not _owned(row, "Cases", registry) or _ref(row, "Account_Name") != ids["Accounts"] or _ref(row, "Deal_Name") != ids["Deals"] or _ref(row, "Related_To") != ids["Contacts"]:
                 raise ValueError("Ticket relationship changed")
             status = str(row.get("Status") or "New")
@@ -197,7 +231,7 @@ def build_operations(client, *, scope: str, projection_path: Path = PROJECTION,
                             "action": action, "reason": why, "solution": row.get("Solution")})
         tasks = []
         for task_id in record.get("tasks", []):
-            row = _one(client, "Tasks", task_id)
+            row = one("Tasks", task_id)
             if not _owned(row, "Tasks", registry) or _ref(row, "What_Id") != ids["Deals"] or row.get("$se_module") != "Deals":
                 raise ValueError("Operational Task route changed")
             tasks.append({"id": internal("Tasks", task_id), "provider_id": task_id,

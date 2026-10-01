@@ -59,6 +59,31 @@ class ZohoSharedCacheTests(unittest.TestCase):
                 ZohoOAuthManager(self.settings).access_token()
         http.assert_not_called()
 
+    def test_independent_concurrent_managers_share_one_refresh(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from threading import Barrier
+        managers = [ZohoOAuthManager(self.settings), ZohoOAuthManager(self.settings)]
+        start = Barrier(2)
+        calls = []
+        class Response:
+            status_code = 200
+            def json(self): return {"access_token": "fresh-token", "expires_in": 3600}
+        class Http:
+            def __init__(self, *args, **kwargs): pass
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+            def post(self, url, data):
+                calls.append(1)
+                time.sleep(0.05)
+                return Response()
+        def refresh(manager):
+            start.wait(timeout=5)
+            return manager.access_token()
+        with patch("workflow.zoho_oauth.httpx.Client", Http), ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(refresh, managers))
+        self.assertEqual(results, ["fresh-token", "fresh-token"])
+        self.assertEqual(calls, [1])
+
     def test_failed_refresh_does_not_overwrite_credentials(self):
         before = self.path.read_bytes()
         class Response:

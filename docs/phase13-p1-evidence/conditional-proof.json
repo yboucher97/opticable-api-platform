@@ -1,0 +1,40 @@
+{
+  "calls": [
+    {
+      "module": "Accounts",
+      "status": 304,
+      "conditional": true,
+      "records": 0
+    },
+    {
+      "module": "Contacts",
+      "status": 304,
+      "conditional": true,
+      "records": 0
+    },
+    {
+      "module": "Deals",
+      "status": 304,
+      "conditional": true,
+      "records": 0
+    },
+    {
+      "module": "Service_Locations",
+      "status": 304,
+      "conditional": true,
+      "records": 0
+    },
+    {
+      "module": "Services",
+      "status": 304,
+      "conditional": true,
+      "records": 0
+    }
+  ],
+  "stats": {
+    "full_reads": 0,
+    "delta_reads": 5,
+    "unchanged": 5
+  },
+  "scope": "lab"
+}

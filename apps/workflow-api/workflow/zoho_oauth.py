@@ -183,16 +183,18 @@ class ZohoOAuthManager:
                     return token
                 timeout = httpx.Timeout(60.0, connect=20.0)
                 with httpx.Client(timeout=timeout) as client:
+                    from .automation.provider_usage import record_call
+                    record_call("oauth_refresh", "POST")
                     response = client.post(self.token_url, data={
                         "grant_type": "refresh_token", "refresh_token": refresh_token,
                         "client_id": self.settings.client_id, "client_secret": self.settings.client_secret})
                 if response.status_code >= 400:
                     raise ValueError(
-                        f"Zoho token refresh failed with status {response.status_code}: {response.text}")
+                        f"Zoho token refresh failed with status {response.status_code}")
                 payload = response.json()
                 token = str(payload.get("access_token") or "").strip()
                 if not token:
-                    raise ValueError(f"Zoho token refresh did not return an access token: {payload}")
+                    raise ValueError("Zoho token refresh did not return an access token")
                 expires_in = int(payload.get("expires_in_sec") or payload.get("expires_in") or 3600)
                 if not 180 <= expires_in <= 86400:
                     raise ValueError("Zoho token lifetime is outside safe bounds")

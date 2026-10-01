@@ -115,6 +115,8 @@ class GithubApiClient:
         from .automation.mutation_control import require_technical_admin, safe_read
         safe_read('github', path)
         require_technical_admin(self, 'github', method, path, body)
+        from .automation.provider_usage import record_call
+        record_call("github", method, path)
         response = httpx.request(
             method,
             self.BASE + path,

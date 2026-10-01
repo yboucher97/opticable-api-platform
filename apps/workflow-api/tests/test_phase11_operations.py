@@ -64,12 +64,13 @@ def fixture():
 
 class FakeCRM:
     def __init__(self, records): self.records = records
-    def request(self, service, method, path):
+    def request(self, service, method, path, **kwargs):
         assert (service, method) == ("zohoapis", "GET")
-        _, _, module, identity = path.strip("/").split("/")
-        row = self.records[module]
-        if row["id"] != identity: raise AssertionError("Unexpected provider identity")
-        return {"ok": True, "data": {"data": [row]}}
+        parts = path.strip("/").split("/")
+        module=parts[2];row=self.records[module]
+        ids=kwargs["query"]["ids"].split(",") if len(parts)==3 else [parts[3]]
+        if ids != [row["id"]]: raise AssertionError("Unexpected provider identity")
+        return {"ok": True, "data": {"data": [row],"info":{"more_records":False}}}
 
 
 class OperationalTests(unittest.TestCase):
@@ -98,7 +99,7 @@ class OperationalTests(unittest.TestCase):
             self.view(records, project, lab)
         self.assertEqual(build_operations(FakeCRM(records), scope="live", now=NOW)["projects"], [])
         lab["records"]["Services"] = []
-        with self.assertRaisesRegex(ValueError, "Installed Service"):
+        with self.assertRaisesRegex(ValueError, "Installed Service|registered Test ownership"):
             self.view(records, project, lab)
 
     def test_crosswalk_keeps_internal_id_if_owned_provider_record_is_replaced(self):

@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 readonly BACKUP_FORMAT_VERSION="1"
-readonly SCRIPT_VERSION="1.0.2"
+readonly SCRIPT_VERSION="1.0.3"
 readonly REPO_DEFAULT="/opt/opticable-api-platform"
 readonly DEST_DEFAULT="/var/backups/optibrain"
 readonly CONFIG_DEFAULT="/etc/optibrain/backup.conf"
@@ -150,6 +150,10 @@ if [[ "${EUID}" -ne 0 && ( "${REPO_DIR}" == "${REPO_DEFAULT}" || "${DEST_DIR}" =
   fail "backup creation must run as root so protected state and secret files remain recoverable"
 fi
 require_safe_destination
+# Same lock for systemd and manual CLI; no unrelated job is blocked. The
+# destination is root-owned0700 in production and the lock is never removed.
+exec 9>"${DEST_DIR}/.backup.lock"
+flock -n 9 || fail "another local backup is already running"
 [[ "${RETENTION_GENERATIONS}" =~ ^[1-9][0-9]*$ ]] || fail "retention must be a positive integer"
 
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
@@ -278,7 +282,7 @@ fi
 if [[ "${OPTIBRAIN_SKIP_LIVE_STATE:-false}" != "true" && "${OPTIBRAIN_SKIP_LIVE_CONFIG:-false}" != "true" ]]; then
   for path in \
     /etc/opticable-workflow-api.env /etc/opticable-password-pdf.env /etc/opticable-omada-site.env \
-    /etc/optibrain /etc/opticable-password-pdf /etc/caddy/Caddyfile /etc/caddy/conf.d \
+    /etc/optibrain /etc/opticable-password-pdf /etc/caddy/Caddyfile /etc/caddy/conf.d /etc/systemd/journald.conf.d \
     /etc/systemd/system/opticable-workflow-api.service \
     /etc/systemd/system/opticable-password-pdf.service \
     /etc/systemd/system/opticable-omada-site.service; do

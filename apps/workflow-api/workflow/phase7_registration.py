@@ -51,6 +51,7 @@ _PINNED_SOURCES = frozenset({
     "workflow/automation/outbound_approval.py",
     "workflow/automation/providers/outbound_mail.py",
     "workflow/automation/mutation_control.py", "workflow/automation/remote_effects.py",
+    "workflow/automation/provider_usage.py",
     "workflow/zoho_gateway.py", "workflow/google_api.py", "workflow/cloudflare_api.py", "workflow/github_api.py",
 })
 
