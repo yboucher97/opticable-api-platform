@@ -299,5 +299,8 @@ def render_customer_lifecycle(view):
             f"<p><b>{s['needs_attention']}</b> need review · {s['renewal_due']} renewals · "
             f"{s['maintenance_due']} maintenance · {s['dormant']} dormant · {s['cross_sell']} cross-sell · "
             f"{s['upsell']} upsell · {s['active_recurring']} recurring · {s['no_action']} no action</p>"
-            + "".join(cards) + "<p>Recurring values are omitted; TEST ONLY Deals never enter real revenue totals.</p></html>")
+            + "".join(cards) + ("<p>TEST ONLY CRM values are synthetic and excluded from real revenue.</p>"
+                                  if view["scope"] == "lab" else
+                                  "<p>Test Lab records are excluded. Unknown contract values are never estimated.</p>")
+            + "</html>")
     return html

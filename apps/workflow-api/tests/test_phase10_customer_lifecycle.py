@@ -106,6 +106,9 @@ class LifecycleTests(unittest.TestCase):
         html = render_customer_lifecycle(view)
         self.assertIn("&lt;script&gt;", html)
         self.assertNotIn("<script>", html)
+        live_html = render_customer_lifecycle({**view, "scope": "live",
+            "rows": [{**row, "test_only": False}]})
+        self.assertNotIn("TEST ONLY", live_html)
 
     def test_maintenance_business_date_across_dst_change(self):
         item = deal(OptiBrain_Maintenance_Due="2026-11-01")
