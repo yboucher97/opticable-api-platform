@@ -22,6 +22,7 @@ from .automation.sales_queue import build_sales_queue, render_sales_queue
 from .automation.customer_lifecycle import build_customer_lifecycle, render_customer_lifecycle
 from .automation.service_inventory import build_recurring_view, render_recurring_view
 from .automation.operations import build_operations, render_operations, render_project
+from .automation.business_autonomy import BusinessJournal, render_dashboard
 from .automation.phase9_intake import IntakeLedger
 from .automation.phase9_form_receipts import FormReceiptLedger
 from .automation.outbound_approval import OutboundApproval, OutboundApprovalLedger
@@ -53,6 +54,13 @@ class IssueOutboundCanaryRequest(BaseModel):
     expires_in_minutes: int = Field(default=30, ge=5, le=60)
 
 
+class IssueBusinessApprovalRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    action_id: str = Field(pattern=r"^[0-9a-f]{32}$")
+    payload_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    expires_in_minutes: int = Field(default=30, ge=5, le=60)
+
+
 def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifier,
                                  client, store, account_id: str, from_address: str,
                                  allowed_origin: str, clock=None, consume_callback=None,
@@ -63,6 +71,7 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
     now = clock or (lambda: datetime.now(timezone.utc))
     ledger = CrmCanaryApprovalLedger(store)
     outbound_ledger = OutboundApprovalLedger(store)
+    business_journal = BusinessJournal(Path(store.db_path).with_name("phase12-autonomy.db"))
 
     def identity(token):
         try:
@@ -97,6 +106,34 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
                             headers={"Cache-Control": "no-store, max-age=0",
                                      "Pragma": "no-cache", "Referrer-Policy": "no-referrer",
                                      "X-Content-Type-Options": "nosniff"})
+
+    for section in ("autonomy", "approvals", "exceptions"):
+        def install_section(name):
+            @app.get(f"/v1/operator/phase12/{name}", tags=["operator-phase12"],
+                     response_class=HTMLResponse)
+            async def phase12_view(cf_access_jwt_assertion: str | None = Header(
+                    default=None, alias="Cf-Access-Jwt-Assertion")):
+                identity(cf_access_jwt_assertion)
+                return HTMLResponse(render_dashboard(business_journal.view(), section=name), headers={
+                    "Cache-Control": "private, no-store, max-age=0", "Pragma": "no-cache",
+                    "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
+                    "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
+                })
+        install_section(section)
+
+    @app.post("/v1/operator/phase12/approvals", tags=["operator-phase12"])
+    async def issue_business_approval(request: Request, proposal: IssueBusinessApprovalRequest,
+            cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
+        person = identity(cf_access_jwt_assertion)
+        guard(request)
+        try:
+            approval = business_journal.issue_by_id(
+                proposal.action_id, proposal.payload_hash, actor=person.actor,
+                expires_at=(now() + timedelta(minutes=proposal.expires_in_minutes)).isoformat(),
+                now=now())
+        except (ValueError, OSError) as exc:
+            raise HTTPException(status_code=409, detail="Exact Test Lab approval unavailable") from exc
+        return result(approval, 201)
 
     @app.get("/v1/operator/phase7/canary/{lead_id}", tags=["operator-phase7"])
     async def preview(lead_id: str, reviewed_language: str | None = None,

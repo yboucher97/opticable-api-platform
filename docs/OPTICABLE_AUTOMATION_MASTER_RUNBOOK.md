@@ -674,3 +674,24 @@ as Test Lab evidence in `ops/phase11/CLOSURE_TEST_LAB.json`. No real Deal was
 onboarded; protected records remain read-only. WorkDrive provider folders,
 generic outside-edit polling, calendar and email routing are deferred. The
 autonomous Codex worker remains disabled.
+
+## Phase 12 business autonomy foundation — 2026-10-01
+
+The Phase 12 action policy is in `workflow/automation/business_autonomy.py`.
+New Phase 12 actions use R0–R3 tiers, exact Test Lab ownership, an explicit
+business-write kill switch (default off), per-action Test flags, a durable
+action/approval journal, fresh state checks, provider readback and no-blind-retry
+reconciliation. Protected and real business records cannot be automatically
+mutated through this boundary. Legacy executors retain their previous guards;
+they are not implicitly migrated. The authenticated operator routes are
+`/v1/operator/phase12/autonomy`, `/approvals`, and `/exceptions`. No approved
+send execution route or Phase 12 timer is installed. The persistent Codex
+development worker remains disabled.
+
+The one-shot Test Lab proof updated a registered Task, reconciled a simulated
+lost acknowledgement from fresh Zoho state, stopped a stale proposal and
+automatically onboarded one new accepted Test Deal to a single canonical
+project/work-order/service chain. Protected Task/Deal and Books dry-runs were
+denied before transport. A controlled Test email send is pending approval only;
+it was not sent. Exact IDs and counts are in `ops/phase12/TEST_LAB_EVIDENCE.json`.
+See `docs/phase12-business-autonomy.md` for policy, recovery rules and limits.

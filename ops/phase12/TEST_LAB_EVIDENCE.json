@@ -1,0 +1,52 @@
+{
+  "books_writes": 0,
+  "deal": {
+    "action_id": "611f3c412b719318be23f5909dc06af8",
+    "deal": "5062683000007943001",
+    "folder": "/var/lib/optibrain/phase11/test-lab/files/OB-C-A75299408744/OB-S-6B29616A514F/OB-J-E785F334807F",
+    "project": "OB-J-E785F334807F",
+    "replay_duplicate_projects": 0,
+    "replay_duplicate_work_orders": 0,
+    "services": [
+      "5062683000007938014"
+    ],
+    "state": "succeeded",
+    "work_orders": [
+      "5062683000007915018"
+    ]
+  },
+  "journal_summary": {
+    "auto_actions_today": 3,
+    "denied": 3,
+    "exceptions": 3,
+    "unresolved": 0,
+    "waiting_approval": 1
+  },
+  "mission": "phase12-manual-test-lab-v1",
+  "policy": {
+    "approval_required": "71be166e8e25e130cdb2e539a5fe9605",
+    "books_denied": "fb13642c7a116f42848ccdc445483a2a",
+    "kill_switch": "deferred",
+    "protected_deal": "denied",
+    "read_with_kill_off": "succeeded",
+    "shadow_records": 2
+  },
+  "protected_baseline": 99,
+  "real_mutations": 0,
+  "real_sends": 0,
+  "recorded_at_utc": "2026-10-01T15:22:24.919284+00:00",
+  "task": {
+    "action_ids": [
+      "5e92f9900648a981be0e01e581305a04",
+      "9a5d66cb7b7a978c0648ceb00d2f3363",
+      "937a00630f18a79505e4575f5bad56d2"
+    ],
+    "auto": "succeeded",
+    "final_provider_status": "Completed",
+    "lost_ack": "succeeded",
+    "protected_shadow": "denied",
+    "replay": "succeeded",
+    "stale": "stale",
+    "task": "5062683000007908026"
+  }
+}
