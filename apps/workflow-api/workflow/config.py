@@ -162,6 +162,7 @@ class ZohoOAuthSettings:
     credentials_path: Path
     state_secret: str
     state_ttl_seconds: int
+    access_cache_path: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -383,5 +384,6 @@ def load_settings() -> AppSettings:
             credentials_path=zoho_credentials_path,
             state_secret=zoho_state_secret,
             state_ttl_seconds=_env_int("ZOHO_OAUTH_STATE_TTL_SECONDS", 900),
+            access_cache_path=output_root / "automation" / "zoho-access-cache.json",
         ),
     )

@@ -19,10 +19,12 @@ class ZohoSharedCacheTests(unittest.TestCase):
         path.write_text(json.dumps({"refresh_token": "fixture-refresh", "access_token": "stale"}))
         path.chmod(0o640)
         self.path = path
+        self.cache = path.parent / "zoho-access-cache.json"
         self.settings = ZohoOAuthSettings(enabled=True, client_id="fixture-id",
             client_secret="fixture-secret", redirect_uri="https://example.invalid/callback",
             accounts_base_url="https://accounts.zoho.com", scopes=("ZohoCRM.modules.READ",),
-            credentials_path=path, state_secret="fixture-state", state_ttl_seconds=600)
+            credentials_path=path, state_secret="fixture-state", state_ttl_seconds=600,
+            access_cache_path=self.cache)
 
     def test_new_process_reuses_persisted_token_without_second_refresh(self):
         calls = []
@@ -41,14 +43,15 @@ class ZohoSharedCacheTests(unittest.TestCase):
             self.assertEqual(ZohoOAuthManager(self.settings).access_token(), "fresh-token")
             self.assertEqual(ZohoOAuthManager(self.settings).access_token(), "fresh-token")
         self.assertEqual(len(calls), 1)
-        saved = json.loads(self.path.read_text())
+        saved = json.loads(self.cache.read_text())
         self.assertGreater(saved["access_token_expires_at"], time.time() + 3400)
-        self.assertEqual(saved["refresh_token"], "fixture-refresh")
+        self.assertEqual(json.loads(self.path.read_text())["refresh_token"], "fixture-refresh")
         self.assertEqual(stat.S_IMODE(self.path.stat().st_mode), 0o640)
-        self.assertEqual(stat.S_IMODE(self.path.with_suffix(".lock").stat().st_mode), 0o600)
+        self.assertEqual(stat.S_IMODE(self.cache.stat().st_mode), 0o600)
+        self.assertEqual(stat.S_IMODE(self.cache.with_suffix(".lock").stat().st_mode), 0o600)
 
     def test_untrusted_refresh_lock_fails_before_network(self):
-        lock = self.path.with_suffix(".lock")
+        lock = self.cache.with_suffix(".lock")
         lock.write_text("")
         lock.chmod(0o666)
         with patch("workflow.zoho_oauth.httpx.Client") as http:
