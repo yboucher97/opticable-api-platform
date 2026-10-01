@@ -142,5 +142,6 @@ class LabDecisionTests(unittest.TestCase):
         rows = {x["id"]: x for x in self.evaluate([incomplete, low, dup_a, dup_b])["rows"]}
         self.assertEqual(rows["222"]["priority"], "MEDIUM")
         self.assertEqual(rows["333"]["priority"], "LOW")
+        self.assertIsNone(rows["333"]["draft"])
         self.assertEqual(rows["444"]["state"], "POSSIBLE DUPLICATE")
         self.assertIsNone(rows["444"]["draft"])

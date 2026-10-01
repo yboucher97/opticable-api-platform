@@ -40,7 +40,8 @@ def _task_for(lead_id, tasks):
 
 def _draft(lead, row, mail, followup):
     """A preview, never an executable send instruction."""
-    if row["duplicate"].startswith("DUPLICATE") or followup in {"WAIT", "AMBIGUOUS"}:
+    if (row["duplicate"].startswith("DUPLICATE") or followup in {"WAIT", "AMBIGUOUS"}
+            or row.get("state") == "LOW PRIORITY"):
         return None
     service = str(lead.get("Service_Types") or "your project").strip()
     scope = str(lead.get("Scope") or "").strip()
