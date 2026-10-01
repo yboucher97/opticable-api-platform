@@ -1,0 +1,22 @@
+[Unit]
+Description=OptiBrain bounded TEST_ONLY business action runner
+After=network-online.target opticable-workflow-api.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+Environment=OPTIBRAIN_PHASE12_CODE_ROOT=/opt/opticable-api-platform
+EnvironmentFile=/etc/optibrain/phase12-runner.env
+ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python /usr/local/lib/optibrain/phase12-run-test-lab.py --once
+TimeoutStartSec=180
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/optibrain/phase8/test-lab /var/lib/optibrain/phase11/test-lab /var/lib/optibrain/phase12 /var/lib/opticable-workflow-api/output/automation /etc/optibrain
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

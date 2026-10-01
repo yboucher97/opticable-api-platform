@@ -46,6 +46,8 @@ _PINNED_SOURCES = frozenset({
     "workflow/automation/crm_write_boundary.py",
     "workflow/automation/test_lab_boundary.py",
     "workflow/automation/business_autonomy.py",
+    "workflow/automation/phase12_followup.py",
+    "workflow/automation/providers/lifecycle.py",
     "workflow/automation/outbound_approval.py",
     "workflow/automation/providers/outbound_mail.py",
 })

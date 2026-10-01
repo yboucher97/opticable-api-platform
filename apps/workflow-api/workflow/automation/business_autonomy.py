@@ -30,13 +30,13 @@ RISK = {
     "crm.task.update": "R2", "crm.project.onboard": "R2",
     "crm.work.schedule": "R2", "crm.work.complete": "R2",
     "crm.service.update": "R2", "crm.lead.update": "R2",
-    "email.draft.create": "R2", "email.send": "R3",
+    "email.draft.create": "R2", "email.send": "R3", "email.bulk.send": "R3",
     "crm.lead.convert": "R3", "crm.merge": "R3",
     "crm.delete": "R3", "crm.bulk": "R3", "books.write": "R3",
     "financial.write": "R3", "provider.config.write": "R3",
     "infrastructure.write": "R3",
 }
-FORBIDDEN = frozenset({"crm.delete", "crm.bulk", "books.write", "financial.write",
+FORBIDDEN = frozenset({"crm.delete", "crm.bulk", "email.bulk.send", "books.write", "financial.write",
                        "provider.config.write", "infrastructure.write"})
 MUTATING = frozenset(x for x, tier in RISK.items() if tier != "R0")
 _ID = re.compile(r"[0-9]{1,30}\Z")
@@ -61,7 +61,8 @@ def digest(value: object) -> str:
 
 def effect_summary(action: "Action") -> dict:
     """Only operator-safe, bounded fields; never journal email bodies or credentials."""
-    permitted = {"Status", "purpose", "service_scope", "recipient", "subject", "body_hash"}
+    permitted = {"Status", "Subject", "Due_Date", "purpose", "service_scope",
+                 "sender", "recipient", "subject", "body_hash"}
     return {key: str(value)[:160] for key, value in action.payload.items()
             if key in permitted and isinstance(value, (str, int, float, bool))}
 
@@ -210,6 +211,20 @@ class BusinessJournal:
               FOREIGN KEY(action_id) REFERENCES actions(action_id));
             CREATE INDEX IF NOT EXISTS idx_phase12_actions_state ON actions(state,updated_at);
             CREATE INDEX IF NOT EXISTS idx_phase12_approvals_state ON approvals(state,expires_at);
+            CREATE TABLE IF NOT EXISTS scheduled (
+              action_id TEXT PRIMARY KEY, envelope_json TEXT NOT NULL,
+              due_at TEXT NOT NULL, source_trigger TEXT NOT NULL,
+              state TEXT NOT NULL, last_decision TEXT, last_run_id TEXT,
+              created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+              FOREIGN KEY(action_id) REFERENCES actions(action_id));
+            CREATE INDEX IF NOT EXISTS idx_phase12_scheduled_due ON scheduled(state,due_at);
+            CREATE TABLE IF NOT EXISTS runner_runs (
+              run_id TEXT PRIMARY KEY, started_at TEXT NOT NULL,
+              completed_at TEXT, status TEXT NOT NULL, evaluated INTEGER NOT NULL DEFAULT 0,
+              auto_executed INTEGER NOT NULL DEFAULT 0, approvals INTEGER NOT NULL DEFAULT 0,
+              exceptions INTEGER NOT NULL DEFAULT 0, denials INTEGER NOT NULL DEFAULT 0,
+              reconciliations INTEGER NOT NULL DEFAULT 0, provider_failures INTEGER NOT NULL DEFAULT 0,
+              writes INTEGER NOT NULL DEFAULT 0, duration_ms INTEGER);
             """)
 
     @contextmanager
@@ -229,6 +244,87 @@ class BusinessJournal:
         with self._db() as db:
             row = db.execute("SELECT * FROM actions WHERE action_id=?", (action_id,)).fetchone()
         return dict(row) if row else None
+
+    def enqueue(self, action: Action, *, due_at: str, source_trigger: str) -> dict:
+        """Incremental indexed queue; a replay key can never acquire a new effect."""
+        due = aware(due_at).isoformat()
+        if not re.fullmatch(r"[A-Za-z0-9._:-]{8,160}", source_trigger):
+            raise ValueError("Invalid source trigger")
+        envelope = {"action_type": action.action_type, "target_module": action.target_module,
+                    "target_id": action.target_id, "request_key": action.request_key,
+                    "payload": action.payload, "expected_version": action.expected_version,
+                    "expected_state": action.expected_state, "confidence": action.confidence,
+                    "provider": action.provider}
+        encoded = json.dumps(envelope, sort_keys=True, separators=(",", ":"))
+        with self._db() as db:
+            db.execute("BEGIN IMMEDIATE")
+            old = db.execute("SELECT * FROM scheduled WHERE action_id=?", (action.action_id,)).fetchone()
+            if old:
+                if old["envelope_json"] != encoded or old["due_at"] != due or old["source_trigger"] != source_trigger:
+                    raise ValueError("Scheduled replay identity changed")
+                return dict(old)
+            # The durable action proposal precedes any provider mutation.
+            now = utc_now()
+            db.execute("INSERT INTO scheduled VALUES(?,?,?,?,?,?,?,?,?)",
+                       (action.action_id, encoded, due, source_trigger, "pending", None, None, now, now))
+        return self.scheduled(action.action_id)
+
+    def scheduled(self, action_id: str) -> dict | None:
+        with self._db() as db:
+            row = db.execute("SELECT * FROM scheduled WHERE action_id=?", (action_id,)).fetchone()
+        return dict(row) if row else None
+
+    def due(self, *, now: datetime, limit: int = 4) -> list[tuple[dict, Action]]:
+        if not 1 <= limit <= 4: raise ValueError("Runner batch exceeds four")
+        instant = aware(now).isoformat()
+        with self._db() as db:
+            rows = [dict(r) for r in db.execute(
+                "SELECT * FROM scheduled WHERE state='pending' AND due_at<=? "
+                "ORDER BY due_at,action_id LIMIT ?", (instant, limit))]
+        return [(row, Action(**json.loads(row["envelope_json"]))) for row in rows]
+
+    def unreconciled(self, *, limit: int = 4) -> list[tuple[dict, Action]]:
+        if not 1 <= limit <= 4: raise ValueError("Reconciliation batch exceeds four")
+        with self._db() as db:
+            rows = [dict(r) for r in db.execute(
+                "SELECT s.* FROM scheduled s JOIN actions a USING(action_id) "
+                "WHERE s.state='exception' AND a.state IN ('attempted','reconcile') "
+                "ORDER BY s.updated_at,s.action_id LIMIT ?", (limit,))]
+        return [(row, Action(**json.loads(row["envelope_json"]))) for row in rows]
+
+    def mark_scheduled(self, action_id: str, *, state: str, decision: str, run_id: str) -> None:
+        if state not in {"pending", "succeeded", "exception", "approval_required", "denied"}:
+            raise ValueError("Invalid scheduled state")
+        with self._db() as db:
+            db.execute("UPDATE scheduled SET state=?,last_decision=?,last_run_id=?,updated_at=? "
+                       "WHERE action_id=?", (state, decision, run_id, utc_now(), action_id))
+
+    def record_run(self, run_id: str, *, started_at: str, status: str, counters: dict,
+                   duration_ms: int | None = None) -> None:
+        if status not in {"running", "success", "failed", "locked"}:
+            raise ValueError("Invalid runner status")
+        names = ("evaluated", "auto_executed", "approvals", "exceptions", "denials",
+                 "reconciliations", "provider_failures", "writes")
+        with self._db() as db:
+            db.execute("INSERT INTO runner_runs VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) "
+                       "ON CONFLICT(run_id) DO UPDATE SET completed_at=excluded.completed_at,"
+                       "status=excluded.status,evaluated=excluded.evaluated,"
+                       "auto_executed=excluded.auto_executed,approvals=excluded.approvals,"
+                       "exceptions=excluded.exceptions,denials=excluded.denials,"
+                       "reconciliations=excluded.reconciliations,provider_failures=excluded.provider_failures,"
+                       "writes=excluded.writes,duration_ms=excluded.duration_ms",
+                       (run_id, started_at, utc_now() if status != "running" else None, status,
+                        *(int(counters.get(k, 0)) for k in names), duration_ms))
+
+    def annotate(self, action_id: str, values: dict) -> None:
+        safe = {k: str(v)[:160] for k, v in values.items() if k in {"run_id", "source_trigger", "reconciliation"}}
+        with self._db() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute("SELECT detail_json FROM actions WHERE action_id=?", (action_id,)).fetchone()
+            if not row: raise ValueError("Action absent")
+            detail = {**json.loads(row["detail_json"]), **safe}
+            db.execute("UPDATE actions SET detail_json=? WHERE action_id=?",
+                       (json.dumps(detail, separators=(",", ":")), action_id))
 
     def prepare(self, action: Action, decision: Decision) -> dict:
         now = utc_now()
@@ -352,6 +448,10 @@ class BusinessJournal:
             approvals = [dict(r) for r in db.execute("SELECT * FROM approvals ORDER BY issued_at DESC LIMIT ?", (safe,))]
             totals = {r["state"]: r["n"] for r in db.execute(
                 "SELECT state,COUNT(*) AS n FROM actions GROUP BY state")}
+            runner = db.execute("SELECT * FROM runner_runs ORDER BY started_at DESC LIMIT 1").fetchone()
+            last_good = db.execute("SELECT completed_at FROM runner_runs WHERE status='success' "
+                                   "ORDER BY completed_at DESC LIMIT 1").fetchone()
+            pending = db.execute("SELECT COUNT(*) AS n FROM scheduled WHERE state='pending'").fetchone()["n"]
         today = datetime.now(TORONTO).date()
         # SQLite string date is UTC; filter the bounded local-day interval precisely.
         start = datetime.combine(today, datetime.min.time(), tzinfo=TORONTO).astimezone(timezone.utc).isoformat()
@@ -363,7 +463,10 @@ class BusinessJournal:
                    "exceptions": sum(totals.get(x, 0) for x in ("reconcile", "stale", "failed", "deferred")),
                    "denied": totals.get("denied", 0),
                    "unresolved": totals.get("reconcile", 0) + totals.get("failed", 0)}
-        return {"summary": summary, "actions": actions, "approvals": approvals}
+        return {"summary": summary, "actions": actions, "approvals": approvals,
+                "runner": dict(runner) if runner else None,
+                "last_successful_run": last_good["completed_at"] if last_good else None,
+                "scheduled_pending": pending}
 
 
 def dispatch(action: Action, *, ownership: Ownership, policy: Policy,
@@ -489,9 +592,16 @@ def render_dashboard(view: dict, *, section: str) -> str:
                      f"<small>Action {h(x['action_id'])} · updated {h(local_time(x['updated_at']))}"
                      f" · payload SHA-256 {h(x['payload_hash'][:12])}</small></article>")
     counts = " · ".join(f"{h(k.replace('_',' ').title())}: {h(v)}" for k, v in summary.items())
+    runner = view.get("runner") or {}
+    runner_line = (f"Last run {h(local_time(runner.get('started_at')))} · {h(runner.get('status'))}"
+                   f" · evaluated {h(runner.get('evaluated'))} · writes {h(runner.get('writes'))}"
+                   f" · exceptions {h(runner.get('exceptions'))} · duration {h(runner.get('duration_ms'))} ms"
+                   if runner else "No scheduled runner has run yet")
     return ("<!doctype html><html lang='en'><meta charset='utf-8'><title>OptiBrain autonomy</title>"
             "<style>body{font:16px/1.45 system-ui;max-width:1100px;margin:2rem auto;padding:0 1rem;color:#182536}"
             "article{border:1px solid #ccd;border-radius:.5rem;padding:1rem;margin:1rem 0}</style>"
-            f"<h1>{h(title)}</h1><p>{counts}</p><p>Real CRM writes and customer sends are disabled."
+            f"<h1>{h(title)}</h1><p>{counts}</p><p>{runner_line}</p>"
+            f"<p>Pending scheduled Test actions: {h(view.get('scheduled_pending', 0))}; last successful run: {h(local_time(view.get('last_successful_run')))}</p>"
+            "<p>Real CRM writes and customer sends are disabled."
             " Test Lab decisions are journaled; no email content or credentials appear here.</p>"
             + "".join(cards) + "</html>")

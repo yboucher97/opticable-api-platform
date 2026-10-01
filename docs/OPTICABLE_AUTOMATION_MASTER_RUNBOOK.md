@@ -695,3 +695,18 @@ project/work-order/service chain. Protected Task/Deal and Books dry-runs were
 denied before transport. A controlled Test email send is pending approval only;
 it was not sent. Exact IDs and counts are in `ops/phase12/TEST_LAB_EVIDENCE.json`.
 See `docs/phase12-business-autonomy.md` for policy, recovery rules and limits.
+
+## Phase 12 scheduled Test Lab closure — 2026-10-01
+
+The formerly blocked `lifecycle.crm_create_followup_task` handler is now
+proposal-only. It reads the exact Lead, enforces protected/Test Lab identity,
+and stores one due-window action. The fixed `opticable-phase12-test-runner.timer`
+runs every 30 minutes, selecting at most four indexed due proposals and making
+at most two TEST_ONLY CRM write attempts. It uses a root-owned lock, three-minute
+runtime limit, durable action/run journals, exact provider readback and
+no-blind-retry reconciliation. No real CRM or customer-send flag is enabled; no
+Codex development worker or AI model is invoked by this timer. The operator
+autonomy view includes runner status and counters. A single exact controlled
+Test Mail send may be executed only with the manual mission's one-use R3
+approval and Sent-folder verification. See `docs/phase12-closure.md` for
+policy, ownership, approved-send distinction and remaining legacy migrations.

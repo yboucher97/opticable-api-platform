@@ -11,6 +11,9 @@ from ...zoho_gateway import ZohoGatewayClient
 from ..engine import AutomationEngine
 from ..models import WorkflowStep
 from ..store import AutomationStore
+from ..business_autonomy import BusinessJournal
+from ..phase12_followup import propose_legacy_followup
+from pathlib import Path
 
 
 def _records(response: dict[str, Any]) -> list[dict[str, Any]]:
@@ -186,7 +189,12 @@ def register_lifecycle_actions(
         blocked_legacy()
 
     def create_followup_task(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
-        blocked_legacy()
+        if set(step.inputs) != {"lead_id"}:
+            raise ValueError("Follow-up Task proposal requires only exact lead_id")
+        # This legacy action is now proposal-only. The bounded Phase 12 runner
+        # is the sole normal path to the provider write after central policy.
+        journal = BusinessJournal(Path(store.db_path).with_name("phase12-autonomy.db"))
+        return propose_legacy_followup(client, journal, str(step.inputs["lead_id"]))
 
     engine.register_action("lifecycle.normalize_lead", normalize_action)
     engine.register_action("lifecycle.crm_upsert_lead", upsert_lead)
