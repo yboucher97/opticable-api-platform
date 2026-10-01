@@ -1,0 +1,54 @@
+{
+  "cleanup": "Retain for controlled Phase 11\u201312 regression; exclude from live metrics.",
+  "document_files": [
+    {
+      "category": "QUOTE",
+      "name": "2026-10-01_OB-J-B0F930C2378E_Quote_v1.txt",
+      "sha256": "72e94f91b94727fad2c7f28d12356c8eaf228595cac16a984cfa0b1a5c2c5ee7"
+    },
+    {
+      "category": "SERVICE REPORT",
+      "name": "2026-10-01_OB-J-B0F930C2378E_ServiceReport.txt",
+      "sha256": "4a2b925ab3eecb7c0de3071938c69a60a6c6a8030207c286880c882c8e172c6c"
+    }
+  ],
+  "event_repair_snapshot": "/var/lib/optibrain/phase11/test-lab/registry-before-event-replay-repair.json",
+  "expected_current_action": "Complete project document task",
+  "folder": {
+    "path": "/var/lib/optibrain/phase11/test-lab/files/OB-C-A75299408744/OB-S-6B29616A514F/OB-J-B0F930C2378E",
+    "provider": "local"
+  },
+  "mission": "Phase 11 Mission 1",
+  "operational_event_count": 16,
+  "project_id": "OB-J-B0F930C2378E",
+  "protected_baselines": {
+    "cases": "/var/lib/optibrain/phase11/cases-protected-baseline.json",
+    "crm_99": "/var/lib/optibrain/phase8/test-lab/PROTECTED_PREEXISTING_RECORDS.json",
+    "service_site": "/var/lib/optibrain/phase10/service-protected-baseline.json"
+  },
+  "provider": {
+    "Accounts": "5062683000007928001",
+    "Contacts": "5062683000007929001",
+    "Deals": "5062683000007913007",
+    "Service_Locations": "5062683000007933004"
+  },
+  "provider_mutation_count": 16,
+  "root_evidence": "/var/lib/optibrain/phase11/test-lab/registry.json",
+  "schema": 1,
+  "services": [
+    "5062683000007933006"
+  ],
+  "source_lead_id": "5062683000007898003",
+  "status": "COMPLETED",
+  "tasks": [
+    "5062683000007908026"
+  ],
+  "test_only": true,
+  "tickets": [
+    "5062683000007909008"
+  ],
+  "work_orders": [
+    "5062683000007908023",
+    "5062683000007938011"
+  ]
+}

@@ -21,6 +21,7 @@ from .automation.sales_operator_view import (
 from .automation.sales_queue import build_sales_queue, render_sales_queue
 from .automation.customer_lifecycle import build_customer_lifecycle, render_customer_lifecycle
 from .automation.service_inventory import build_recurring_view, render_recurring_view
+from .automation.operations import build_operations, render_operations, render_project
 from .automation.phase9_intake import IntakeLedger
 from .automation.phase9_form_receipts import FormReceiptLedger
 from .automation.outbound_approval import OutboundApproval, OutboundApprovalLedger
@@ -175,6 +176,43 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         except ZohoGatewayError as exc:
             raise HTTPException(status_code=503, detail="Fresh provider evidence unavailable") from exc
         return HTMLResponse(render_recurring_view(view), headers={
+            "Cache-Control": "private, no-store, max-age=0", "Pragma": "no-cache",
+            "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
+        })
+
+    @app.get("/v1/operator/phase11/operations", tags=["operator-phase11"],
+             response_class=HTMLResponse)
+    async def operations(scope: str = "live",
+            cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
+        identity(cf_access_jwt_assertion)
+        try:
+            view = build_operations(client, scope=scope, now=now())
+        except (ValueError, OSError) as exc:
+            raise HTTPException(status_code=409, detail="Operational evidence needs review") from exc
+        except ZohoGatewayError as exc:
+            raise HTTPException(status_code=503, detail="Fresh provider evidence unavailable") from exc
+        return HTMLResponse(render_operations(view), headers={
+            "Cache-Control": "private, no-store, max-age=0", "Pragma": "no-cache",
+            "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
+        })
+
+    @app.get("/v1/operator/phase11/project/{project_id}", tags=["operator-phase11"],
+             response_class=HTMLResponse)
+    async def project_trace(project_id: str,
+            cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
+        identity(cf_access_jwt_assertion)
+        try:
+            view = build_operations(client, scope="lab", now=now())
+        except (ValueError, OSError) as exc:
+            raise HTTPException(status_code=409, detail="Operational evidence needs review") from exc
+        except ZohoGatewayError as exc:
+            raise HTTPException(status_code=503, detail="Fresh provider evidence unavailable") from exc
+        found = next((row for row in view["projects"] if row["id"] == project_id), None)
+        if found is None:
+            raise HTTPException(status_code=404, detail="Project not found")
+        return HTMLResponse(render_project(found), headers={
             "Cache-Control": "private, no-store, max-age=0", "Pragma": "no-cache",
             "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
             "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",

@@ -638,3 +638,28 @@ state into a local replay-safe event ledger; it does not invoke Codex or write
 to Zoho. Native Zoho Account/Contact `All` defaults still contain Lab records;
 do not use their unfiltered counts as business metrics. See
 `docs/phase10-lifecycle-foundation.md` for the service model and evidence rules.
+
+## Phase 11 operations foundation — 2026-10-01
+
+The manually initiated Phase 11 mission reused Zoho Account, Contact, Deal,
+Service Location and Service identity. CRM `Projects` is not supported by the
+CRM API, so a small root-owned Test Lab crosswalk persists `OB-*` customer,
+contact, site, project, work-order, ticket, service and task references. The
+authenticated `/v1/operator/phase11/operations?scope=lab` and project detail
+route read owned CRM records fresh and show one next action. Live scope does
+not include Test Lab data or invent projects from sparse historical records.
+
+One TEST_ONLY source-attributed warehouse chain progressed through a camera
+installation, completed work order, installed Service, support Case, repair
+work order and resolution. A Deal-linked document Task now drives the next
+action. The six-category local folder tree and two synthetic text documents
+are deterministic and hash-checked; WorkDrive folder creation is deferred
+because the bounded team lookup found no isolated Lab destination. The root
+Test Lab journal and immutable provider IDs are under
+`/var/lib/optibrain/phase11/test-lab/`; the repository registry is
+`ops/phase11/TEST_LAB_REGISTRY.json`. The Cases protected snapshot was taken
+before its first write. Original 99 protected records and 12 Service/12 Site
+snapshots remain read-only. A terminal-event replay defect was fixed and its
+pre-repair ledger preserved; subsequent replays added zero events. No Codex
+worker or new timer was installed. See `docs/phase11-operations-foundation.md`
+for model, evidence and limitations.

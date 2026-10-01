@@ -19,7 +19,8 @@ BASELINE = ROOT / "PROTECTED_PREEXISTING_RECORDS.json"
 REGISTRY = ROOT / "registry.json"
 SERVICE_BASELINE = Path("/var/lib/optibrain/phase10/service-protected-baseline.json")
 SERVICE_MODULES = frozenset({"Services", "Service_Locations", "Installations"})
-MODULES = frozenset({"Leads", "Contacts", "Accounts", "Deals", "Tasks", "Events", "Calls", "Notes"}) | SERVICE_MODULES
+CASE_BASELINE = Path("/var/lib/optibrain/phase11/cases-protected-baseline.json")
+MODULES = frozenset({"Leads", "Contacts", "Accounts", "Deals", "Tasks", "Events", "Calls", "Notes", "Cases"}) | SERVICE_MODULES
 MARKER = "OPTIBRAIN TEST — PHASE "
 
 
@@ -59,11 +60,18 @@ def validate_lab_request(method, path, body, headers):
                 or len({field["field_label"] for field in fields}) != len(fields)):
             raise ValueError("Schema create is outside reviewed Test Lab fields")
         return "Leads", None
-    match = re.fullmatch(r"/crm/v8/(Leads|Contacts|Accounts|Deals|Tasks|Events|Calls|Notes|Services|Service_Locations|Installations)(?:/([0-9]{1,30}))?", path)
+    match = re.fullmatch(r"/crm/v8/(Leads|Contacts|Accounts|Deals|Tasks|Events|Calls|Notes|Services|Service_Locations|Installations|Cases)(?:/([0-9]{1,30}))?", path)
     if not match:
         raise ValueError("Test Lab only permits named CRM record modules")
     module, target = match.groups()
-    if module in SERVICE_MODULES:
+    if module == "Cases":
+        case_baseline = _read(CASE_BASELINE)
+        if (case_baseline.get("schema") != 1 or not isinstance(case_baseline.get("ids"), list)
+                or len(case_baseline["ids"]) != len(set(case_baseline["ids"]))
+                or registry.get("case_baseline_sha256") != hashlib.sha256(CASE_BASELINE.read_bytes()).hexdigest()):
+            raise ValueError("Protected Case baseline changed or incomplete")
+        protected = set(case_baseline["ids"])
+    elif module in SERVICE_MODULES:
         ids = service_baseline["modules"].get(module)
         if not isinstance(ids, list) or len(ids) != len(set(ids)):
             raise ValueError(f"Protected {module} baseline incomplete")
@@ -101,9 +109,17 @@ def validate_lab_request(method, path, body, headers):
     if method == "POST":
         if module not in SERVICE_MODULES and not str(row.get("Description") or "").startswith(MARKER):
             raise ValueError("Test Lab create requires Description marker")
-        if module in SERVICE_MODULES and (row.get("OptiBrain_Test") is not True
+        if module in {"Services", "Service_Locations"} and (row.get("OptiBrain_Test") is not True
                                          or not str(row.get("Name") or "").startswith(MARKER)):
             raise ValueError("Test Lab service create requires visible name and test flag")
+        if module == "Installations" and (not str(row.get("Name") or "").startswith(MARKER)
+                                          or not isinstance(row.get("Linked_Service"), dict)):
+            raise ValueError("Test Lab Installation needs visible marker and owned Service")
+        if module == "Cases" and (not str(row.get("Subject") or "").startswith(MARKER)
+                                  or not str(row.get("Description") or "").startswith(MARKER)
+                                  or not all(isinstance(row.get(k), dict) for k in
+                                             ("Account_Name", "Related_To", "Deal_Name"))):
+            raise ValueError("Test Lab Case needs visible marker and owned relationships")
         if module == "Services" and not isinstance(row.get("Linked_Service_Location"), dict):
             raise ValueError("Test Lab Service requires an owned Service Location")
         if module == "Service_Locations" and not isinstance(row.get("Linked_Account"), dict):
@@ -113,6 +129,10 @@ def validate_lab_request(method, path, body, headers):
             raise ValueError("Test Lab create requires visible name marker")
     elif row.get("id") != target:
         raise ValueError("Test Lab update ID mismatch")
+    if module == "Cases" and "Subject" in row and not str(row["Subject"]).startswith(MARKER):
+        raise ValueError("Test Lab Case marker cannot be removed")
+    if module == "Installations" and "Name" in row and not str(row["Name"]).startswith(MARKER):
+        raise ValueError("Test Lab Installation marker cannot be removed")
     if row.get("OptiBrain_Test") is False or row.get("Description") is not None and not str(row["Description"]).startswith(MARKER):
         raise ValueError("Test Lab marker cannot be removed")
     if "Email" in row and row["Email"]:
@@ -123,13 +143,16 @@ def validate_lab_request(method, path, body, headers):
             raise ValueError("Test Lab email is not synthetic or verified operator-controlled")
     if module == "Tasks" and not str(row.get("Subject") or "").startswith(MARKER) and method == "POST":
         raise ValueError("Test Lab Task subject needs visible marker")
-    for field, related_module in (("What_Id", "Leads"), ("Account_Name", "Accounts"),
+    for field, related_module in (("What_Id", "Deals" if module == "Tasks" and row.get("$se_module") == "Deals" else "Leads"),
+                                  ("Account_Name", "Accounts"),
                                   ("Contact_Name", "Contacts"),
                                   ("Linked_Account", "Accounts"),
                                   ("Primary_Contact", "Contacts"),
                                   ("Linked_Deal", "Deals"),
                                   ("Linked_Service_Location", "Service_Locations"),
-                                  ("Linked_Service", "Services")):
+                                  ("Linked_Service", "Services"),
+                                  ("Deal_Name", "Deals"),
+                                  ("Related_To", "Contacts")):
         value = row.get(field)
         if not isinstance(value, dict):
             continue
@@ -139,8 +162,10 @@ def validate_lab_request(method, path, body, headers):
         if not _identity(related_id) or related_id in related_protected or related_id not in set((registry.get("records") or {}).get(related_module) or []):
             raise ValueError(f"{field} points outside Test Lab")
     if module == "Tasks" and method == "POST":
-        if row.get("$se_module") != "Leads" or not isinstance(row.get("What_Id"), dict):
-            raise ValueError("Test Lab Task must attach to an owned Lead")
+        if row.get("$se_module") not in {"Leads", "Deals"} or not isinstance(row.get("What_Id"), dict):
+            raise ValueError("Test Lab Task must attach to an owned Lead or Deal")
+        if row["$se_module"] == "Deals" and not str(row.get("Description") or "").startswith(MARKER):
+            raise ValueError("Project Task needs visible Test Lab routing evidence")
     return module, target
 
 
