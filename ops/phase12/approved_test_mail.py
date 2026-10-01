@@ -93,7 +93,7 @@ def main():
         subject = f"OPTIBRAIN TEST — PHASE 12 — Approval boundary {token}"
         body = (f"OPTIBRAIN TEST ONLY. Controlled operator-to-operator message {token}.\n"
                 "This verifies an exact, single-use human-approved business action.\n"
-                "No customer request or real project is represented.\n")
+                "No customer request or real project is represented.")
         value = {"token": token, "subject": subject, "body": body,
                  "body_hash": sha256(body.encode()).hexdigest(),
                  "lead_version": current["Modified_Time"], "state": "prepared",
