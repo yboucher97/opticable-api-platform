@@ -13,19 +13,39 @@
       "bytes": 174572
     },
     {
+      "name": "audit-pr.json",
+      "sha256": "8a55d9089aa0a06bef5b15a13f34264124c8f3ef141b965de6d23e4354d035f8",
+      "bytes": 249
+    },
+    {
       "name": "backup-after-summary.log",
       "sha256": "a04884626777cc2ffbe5984c7445c6edac4f4904d17ef683c97b602ec2218874",
       "bytes": 3289
     },
     {
-      "name": "backup-summary.json",
+      "name": "backup-final-controls.log",
+      "sha256": "5e9e609cedd91dd1ea45b336c8678fb46dfd446f6542ac9c59782c3c2c275239",
+      "bytes": 3649
+    },
+    {
+      "name": "backup-final.log",
+      "sha256": "dd4fdba338b576f5bdbe43aec06fa1f195134419a27c37c8cac7b9457adba165",
+      "bytes": 3289
+    },
+    {
+      "name": "backup-first-corrected-summary.json",
       "sha256": "5161d50a4f61b69577ac79d693ff9f1a7d3f68309699c118e18c0381516c90c9",
       "bytes": 3288
     },
     {
+      "name": "backup-summary.json",
+      "sha256": "065bc83461c80b1cddc4256ee759aa1d37de23f1e2f94429e2365d3aca0aa610",
+      "bytes": 3648
+    },
+    {
       "name": "backup_audit.py",
-      "sha256": "32fd0c77fe49bc5940b8fe50dcd4903c68f03e79f49fc868646d31cf81cc4274",
-      "bytes": 1840
+      "sha256": "a660dc55057fae026d5888c487d3c9fe04845a41b2b33e8670937bf50fce09e5",
+      "bytes": 2808
     },
     {
       "name": "changes.json",
@@ -38,6 +58,16 @@
       "bytes": 847
     },
     {
+      "name": "closure-state.json",
+      "sha256": "83d9d2b11eec2a39b6ce5f4f2e2cdfbc58b6844cb38bae43af77fae02be97f5c",
+      "bytes": 4097
+    },
+    {
+      "name": "closure-state.py",
+      "sha256": "36c5dbb3ec65d01e47606e133fb7b074f329392881c84575933bdbf0d857b0fa",
+      "bytes": 2754
+    },
+    {
       "name": "cloudflare-source-summary.json",
       "sha256": "0a78a00c2217c4ef8567dd87360ca7216c47078fac7d482402b59260b3150f4c",
       "bytes": 2953
@@ -46,6 +76,11 @@
       "name": "cloudflare_source_audit.py",
       "sha256": "d3e65791cded60ed49dfcaee8ad8c9c0379d8db47da48f160883a94dcb935f01",
       "bytes": 1605
+    },
+    {
+      "name": "completion.json",
+      "sha256": "a891d42f91dc251b546cf9134ed6f42adfe7290252562895e0937588fecbf69b",
+      "bytes": 7929
     },
     {
       "name": "connector-contained-source.js",
@@ -233,6 +268,11 @@
       "bytes": 8154
     },
     {
+      "name": "package-recovery.py",
+      "sha256": "ffa7bacd18ce5a874d2f870dc2eee183200df18d3ec938087ebae56e2019c263",
+      "bytes": 3692
+    },
+    {
       "name": "protected-final-audit.py",
       "sha256": "ab7e7615be5c5f30ce4c18a97e9db7ac9c10116a55aca6bfbc20bf31ccd5ba11",
       "bytes": 1419
@@ -324,8 +364,13 @@
     },
     {
       "name": "publish-sanitized-evidence.py",
-      "sha256": "88fa56d77edb3f4492d81963bf596bfb14cd8bed9e11b062d7e9d1eba03b284d",
-      "bytes": 5652
+      "sha256": "f9eca6568b8d6e996cb827693eabbab51ba6ff948c96b1d8272aa9a121259d21",
+      "bytes": 5899
+    },
+    {
+      "name": "push-audit.py",
+      "sha256": "f1bbdcb9a22ee292d52364b1fe70cb6ce196ca10eebc4694a3633c5763f019af",
+      "bytes": 2877
     },
     {
       "name": "r2-after.log",
@@ -333,8 +378,18 @@
       "bytes": 300
     },
     {
-      "name": "r2-readback.json",
+      "name": "r2-final.log",
+      "sha256": "12941c426140b6980f083b7e9c1480f199611fe2786142b7b6ff961d6f69a2b2",
+      "bytes": 300
+    },
+    {
+      "name": "r2-first-corrected-readback.json",
       "sha256": "f4dd6c33ca2b7230bee38b8250fa17f2ff206553b5b4acb7fd1b246ef82b5f17",
+      "bytes": 313
+    },
+    {
+      "name": "r2-readback.json",
+      "sha256": "56f1a72522e1bfe842b3932397f2c46fc85631973005fce1668176919d5e017c",
       "bytes": 313
     },
     {

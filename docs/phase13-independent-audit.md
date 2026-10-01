@@ -9,7 +9,7 @@ Manual mission, 2026-10-01, America/Toronto. The question has a qualified answer
 | Production SHA | ee7629f7e7954e1ee782c6481d4aaef37349d10f |
 | Local main / remote main | Same SHA; remote checked directly, not just origin tracking ref |
 | API | 1.11.0; local/public health readable |
-| Persistent Codex development worker | OFF; six disabled/inactive units; absent root authorization-file condition added |
+| Persistent Codex development worker | OFF; six inactive units (five disabled, usage service static); absent root authorization-file condition added |
 | Real automatic writes | OptiBrain-owned scheduled real mutators OFF/contained. **ISSUE for a universal provider guarantee:** native Forms CRM ingestion remains an independent producer whose current configuration is not fully proven |
 | Protected mutations during audit | 0; 123 protected provider IDs resolved and no Modified_Time changed during independent start/end reads |
 | Real customer sends / Books writes during audit | 0 / 0 |
@@ -83,7 +83,7 @@ Native CRM views can show Test records; sampled OptiBrain live projections did n
 
 ## Deployed component inventory
 
-The complete component/source-of-truth map is [the blueprint](OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md). API/PDF/Omada are active localhost services behind Caddy; Python3.12.3, Node22.23.3. Root environment files and OAuth state are private. Five application timers plus Cloudflare/GitHub schedulers are active; development dispatcher/status/usage units are retired. Five workflow SQLite stores plus three historical/staging DB snapshots were recovered. Root registries/journals/documents are safety state, not caches. Integrations include CRM/Mail/Sign/Books reads, connector KV, Cloudflare queue/workflow, GitHub App, legacy WorkDrive/Omada and configured Google/admin/AI/external-provider clients. Optional integrations were not expanded.
+The complete component/source-of-truth map is [the blueprint](OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md). API/PDF/Omada are active localhost services behind Caddy; Python3.12.3, Node22.23.3. Root environment files and OAuth state are private. Five application timers, one Cloudflare scheduler and four GitHub cron workflows are active; development dispatcher/status/usage units are retired. Five workflow SQLite stores plus three historical/staging DB snapshots were recovered. Root registries/journals/documents are safety state, not caches. Integrations include CRM/Mail/Sign/Books reads, connector KV, Cloudflare queue/workflow, GitHub App, legacy WorkDrive/Omada and configured Google/admin/AI/external-provider clients. Optional integrations were not expanded.
 
 Operator routes span Phase8 sales queue/detail, Phase9 source trace/receipts, Phase10 lifecycle/recurring, Phase11 operations/project, Phase12 autonomy/approvals/exceptions and older canary review/consume paths. Twenty-four anonymous/forged GET cases were denied. There is no general Phase12 send execution route. Root authorization and the policy matrix remain separate from API availability.
 
@@ -115,7 +115,7 @@ Automatic-dispatch kill checks passed and reconciliation/reads/backups remain in
 
 ## Recovery and disaster tabletop
 
-Local backup: **PASS after scope fix**. Off-host delivery/ciphertext integrity: **PASS**. Fresh off-host decryption: **ISSUE / UNPROVEN**. Isolated plaintext restore: **PASS**; eight databases, all checked hashes, source/config metadata. Master runbook: **critical correction supplied; full host recovery remains unproven**. Nominal daily RPO; RTO unknown, likely manual hours plus provider/key reauthorization, not a measured guarantee.
+Local backup: **PASS after scope fix**. Off-host delivery/ciphertext integrity: **PASS**. Fresh off-host decryption: **ISSUE / UNPROVEN**. Isolated plaintext restore: **PASS**; eight databases, all checked hashes, source/config metadata. Master runbook: **critical correction supplied; full host recovery remains unproven**. Nominal daily RPO; RTO unknown, likely manual hours plus provider/key reauthorization, not a measured guarantee. Final local generation20261001T185502Z restored1,279 files,1,460 metadata entries and8 DBs. All five sampled final safety-control files exactly match archived contents; R2 ciphertext SHA256 2c84855727e40371a6563a72384db7cac3b52c25092b7f119688c3c3dbba9404 independently matched. See [closure evidence](phase13-evidence/completion.json).
 
 | Scenario | Detection / containment | Recovery / source of truth | Maximum likely loss / uncertainty |
 |---|---|---|---|

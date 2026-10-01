@@ -8,6 +8,8 @@ The table defines **23 consequential executor families** across application Pyth
 
 Several families contain multiple concrete call sites. Central proposal generation does not make all related legacy executors central. A transport fence is separate from central policy. The classifications below apply to the actual executor, not to its name or risk-tier enum.
 
+For a non-overlapping primary classification of this table: CENTRALIZED3; SAFE LEGACY GUARD9; MUST MIGRATE8; UNUSED/DEPRECATE2; FORBIDDEN1. Some rows also describe a forbidden sub-capability or a disabled legacy caller. These counts do not include the independent native Forms producer and do not imply authority to activate a legacy family.
+
 | # | Executor / module / action / caller | Phase 12 coverage / classification | Lower protection | Idempotency / reconciliation | Current real authority |
 |---|---|---|---|---|---|
 | 1 | crm_leads.write_once; Leads normalization PUT and internal Tasks POST; enabled CRM reconcile workflow | SAFE LEGACY GUARD; migrate before real autonomy | Exact ContextVar call grant, policy flag, field allowlist, version header | Core step evidence/readback; deterministic Task subject | OFF; OPTIBRAIN_CRM_LEAD_WRITES absent |

@@ -17,7 +17,8 @@ America/Toronto. Phase13 audit is COMPLETE WITH REQUIRED REMEDIATION, readiness 
 No Phase14 or real canary was started.
 
 The persistent development worker is OFF. Its dispatch/status/usage services and
-timers are disabled/inactive and now require the absent root-controlled file
+timers are inactive; five units are disabled and usage.service is static. All six
+now require the absent root-controlled file
 /etc/optibrain/authorize-persistent-codex-development. Do not create that file,
 enable those units or revive their old controller during recovery. Manual Codex
 app-server/CLI sessions are separate from the retired development dispatcher.

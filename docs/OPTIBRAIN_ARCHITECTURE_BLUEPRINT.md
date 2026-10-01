@@ -75,7 +75,7 @@ Solid edges describe reads, local evidence writes, or existing authorized Test w
 | Public website | Cloudflare opticable-website; ai.opticable.ca and main-site forms | ACTIVE public UI; connector-backed CRM ingestion currently suspended |
 | Installed runner | /usr/local/lib/optibrain/phase12-run-test-lab.py | ACTIVE scheduled Test-only Task execution; root, bounded, flock, provider ownership revalidation |
 | Installed backup helpers | /usr/local/lib/optibrain-backup | ACTIVE backup 1.0.2 after Phase 13 scope correction |
-| Development controller | /opt/optibrain-agent and legacy control/runtime files | RETIRED; six units disabled/inactive and require an absent root authorization file |
+| Development controller | /opt/optibrain-agent and legacy control/runtime files | RETIRED; six units inactive (five disabled, usage.service static) and require an absent root authorization file |
 | Old worktrees/branches | /home/optibrain, /tmp, /var/tmp, Git refs | DISABLED/ARCHIVAL; no active dispatcher; review before deletion |
 | Camplan / plan2 | Cloudflare opticable-camplan, opticable-plan2 | Adjacent deployed applications; not a grant of CRM/autonomy authority |
 | Preview workers | website-test and website preview/design/performance workers | ORPHANED/UNKNOWN lifecycle; deprecation review needed |
@@ -168,7 +168,7 @@ Journals, execution-health endpoints, systemd results and GitHub health checks e
 
 ## Backup and recovery contract
 
-Local backup 1.0.2 now captures source identity, online SQLite snapshots, application state, root protection/crosswalk/journal/document state, /etc configuration, custom application/development timer units and drop-ins, and installed helpers. It excludes encrypted cache recursion. Archives are root-only, checksummed and verified. Phase 13 restored 1,154 files, 1,311 metadata entries and eight databases from the corrected archive in isolation; all passed. Services were not started in the restore location.
+Local backup 1.0.2 now captures source identity, online SQLite snapshots, application state, root protection/crosswalk/journal/document state, /etc configuration, custom application/development timer units and drop-ins, and installed helpers. It excludes encrypted cache recursion. Archives are root-only, checksummed and verified. Phase 13 restored 1,279 files, 1,460 metadata entries and eight databases from the corrected archive in isolation; all passed. Services were not started in the restore location.
 
 AGE ciphertext was independently downloaded from R2 and matched its hash. The private identity is intentionally held offline. Fresh decryption of the current generation and full replacement-host boot were NOT proven. Current timers give nominal daily RPO; maximum loss includes all local safety evidence created since the last successful generation. Provider CRM/Mail remain external sources of effect truth. RTO has not been measured and must not be advertised as guaranteed.
 

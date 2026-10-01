@@ -1,0 +1,228 @@
+{
+  "completed_at": "2026-10-01T19:00:38.096187+00:00",
+  "phase": 13,
+  "status": "COMPLETE INDEPENDENT AUDIT WITH REQUIRED REMEDIATION",
+  "readiness": "C",
+  "next_mission_started": false,
+  "main_and_core_sha": "ee7629f7e7954e1ee782c6481d4aaef37349d10f",
+  "audit_draft_pr": "https://github.com/yboucher97/opticable-api-platform/pull/88",
+  "audit_snapshot_commit": "405dbd1b762b148354a62b504c59dc8f8f0f01ed",
+  "local_backup": {
+    "archive": "/var/backups/optibrain/optibrain-backup-20261001T185502Z.tar.gz",
+    "sha256": "fc17b68194ba259c174c269728ef0ef53786a80ed041fdd2e4339bf3b90061ca",
+    "bytes": 275552253,
+    "manifest": {
+      "timestamp": "20261001T185502Z",
+      "production_git_sha": "ee7629f7e7954e1ee782c6481d4aaef37349d10f",
+      "backup_script_version": "1.0.2",
+      "sqlite_databases": [
+        {
+          "backup_path": "database/automation.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/optibrain/phase10/test-lab/lifecycle-events.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/optibrain/phase9/closure/phase9-intake.before-permission-fix.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/optibrain/phase9/mission2/form-receipts-stage.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/opticable-workflow-api/output/automation/phase10-service-events.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/opticable-workflow-api/output/automation/phase12-autonomy.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/opticable-workflow-api/output/automation/phase9-form-receipts.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/opticable-workflow-api/output/automation/phase9-intake.db",
+          "integrity": "ok"
+        }
+      ]
+    },
+    "restore": {
+      "result": "PASS",
+      "source_sha256": "fc17b68194ba259c174c269728ef0ef53786a80ed041fdd2e4339bf3b90061ca",
+      "generation": "20261001T185502Z",
+      "source_commit": "ee7629f7e7954e1ee782c6481d4aaef37349d10f",
+      "files_verified": 1279,
+      "legacy_files_covered_by_archive_hash_only": 0,
+      "metadata_entries_validated": 1460,
+      "legacy_transient_sqlite_metadata_omissions": 0,
+      "databases_restored": 8,
+      "critical_configs_restored": 3,
+      "source_extraction": "PASS",
+      "scope": "isolated archive/database/config/source validation; no services started"
+    },
+    "final_control_matches": {
+      "/etc/caddy/conf.d/opticable-api-platform.caddy": true,
+      "/etc/systemd/system/opticable-workflow-api.service.d/phase13-safety.conf": true,
+      "/etc/optibrain/phase9-form-enrichment.env": true,
+      "/etc/opticable-password-pdf/brand_settings.json": true,
+      "/usr/local/lib/optibrain-backup/optibrain-backup.sh": true
+    }
+  },
+  "offhost": {
+    "object": "backups/2026/10/01/20261001T185502Z.tar.gz.age",
+    "bytes": 275619717,
+    "sha256": "2c84855727e40371a6563a72384db7cac3b52c25092b7f119688c3c3dbba9404",
+    "matches_latest_state": true,
+    "decryption": "NOT INDEPENDENTLY PROVEN: private AGE identity intentionally offline",
+    "business_mutations": 0
+  },
+  "closure": {
+    "recorded_at": "2026-10-01T18:58:18.574756+00:00",
+    "scope": "manual Phase13 closure; no next mission",
+    "development_units": {
+      "optibrain-agent-dispatch.service": [
+        "ActiveState=inactive",
+        "UnitFileState=disabled",
+        "ConditionResult=no"
+      ],
+      "optibrain-agent-dispatch.timer": [
+        "ActiveState=inactive",
+        "UnitFileState=disabled",
+        "ConditionResult=no"
+      ],
+      "optibrain-agent-status.service": [
+        "ActiveState=inactive",
+        "UnitFileState=disabled",
+        "ConditionResult=no"
+      ],
+      "optibrain-agent-status.timer": [
+        "ActiveState=inactive",
+        "UnitFileState=disabled",
+        "ConditionResult=no"
+      ],
+      "optibrain-agent-usage.service": [
+        "ActiveState=inactive",
+        "UnitFileState=static",
+        "ConditionResult=no"
+      ],
+      "optibrain-agent-usage.timer": [
+        "ActiveState=inactive",
+        "UnitFileState=disabled",
+        "ConditionResult=no"
+      ]
+    },
+    "development_authorization_file_exists": false,
+    "application_timers": {
+      "optibrain-backup.timer": [
+        "NextElapseUSecRealtime=Thu 2026-10-01 22:43:36 EDT",
+        "NextElapseUSecMonotonic=0",
+        "ActiveState=active",
+        "UnitFileState=enabled"
+      ],
+      "optibrain-phase2a-upload.timer": [
+        "NextElapseUSecRealtime=Thu 2026-10-01 23:04:44 EDT",
+        "NextElapseUSecMonotonic=0",
+        "ActiveState=active",
+        "UnitFileState=enabled"
+      ],
+      "opticable-phase9-intake-receipts.timer": [
+        "NextElapseUSecRealtime=",
+        "NextElapseUSecMonotonic=6d 2h 47min 54.997400s",
+        "ActiveState=active",
+        "UnitFileState=enabled"
+      ],
+      "opticable-phase10-service-events.timer": [
+        "NextElapseUSecRealtime=",
+        "NextElapseUSecMonotonic=6d 3h 6min 16.243456s",
+        "ActiveState=active",
+        "UnitFileState=enabled"
+      ],
+      "opticable-phase12-test-runner.timer": [
+        "NextElapseUSecRealtime=Thu 2026-10-01 15:01:51 EDT",
+        "NextElapseUSecMonotonic=0",
+        "ActiveState=active",
+        "UnitFileState=enabled"
+      ]
+    },
+    "health": {
+      "https://optibrain.opticable.ca/health": {
+        "http_status": 200
+      },
+      "https://optibrain.opticable.ca/v1/system/health": {
+        "http_status": 200
+      },
+      "https://optibrain.opticable.ca/pdf/health": {
+        "http_status": 200
+      },
+      "https://optibrain.opticable.ca/omada/api/health": {
+        "http_status": 200
+      },
+      "https://connect.opticable.ca/health": {
+        "http_status": 200
+      }
+    },
+    "protected_final": {
+      "checks": {
+        "Accounts": {
+          "protected": 41,
+          "resolve": true,
+          "count_now": 50
+        },
+        "Contacts": {
+          "protected": 45,
+          "resolve": true,
+          "count_now": 54
+        },
+        "Deals": {
+          "protected": 1,
+          "resolve": true,
+          "count_now": 12
+        },
+        "Leads": {
+          "protected": 11,
+          "resolve": true,
+          "count_now": 26
+        },
+        "Service_Locations": {
+          "protected": 12,
+          "resolve": true,
+          "count_now": 20
+        },
+        "Services": {
+          "protected": 12,
+          "resolve": true,
+          "count_now": 25
+        },
+        "Tasks": {
+          "protected": 1,
+          "resolve": true,
+          "count_now": 6
+        }
+      },
+      "protected_count": 123,
+      "changed_during_audit": [],
+      "modified_after_own_baseline": [],
+      "completed_at": "2026-10-01T18:52:10.141897+00:00"
+    },
+    "containment_hashes": {
+      "/etc/caddy/conf.d/opticable-api-platform.caddy": "a5bd021934b6963a10ef2b2996ba7b7305c186914af07893f8255a506b5ccc6b",
+      "/etc/optibrain/phase9-form-enrichment.env": "4bf895d7b874a30e63fb958777481c34d8b8a2f9f13157f28e4f20b082879e4d",
+      "/etc/systemd/system/opticable-workflow-api.service.d/phase13-safety.conf": "742251debd23c182a0126f4988197843967a23ddf2d8738f0f72066435b8d2b9",
+      "/usr/local/lib/optibrain-backup/optibrain-backup.sh": "cb78ee47ec62466627a30bffb0de6db2f1e6429e142ef74faf5ace287a3a34ce"
+    },
+    "real_flags": "No OptiBrain-owned real action enabled; native Forms authority unproven",
+    "audit_business_mutations": 0,
+    "customer_sends": 0,
+    "books_writes": 0
+  },
+  "fresh_offhost_decrypt": "UNPROVEN; offline human identity required",
+  "replacement_host_boot": "UNPROVEN",
+  "real_business_mutations": 0,
+  "protected_mutations": 0,
+  "real_customer_sends": 0,
+  "books_writes": 0
+}
