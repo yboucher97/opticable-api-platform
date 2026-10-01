@@ -1,6 +1,6 @@
 # Phase 13 bounded parallel P1 cleanup
 
-This manual mission improves reads, scheduling and expendable state only. Phase13 is NOT closed; Phase14 has NOT begun. MANUAL-01 native Forms containment and MANUAL-02 offline owner AGE decryption remain pending, with the owner checklist unchanged. No new real or Test provider mutation is needed.
+This manual mission improves reads, scheduling and expendable state only. Phase13 is NOT closed; Phase14 has NOT begun. MANUAL-01 native Forms containment and MANUAL-02 offline owner AGE decryption remain pending, with the owner checklist unchanged. No real or Test business record mutation is needed. One technical Cloudflare smoke instance proves the safe provider-ID mapping; a malformed test-harness instance was terminated before transport, with no business effect.
 
 ## Scheduling ownership
 
@@ -44,7 +44,7 @@ OAuth already had a secure shared token cache and interprocess refresh lock. Thi
 
 ## Retirement and recovery
 
-No active unit, cron entry or process referenced the retired `/opt/optibrain-agent` runtime. It is archived at `/var/lib/optibrain/phase13-p1/retired-development.tar.gz` and quarantined at `/var/lib/optibrain/retired-development/optibrain-agent`. Both are root-private and included in existing `/var/lib/optibrain` backup coverage. Keep six unit masks and absent development authorization; do not restore this runtime to an executable path. Existing branches/worktrees and recovery tags remain retained; historic canary/autonomy branches must not be deployed.
+No active unit, cron entry or process referenced the retired `/opt/optibrain-agent` runtime. It is archived at `/var/lib/optibrain/phase13-p1/retired-development.tar.gz` and quarantined at `/var/lib/optibrain-retired-development/optibrain-agent`. Both are root-private. The immutable archive is included in `/var/lib/optibrain` backup coverage; the raw quarantined runtime stays outside active restore state so its historical symlinks are never restored. Keep six unit masks and absent development authorization; do not restore this runtime to an executable path. Existing branches/worktrees and recovery tags remain retained; historic canary/autonomy branches must not be deployed.
 
 Backups now include the journald policy; new caches/metrics live in already-backed-up DBs. Rollback is exact-SHA with the previous validated release and private backup. Preserve the unchanged owner checklist and the owner-required generation20261001T202728Z even when a newer backup succeeds.
 
