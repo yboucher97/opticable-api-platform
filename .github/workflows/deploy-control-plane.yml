@@ -16,16 +16,15 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  qualify:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: apps/control-plane-worker
-
+    timeout-minutes: 5
+    outputs:
+      deploy: ${{ steps.release.outputs.deploy }}
     steps:
-      - name: Require successful validation for the exact release
+      - name: Require exact successful main validation and changed Worker source
+        id: release
         uses: actions/github-script@v7
         with:
           script: |
@@ -35,7 +34,21 @@ jobs:
             const runs = await github.rest.actions.listWorkflowRuns({...context.repo, workflow_id: "validate-api-platform.yml", head_sha: sha, per_page: 30});
             if (!runs.data.workflow_runs.some(r => r.conclusion === "success" && r.head_branch === "main"))
               throw new Error("Exact release has no successful main validation");
+            const commit = await github.rest.repos.getCommit({...context.repo, ref: sha});
+            const files = commit.data.files || [];
+            const changed = context.eventName === "workflow_dispatch" || files.length >= 300 ||
+              files.some(f => f.filename.startsWith("apps/control-plane-worker/") || f.filename === ".github/workflows/deploy-control-plane.yml");
+            core.setOutput("deploy", String(changed));
 
+  deploy:
+    needs: qualify
+    if: needs.qualify.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/control-plane-worker
+    steps:
       - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}

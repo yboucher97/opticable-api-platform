@@ -6,6 +6,8 @@ on:
       - "apps/workflow-api/**"
       - "apps/omada-site-service/**"
       - "ops/backup/**"
+      - "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md"
+      - "ops/admin/master-runbook.sha256"
       - "deploy/manual-guarded-release.py"
       - "apps/control-plane-worker/**"
       - "install.sh"
@@ -24,6 +26,8 @@ on:
       - "apps/workflow-api/**"
       - "apps/omada-site-service/**"
       - "ops/backup/**"
+      - "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md"
+      - "ops/admin/master-runbook.sha256"
       - "deploy/manual-guarded-release.py"
       - "apps/control-plane-worker/**"
       - "install.sh"
@@ -70,6 +74,16 @@ jobs:
           bash -n ../../deploy/bootstrap-github-actions-secrets.sh
           bash -n ../../deploy/production-root-command.sh
           bash -n ../../ops/phase6/git-hooks/pre-push
+
+      - name: Verify authoritative runbook digest
+        run: |
+          python - <<'PYCODE'
+          import hashlib
+          from pathlib import Path
+          root = Path('../..')
+          actual = hashlib.sha256((root/'docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md').read_bytes()).hexdigest()
+          assert actual == (root/'ops/admin/master-runbook.sha256').read_text().strip(), 'Master runbook digest is stale'
+          PYCODE
 
       - name: Compile Python
         run: python -m compileall -q workflow tests ../../ops/phase6
