@@ -1,0 +1,558 @@
+[
+  {
+    "name": "OPTIBRAIN_ADMIN_SELF_TEST_OK",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/admin/optibrain-admin-update.py",
+      "/opt/opticable-api-platform/ops/admin/optibrain-admin.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_AI_PROVIDER_ORDER",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/config.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_AI_TIMEOUT_SECONDS",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/config.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_ALLOW_APOLLO_CREDIT_CONSUMPTION",
+    "classification": "ALWAYS_OFF / PINNED MANUAL",
+    "persistent_value": "false",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/apollo_api.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/config.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_AUTO_TEST_INTERNAL",
+    "classification": "TEST_ONLY",
+    "persistent_value": "0",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/business_autonomy.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_AUTO_TEST_PROJECT",
+    "classification": "TEST_ONLY",
+    "persistent_value": "0",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/business_autonomy.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_AUTO_TEST_TASK",
+    "classification": "TEST_ONLY",
+    "persistent_value": "1",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase12_closure.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/business_autonomy.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_BACKUP_CONFIG",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_backup_preservation.py",
+      "/opt/opticable-api-platform/ops/backup/optibrain-backup.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_BACKUP_DIR",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_backup_preservation.py",
+      "/opt/opticable-api-platform/ops/backup/optibrain-backup.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_BACKUP_RETENTION",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/admin/optibrain-admin.py",
+      "/opt/opticable-api-platform/ops/backup/optibrain-backup.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_BUSINESS_AUTO_WRITES",
+    "classification": "TEST_ONLY",
+    "persistent_value": "1",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase12_closure.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/business_autonomy.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_CALENDAR_CHANNEL_TOKEN",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/config/automation/webhooks.example.yaml"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_CLOUDFLARE_API",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/backup/optibrain-phase2a-r2-bootstrap.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_CLOUDFLARE_WEBHOOK_SECRET",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/config/automation/webhooks.example.yaml"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_CRM_CANARY",
+    "classification": "ALWAYS_OFF / PINNED MANUAL",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase7_crm_executor.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/crm_write_boundary.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/phase7_crm_executor.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/phase7_registration.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_CRM_CANARY_APPROVAL_ID",
+    "classification": "ALWAYS_OFF / PINNED MANUAL",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase7_crm_executor.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/crm_write_boundary.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/phase7_crm_executor.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/phase7_registration.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_CRM_DRIFT_ENABLED",
+    "classification": "ACTIVE CONFIG / RELEASE / READ CONTROL",
+    "persistent_value": "true",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/api.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/native_notifications.py",
+      "/opt/opticable-api-platform/ops/phase5/production_campaign.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_CRM_LEAD_WRITES",
+    "classification": "ALWAYS_OFF / PINNED MANUAL",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_campaign.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_leads.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_crm_actions.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_crm_containment.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_gate_g_campaign.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase7_crm_executor.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/crm_write_boundary.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/providers/crm_leads.py",
+      "/opt/opticable-api-platform/ops/phase5/production_campaign.py",
+      "/opt/opticable-api-platform/ops/phase5/production_provider.py",
+      "/opt/opticable-api-platform/ops/phase6/production_campaign.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_GITHUB_WEBHOOK_SECRET",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/config/automation/webhooks.example.yaml"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_LEAD_CREATE_APPROVAL_ID",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase7_lead_create.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase7_registration.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/crm_write_boundary.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/phase7_lead_create.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/phase7_registration.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_LEAD_CREATE_CANARY",
+    "classification": "ALWAYS_OFF / PINNED MANUAL",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase7_lead_create.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase7_registration.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/crm_write_boundary.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/phase7_lead_create.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/phase7_registration.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_OMADA_STATE_DIR",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/backup/optibrain-backup.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_OUTBOUND_CANARY_APPROVAL_ID",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_outbound_approval.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase7_outbound_canary.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/providers/outbound_mail.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/phase7_registration.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_OUTBOUND_SENDS",
+    "classification": "ALWAYS_OFF / PINNED MANUAL",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_gate_g_campaign.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_outbound_approval.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase7_outbound_canary.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/providers/outbound_mail.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/phase7_registration.py",
+      "/opt/opticable-api-platform/ops/phase6/production_campaign.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PASSWORD_PDF_STATE_DIR",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/backup/optibrain-backup.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE12_CODE_ROOT",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/phase12/run_test_lab.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE1_BACKUP_SCRIPT",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/backup/optibrain-phase2a-r2-bootstrap.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE2A_ACCOUNT_ID",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/backup/optibrain-phase2a-upload.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE2A_BACKUP_DIR",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/backup/optibrain-phase2a-r2-bootstrap.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE2A_RECIPIENT_FILE",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/backup/optibrain-phase2a-r2-bootstrap.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE4_ENGINEERING_RECORD",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/phase4/resume_production_closeout.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL",
+    "classification": "ACTIVE CONFIG / RELEASE / READ CONTROL",
+    "persistent_value": "SET",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_campaign.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_hardening.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_notification.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/native_notifications.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/reconcilers/zoho_notification.py",
+      "/opt/opticable-api-platform/ops/phase5/production_campaign.py",
+      "/opt/opticable-api-platform/ops/phase5/production_provider.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY",
+    "classification": "ACTIVE CONFIG / RELEASE / READ CONTROL",
+    "persistent_value": "2026-10-04T18:04:17+00:00",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_campaign.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_hardening.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_notification.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/native_notifications.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/reconcilers/zoho_notification.py",
+      "/opt/opticable-api-platform/ops/phase5/production_campaign.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT",
+    "classification": "ACTIVE CONFIG / RELEASE / READ CONTROL",
+    "persistent_value": "https://optibrain.opticable.ca/v1/automation/webhooks/phase5-crm-leads",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_campaign.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_hardening.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_notification.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/native_notifications.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/reconcilers/zoho_notification.py",
+      "/opt/opticable-api-platform/ops/phase5/production_campaign.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE6_SALES_AUTONOMY_V1",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_release_version.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE7_REGISTRATION",
+    "classification": "ACTIVE CONFIG / RELEASE / READ CONTROL",
+    "persistent_value": "phase7-single-canary-v1",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase7_registration.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/phase7_registration.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE7_RELEASE_SHA",
+    "classification": "ACTIVE CONFIG / RELEASE / READ CONTROL",
+    "persistent_value": "ee7629f7e7954e1ee782c6481d4aaef37349d10f",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase7_registration.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/phase7_registration.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE8_TEST_LAB",
+    "classification": "TEST_ONLY",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase10_customer_lifecycle.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase11_operations.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase8_test_lab.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase9_intake.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/crm_write_boundary.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/test_lab_boundary.py",
+      "/opt/opticable-api-platform/ops/phase10/test_lab_lifecycle.py",
+      "/opt/opticable-api-platform/ops/phase11/test_lab_operations.py",
+      "/opt/opticable-api-platform/ops/phase8/test_lab_relations.py",
+      "/opt/opticable-api-platform/ops/phase8/test_lab_seed.py",
+      "/opt/opticable-api-platform/ops/phase8/test_lab_transitions.py",
+      "/opt/opticable-api-platform/ops/phase9/test_lab_intake.py",
+      "/opt/opticable-api-platform/ops/phase9/test_lab_manual.py",
+      "/opt/opticable-api-platform/ops/phase9/test_lab_outcome.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE8_TEST_TASK",
+    "classification": "TEST_ONLY",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase8_sales_queue.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/crm_write_boundary.py",
+      "/opt/opticable-api-platform/ops/phase8/create_test_artifacts.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE9_FORM_ENRICHMENT",
+    "classification": "DANGEROUS LEGACY \u2014 OFF",
+    "persistent_value": "off",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase9_form_enrichment.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/crm_write_boundary.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/phase9_form_enrichment.py",
+      "/opt/opticable-api-platform/ops/phase9/collect_form_receipts.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PHASE9_FORM_GO_LIVE",
+    "classification": "ACTIVE CONFIG / RELEASE / READ CONTROL",
+    "persistent_value": "2026-10-01T12:00:08+00:00",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/phase9/collect_form_receipts.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_PLATFORM_SHARED_DIR",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/backup/optibrain-backup.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_R2_BOOTSTRAP_TOKEN_FILE",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/backup/optibrain-phase2a-r2-bootstrap.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_RECEIPT_EXPORT_KEY",
+    "classification": "ACTIVE CONFIG / RELEASE / READ CONTROL",
+    "persistent_value": "SET",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/phase9/collect_form_receipts.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_REPO_DIR",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_backup_preservation.py",
+      "/opt/opticable-api-platform/ops/backup/optibrain-backup.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_SALES_DRAFTS",
+    "classification": "ALWAYS_OFF / PINNED MANUAL",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/config/automation/workflows/opticable-sales-draft.yaml",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_gate_g_campaign.py",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_sales_drafts.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/providers/sales_drafts.py",
+      "/opt/opticable-api-platform/ops/phase6/production_campaign.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_SALES_DRAFT_ACCOUNT_ID",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_sales_drafts.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/providers/sales_drafts.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_SALES_DRAFT_FROM",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_sales_drafts.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/providers/sales_drafts.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_SKIP_LIVE_CONFIG",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_backup_preservation.py",
+      "/opt/opticable-api-platform/ops/backup/optibrain-backup.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_SKIP_LIVE_STATE",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_backup_preservation.py",
+      "/opt/opticable-api-platform/ops/backup/optibrain-backup.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_SYNC_CONFIG",
+    "classification": "ACTIVE CONFIG / RELEASE / READ CONTROL",
+    "persistent_value": "/etc/optibrain/phase5/delta-sync.yaml",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/config/automation/delta-sync.example.yaml",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_campaign.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/sync_runtime.py",
+      "/opt/opticable-api-platform/ops/phase4/isolated_drill.py",
+      "/opt/opticable-api-platform/ops/phase5/production_campaign.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_WEBHOOK_CONFIG",
+    "classification": "ACTIVE CONFIG / RELEASE / READ CONTROL",
+    "persistent_value": "/etc/optibrain/phase5/webhooks.yaml",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/config/automation/webhooks.example.yaml",
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase5_campaign.py",
+      "/opt/opticable-api-platform/apps/workflow-api/workflow/automation/webhooks.py",
+      "/opt/opticable-api-platform/ops/phase4/isolated_drill.py",
+      "/opt/opticable-api-platform/ops/phase5/production_campaign.py"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_WORKFLOW_ENV_FILE",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/tests/test_phase6_backup_preservation.py",
+      "/opt/opticable-api-platform/ops/backup/optibrain-backup.sh",
+      "/opt/opticable-api-platform/ops/backup/optibrain-phase2a-r2-bootstrap.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_WORKFLOW_STATE_DIR",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/ops/backup/optibrain-backup.sh"
+    ]
+  },
+  {
+    "name": "OPTIBRAIN_ZOHO_CRM_NOTIFICATION_TOKEN",
+    "classification": "CODE REFERENCE / MANUAL OR TEST SETTING",
+    "persistent_value": "UNSET in persistent audited environment",
+    "code_locations": [
+      "/opt/opticable-api-platform/apps/workflow-api/config/automation/webhooks.example.yaml"
+    ]
+  },
+  {
+    "name": "PDF crm.enabled",
+    "classification": "DANGEROUS LEGACY \u2014 OFF",
+    "persistent_value": false
+  },
+  {
+    "name": "PDF workdrive.enabled",
+    "classification": "DANGEROUS LEGACY \u2014 OFF",
+    "persistent_value": false
+  },
+  {
+    "name": "API root workflow override",
+    "classification": "ACTIVE SAFETY CONFIG",
+    "persistent_value": "/etc/optibrain/phase13-observe-workflows"
+  },
+  {
+    "name": "Zoho standby",
+    "classification": "DISABLED; explicit disaster recovery only",
+    "persistent_value": false
+  }
+]

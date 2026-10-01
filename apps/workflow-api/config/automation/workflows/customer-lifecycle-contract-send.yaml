@@ -1,7 +1,7 @@
 id: customer.lifecycle.contract-send
 name: Customer lifecycle approved contract send
 version: 1
-enabled: true
+enabled: false
 description: Sends a Zoho Sign template only after an explicit approved_to_send event.
 trigger:
   event_types:

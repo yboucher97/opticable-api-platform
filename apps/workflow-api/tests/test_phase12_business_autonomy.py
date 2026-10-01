@@ -82,7 +82,7 @@ class JournalTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "binding changed"):
             self.journal.claim_approval(one["approval_id"], proposed, actor="human:other", now=NOW)
         approved = dispatch_approved(proposed, approval_id=one["approval_id"], actor="human:operator",
-            journal=self.journal, fresh=lambda: {"id": "501", "ownership": "TEST_ONLY"},
+            journal=self.journal, policy=Policy(automatic_mutations=True, approved_test_send=True), fresh=lambda: {"id": "501", "ownership": "TEST_ONLY"},
             execute=lambda: "fixture-only", reconcile=lambda: "fixture-only")
         self.assertEqual(approved["state"], "succeeded")
         with self.assertRaisesRegex(ValueError, "consumed"):
@@ -105,13 +105,13 @@ class JournalTests(unittest.TestCase):
         issued = self.journal.issue(p, actor="human:operator",
                                     expires_at=(datetime.now(timezone.utc)+timedelta(minutes=30)).isoformat())
         result = dispatch_approved(p, approval_id=issued["approval_id"], actor="human:operator",
-            journal=self.journal, fresh=lambda: {"id": "501", "ownership": "TEST_ONLY", "Modified_Time": p.expected_version,
+            journal=self.journal, policy=Policy(automatic_mutations=True, approved_test_send=True), fresh=lambda: {"id": "501", "ownership": "TEST_ONLY", "Modified_Time": p.expected_version,
                                                  "reply": True},
             execute=lambda: self.fail("stale customer send"), reconcile=lambda: None)
         self.assertEqual(result["state"], "stale")
         with self.assertRaisesRegex(ValueError, "Exact approved"):
             dispatch_approved(p, approval_id=issued["approval_id"], actor="human:operator",
-                journal=self.journal, fresh=lambda: {}, execute=lambda: "x", reconcile=lambda: "x")
+                journal=self.journal, policy=Policy(automatic_mutations=True, approved_test_send=True), fresh=lambda: {}, execute=lambda: "x", reconcile=lambda: "x")
 
     def test_dispatch_replay_stale_and_ambiguous_readback(self):
         p = action()

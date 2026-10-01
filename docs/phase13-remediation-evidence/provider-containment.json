@@ -1,0 +1,12 @@
+{
+  "customer-lifecycle-digest.yml": "disabled",
+  "customer-lifecycle-mailbox-poll.yml": "disabled",
+  "schedule-customer-lifecycle.yml": "disabled",
+  "secret_bindings_migrated": [
+    "CONNECTOR_API_KEY",
+    "ZOHO_CLIENT_SECRET"
+  ],
+  "offhost_claim_lock_verified": true,
+  "https://connect.opticable.ca/health": 200,
+  "https://opticable-control-plane.yboucher.workers.dev/health": 200
+}

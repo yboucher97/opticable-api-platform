@@ -77,6 +77,14 @@ def validate(archive, expected_sha, workspace):
         if seen - actual or (omitted and not (manifest.get('backup_script_version') == '1.0.0' and omitted <= legacy)):
             raise DrillError('manifest does not cover archive files')
         metadata = {}
+        masks_path=root/'system/systemd-masks.json'
+        masks=json.loads(masks_path.read_text()) if masks_path.exists() else []
+        if (not isinstance(masks,list) or any(not re.fullmatch(r'optibrain-agent-(dispatch|status|usage)\.(service|timer)',u) for u in masks)):
+            raise DrillError('unsafe retired unit mask metadata')
+        mask_restore=scratch/'restored-masks';mask_restore.mkdir()
+        for unit in masks:
+            (mask_restore/unit).symlink_to('/dev/null')
+            if os.readlink(mask_restore/unit)!='/dev/null':raise DrillError('retired unit mask restore failed')
         excluded_sqlite_sidecars = 0
         for item in manifest['source_metadata']:
             name = str(relative(item['backup_path']))
@@ -136,6 +144,7 @@ def validate(archive, expected_sha, workspace):
                     metadata_entries_validated=len(metadata),
                     legacy_transient_sqlite_metadata_omissions=excluded_sqlite_sidecars,
                     databases_restored=len(manifest['sqlite_databases']),
+                    retired_unit_masks_restored=len(masks),
                     critical_configs_restored=len(critical), source_extraction='PASS',
                     scope='isolated archive/database/config/source validation; no services started')
 

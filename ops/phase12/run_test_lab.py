@@ -25,7 +25,9 @@ sys.path.insert(0, str(CODE_ROOT / "ops/phase11"))
 from workflow.automation.business_autonomy import (Action, BusinessJournal, Policy,
     classify_crm_record, decide, dispatch)
 from test_lab_operations import (LAB, BASELINE, STATE, load, owned, provider,
-    read, write)
+    read, write, listing, save_lab)
+from workflow.automation.remote_effects import RemoteEffects
+from workflow.automation.mutation_control import bind_task_claim
 
 ROOT = Path("/var/lib/optibrain/phase12")
 LOCK = ROOT / "runner.lock"
@@ -65,31 +67,55 @@ def task_row(action: Action) -> dict:
             or payload["Status"] != "Not Started"
             or payload["purpose"] != "Internal follow-up review; no customer send"):
         raise ValueError("Scheduled Task payload exceeds fixed Test Lab shape")
-    return {"Subject": payload["Subject"], "Description":
-            "OPTIBRAIN TEST — PHASE 12\nInternal follow-up review only; no customer email.",
+    return {"Subject": payload["Subject"] + ' [OB-ACTION:' + action.action_id + ']', "Description":
+            "OPTIBRAIN TEST — PHASE 12\nInternal follow-up review only; no customer email.\nPayload SHA-256: " + action.payload_hash,
             "What_Id": {"id": action.target_id}, "$se_module": "Leads",
             "Status": "Not Started", "Due_Date": payload["Due_Date"]}
 
 
-def verified_task(client, state, lab, action: Action) -> str | None:
+def verified_task(client, state, lab, action: Action, effects=None) -> str | None:
     key = "phase12runner:" + action.action_id
     operation = state["operations"].get(key) or {}
-    if operation.get("state") != "verified" or not operation.get("id"):
-        return None
-    row = owned(lab, "Tasks", read(client, "Tasks", operation["id"]))
+    if operation.get('state')=='verified' and operation.get('id'):
+        row=owned(lab,'Tasks',read(client,'Tasks',operation['id']))
+        # Legacy acknowledged Tasks have no new marker. They are observation-only.
+        if (row.get('Subject')==action.payload['Subject'] and row.get('Status')==action.payload['Status']
+                and row.get('Due_Date')==action.payload['Due_Date']
+                and str((row.get('What_Id') or {}).get('id') or '')==action.target_id):
+            return str(row['id'])
+    effects=effects or RemoteEffects.root_store()
+    if not effects.get(action,'claim'): return None
+    result=effects.get(action,'result')
+    rows=([read(client,'Tasks',result['provider_id'])] if result else
+          listing(client,'Tasks','id,Subject,Description,Status,Due_Date,What_Id,$se_module'))
     expected = task_row(action)
-    if (row.get("Subject") != expected["Subject"] or row.get("Status") != expected["Status"]
-            or row.get("Due_Date") != expected["Due_Date"]
-            or str((row.get("What_Id") or {}).get("id") or "") != action.target_id):
-        return None
+    found=[r for r in rows if r.get('Subject')==expected['Subject']]
+    if len(found)>1: raise ValueError('Ambiguous duplicate provider effects')
+    if not found: return None
+    row=found[0]
+    if (any(row.get(k)!=expected[k] for k in ('Subject','Description','Status','Due_Date'))
+            or str((row.get('What_Id') or {}).get('id') or '')!=action.target_id
+            or row.get('$se_module')!='Leads'):
+        raise ValueError('Provider effect differs from immutable claim')
+    protected=set(load(BASELINE)['modules']['Tasks']['ids'])
+    if str(row['id']) in protected: raise ValueError('Protected Task cannot be adopted')
+    if str(row['id']) not in lab['records'].get('Tasks',[]):
+        lab['records'].setdefault('Tasks',[]).append(str(row['id']));save_lab(lab)
+    effects.complete(action,str(row['id']))
     return str(row["id"])
 
 
 def execute_task(client, state, lab, action: Action) -> str:
-    existing = verified_task(client, state, lab, action)
+    effects=RemoteEffects.root_store()
+    existing = verified_task(client, state, lab, action, effects)
     if existing: return existing  # Read-only recovery after a lost action-journal ack.
+    claim=effects.claim(action)
+    if not claim.fresh: raise ValueError('Previously claimed execution is reconciliation-only')
+    body={'data':[task_row(action)],'trigger':[],'skip_feature_execution':[{'name':'cadences'}]}
+    bind_task_claim(action,client,body,claim)
     row = write(client, state, lab, "phase12runner:" + action.action_id,
                 "Tasks", task_row(action))
+    effects.complete(action,str(row['id']))
     return str(row["id"])
 
 

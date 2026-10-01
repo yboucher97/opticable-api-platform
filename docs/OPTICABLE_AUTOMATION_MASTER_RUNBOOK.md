@@ -1,8 +1,86 @@
 # Opticable Automation Master Runbook
 
-Last updated: 2026-09-27
+Last updated: 2026-10-01 — independent Phase 13 audit override
 Authority: Git history + this runbook + machine-readable production state.
 Rule: never store secret values in Git. Record only locations, scopes, IDs that are safe to retain, and recovery procedures.
+
+## Phase 13 authoritative safety and recovery override
+
+Read [OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md](OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md),
+[phase13-independent-audit.md](phase13-independent-audit.md),
+[phase13-control-matrix.md](phase13-control-matrix.md) and
+[phase13-timer-matrix.md](phase13-timer-matrix.md) before using older sections below.
+The original sections describe historical phase state and do not authorize current
+mutations. Production/local main/remote main independently matched
+ee7629f7e7954e1ee782c6481d4aaef37349d10f, API1.11.0. Business/display timezone is
+America/Toronto. Phase13 audit is COMPLETE WITH REQUIRED REMEDIATION, readiness C.
+No Phase14 or real canary was started.
+
+The persistent development worker is OFF. Its dispatch/status/usage services and
+timers are inactive; five units are disabled and usage.service is static. All six
+now require the absent root-controlled file
+/etc/optibrain/authorize-persistent-codex-development. Do not create that file,
+enable those units or revive their old controller during recovery. Manual Codex
+app-server/CLI sessions are separate from the retired development dispatcher.
+
+Five legitimate application timers remain: local backup, encrypted off-host
+upload, Phase9 intake receipts, Phase10 service events and Phase12 bounded Test
+runner. Cloudflare and GitHub also dispatch application events; their overlap is
+documented debt. The Phase12 timer DOES exist and is TEST_ONLY, not real-business
+authority. Its Test Task flag is1; project/internal flags0; real targets denied.
+The automatic kill switch is not a universal fence for legacy or approved paths.
+
+Independent audit found providers outside the Python fence. Preserve these
+containments during every deployment and restore:
+
+- Connector opticable-ai-connector now rejects every non-GET/HEAD Zoho method and executable/unaudited read paths
+  before OAuth/transport. Separate repository PRs30–32, final main at
+  aa1e084b06184df73847639700a8e540bd433293; final provider bundle hash is recorded
+  in Phase13 evidence. Connector-backed website CRM ingestion is suspended.
+  Native Forms ingestion is separate and not proven centrally controlled.
+- /etc/optibrain/phase9-form-enrichment.env policy is OFF. Continue receipt
+  collection and safety reconciliation; do not re-enable real enrichment.
+- /etc/optibrain/phase13-observe-workflows is the API's root-owned workflow
+  directory override. Email-analysis, digest and contract-send are disabled.
+- /etc/caddy/conf.d/opticable-api-platform.caddy contains explicit ordered route
+  guards. External Omada non-health, legacy provider job creation/webhook aliases
+  and unauthenticated PDF/core job results are blocked; health/read routes remain.
+- PDF brand_settings.json has crm.enabled=false and workdrive.enabled=false.
+- The workflow API root service drop-in disables raw uvicorn access logs after a
+  current API key was found in historical URL logs. Business audit/error journals
+  continue. Key/channel rotation and URL-key removal are required remediation;
+  never print or copy their values into evidence.
+
+Corrected installed backup is /usr/local/lib/optibrain-backup/optibrain-backup.sh
+version1.0.2. Its source correction is on the Phase13 audit branch; the deployed
+core source archive still has the historical helper, so restore the included
+root-installed helper, not an older Git copy. Backups now include /var/lib/optibrain
+protection/crosswalk/journal/document state, online snapshots of every application
+.db, application/development units and drop-ins, and installed helpers. Encrypted
+cache recursion is excluded. Nominal seven-generation retention is currently
+bypassed by preserve-existing and needs a separately authorized retention fix.
+
+The corrected local archive independently restored hashes, source/config metadata
+and eight SQLite DBs in isolation. R2 ciphertext independently matched its hash.
+Fresh AGE decryption and replacement-host boot remain UNPROVEN: the private
+identity stays in offline human custody. Do not infer that an earlier human
+restore attestation proves the current generation. Consult root
+/var/lib/optibrain/phase13 for the audited recovery copies and evidence manifest.
+
+On disaster recovery, first keep every provider writer and development unit OFF.
+Restore root baselines/registries and the containment overrides before exposing
+traffic. Reconcile provider effects committed after the restored generation;
+never restart a restored pending create/send simply because local attempt state
+is missing. Then enable only validated read/backup timers and, after independent
+ownership/reconciliation proof, bounded Test automation. Real/protected data stays
+read-only. No measured RTO exists; daily backup RPO does not replace effect
+reconciliation or provider reauthorization.
+
+Current Lab identity/document/metric samples pass; historical percentage and
+universal safety claims do not. The next recommended instruction is a separate
+MANUAL Phase13 REMEDIATION mission addressing P0 controls/recovery/credentials,
+expected real/protected mutations0. A readiness rating, branch merge or flag is
+not authorization for a real canary.
 
 ## Canonical architecture
 ChatGPT is the operator interface. optibrain.opticable.ca is the primary control plane. connect.opticable.ca is manual-disabled standby only.
@@ -710,3 +788,20 @@ autonomy view includes runner status and counters. A single exact controlled
 Test Mail send may be executed only with the manual mission's one-use R3
 approval and Sent-folder verification. See `docs/phase12-closure.md` for
 policy, ownership, approved-send distinction and remaining legacy migrations.
+
+
+## Phase 13 P0 remediation — authoritative current safety and recovery
+
+Follow [phase13-p0-remediation.md](phase13-p0-remediation.md) and [OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md](OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md). Historical phase notes are evidence, not permission. The root release receipt at `/var/lib/optibrain/phase13-remediation/deployment.json` determines the deployed SHA. Production/local/remote main must match. The API retains 1.11.0 for this safety patch.
+
+Persistent development dispatch/status/usage services and timers are MASKED. Never unmask them during recovery. Restore their six masks from `system/systemd-masks.json` and retain the absent authorization file. Application readers, reconciliation and backups are separate. Both `/etc/optibrain/mutation-control.json` and `/etc/optibrain/phase12-runner.env` have Test provider writes OFF; real canary authority is hard false. No environment/approval can enable legacy CRM/Mail/Sign/Google/Books/WorkDrive/controller writes.
+
+Use `/usr/local/sbin/opticable-api-deploy-root <exact-main-SHA>` only with a fresh root-owned manual release authorization, live successful exact-head CI, prevalidated immutable environment in `/opt/optibrain-releases/<SHA>/venv` and pinned rollback archive. The helper restores code/manifest/environment on failure and verifies health. It never rolls back credential values to revoked credentials. Historical per-phase root release helpers are recovery history; the generic manual gate supersedes their dispatcher.
+
+The shared core key and CRM channel verification credential have been rotated. Dependencies use the replacement; old credentials fail. Core header authentication fails closed. OAuth query API keys are rejected. Connector client secret/key are secret bindings. Never publish root env files, raw provider records, SQLite payloads or restored credentials.
+
+Recovery starts with all provider writers OFF and development units masked. The local archive captures root protection/registries/documents/journals, online SQLite snapshots, configuration/service drop-ins, SSH identity and installed helper. Run `sudo /usr/local/lib/optibrain-backup/optibrain-backup.sh --preserve-existing`, then the encrypted uploader service. Verify and restore only into an isolated location. Restore critical ownership/modes from the manifest; never replay extracted configuration directly into production without review.
+
+R2 `business-effects/v1/` is an indefinite locked execution ledger separate from rolling backup generations. Preserve it across VPS replacement. A missing local attempt never permits deleting or resetting a remote claim. Existing or uncertain claims are reconciliation-only; compare exact provider Task marker, target, fields and payload hash, then adopt the verified provider ID. Never retry a claim merely because provider search is empty. Missing/unavailable R2 blocks new execution. Legacy tasks without markers require their known IDs and historical operations registry; they are read-only observations.
+
+Native Zoho Forms can write CRM outside this application gate. Owner deactivation/verification of its two native CRM integrations is required before universal provider-write closure. Read-only Mail receipt collection can continue. The actual offline AGE owner identity and genuine Access human login/approval have distinct proof requirements; the manual checklist defines their readiness effects. No real canary may run without separate explicit owner authorization.

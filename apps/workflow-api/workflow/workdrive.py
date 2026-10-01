@@ -25,6 +25,7 @@ class WorkflowWorkDriveClient:
         self.archive_folder_name = "Archive"
 
     def upload_file(self, path: Path, parent_folder_id: str) -> dict[str, Any]:
+        raise RuntimeError('Legacy WorkDrive provider writer retired')
         with path.open("rb") as handle:
             content_type = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
             return self.upload_bytes(handle.read(), path.name, parent_folder_id, content_type=content_type)
@@ -37,6 +38,7 @@ class WorkflowWorkDriveClient:
         *,
         content_type: str = "application/octet-stream",
     ) -> dict[str, Any]:
+        raise RuntimeError('Legacy WorkDrive provider writer retired')
         timeout = httpx.Timeout(60.0, connect=20.0)
         with httpx.Client(timeout=timeout) as client:
             headers = self._get_auth_headers(client)
@@ -72,6 +74,7 @@ class WorkflowWorkDriveClient:
         }
 
     def prepare_upload_folder(self, parent_folder_id: str) -> str:
+        raise RuntimeError('Legacy WorkDrive provider writer retired')
         timeout = httpx.Timeout(60.0, connect=20.0)
         with httpx.Client(timeout=timeout) as client:
             headers = self._get_auth_headers(client)
@@ -208,6 +211,7 @@ class WorkflowWorkDriveClient:
         return len(data) > 0
 
     def _create_child_folder_id(self, client: httpx.Client, headers: dict[str, str], parent_folder_id: str) -> str:
+        raise RuntimeError('Legacy WorkDrive provider writer retired')
         response = client.post(
             f"{self._api_base_url()}/files",
             headers=headers,
@@ -252,6 +256,7 @@ class WorkflowWorkDriveClient:
         new_parent_id: str,
         new_name: str,
     ) -> None:
+        raise RuntimeError('Legacy WorkDrive provider writer retired')
         response = client.patch(
             f"{self._api_base_url()}/files/{folder_id}",
             headers={**headers, "Content-Type": "application/vnd.api+json"},

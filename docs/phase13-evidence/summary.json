@@ -1,0 +1,1741 @@
+{
+  "phase": 13,
+  "result": "PASS WITH REQUIRED REMEDIATION",
+  "status": "COMPLETE AUDIT; REQUIRED REMEDIATION OPEN",
+  "readiness": "C",
+  "core_sha": "ee7629f7e7954e1ee782c6481d4aaef37349d10f",
+  "api": "1.11.0",
+  "protected_mutations_during_audit": 0,
+  "real_sends": 0,
+  "books_writes": 0,
+  "critical_found": 2,
+  "critical_uncontained": 0,
+  "high_found": 9,
+  "central_executor_families": 3,
+  "executor_family_denominator": 23,
+  "central_enabled_scheduled_crm_families": 1,
+  "native_forms": "Independent provider producer; universal automatic-write OFF guarantee unproven",
+  "modules": {
+    "Accounts": {
+      "count": 50,
+      "protected_count": 41,
+      "registered_count": 9,
+      "protected_missing": [],
+      "registered_missing": [],
+      "overlap": [],
+      "rows_sha256": "1a08d3eefd15e989a6a335fda8a8d196429853094eed5170bde2484bcfd3cd5d"
+    },
+    "Calls": {
+      "count": 0,
+      "protected_count": 0,
+      "registered_count": 0,
+      "protected_missing": [],
+      "registered_missing": [],
+      "overlap": [],
+      "rows_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "Cases": {
+      "count": 1,
+      "protected_count": 0,
+      "registered_count": 1,
+      "protected_missing": [],
+      "registered_missing": [],
+      "overlap": [],
+      "rows_sha256": "b8046a9e3d5c6b47bb354209c80f397e8c60444030bf6609c765d8c68c2c6208"
+    },
+    "Contacts": {
+      "count": 54,
+      "protected_count": 45,
+      "registered_count": 9,
+      "protected_missing": [],
+      "registered_missing": [],
+      "overlap": [],
+      "rows_sha256": "a3556bc31a464f19808a3b5de96e624ad7e89a7a8c34d7bdbd9459fcc6bcda57"
+    },
+    "Deals": {
+      "count": 12,
+      "protected_count": 1,
+      "registered_count": 11,
+      "protected_missing": [],
+      "registered_missing": [],
+      "overlap": [],
+      "rows_sha256": "8d5640701adb6479d075de60f2ef7146f0732029b17073075422b063b5bb9a01"
+    },
+    "Events": {
+      "count": 0,
+      "protected_count": 0,
+      "registered_count": 0,
+      "protected_missing": [],
+      "registered_missing": [],
+      "overlap": [],
+      "rows_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "Installations": {
+      "count": 4,
+      "protected_count": 0,
+      "registered_count": 4,
+      "protected_missing": [],
+      "registered_missing": [],
+      "overlap": [],
+      "rows_sha256": "0bb538af29714727fba0f2af9c184ca58a6471a3e384f34113612f1587677615"
+    },
+    "Leads": {
+      "count": 26,
+      "protected_count": 11,
+      "registered_count": 14,
+      "protected_missing": [],
+      "registered_missing": [],
+      "overlap": [],
+      "rows_sha256": "13864ed92bbd9d35508079c285d8950e911a90d261b08263bfb9d22c0e2daa3e"
+    },
+    "Notes": {
+      "count": 0,
+      "protected_count": 0,
+      "registered_count": 0,
+      "protected_missing": [],
+      "registered_missing": [],
+      "overlap": [],
+      "rows_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "Service_Locations": {
+      "count": 20,
+      "protected_count": 12,
+      "registered_count": 8,
+      "protected_missing": [],
+      "registered_missing": [],
+      "overlap": [],
+      "rows_sha256": "ded3a2d7ba2b5f47625284e93464eec48bb8d36b17271c14fac7c8a7be500863"
+    },
+    "Services": {
+      "count": 25,
+      "protected_count": 12,
+      "registered_count": 13,
+      "protected_missing": [],
+      "registered_missing": [],
+      "overlap": [],
+      "rows_sha256": "6b2666250f5e4ed9ab44ba4286285165a9fa778160ff52e97943be33f2ddd35d"
+    },
+    "Tasks": {
+      "count": 6,
+      "protected_count": 1,
+      "registered_count": 5,
+      "protected_missing": [],
+      "registered_missing": [],
+      "overlap": [],
+      "rows_sha256": "70a7ee091912d281da8409ccae7f6a38967a5d5fdd6e4676de890e157a6f41c8"
+    }
+  },
+  "provider_views": {
+    "lifecycle-live": {
+      "scope": "live",
+      "summary": {
+        "needs_attention": 0,
+        "renewal_due": 0,
+        "maintenance_due": 0,
+        "dormant": 0,
+        "cross_sell": 0,
+        "upsell": 0,
+        "active_recurring": 0,
+        "no_action": 41
+      },
+      "sample_count": 41
+    },
+    "lifecycle-lab": {
+      "scope": "lab",
+      "summary": {
+        "needs_attention": 3,
+        "renewal_due": 0,
+        "maintenance_due": 0,
+        "dormant": 1,
+        "cross_sell": 1,
+        "upsell": 1,
+        "active_recurring": 3,
+        "no_action": 5
+      },
+      "sample_count": 9
+    },
+    "operations-live": {
+      "scope": "live",
+      "summary": {
+        "needs_attention": 0,
+        "ready_to_schedule": 0,
+        "scheduled": 0,
+        "in_progress": 0,
+        "blocked": 0,
+        "open_tickets": 0,
+        "due_work_orders": 0,
+        "recently_completed": 0
+      },
+      "note": "No verified real operational project is registered; protected CRM records remain read-only."
+    },
+    "operations-lab": {
+      "scope": "lab",
+      "summary": {
+        "needs_attention": 1,
+        "ready_to_schedule": 1,
+        "scheduled": 0,
+        "in_progress": 0,
+        "blocked": 0,
+        "open_tickets": 0,
+        "due_work_orders": 0,
+        "recently_completed": 2
+      },
+      "note": "Synthetic TEST ONLY; excluded from live operations and revenue."
+    }
+  },
+  "databases": [
+    {
+      "path": "/var/lib/opticable-workflow-api/output/automation/phase9-form-receipts.db",
+      "bytes": 69632,
+      "integrity": [
+        [
+          "ok"
+        ]
+      ],
+      "tables": {
+        "form_receipts": 2,
+        "form_receipt_links": 1,
+        "connector_receipts": 4,
+        "form_provider_matches": 2,
+        "form_enrichment_journal": 2,
+        "sqlite_sequence": 1
+      }
+    },
+    {
+      "path": "/var/lib/opticable-workflow-api/output/automation/phase10-service-events.db",
+      "bytes": 28672,
+      "integrity": [
+        [
+          "ok"
+        ]
+      ],
+      "tables": {
+        "service_state": 13,
+        "service_events": 25
+      }
+    },
+    {
+      "path": "/var/lib/opticable-workflow-api/output/automation/phase9-intake.db",
+      "bytes": 28672,
+      "integrity": [
+        [
+          "ok"
+        ]
+      ],
+      "tables": {
+        "intake_events": 7,
+        "feedback_events": 8
+      }
+    },
+    {
+      "path": "/var/lib/opticable-workflow-api/output/automation/phase12-autonomy.db",
+      "bytes": 61440,
+      "integrity": [
+        [
+          "ok"
+        ]
+      ],
+      "tables": {
+        "actions": 15,
+        "approvals": 1,
+        "scheduled": 2,
+        "runner_runs": 6
+      }
+    },
+    {
+      "path": "/var/lib/opticable-workflow-api/output/automation/automation.db",
+      "bytes": 11816960,
+      "integrity": [
+        [
+          "ok"
+        ]
+      ],
+      "tables": {
+        "automation_events": 921,
+        "automation_workflows": 16,
+        "automation_runs": 661,
+        "automation_run_steps": 1475,
+        "sqlite_sequence": 4,
+        "automation_audit": 7648,
+        "automation_run_claims": 527,
+        "automation_run_failures": 20,
+        "automation_event_ledger": 921,
+        "automation_event_dedupe": 921,
+        "automation_event_processing": 921,
+        "automation_event_history": 1923,
+        "automation_event_routes": 661,
+        "automation_event_replays": 0,
+        "automation_sync_checkpoints": 1,
+        "automation_usage_daily": 169
+      }
+    }
+  ],
+  "identity-chain-summary.json": {
+    "crosswalk_count": 15,
+    "projects": [
+      {
+        "project_id": "OB-J-3C80B6CE886D",
+        "provider": {
+          "Accounts": "5062683000007928001",
+          "Contacts": "5062683000007929001",
+          "Deals": "5062683000007918009",
+          "Service_Locations": "5062683000007933004"
+        },
+        "source_lead": null,
+        "work_orders": [
+          "5062683000007920012"
+        ],
+        "services": [
+          "5062683000007911007"
+        ],
+        "tickets": [],
+        "duplicate_terminal_events": 0
+      },
+      {
+        "project_id": "OB-J-B0F930C2378E",
+        "provider": {
+          "Accounts": "5062683000007928001",
+          "Contacts": "5062683000007929001",
+          "Deals": "5062683000007913007",
+          "Service_Locations": "5062683000007933004"
+        },
+        "source_lead": "5062683000007898003",
+        "work_orders": [
+          "5062683000007908023",
+          "5062683000007938011"
+        ],
+        "services": [
+          "5062683000007933006"
+        ],
+        "tickets": [
+          "5062683000007909008"
+        ],
+        "lead_contact_email_equal": true,
+        "lead_first_source": "phase9_test",
+        "contact_first_source": "phase9_test",
+        "deal_first_source": "phase9_test",
+        "intake_event_count": 3,
+        "intake_sources": [
+          "ai_website",
+          "ai_website",
+          "opticable_website"
+        ],
+        "duplicate_terminal_events": 0
+      },
+      {
+        "project_id": "OB-J-E785F334807F",
+        "provider": {
+          "Accounts": "5062683000007928001",
+          "Contacts": "5062683000007929001",
+          "Deals": "5062683000007943001",
+          "Service_Locations": "5062683000007933004"
+        },
+        "source_lead": null,
+        "work_orders": [
+          "5062683000007915018"
+        ],
+        "services": [
+          "5062683000007938014"
+        ],
+        "tickets": [],
+        "duplicate_terminal_events": 0
+      }
+    ],
+    "canonical_collisions": [],
+    "documents": [
+      {
+        "project_id": "OB-J-3C80B6CE886D",
+        "sha256_match": true,
+        "inside_registered_folder": true,
+        "mode": "0o644"
+      },
+      {
+        "project_id": "OB-J-3C80B6CE886D",
+        "sha256_match": true,
+        "inside_registered_folder": true,
+        "mode": "0o644"
+      },
+      {
+        "project_id": "OB-J-B0F930C2378E",
+        "sha256_match": true,
+        "inside_registered_folder": true,
+        "mode": "0o644"
+      },
+      {
+        "project_id": "OB-J-B0F930C2378E",
+        "sha256_match": true,
+        "inside_registered_folder": true,
+        "mode": "0o644"
+      },
+      {
+        "project_id": "OB-J-E785F334807F",
+        "sha256_match": true,
+        "inside_registered_folder": true,
+        "mode": "0o644"
+      }
+    ]
+  },
+  "protected-final-summary.json": {
+    "checks": {
+      "Accounts": {
+        "protected": 41,
+        "resolve": true,
+        "count_now": 50
+      },
+      "Contacts": {
+        "protected": 45,
+        "resolve": true,
+        "count_now": 54
+      },
+      "Deals": {
+        "protected": 1,
+        "resolve": true,
+        "count_now": 12
+      },
+      "Leads": {
+        "protected": 11,
+        "resolve": true,
+        "count_now": 26
+      },
+      "Service_Locations": {
+        "protected": 12,
+        "resolve": true,
+        "count_now": 20
+      },
+      "Services": {
+        "protected": 12,
+        "resolve": true,
+        "count_now": 25
+      },
+      "Tasks": {
+        "protected": 1,
+        "resolve": true,
+        "count_now": 6
+      }
+    },
+    "protected_count": 123,
+    "changed_during_audit": [],
+    "modified_after_own_baseline": [],
+    "completed_at": "2026-10-01T18:52:10.141897+00:00"
+  },
+  "protection-dry-checks.json": {
+    "checks": [
+      {
+        "method": "POST",
+        "path_class": "Books/synced finance",
+        "denied": true,
+        "error_type": "ZohoGatewayError"
+      },
+      {
+        "method": "PUT",
+        "path_class": "Books/synced finance",
+        "denied": true,
+        "error_type": "ZohoGatewayError"
+      },
+      {
+        "method": "PATCH",
+        "path_class": "Books/synced finance",
+        "denied": true,
+        "error_type": "ZohoGatewayError"
+      },
+      {
+        "method": "DELETE",
+        "path_class": "Books/synced finance",
+        "denied": true,
+        "error_type": "ZohoGatewayError"
+      },
+      {
+        "method": "POST",
+        "path_class": "Books/synced finance",
+        "denied": true,
+        "error_type": "ZohoGatewayError"
+      },
+      {
+        "method": "PUT",
+        "path_class": "Books/synced finance",
+        "denied": true,
+        "error_type": "ZohoGatewayError"
+      },
+      {
+        "method": "PATCH",
+        "path_class": "Books/synced finance",
+        "denied": true,
+        "error_type": "ZohoGatewayError"
+      },
+      {
+        "method": "DELETE",
+        "path_class": "Books/synced finance",
+        "denied": true,
+        "error_type": "ZohoGatewayError"
+      },
+      {
+        "method": "PUT",
+        "path_class": "protected Lead",
+        "denied": true,
+        "error_type": "ValueError"
+      },
+      {
+        "case": "root Test Lab grant spoofing protected Lead",
+        "denied": true,
+        "error_type": "ValueError"
+      }
+    ],
+    "protected_precedence": true,
+    "kill_switch_denied_test_mutation": true,
+    "provider_transports": 0,
+    "oauth_calls": 0
+  },
+  "connector-final-deployment.json": {
+    "main_sha": "aa1e084b06184df73847639700a8e540bd433293",
+    "source_sha256": "5ef2d4ebd0944282f2919376b7468979efd62708bd4d7f63a75f79c8ec4e8ea9",
+    "bytes": 132269,
+    "mutation_guard_present": true,
+    "executable_read_guard_present": true,
+    "deployment_ci": [
+      {
+        "id": 36909976950,
+        "name": "Deploy Opticable AI Connector",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/yboucher97/opticable-ai-connector/actions/runs/36909976950"
+      },
+      {
+        "id": 36908386803,
+        "name": "Step 4 routing tests",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/yboucher97/opticable-ai-connector/actions/runs/36908386803"
+      }
+    ],
+    "public_health": 200,
+    "real_business_mutations": 0,
+    "actual_deploy_runs": [
+      {
+        "id": 36909976950,
+        "head_sha": "aa1e084b06184df73847639700a8e540bd433293",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/yboucher97/opticable-ai-connector/actions/runs/36909976950"
+      },
+      {
+        "id": 36908114974,
+        "head_sha": "63800650eadcdb385fe700e72085baf89522cc4e",
+        "status": "completed",
+        "conclusion": "failure",
+        "html_url": "https://github.com/yboucher97/opticable-ai-connector/actions/runs/36908114974"
+      },
+      {
+        "id": 36899667709,
+        "head_sha": "9cd23c2f7cd84f127fcfa998e1c85a0cfba3496c",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/yboucher97/opticable-ai-connector/actions/runs/36899667709"
+      }
+    ],
+    "existing_test_read": {
+      "carrier_http_status": 200,
+      "expected_test_id_present": true,
+      "body_sha256": "6e99f0faad434d9907225c884b47669f7302609bfe446d5895369a7e15bda0df"
+    }
+  },
+  "connector-pr.json": {
+    "pr": "https://github.com/yboucher97/opticable-ai-connector/pull/30",
+    "number": 30,
+    "merge": {
+      "sha": "9cd23c2f7cd84f127fcfa998e1c85a0cfba3496c",
+      "merged": true,
+      "message": "Pull Request successfully merged"
+    }
+  },
+  "connector-final-pr.json": {
+    "pr": "https://github.com/yboucher97/opticable-ai-connector/pull/32",
+    "number": 32,
+    "head": "ed9c49155da5eead442a2a951d94816eca5daa71",
+    "merge": {
+      "sha": "aa1e084b06184df73847639700a8e540bd433293",
+      "merged": true,
+      "message": "Pull Request successfully merged"
+    }
+  },
+  "secret-operational-summary.json": {
+    "files_checked": 104,
+    "literal_matches": [
+      {
+        "journal_unit": "opticable-workflow-api",
+        "names": [
+          "SITE_WORKFLOW_API_KEY"
+        ]
+      }
+    ],
+    "scope": "current credential literals in audit evidence, workflow DB/JSON and selected root journals; no secret values emitted"
+  },
+  "secret-summary.json": {
+    "pattern_names": [
+      "SITE_WORKFLOW_API_KEY",
+      "PASSWORD_PDF_API_KEY",
+      "OMADA_SITE_CREATOR_WEBHOOK_TOKEN",
+      "ZOHO_OAUTH_CLIENT_SECRET",
+      "GOOGLE_OAUTH_CLIENT_SECRET",
+      "WINDSOR_API_KEY",
+      "OVH_APPLICATION_SECRET",
+      "CLOUDFLARE_API_TOKEN",
+      "APOLLO_API_KEY",
+      "OPENAI_API_KEY",
+      "ANTHROPIC_API_KEY",
+      "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL",
+      "zoho-oauth.json:client_secret",
+      "zoho-oauth.json:refresh_token",
+      "zoho-oauth.json:access_token"
+    ],
+    "matches": [],
+    "history_scan": "all reachable Git blobs; current credential literals only; no secret values reported",
+    "/opt/opticable-api-platform": {
+      "reachable_objects": 4257,
+      "blobs_scanned": 1348
+    },
+    "/home/optibrain/phase13-connector-audit": {
+      "reachable_objects": 327,
+      "blobs_scanned": 85
+    },
+    "/root/.bash_history": {
+      "present": false
+    },
+    "/home/optibrain/.bash_history": {
+      "mode": "0o600",
+      "literal_secret_names_present": []
+    }
+  },
+  "route-containment-final.json": [
+    {
+      "path": "/health",
+      "status": 200
+    },
+    {
+      "path": "/pdf/health",
+      "status": 200
+    },
+    {
+      "path": "/omada/api/health",
+      "status": 200
+    },
+    {
+      "path": "/omada/",
+      "status": 403
+    },
+    {
+      "path": "/omada/api/runs/start",
+      "status": 403
+    },
+    {
+      "path": "/pdf/jobs/nonexistent",
+      "status": 403
+    },
+    {
+      "path": "/jobs/nonexistent",
+      "status": 403
+    },
+    {
+      "path": "/workflow/jobs/nonexistent",
+      "status": 403
+    }
+  ],
+  "legacy-job-denials.json": [
+    {
+      "path": "/v1/omada/jobs",
+      "status": 403,
+      "empty_payload": true
+    },
+    {
+      "path": "/v1/site-and-password/jobs",
+      "status": 403,
+      "empty_payload": true
+    },
+    {
+      "path": "/v1/workflows/site-and-password",
+      "status": 403,
+      "empty_payload": true
+    },
+    {
+      "path": "/webhooks/zoho/site-workflow",
+      "status": 403,
+      "empty_payload": true
+    },
+    {
+      "path": "/pdf/webhooks/zoho/wifi-pdfs",
+      "status": 403,
+      "empty_payload": true
+    },
+    {
+      "path": "/workflow/v1/site-and-password/jobs",
+      "status": 403,
+      "empty_payload": true
+    }
+  ],
+  "native-view-summary.json": {
+    "Leads": [
+      {
+        "id": "5062683000000087501",
+        "name": "All Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000003484045",
+        "name": "All Locked Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000089005",
+        "name": "Converted Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000149020",
+        "name": "Junk Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087503",
+        "name": "Mailing Labels",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000089007",
+        "name": "My Converted Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087563",
+        "name": "My Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000149031",
+        "name": "Not Qualified Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000149042",
+        "name": "Open Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000007930011",
+        "name": "Opticable Live Leads",
+        "system": false,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087509",
+        "name": "Recently Created Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087511",
+        "name": "Recently Modified Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087507",
+        "name": "Today's Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087505",
+        "name": "Unread Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000283003",
+        "name": "Unsubscribed Leads",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      }
+    ],
+    "Contacts": [
+      {
+        "id": "5062683000000087529",
+        "name": "All Contacts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000003484051",
+        "name": "All Locked Contacts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087531",
+        "name": "Mailing Labels",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087567",
+        "name": "My Contacts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087537",
+        "name": "New Last Week",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087535",
+        "name": "New This Week",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087539",
+        "name": "Recently Created Contacts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087541",
+        "name": "Recently Modified Contacts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087533",
+        "name": "Unread Contacts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000283024",
+        "name": "Unsubscribed Contacts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      }
+    ],
+    "Accounts": [
+      {
+        "id": "5062683000000087515",
+        "name": "All Accounts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000003484055",
+        "name": "All Locked Accounts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087565",
+        "name": "My Accounts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087521",
+        "name": "New Last Week",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087519",
+        "name": "New This Week",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087525",
+        "name": "Recently Created Accounts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087527",
+        "name": "Recently Modified Accounts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087517",
+        "name": "Unread Accounts",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      }
+    ],
+    "Deals": [
+      {
+        "id": "5062683000000087545",
+        "name": "All Deals",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000003484049",
+        "name": "All Locked Deals",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087561",
+        "name": "Closing Next Month",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087559",
+        "name": "Closing This Month",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087569",
+        "name": "My Deals",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087551",
+        "name": "New Last Week",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087549",
+        "name": "New This Week",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000007921005",
+        "name": "Opticable Live Opportunities",
+        "system": false,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087553",
+        "name": "Recently Created Deals",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087555",
+        "name": "Recently Modified Deals",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087547",
+        "name": "Unread Deals",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      }
+    ],
+    "Services": [
+      {
+        "id": "5062683000006432375",
+        "name": "All Locked Services-",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006432365",
+        "name": "All Services-",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006432367",
+        "name": "My Services-",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006432371",
+        "name": "Recently Created Services-",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006432373",
+        "name": "Recently Modified Services-",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006432369",
+        "name": "Unsubscribed Services-",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      }
+    ],
+    "Service_Locations": [
+      {
+        "id": "5062683000006427034",
+        "name": "All Locked Service Locations",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006427024",
+        "name": "All Service Locations",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006427026",
+        "name": "My Service Locations",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006427030",
+        "name": "Recently Created Service Locations",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006427032",
+        "name": "Recently Modified Service Locations",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006427028",
+        "name": "Unsubscribed Service Locations",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      }
+    ],
+    "Installations": [
+      {
+        "id": "5062683000006430874",
+        "name": "All Installations",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006430884",
+        "name": "All Locked Installations",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006430876",
+        "name": "My Installations",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006430880",
+        "name": "Recently Created Installations",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006430882",
+        "name": "Recently Modified Installations",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000006430878",
+        "name": "Unsubscribed Installations",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      }
+    ],
+    "Tasks": [
+      {
+        "id": "5062683000003484041",
+        "name": "All Locked Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331292",
+        "name": "All Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331298",
+        "name": "Closed Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331183",
+        "name": "My Closed Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331228",
+        "name": "My Next 7 Days + Overdue Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331288",
+        "name": "My Open Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331210",
+        "name": "My Overdue Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331174",
+        "name": "My Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331219",
+        "name": "My Today + Overdue Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331192",
+        "name": "My Today's Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331201",
+        "name": "My Tomorrow's Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331308",
+        "name": "Next 7 Days + Overdue Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331294",
+        "name": "Open Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331300",
+        "name": "Overdue Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331306",
+        "name": "Today + Overdue Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331302",
+        "name": "Today's Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000331304",
+        "name": "Tomorrow's Tasks",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      }
+    ],
+    "Cases": [
+      {
+        "id": "5062683000000087619",
+        "name": "All Cases",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000003484057",
+        "name": "All Locked Cases",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087625",
+        "name": "Closed Cases",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087627",
+        "name": "Escalated Cases",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087577",
+        "name": "My Cases",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087623",
+        "name": "Open Cases",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087621",
+        "name": "Today's Cases",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      },
+      {
+        "id": "5062683000000087603",
+        "name": "Unread Cases",
+        "system": true,
+        "explicit_test_clause": false,
+        "criteria_present": false
+      }
+    ]
+  },
+  "r2-readback.json": {
+    "object": "backups/2026/10/01/20261001T185502Z.tar.gz.age",
+    "bytes": 275619717,
+    "sha256": "2c84855727e40371a6563a72384db7cac3b52c25092b7f119688c3c3dbba9404",
+    "matches_latest_state": true,
+    "decryption": "NOT INDEPENDENTLY PROVEN: private AGE identity intentionally offline",
+    "business_mutations": 0
+  },
+  "worker-final.json": {
+    "units": [
+      {
+        "unit": "optibrain-agent-dispatch.service",
+        "properties": "ActiveState=inactive\nUnitFileState=disabled\nConditions=[unprintable]\n"
+      },
+      {
+        "unit": "optibrain-agent-dispatch.timer",
+        "properties": "ActiveState=inactive\nUnitFileState=disabled\nConditions=[unprintable]\n"
+      },
+      {
+        "unit": "optibrain-agent-status.service",
+        "properties": "ActiveState=inactive\nUnitFileState=disabled\nConditions=[unprintable]\n"
+      },
+      {
+        "unit": "optibrain-agent-status.timer",
+        "properties": "ActiveState=inactive\nUnitFileState=disabled\nConditions=[unprintable]\n"
+      },
+      {
+        "unit": "optibrain-agent-usage.service",
+        "properties": "ActiveState=inactive\nUnitFileState=static\nConditions=[unprintable]\n"
+      },
+      {
+        "unit": "optibrain-agent-usage.timer",
+        "properties": "ActiveState=inactive\nUnitFileState=disabled\nConditions=[unprintable]\n"
+      }
+    ],
+    "authorization_file_absent": true,
+    "root_cron": 1,
+    "optibrain_cron": 1
+  },
+  "github-workflows-state.json": [
+    {
+      "id": 367733991,
+      "name": "Customer Lifecycle Owner Digest",
+      "path": ".github/workflows/customer-lifecycle-digest.yml",
+      "state": "active",
+      "last_runs": [
+        {
+          "id": 36905202760,
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-01T18:13:14Z",
+          "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36905202760"
+        }
+      ]
+    },
+    {
+      "id": 367738378,
+      "name": "Customer Lifecycle Mailbox Poll",
+      "path": ".github/workflows/customer-lifecycle-mailbox-poll.yml",
+      "state": "active",
+      "last_runs": [
+        {
+          "id": 36872328807,
+          "status": "completed",
+          "conclusion": "failure",
+          "created_at": "2026-10-01T13:55:29Z",
+          "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36872328807"
+        }
+      ]
+    },
+    {
+      "id": 366656558,
+      "name": "Deploy API Platform",
+      "path": ".github/workflows/deploy-api-platform.yml",
+      "state": "active"
+    },
+    {
+      "id": 366959604,
+      "name": "Deploy Durable Control Plane",
+      "path": ".github/workflows/deploy-control-plane.yml",
+      "state": "active"
+    },
+    {
+      "id": 367264708,
+      "name": "Monitor OptiBrain Production Health",
+      "path": ".github/workflows/monitor-production-health.yml",
+      "state": "active"
+    },
+    {
+      "id": 367757973,
+      "name": "Schedule Customer Lifecycle",
+      "path": ".github/workflows/schedule-customer-lifecycle.yml",
+      "state": "active"
+    },
+    {
+      "id": 366648678,
+      "name": "Validate API Platform",
+      "path": ".github/workflows/validate-api-platform.yml",
+      "state": "active"
+    },
+    {
+      "id": 366939706,
+      "name": "Validate Autonomous Core",
+      "path": ".github/workflows/validate-autonomous-core.yml",
+      "state": "active"
+    }
+  ],
+  "closure-state.json": {
+    "recorded_at": "2026-10-01T18:58:18.574756+00:00",
+    "scope": "manual Phase13 closure; no next mission",
+    "development_units": {
+      "optibrain-agent-dispatch.service": [
+        "ActiveState=inactive",
+        "UnitFileState=disabled",
+        "ConditionResult=no"
+      ],
+      "optibrain-agent-dispatch.timer": [
+        "ActiveState=inactive",
+        "UnitFileState=disabled",
+        "ConditionResult=no"
+      ],
+      "optibrain-agent-status.service": [
+        "ActiveState=inactive",
+        "UnitFileState=disabled",
+        "ConditionResult=no"
+      ],
+      "optibrain-agent-status.timer": [
+        "ActiveState=inactive",
+        "UnitFileState=disabled",
+        "ConditionResult=no"
+      ],
+      "optibrain-agent-usage.service": [
+        "ActiveState=inactive",
+        "UnitFileState=static",
+        "ConditionResult=no"
+      ],
+      "optibrain-agent-usage.timer": [
+        "ActiveState=inactive",
+        "UnitFileState=disabled",
+        "ConditionResult=no"
+      ]
+    },
+    "development_authorization_file_exists": false,
+    "application_timers": {
+      "optibrain-backup.timer": [
+        "NextElapseUSecRealtime=Thu 2026-10-01 22:43:36 EDT",
+        "NextElapseUSecMonotonic=0",
+        "ActiveState=active",
+        "UnitFileState=enabled"
+      ],
+      "optibrain-phase2a-upload.timer": [
+        "NextElapseUSecRealtime=Thu 2026-10-01 23:04:44 EDT",
+        "NextElapseUSecMonotonic=0",
+        "ActiveState=active",
+        "UnitFileState=enabled"
+      ],
+      "opticable-phase9-intake-receipts.timer": [
+        "NextElapseUSecRealtime=",
+        "NextElapseUSecMonotonic=6d 2h 47min 54.997400s",
+        "ActiveState=active",
+        "UnitFileState=enabled"
+      ],
+      "opticable-phase10-service-events.timer": [
+        "NextElapseUSecRealtime=",
+        "NextElapseUSecMonotonic=6d 3h 6min 16.243456s",
+        "ActiveState=active",
+        "UnitFileState=enabled"
+      ],
+      "opticable-phase12-test-runner.timer": [
+        "NextElapseUSecRealtime=Thu 2026-10-01 15:01:51 EDT",
+        "NextElapseUSecMonotonic=0",
+        "ActiveState=active",
+        "UnitFileState=enabled"
+      ]
+    },
+    "health": {
+      "https://optibrain.opticable.ca/health": {
+        "http_status": 200
+      },
+      "https://optibrain.opticable.ca/v1/system/health": {
+        "http_status": 200
+      },
+      "https://optibrain.opticable.ca/pdf/health": {
+        "http_status": 200
+      },
+      "https://optibrain.opticable.ca/omada/api/health": {
+        "http_status": 200
+      },
+      "https://connect.opticable.ca/health": {
+        "http_status": 200
+      }
+    },
+    "protected_final": {
+      "checks": {
+        "Accounts": {
+          "protected": 41,
+          "resolve": true,
+          "count_now": 50
+        },
+        "Contacts": {
+          "protected": 45,
+          "resolve": true,
+          "count_now": 54
+        },
+        "Deals": {
+          "protected": 1,
+          "resolve": true,
+          "count_now": 12
+        },
+        "Leads": {
+          "protected": 11,
+          "resolve": true,
+          "count_now": 26
+        },
+        "Service_Locations": {
+          "protected": 12,
+          "resolve": true,
+          "count_now": 20
+        },
+        "Services": {
+          "protected": 12,
+          "resolve": true,
+          "count_now": 25
+        },
+        "Tasks": {
+          "protected": 1,
+          "resolve": true,
+          "count_now": 6
+        }
+      },
+      "protected_count": 123,
+      "changed_during_audit": [],
+      "modified_after_own_baseline": [],
+      "completed_at": "2026-10-01T18:52:10.141897+00:00"
+    },
+    "containment_hashes": {
+      "/etc/caddy/conf.d/opticable-api-platform.caddy": "a5bd021934b6963a10ef2b2996ba7b7305c186914af07893f8255a506b5ccc6b",
+      "/etc/optibrain/phase9-form-enrichment.env": "4bf895d7b874a30e63fb958777481c34d8b8a2f9f13157f28e4f20b082879e4d",
+      "/etc/systemd/system/opticable-workflow-api.service.d/phase13-safety.conf": "742251debd23c182a0126f4988197843967a23ddf2d8738f0f72066435b8d2b9",
+      "/usr/local/lib/optibrain-backup/optibrain-backup.sh": "cb78ee47ec62466627a30bffb0de6db2f1e6429e142ef74faf5ace287a3a34ce"
+    },
+    "real_flags": "No OptiBrain-owned real action enabled; native Forms authority unproven",
+    "audit_business_mutations": 0,
+    "customer_sends": 0,
+    "books_writes": 0
+  },
+  "comprehensive": {
+    "tests": 783,
+    "subtests": 714,
+    "failures": 36,
+    "errors": 0,
+    "skipped": 0,
+    "blocked_network_attempts": 0,
+    "passed": false
+  },
+  "focused": {
+    "tests": 171,
+    "subtests": 107,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "blocked_network_attempts": 0,
+    "passed": true
+  },
+  "connector_tests": {
+    "tests": 23,
+    "failures": 0,
+    "network_mutation_matrix_cases": 30
+  },
+  "changes": [
+    {
+      "finding": "P13-H01",
+      "path": "/etc/optibrain/phase9-form-enrichment.env",
+      "before_sha256": "62ca169d7f927b289e175a64e483c93a2986314e444cd2aaa2f49102dbb4d78b",
+      "after_sha256": "4bf895d7b874a30e63fb958777481c34d8b8a2f9f13157f28e4f20b082879e4d",
+      "change": "OPTIBRAIN_PHASE9_FORM_ENRICHMENT=off; receipt reads and reconciliation retained"
+    },
+    {
+      "finding": "P13-H02",
+      "change": "Disabled legacy email-analysis, digest and contract-send workflows via root-owned config override; read observers remain enabled",
+      "paths": [
+        "/etc/optibrain/phase13-observe-workflows",
+        "/etc/systemd/system/opticable-workflow-api.service.d/phase13-safety.conf"
+      ]
+    },
+    {
+      "finding": "P13-H03",
+      "change": "Added absent root-controlled authorization-file condition to all six retired development units; timers remain disabled"
+    },
+    {
+      "finding": "P13-C01",
+      "provider": "opticable-ai-connector",
+      "endpoint": "content-only emergency deployment",
+      "source_sha256": "133975c671630054d61c9bfd7f3888f2f09a98e479d6533be6de13584677117c",
+      "binding_identities_preserved": true,
+      "changed_setting_keys": [
+        "annotations"
+      ],
+      "source_exact_readback": true,
+      "git_commit": "f309bc55ac5b48cb717897f4704bdb6805176d67",
+      "real_business_mutations": 0
+    },
+    {
+      "finding": "P13-C02",
+      "change": "Denied external unauthenticated Omada routes on both API hostnames; public health remains readable",
+      "paths": [
+        "/etc/caddy/conf.d/opticable-api-platform.caddy"
+      ]
+    },
+    {
+      "finding": "P13-H04",
+      "change": "Disabled PDF CRM and WorkDrive writes in actual brand settings; denied public unauthenticated PDF job-result routes; PDF health and authenticated local rendering retained",
+      "path": "/etc/opticable-password-pdf/brand_settings.json"
+    },
+    {
+      "finding": "P13-H05",
+      "change": "Corrected daily backup scope to include root protection/action/document state, installed helpers and all application units/dropins; online-snapshot every application .db; exclude encrypted backup-cache recursion",
+      "installed_path": "/usr/local/lib/optibrain-backup/optibrain-backup.sh",
+      "version": "1.0.2",
+      "sha256": "cb78ee47ec62466627a30bffb0de6db2f1e6429e142ef74faf5ace287a3a34ce"
+    },
+    {
+      "finding": "P13-H04",
+      "change": "Extended unauthenticated job-result containment to all workflow API aliases, including /workflow prefix"
+    },
+    {
+      "finding": "P13-H06",
+      "change": "Suspended externally reachable legacy site/password and Omada job creation aliases; these can mutate infrastructure/WorkDrive outside business policy and are not protected by the real-write flags",
+      "path": "/etc/caddy/conf.d/opticable-api-platform.caddy",
+      "sha256": "a5bd021934b6963a10ef2b2996ba7b7305c186914af07893f8255a506b5ccc6b"
+    },
+    {
+      "finding": "P13-H09",
+      "change": "Disabled raw uvicorn HTTP access logging after independently detecting current API key in historical OAuth URL access records; business/security audit stores and service error journals retained",
+      "path": "/etc/systemd/system/opticable-workflow-api.service.d/phase13-safety.conf",
+      "credential_rotation": "Required controlled cross-client remediation; no secret printed"
+    },
+    {
+      "finding": "P13-C01",
+      "change": "Extended read-only connector containment to bounded provider services and non-executable paths; rejects encoded/traversal/query paths and method override headers before OAuth; final 23 tests and 30 denial cases pass",
+      "final_connector_main_sha": "aa1e084b06184df73847639700a8e540bd433293",
+      "pull_requests": [
+        30,
+        31,
+        32
+      ],
+      "test_expectation_correction": "HEAD unsupported-method rejection included; no live executable-provider probe",
+      "real_business_mutations": 0
+    }
+  ],
+  "backup": {
+    "archive": "/var/backups/optibrain/optibrain-backup-20261001T185502Z.tar.gz",
+    "sha256": "fc17b68194ba259c174c269728ef0ef53786a80ed041fdd2e4339bf3b90061ca",
+    "bytes": 275552253,
+    "manifest": {
+      "timestamp": "20261001T185502Z",
+      "production_git_sha": "ee7629f7e7954e1ee782c6481d4aaef37349d10f",
+      "backup_script_version": "1.0.2",
+      "sqlite_databases": [
+        {
+          "backup_path": "database/automation.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/optibrain/phase10/test-lab/lifecycle-events.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/optibrain/phase9/closure/phase9-intake.before-permission-fix.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/optibrain/phase9/mission2/form-receipts-stage.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/opticable-workflow-api/output/automation/phase10-service-events.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/opticable-workflow-api/output/automation/phase12-autonomy.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/opticable-workflow-api/output/automation/phase9-form-receipts.db",
+          "integrity": "ok"
+        },
+        {
+          "backup_path": "state/var/lib/opticable-workflow-api/output/automation/phase9-intake.db",
+          "integrity": "ok"
+        }
+      ]
+    },
+    "coverage": {
+      "state/var/lib/optibrain": true,
+      "phase8/test-lab/PROTECTED_PREEXISTING_RECORDS.json": true,
+      "phase11/test-lab/files": true,
+      "phase12-autonomy.db": true,
+      "phase9-form-receipts.db": true,
+      "phase9-intake.db": true,
+      "phase10-service-events.db": true,
+      "phase12-run-test-lab.py": true,
+      "opticable-phase12-test-runner.timer": true,
+      "optibrain-backup.service": true,
+      "opticable-workflow-api.service": true,
+      "etc/caddy": true,
+      "source/": true
+    },
+    "restore": {
+      "result": "PASS",
+      "source_sha256": "fc17b68194ba259c174c269728ef0ef53786a80ed041fdd2e4339bf3b90061ca",
+      "generation": "20261001T185502Z",
+      "source_commit": "ee7629f7e7954e1ee782c6481d4aaef37349d10f",
+      "files_verified": 1279,
+      "legacy_files_covered_by_archive_hash_only": 0,
+      "metadata_entries_validated": 1460,
+      "legacy_transient_sqlite_metadata_omissions": 0,
+      "databases_restored": 8,
+      "critical_configs_restored": 3,
+      "source_extraction": "PASS",
+      "scope": "isolated archive/database/config/source validation; no services started"
+    },
+    "final_control_matches": {
+      "/etc/caddy/conf.d/opticable-api-platform.caddy": true,
+      "/etc/systemd/system/opticable-workflow-api.service.d/phase13-safety.conf": true,
+      "/etc/optibrain/phase9-form-enrichment.env": true,
+      "/etc/opticable-password-pdf/brand_settings.json": true,
+      "/usr/local/lib/optibrain-backup/optibrain-backup.sh": true
+    },
+    "offhost_decrypt": "UNPROVEN: offline human identity"
+  },
+  "git_hygiene": {
+    "local_branches": 65,
+    "remote_tracking_refs": 107,
+    "tags": 44,
+    "worktrees": 42,
+    "history_deleted": false
+  }
+}

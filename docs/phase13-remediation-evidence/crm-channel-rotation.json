@@ -1,0 +1,11 @@
+{
+  "credential": "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL",
+  "channel_id": "5062683202609281",
+  "provider_readback_matches_new": true,
+  "provider_old_token_absent": true,
+  "old_callback_http_status": 401,
+  "expiry": "2026-10-07T19:38:19+00:00",
+  "events_preserved": true,
+  "business_record_mutations": 0,
+  "completed_at": "2026-10-01T19:41:18.580455+00:00"
+}

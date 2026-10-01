@@ -11,7 +11,7 @@ from typing import Any, Literal
 import yaml
 from fastapi import Body, FastAPI, Header, HTTPException, Query, Request
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
 from .clients import OmadaClient
@@ -848,7 +848,9 @@ phase7_registration = maybe_install_phase7(
 
 def _validate_api_key(provided_api_key: str | None) -> None:
     expected_api_key = os.getenv(settings.api.api_key_env)
-    if expected_api_key and (provided_api_key is None or not hmac.compare_digest(provided_api_key.encode(), expected_api_key.encode())):
+    if not expected_api_key or not expected_api_key.strip():
+        raise HTTPException(status_code=503, detail="Operator authentication is unavailable.")
+    if provided_api_key is None or not hmac.compare_digest(provided_api_key.encode(), expected_api_key.encode()):
         raise HTTPException(status_code=401, detail="Invalid X-API-Key")
 
 
@@ -860,6 +862,19 @@ def _validate_inspection_api_key(provided_api_key: str | None) -> None:
     _validate_api_key(provided_api_key)
 
 
+@app.middleware("http")
+async def contain_retired_execution(request, call_next):
+    path=request.url.path
+    retired_post={PRIMARY_JOB_CREATE_PATH,WORKFLOW_CANONICAL_PATH,
+        '/webhooks/zoho/site-and-password','/webhooks/zoho/site-workflow',
+        '/v1/site-and-password/webhooks/zoho','/v1/omada/jobs','/v1/omada/workdrive/jobs'}
+    if ((request.method!='GET' and path in retired_post) or path.startswith('/jobs/')
+            or path.startswith(PRIMARY_JOB_STATUS_PATH.split('{')[0])
+            or path.startswith(WORKFLOW_CANONICAL_JOB_STATUS_PATH.split('{')[0])):
+        return JSONResponse(status_code=403,content={'detail':'Legacy execution and credential job routes retired'})
+    return await call_next(request)
+
+
 app.add_middleware(EventBodyLimit)
 install_event_routes(app, lambda: automation_store, _validate_inspection_api_key, lambda: settings.automation.enabled,
                      delta_sync_worker.health)
@@ -869,7 +884,9 @@ def _validate_browser_or_header_api_key(
     header_api_key: str | None,
     query_api_key: str | None = None,
 ) -> None:
-    _validate_api_key(query_api_key or header_api_key)
+    if query_api_key is not None:
+        raise HTTPException(status_code=400, detail="Credentials in URLs are forbidden. Use X-API-Key.")
+    _validate_api_key(header_api_key)
 
 
 def _zoho_oauth_manager() -> ZohoOAuthManager:

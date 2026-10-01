@@ -123,7 +123,12 @@ class Policy:
     def from_environment(cls) -> "Policy":
         """Explicit opt-in for Test Lab automation; real mutations remain disabled."""
         enabled = lambda key: os.environ.get(key) == "1"
-        return cls(automatic_mutations=enabled("OPTIBRAIN_BUSINESS_AUTO_WRITES"),
+        from .mutation_control import read_control
+        try:
+            control_enabled = read_control()['test_writes_enabled']
+        except (OSError, ValueError, TypeError, KeyError):
+            control_enabled = False
+        return cls(automatic_mutations=enabled("OPTIBRAIN_BUSINESS_AUTO_WRITES") and control_enabled,
                    auto_test_task=enabled("OPTIBRAIN_AUTO_TEST_TASK"),
                    auto_test_project=enabled("OPTIBRAIN_AUTO_TEST_PROJECT"),
                    auto_test_internal=enabled("OPTIBRAIN_AUTO_TEST_INTERNAL"))
@@ -225,6 +230,22 @@ class BusinessJournal:
               exceptions INTEGER NOT NULL DEFAULT 0, denials INTEGER NOT NULL DEFAULT 0,
               reconciliations INTEGER NOT NULL DEFAULT 0, provider_failures INTEGER NOT NULL DEFAULT 0,
               writes INTEGER NOT NULL DEFAULT 0, duration_ms INTEGER);
+            CREATE TABLE IF NOT EXISTS action_envelopes (
+              action_id TEXT PRIMARY KEY, envelope_json TEXT NOT NULL,
+              payload_hash TEXT NOT NULL, created_at TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS action_evidence (
+              event_id INTEGER PRIMARY KEY AUTOINCREMENT, action_id TEXT NOT NULL,
+              kind TEXT NOT NULL, recorded_at TEXT NOT NULL, evidence_json TEXT NOT NULL,
+              previous_hash TEXT NOT NULL, event_hash TEXT NOT NULL);
+            CREATE INDEX IF NOT EXISTS idx_action_evidence_action ON action_evidence(action_id,event_id);
+            CREATE TRIGGER IF NOT EXISTS action_envelopes_immutable_update BEFORE UPDATE ON action_envelopes
+              BEGIN SELECT RAISE(ABORT,'Action envelope is immutable'); END;
+            CREATE TRIGGER IF NOT EXISTS action_envelopes_immutable_delete BEFORE DELETE ON action_envelopes
+              BEGIN SELECT RAISE(ABORT,'Action envelope is immutable'); END;
+            CREATE TRIGGER IF NOT EXISTS action_evidence_immutable_update BEFORE UPDATE ON action_evidence
+              BEGIN SELECT RAISE(ABORT,'Action evidence is append only'); END;
+            CREATE TRIGGER IF NOT EXISTS action_evidence_immutable_delete BEFORE DELETE ON action_evidence
+              BEGIN SELECT RAISE(ABORT,'Action evidence is append only'); END;
             """)
 
     @contextmanager
@@ -244,6 +265,51 @@ class BusinessJournal:
         with self._db() as db:
             row = db.execute("SELECT * FROM actions WHERE action_id=?", (action_id,)).fetchone()
         return dict(row) if row else None
+
+    @staticmethod
+    def _scrub(value, depth=0):
+        if depth > 16: return '[REDACTED: DEPTH]'
+        if isinstance(value, dict):
+            return {str(k): '[REDACTED]' if re.search(r'token|secret|password|authorization|cookie|credential|api.?key',str(k),re.I)
+                    else BusinessJournal._scrub(v, depth+1) for k,v in value.items()}
+        if isinstance(value, (list,tuple)):
+            return [BusinessJournal._scrub(v,depth+1) for v in value]
+        if isinstance(value, str):
+            for key,secret in os.environ.items():
+                if (re.search(r'TOKEN|SECRET|PASSWORD|CREDENTIAL|API_KEY',key)
+                        and len(secret)>=16 and not secret.startswith(('/','http'))):
+                    value=value.replace(secret,'[REDACTED]')
+        return value
+
+    def _append(self, db, action_id, kind, evidence):
+        if not re.fullmatch(r'[a-z_]{3,64}',kind): raise ValueError('Invalid evidence kind')
+        encoded=json.dumps(self._scrub(evidence),sort_keys=True,separators=(',',':'),ensure_ascii=False)
+        if len(encoded.encode())>65536: raise ValueError('Execution evidence exceeds bound')
+        prior=db.execute('SELECT event_hash FROM action_evidence WHERE action_id=? ORDER BY event_id DESC LIMIT 1',(action_id,)).fetchone()
+        previous=prior['event_hash'] if prior else ''
+        when=utc_now();checksum=digest([action_id,kind,when,encoded,previous])
+        db.execute('INSERT INTO action_evidence(action_id,kind,recorded_at,evidence_json,previous_hash,event_hash) VALUES(?,?,?,?,?,?)',
+                   (action_id,kind,when,encoded,previous,checksum))
+
+    def record_evidence(self, action_id, kind, evidence):
+        with self._db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            if not db.execute('SELECT 1 FROM actions WHERE action_id=?',(action_id,)).fetchone():
+                raise ValueError('Evidence requires a durable action')
+            self._append(db,action_id,kind,evidence)
+
+    def reconstruction(self, action_id):
+        """Private recovery interface; deliberately absent from operator views."""
+        with self._db() as db:
+            envelope=db.execute('SELECT * FROM action_envelopes WHERE action_id=?',(action_id,)).fetchone()
+            events=[dict(r) for r in db.execute('SELECT * FROM action_evidence WHERE action_id=? ORDER BY event_id',(action_id,))]
+        previous=''
+        for event in events:
+            if (event['previous_hash']!=previous or event['event_hash']!=digest([action_id,event['kind'],event['recorded_at'],event['evidence_json'],previous])):
+                raise ValueError('Execution evidence hash chain is invalid')
+            previous=event['event_hash']
+        return {'action':self.get(action_id),'envelope':dict(envelope) if envelope else None,
+                'events':events,'history_integrity':'PASS','legacy_history_complete':bool(envelope and events and not any(e['kind']=='legacy_snapshot' for e in events))}
 
     def enqueue(self, action: Action, *, due_at: str, source_trigger: str) -> dict:
         """Incremental indexed queue; a replay key can never acquire a new effect."""
@@ -332,11 +398,27 @@ class BusinessJournal:
                  "DENY": "denied", "DEFER": "deferred", "RECONCILE": "reconcile"}[decision.choice]
         with self._db() as db:
             db.execute("BEGIN IMMEDIATE")
+            envelope=json.dumps(action.__dict__,sort_keys=True,separators=(',',':'),ensure_ascii=False)
+            # Secret-bearing actions cannot be made recoverable by leaking them.
+            if self._scrub(action.__dict__) != action.__dict__:
+                raise ValueError('Action envelope contains credential material')
+            old_envelope=db.execute('SELECT envelope_json FROM action_envelopes WHERE action_id=?',(action.action_id,)).fetchone()
+            if old_envelope and old_envelope['envelope_json'] != envelope:
+                raise ValueError('Replay identity reused with changed action envelope')
             previous = db.execute("SELECT * FROM actions WHERE action_id=?", (action.action_id,)).fetchone()
             if previous:
                 if (previous["payload_hash"] != action.payload_hash or previous["action_type"] != action.action_type
                         or previous["target_id"] != action.target_id):
                     raise ValueError("Replay identity reused with changed action")
+                if not old_envelope:
+                    db.execute('INSERT INTO action_envelopes VALUES(?,?,?,?)',(action.action_id,envelope,action.payload_hash,now))
+                    self._append(db,action.action_id,'legacy_snapshot',{'state':previous['state'],'prior_history':'unavailable'})
+                if previous['state'] in {'proposed','deferred'} and previous['attempts']==0:
+                    db.execute('UPDATE actions SET state=?,decision=?,reason=?,updated_at=? WHERE action_id=?',
+                               (state,decision.choice,decision.reason,now,action.action_id))
+                    if previous['state']!=state or previous['decision']!=decision.choice:
+                        self._append(db,action.action_id,'policy_revalidated',{'from':previous['state'],'to':state,'decision':decision.__dict__})
+                    return dict(db.execute('SELECT * FROM actions WHERE action_id=?',(action.action_id,)).fetchone())
                 return dict(previous)
             db.execute("""INSERT INTO actions(action_id,request_key,action_type,target_module,target_id,
                 ownership,risk,confidence,decision,reason,payload_hash,expected_version,provider,
@@ -346,6 +428,8 @@ class BusinessJournal:
                  decision.choice, decision.reason, action.payload_hash, action.expected_version,
                  action.provider, state, now, now,
                  json.dumps({"effect": effect_summary(action)}, separators=(",", ":"))))
+            db.execute('INSERT INTO action_envelopes VALUES(?,?,?,?)',(action.action_id,envelope,action.payload_hash,now))
+            self._append(db,action.action_id,'prepared',{'trigger':'manual_or_unscheduled','decision':decision.__dict__,'payload_hash':action.payload_hash})
         return self.get(action.action_id)
 
     def transition(self, action_id: str, *, from_states: tuple[str, ...], to: str,
@@ -358,11 +442,12 @@ class BusinessJournal:
             row = db.execute("SELECT * FROM actions WHERE action_id=?", (action_id,)).fetchone()
             if not row or row["state"] not in from_states:
                 raise ValueError("Business action state changed or was already consumed")
-            merged_detail = {**json.loads(row["detail_json"]), **(detail or {})}
+            merged_detail = {**json.loads(row["detail_json"]), **self._scrub(detail or {})}
             db.execute("UPDATE actions SET state=?,attempts=attempts+?,provider_id=COALESCE(?,provider_id),"
                        "detail_json=?,updated_at=? WHERE action_id=?",
                        (to, int(attempt), provider_id,
                         json.dumps(merged_detail, separators=(",", ":")), utc_now(), action_id))
+            self._append(db,action_id,'transition',{'from':row['state'],'to':to,'provider_id':provider_id,'attempt':attempt,'detail':detail or {}})
         return self.get(action_id)
 
     def issue(self, action: Action, *, actor: str, expires_at: str,
@@ -390,6 +475,7 @@ class BusinessJournal:
             db.execute("INSERT INTO approvals VALUES(?,?,?,?,?,?,?,?,?,NULL)",
                 (approval_id, action_id, entry["action_type"], entry["target_id"],
                  payload_hash, actor, clock.isoformat(), expiry.isoformat(), "issued"))
+            self._append(db,action_id,'approval_issued',{'approval_id':approval_id,'approver':actor,'payload_hash':payload_hash,'expires_at':expiry.isoformat(),'target_id':entry['target_id']})
         return {"approval_id": approval_id, "action_id": action_id,
                 "expires_at": expiry.isoformat(), "state": "issued"}
 
@@ -413,6 +499,7 @@ class BusinessJournal:
                        (clock.isoformat(), approval_id))
             db.execute("UPDATE actions SET state='attempted',attempts=attempts+1,updated_at=? WHERE action_id=?",
                        (clock.isoformat(), action.action_id))
+            self._append(db,action.action_id,'approval_claimed',{'approval_id':approval_id,'actor':actor,'from':'approval_required','to':'attempted'})
         return {"approval_id": approval_id, "action_id": action.action_id,
                 "state": "consuming", "actor": actor}
 
@@ -425,11 +512,14 @@ class BusinessJournal:
             if not row or row["state"] != "consuming":
                 raise ValueError("Approval was not durably claimed")
             db.execute("UPDATE approvals SET state='consumed' WHERE approval_id=?", (approval_id,))
+            detail=json.loads(db.execute('SELECT detail_json FROM actions WHERE action_id=?',(row['action_id'],)).fetchone()['detail_json'])
+            detail['reconciliation']='exact_readback'
             changed = db.execute("UPDATE actions SET state='succeeded',provider_id=?,updated_at=?,"
                        "detail_json=? WHERE action_id=? AND state='attempted'",
-                       (provider_id, utc_now(), '{"reconciliation":"exact_readback"}', row["action_id"]))
+                       (provider_id, utc_now(), json.dumps(detail,separators=(',',':')), row["action_id"]))
             if changed.rowcount != 1:
                 raise ValueError("Approved action state changed")
+            self._append(db,row['action_id'],'approval_finished',{'approval_id':approval_id,'provider_id':provider_id,'to':'succeeded'})
 
     def close_approval(self, approval_id: str, *, state: str) -> None:
         if state not in {"stale", "reconcile"}:
@@ -440,6 +530,8 @@ class BusinessJournal:
             if not row or row["state"] != "consuming":
                 raise ValueError("Approval was not claimed")
             db.execute("UPDATE approvals SET state='consumed' WHERE approval_id=?", (approval_id,))
+            action_id=db.execute('SELECT action_id FROM approvals WHERE approval_id=?',(approval_id,)).fetchone()['action_id']
+            self._append(db,action_id,'approval_closed',{'approval_id':approval_id,'state':state})
 
     def view(self, *, limit: int = 100) -> dict:
         safe = max(1, min(limit, 100))
@@ -475,6 +567,8 @@ def dispatch(action: Action, *, ownership: Ownership, policy: Policy,
     """Execute once; uncertain provider results remain RECONCILE, never retried."""
     decision = decide(action, ownership, policy)
     row = journal.prepare(action, decision)
+    if decision.choice != 'AUTO_EXECUTE':
+        return row  # A prior proposed row cannot bypass a newly disabled policy.
     if row["state"] != "proposed":
         return row
     if decision.risk == "R0":
@@ -498,7 +592,9 @@ def dispatch(action: Action, *, ownership: Ownership, policy: Policy,
                                   detail={"reason": "fresh_evidence_unavailable"})
     journal.transition(action.action_id, from_states=("proposed",), to="attempted", attempt=True)
     try:
-        provider_id = execute()
+        from .mutation_control import action_scope
+        with action_scope(action,journal,ownership):
+            provider_id = execute()
         if not provider_id:
             raise ValueError("Provider acknowledgement lacked exact ID")
         observed = reconcile()
@@ -531,8 +627,13 @@ def reconcile_ambiguous(action: Action, journal: BusinessJournal,
 
 def dispatch_approved(action: Action, *, approval_id: str, actor: str,
                       journal: BusinessJournal, fresh: Callable[[], dict],
-                      execute: Callable[[], str], reconcile: Callable[[], str | None]) -> dict:
+                      execute: Callable[[], str], reconcile: Callable[[], str | None],
+                      policy: Policy | None = None) -> dict:
     """Claim a Test Lab R3 approval before transport; exact readback or exception."""
+    policy=policy or Policy.from_environment()
+    if (not policy.automatic_mutations or not policy.approved_test_send
+            or action.action_type != 'email.send'):
+        raise ValueError('Approved Test execution is killed or forbidden')
     row = journal.get(action.action_id)
     if (not row or row["state"] != "approval_required" or row["risk"] != "R3"
             or row["ownership"] != "TEST_ONLY" or row["payload_hash"] != action.payload_hash):
@@ -546,7 +647,9 @@ def dispatch_approved(action: Action, *, approval_id: str, actor: str,
             journal.close_approval(approval_id, state="stale")
             return journal.transition(action.action_id, from_states=("attempted",), to="stale",
                                       detail={"reason": "approved_action_became_stale"})
-        provider_id = execute()
+        from .mutation_control import action_scope
+        with action_scope(action,journal,'TEST_ONLY'):
+            provider_id = execute()
         if not provider_id or reconcile() != provider_id:
             raise ValueError("Approved action lacked exact provider readback")
     except Exception as exc:

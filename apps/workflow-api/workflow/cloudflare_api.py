@@ -37,6 +37,9 @@ class CloudflareApiClient:
         method = str(method or "GET").upper().strip()
         if method not in {"GET", "POST", "PUT", "PATCH", "DELETE"}:
             raise ValueError(f"Unsupported Cloudflare method: {method}")
+        from .automation.mutation_control import require_technical_admin, safe_read
+        safe_read('cloudflare', path)
+        require_technical_admin(self, 'cloudflare', method, path, body)
         response = httpx.request(
             method,
             self.BASE + path,
@@ -60,5 +63,5 @@ class CloudflareApiClient:
             "data": data,
         }
         if not response.is_success:
-            raise CloudflareApiError(f"Cloudflare API returned HTTP {response.status_code}: {str(data)[:2000]}")
+            raise CloudflareApiError(f"Cloudflare API returned HTTP {response.status_code}")
         return result

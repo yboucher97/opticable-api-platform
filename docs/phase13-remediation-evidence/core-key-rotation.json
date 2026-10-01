@@ -1,0 +1,14 @@
+{
+  "credential": "SITE_WORKFLOW_API_KEY",
+  "locations_updated": [
+    "/etc/opticable-workflow-api.env",
+    "GitHub OPTICABLE_CORE_API_KEY",
+    "Cloudflare opticable-control-plane CORE_API_KEY"
+  ],
+  "new_key_http_status": 200,
+  "old_key_http_status": 401,
+  "cloudflare_secret_binding": true,
+  "server_health": 200,
+  "completed_at": "2026-10-01T19:38:53.800571+00:00",
+  "secret_values_recorded_in_evidence": false
+}

@@ -89,9 +89,9 @@ class CRMContainmentTests(unittest.TestCase):
         gateway=ZohoGatewayClient(ZohoGatewaySettings(base_url='https://connect.example.test',api_key='fake',timeout_seconds=60,standby_enabled=True),oauth)
         with patch.dict(os.environ,{'OPTIBRAIN_CRM_LEAD_WRITES':POLICY}),patch.object(gateway,'_local_request',side_effect=httpx.ReadTimeout('fixture loss')) as local,patch.object(gateway,'_standby_request') as standby:
             with reviewed_reconciler_call(gateway,'PUT','/crm/v8/Leads/123',self.body,self.headers,POLICY):
-                with self.assertRaises(ZohoWriteUnconfirmedError):gateway.request('zohoapis','PUT','/crm/v8/Leads/123',body=self.body,headers=self.headers,reason='reviewed',confirm=True)
                 with self.assertRaises(ValueError):gateway.request('zohoapis','PUT','/crm/v8/Leads/123',body=self.body,headers=self.headers,reason='reviewed',confirm=True)
-            local.assert_called_once();standby.assert_not_called()
+                with self.assertRaises(ValueError):gateway.request('zohoapis','PUT','/crm/v8/Leads/123',body=self.body,headers=self.headers,reason='reviewed',confirm=True)
+            local.assert_not_called();standby.assert_not_called()
     def test_policy_change_during_oauth_prevents_transport(self):
         oauth=Mock();oauth.status.return_value.configured=True;oauth.status.return_value.connected=True
         def token():
