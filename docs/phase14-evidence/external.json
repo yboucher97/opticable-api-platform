@@ -1,0 +1,884 @@
+{
+  "captured_at": "2026-10-02T02:26:50.393892+00:00",
+  "business_mutations": 0,
+  "errors": [],
+  "cloudflare_scripts": [
+    {
+      "name": "hoplajeux-reservation-email",
+      "modified_on": "2026-05-26T19:03:13.789955Z",
+      "schedules": [],
+      "bindings": [
+        {
+          "name": "EMAIL",
+          "type": "send_email",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "RESERVATION_EMAIL_TO",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "ZOHO_SMTP_FROM",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "ZOHO_SMTP_HOST",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "ZOHO_SMTP_PASSWORD",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "ZOHO_SMTP_PORT",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "ZOHO_SMTP_USER",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        }
+      ],
+      "workers_dev": null,
+      "classification": "SUPPORTING"
+    },
+    {
+      "name": "opticable-ai-connector",
+      "modified_on": "2026-10-01T20:10:33.781251Z",
+      "schedules": [],
+      "bindings": [
+        {
+          "name": "CONNECTOR_API_KEY",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "GOOGLE_ADS_CUSTOMER_ID",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "GOOGLE_REDIRECT_URI",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "OAUTH",
+          "type": "kv_namespace",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "OPTIBRAIN_RECEIPT_EXPORT_KEY",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "OVH_APPLICATION_KEY",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "OVH_APPLICATION_SECRET",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "OVH_CONSUMER_KEY",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "OVH_ENDPOINT",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "ZOHO_ACCOUNTS_BASE",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "ZOHO_CLIENT_ID",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "ZOHO_CLIENT_SECRET",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "ZOHO_MAIL_BASE",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "ZOHO_REDIRECT_URI",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "ZOHO_SCOPES",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        }
+      ],
+      "workers_dev": null,
+      "classification": "SUPPORTING"
+    },
+    {
+      "name": "opticable-camplan",
+      "modified_on": "2026-04-27T19:14:40.497803Z",
+      "schedules": [],
+      "bindings": [
+        {
+          "name": "ASSETS",
+          "type": "r2_bucket",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "DB",
+          "type": "d1",
+          "queue_name": null,
+          "workflow_name": null
+        }
+      ],
+      "workers_dev": null,
+      "classification": "UNKNOWN",
+      "unknown_reason": "No cron; current owner usage, external callers, shared state retention and recovery dependency not established by read-only scheduler/binding inventory."
+    },
+    {
+      "name": "opticable-control-plane",
+      "modified_on": "2026-10-01T23:38:57.744953Z",
+      "schedules": [
+        {
+          "cron": "*/15 * * * *",
+          "created_on": "2026-09-26T16:33:32.582163Z",
+          "modified_on": "2026-10-01T23:38:57.934198Z"
+        }
+      ],
+      "bindings": [
+        {
+          "name": "BUSINESS_WORKFLOW",
+          "type": "workflow",
+          "queue_name": null,
+          "workflow_name": "opticable-business-workflow"
+        },
+        {
+          "name": "CONTROL_PLANE_API_KEY",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "CORE_API_KEY",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "CORE_API_URL",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "EVENTS",
+          "type": "queue",
+          "queue_name": "opticable-business-events",
+          "workflow_name": null
+        }
+      ],
+      "workers_dev": null,
+      "classification": "CANONICAL"
+    },
+    {
+      "name": "opticable-plan2",
+      "modified_on": "2026-09-24T17:55:45.599792Z",
+      "schedules": [],
+      "bindings": [
+        {
+          "name": "ALLOW_REGISTRATION",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "APP_ORIGIN",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "ASSETS",
+          "type": "r2_bucket",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "DB",
+          "type": "d1",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "SHARED_WORKSPACE",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "STATIC",
+          "type": "assets",
+          "queue_name": null,
+          "workflow_name": null
+        }
+      ],
+      "workers_dev": null,
+      "classification": "UNKNOWN",
+      "unknown_reason": "No cron; current owner usage, external callers, shared state retention and recovery dependency not established by read-only scheduler/binding inventory."
+    },
+    {
+      "name": "opticable-website",
+      "modified_on": "2026-09-25T03:42:44.246351Z",
+      "schedules": [],
+      "bindings": [
+        {
+          "name": "ASSETS",
+          "type": "assets",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PROMO_ADMIN_PASSWORD",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PROMO_ADMIN_USERNAME",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PROMO_SIGNING_SECRET",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PROMO_TURNSTILE_SECRET",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "REFERRAL_APPLICATION_REVIEW_TO",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "REFERRAL_EMAIL_FROM",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "REFERRAL_EMAIL_REPLY_TO",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "REFERRAL_RESEND_API_KEY",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "REFERRAL_SESSION_SECRET",
+          "type": "secret_text",
+          "queue_name": null,
+          "workflow_name": null
+        }
+      ],
+      "workers_dev": null,
+      "classification": "SUPPORTING"
+    },
+    {
+      "name": "opticable-website-design-preview",
+      "modified_on": "2026-04-17T16:06:08.203799Z",
+      "schedules": [],
+      "bindings": [
+        {
+          "name": "ASSETS",
+          "type": "assets",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PREVIEW_BYPASS_TURNSTILE",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PREVIEW_DISABLE_APIS",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PREVIEW_MODE",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PROMO_DB",
+          "type": "d1",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PROMO_TURNSTILE_SITE_KEY",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PROMO_WEB_ANALYTICS_TOKEN",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "REFERRAL_DB",
+          "type": "d1",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "REFERRAL_DEV_MAGIC_LINKS",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        }
+      ],
+      "workers_dev": null,
+      "classification": "UNKNOWN",
+      "unknown_reason": "No cron; current owner usage, external callers, shared state retention and recovery dependency not established by read-only scheduler/binding inventory."
+    },
+    {
+      "name": "opticable-website-performance-preview",
+      "modified_on": "2026-04-17T03:54:53.189744Z",
+      "schedules": [],
+      "bindings": [
+        {
+          "name": "ASSETS",
+          "type": "assets",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PREVIEW_MODE",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PROMO_DB",
+          "type": "d1",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PROMO_TURNSTILE_SITE_KEY",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "PROMO_WEB_ANALYTICS_TOKEN",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "REFERRAL_DB",
+          "type": "d1",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "REFERRAL_DEV_MAGIC_LINKS",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        }
+      ],
+      "workers_dev": null,
+      "classification": "UNKNOWN",
+      "unknown_reason": "No cron; current owner usage, external callers, shared state retention and recovery dependency not established by read-only scheduler/binding inventory."
+    },
+    {
+      "name": "opticable-website-preview",
+      "modified_on": "2026-09-25T03:42:51.768923Z",
+      "schedules": [],
+      "bindings": [
+        {
+          "name": "ASSETS",
+          "type": "assets",
+          "queue_name": null,
+          "workflow_name": null
+        },
+        {
+          "name": "OPTICABLE_PREVIEW",
+          "type": "plain_text",
+          "queue_name": null,
+          "workflow_name": null
+        }
+      ],
+      "workers_dev": null,
+      "classification": "UNKNOWN",
+      "unknown_reason": "No cron; current owner usage, external callers, shared state retention and recovery dependency not established by read-only scheduler/binding inventory."
+    },
+    {
+      "name": "website-test",
+      "modified_on": "2026-09-24T11:12:07.269284Z",
+      "schedules": [],
+      "bindings": [
+        {
+          "name": "ASSETS",
+          "type": "assets",
+          "queue_name": null,
+          "workflow_name": null
+        }
+      ],
+      "workers_dev": null,
+      "classification": "UNKNOWN",
+      "unknown_reason": "No cron; current owner usage, external callers, shared state retention and recovery dependency not established by read-only scheduler/binding inventory."
+    }
+  ],
+  "cloudflare_queues": [
+    {
+      "name": "opticable-business-events",
+      "consumer_count": 1,
+      "settings": {
+        "delivery_delay": 0,
+        "message_retention_period": 86400
+      },
+      "classification": "CANONICAL"
+    },
+    {
+      "name": "opticable-business-events-dlq",
+      "consumer_count": 0,
+      "settings": {
+        "delivery_delay": 0,
+        "message_retention_period": 86400
+      },
+      "classification": "SUPPORTING"
+    }
+  ],
+  "cloudflare_workflows": [
+    {
+      "name": "opticable-business-workflow"
+    }
+  ],
+  "cloudflare_instances": {
+    "result_info": {
+      "count": 27,
+      "page": 1,
+      "per_page": 100,
+      "total_count": 27
+    },
+    "sample_size": 27,
+    "statuses": {
+      "complete": 26,
+      "terminated": 1
+    }
+  },
+  "github_repositories": {
+    "opticable-api-platform": {
+      "workflows": [
+        {
+          "id": 367733991,
+          "name": "Customer Lifecycle Owner Digest",
+          "path": ".github/workflows/customer-lifecycle-digest.yml",
+          "state": "disabled_manually"
+        },
+        {
+          "id": 367738378,
+          "name": "Customer Lifecycle Mailbox Poll",
+          "path": ".github/workflows/customer-lifecycle-mailbox-poll.yml",
+          "state": "disabled_manually"
+        },
+        {
+          "id": 366656558,
+          "name": "Deploy API Platform",
+          "path": ".github/workflows/deploy-api-platform.yml",
+          "state": "active"
+        },
+        {
+          "id": 366959604,
+          "name": "Deploy Durable Control Plane",
+          "path": ".github/workflows/deploy-control-plane.yml",
+          "state": "active"
+        },
+        {
+          "id": 367264708,
+          "name": "Monitor OptiBrain Production Health",
+          "path": ".github/workflows/monitor-production-health.yml",
+          "state": "active"
+        },
+        {
+          "id": 367757973,
+          "name": "Schedule Customer Lifecycle",
+          "path": ".github/workflows/schedule-customer-lifecycle.yml",
+          "state": "disabled_manually"
+        },
+        {
+          "id": 366648678,
+          "name": "Validate API Platform",
+          "path": ".github/workflows/validate-api-platform.yml",
+          "state": "active"
+        },
+        {
+          "id": 366939706,
+          "name": "Validate Autonomous Core",
+          "path": ".github/workflows/validate-autonomous-core.yml",
+          "state": "active"
+        }
+      ],
+      "reported_count": 8
+    },
+    "opticable-ai-connector": {
+      "workflows": [
+        {
+          "id": 366635854,
+          "name": "Deploy Opticable AI Connector",
+          "path": ".github/workflows/deploy-worker.yml",
+          "state": "active"
+        },
+        {
+          "id": 366933471,
+          "name": "Step 4 routing tests",
+          "path": ".github/workflows/step4-routing-tests.yml",
+          "state": "active"
+        },
+        {
+          "id": 366649646,
+          "name": "Validate Opticable AI Connector",
+          "path": ".github/workflows/validate-worker.yml",
+          "state": "active"
+        }
+      ],
+      "reported_count": 3
+    }
+  },
+  "remote_main": "4bc1beec112c55b161c3025529733d0f0b1213b3",
+  "recent_runs": [
+    {
+      "id": 36950104109,
+      "name": "Deploy Durable Control Plane",
+      "head_sha": "4bc1beec112c55b161c3025529733d0f0b1213b3",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-02T01:16:02Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36950104109"
+    },
+    {
+      "id": 36950104034,
+      "name": "Deploy API Platform",
+      "head_sha": "4bc1beec112c55b161c3025529733d0f0b1213b3",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-02T01:16:02Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36950104034"
+    },
+    {
+      "id": 36950036341,
+      "name": "Validate API Platform",
+      "head_sha": "4bc1beec112c55b161c3025529733d0f0b1213b3",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-02T01:15:12Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36950036341"
+    },
+    {
+      "id": 36949930812,
+      "name": "Deploy API Platform",
+      "head_sha": "c30acd6e7b8c37aca00ea02ce05d70aefcc9947e",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-10-02T01:13:56Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36949930812"
+    },
+    {
+      "id": 36949878172,
+      "name": "Validate API Platform",
+      "head_sha": "17fda489217c0d87fd9847965d76b2c92826e93f",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-02T01:13:16Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36949878172"
+    },
+    {
+      "id": 36942009372,
+      "name": "Monitor OptiBrain Production Health",
+      "head_sha": "c30acd6e7b8c37aca00ea02ce05d70aefcc9947e",
+      "event": "schedule",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-01T23:40:06Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36942009372"
+    },
+    {
+      "id": 36941875822,
+      "name": "Deploy API Platform",
+      "head_sha": "c30acd6e7b8c37aca00ea02ce05d70aefcc9947e",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-01T23:38:33Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36941875822"
+    },
+    {
+      "id": 36941875762,
+      "name": "Deploy Durable Control Plane",
+      "head_sha": "c30acd6e7b8c37aca00ea02ce05d70aefcc9947e",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-01T23:38:33Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36941875762"
+    },
+    {
+      "id": 36941815559,
+      "name": "Validate API Platform",
+      "head_sha": "c30acd6e7b8c37aca00ea02ce05d70aefcc9947e",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-01T23:37:52Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36941815559"
+    },
+    {
+      "id": 36941622023,
+      "name": "Deploy API Platform",
+      "head_sha": "90d071f2c1d94d988a6cae17871f9fb60d909b63",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-10-01T23:35:35Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36941622023"
+    },
+    {
+      "id": 36941563791,
+      "name": "Validate API Platform",
+      "head_sha": "e6cb59d2c91db626ee6d8c5bd6d57230eb35fa06",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-01T23:34:56Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36941563791"
+    },
+    {
+      "id": 36940212084,
+      "name": "Deploy API Platform",
+      "head_sha": "90d071f2c1d94d988a6cae17871f9fb60d909b63",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-01T23:19:50Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36940212084"
+    },
+    {
+      "id": 36940212064,
+      "name": "Deploy Durable Control Plane",
+      "head_sha": "90d071f2c1d94d988a6cae17871f9fb60d909b63",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-01T23:19:50Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36940212064"
+    },
+    {
+      "id": 36940153529,
+      "name": "Validate API Platform",
+      "head_sha": "90d071f2c1d94d988a6cae17871f9fb60d909b63",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-01T23:19:12Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36940153529"
+    },
+    {
+      "id": 36940092781,
+      "name": "Deploy API Platform",
+      "head_sha": "eb2f5e13a3dc5e386f4693a32f2701a6f10d0c00",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-10-01T23:18:32Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36940092781"
+    },
+    {
+      "id": 36940012181,
+      "name": "Validate API Platform",
+      "head_sha": "beed5aab78efdfbc5281e54ed0e0df7c037fd50c",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-01T23:17:39Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36940012181"
+    },
+    {
+      "id": 36939847150,
+      "name": "Deploy API Platform",
+      "head_sha": "eb2f5e13a3dc5e386f4693a32f2701a6f10d0c00",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-10-01T23:15:56Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36939847150"
+    },
+    {
+      "id": 36939787279,
+      "name": "Validate API Platform",
+      "head_sha": "871a7fdb7b31539d1878c8e4ed39c8f2d685aa7c",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-01T23:15:15Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36939787279"
+    },
+    {
+      "id": 36926233744,
+      "name": "Deploy API Platform",
+      "head_sha": "eb2f5e13a3dc5e386f4693a32f2701a6f10d0c00",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-01T21:05:05Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36926233744"
+    },
+    {
+      "id": 36926141874,
+      "name": "Validate API Platform",
+      "head_sha": "eb2f5e13a3dc5e386f4693a32f2701a6f10d0c00",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-01T21:04:18Z",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/36926141874"
+    }
+  ],
+  "health": {
+    "http://127.0.0.1:8100/health": {
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "app": "workflow-api",
+        "version": "1.11.0",
+        "jobs_dir": "/var/lib/opticable-workflow-api/output/jobs",
+        "pdf_base_url": "http://127.0.0.1:8000",
+        "omada_base_url": "http://127.0.0.1:3210"
+      }
+    },
+    "http://127.0.0.1:8100/v1/system/health": {
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "app": "workflow-api",
+        "version": "1.11.0",
+        "jobs_dir": "/var/lib/opticable-workflow-api/output/jobs",
+        "pdf_base_url": "http://127.0.0.1:8000",
+        "omada_base_url": "http://127.0.0.1:3210"
+      }
+    },
+    "http://127.0.0.1:8000/health": {
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "config_path": "/etc/opticable-password-pdf/brand_settings.json",
+        "output_root": "/var/lib/opticable-password-pdf/output/pdf/wifi"
+      }
+    },
+    "http://127.0.0.1:3210/api/health": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "browserProfileDir": "/var/lib/opticable-omada-site/data/browser-profile",
+        "activeForegroundRun": false,
+        "activeWebhookJobId": null,
+        "queuedWebhookJobs": 0,
+        "webhookEnabled": true
+      }
+    },
+    "https://opticable-control-plane.yboucher.workers.dev/health": {
+      "status": 200,
+      "body": {
+        "service": "Opticable Control Plane",
+        "ok": true,
+        "durable_workflows": true,
+        "event_queue": true,
+        "lifecycle_scheduler": true
+      }
+    },
+    "https://connect.opticable.ca/health": {
+      "status": 200,
+      "body": {
+        "service": "Opticable AI Connector",
+        "ok": true,
+        "zoho_connected": true,
+        "mcp_endpoint": "https://connect.opticable.ca/mcp",
+        "permissions": "mail tools read-only; Zoho bulk OAuth scope management enabled",
+        "granted_scope_count": 292,
+        "oauth_scope_management": true,
+        "google_data_manager_connected": false
+      }
+    }
+  }
+}

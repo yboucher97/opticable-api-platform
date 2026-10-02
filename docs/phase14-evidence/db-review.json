@@ -1,0 +1,416 @@
+{
+  "captured_at": "2026-10-02T02:35:17.129244+00:00",
+  "metrics": {
+    "phase9-form-receipts.db": {
+      "phase9-receipts": {
+        "sample_size": 39,
+        "latest_at": "2026-10-02T02:33:29.329058+00:00",
+        "latest": {
+          "budget_exceeded": false,
+          "calls": {
+            "cloudflare": 1,
+            "crm_get": 0,
+            "crm_write": 0,
+            "github": 0,
+            "mail_get": 1,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0
+          },
+          "calls_day_estimate": 576,
+          "calls_hour_estimate": 24.0,
+          "calls_run": 2,
+          "duration_ms": 1116,
+          "job": "phase9-receipts",
+          "soft_budget": 12,
+          "status": "success"
+        },
+        "calls_totals": {
+          "cloudflare": 39,
+          "mail_get": 45,
+          "oauth_refresh": 1
+        },
+        "duration_ms_mean": 1925
+      }
+    },
+    "phase10-service-events.db": {
+      "phase10-service-events": {
+        "sample_size": 5,
+        "latest_at": "2026-10-02T02:23:19.845579+00:00",
+        "latest": {
+          "budget_exceeded": false,
+          "calls": {
+            "cloudflare": 0,
+            "crm_get": 5,
+            "crm_write": 0,
+            "github": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0
+          },
+          "calls_day_estimate": 120,
+          "calls_hour_estimate": 5.0,
+          "calls_run": 5,
+          "duration_ms": 2481,
+          "job": "phase10-service-events",
+          "soft_budget": 6,
+          "status": "success"
+        },
+        "calls_totals": {
+          "crm_get": 25
+        },
+        "duration_ms_mean": 2420
+      }
+    },
+    "phase12-autonomy.db": {
+      "phase12-test-runner": {
+        "sample_size": 8,
+        "latest_at": "2026-10-02T02:31:58.222976+00:00",
+        "latest": {
+          "budget_exceeded": false,
+          "calls": {
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "github": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0
+          },
+          "calls_day_estimate": 0,
+          "calls_hour_estimate": 0.0,
+          "calls_run": 0,
+          "duration_ms": 49,
+          "job": "phase12-test-runner",
+          "soft_budget": 16,
+          "status": "success"
+        },
+        "calls_totals": {},
+        "duration_ms_mean": 53
+      }
+    },
+    "automation.db": {
+      "workflow:customer.lifecycle.mailbox-poll": {
+        "sample_size": 3,
+        "latest_at": "2026-10-02T02:00:29.397426+00:00",
+        "latest": {
+          "budget_exceeded": true,
+          "calls": {
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "github": 0,
+            "mail_get": 33,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0
+          },
+          "calls_day_estimate": 0,
+          "calls_hour_estimate": 0.0,
+          "calls_run": 33,
+          "duration_ms": 8624,
+          "job": "workflow:customer.lifecycle.mailbox-poll",
+          "soft_budget": 20,
+          "status": "success"
+        },
+        "calls_totals": {
+          "mail_get": 98
+        },
+        "duration_ms_mean": 8632
+      },
+      "workflow:customer.lifecycle.sign-observer": {
+        "sample_size": 1,
+        "latest_at": "2026-10-02T01:15:19.460357+00:00",
+        "latest": {
+          "budget_exceeded": false,
+          "calls": {
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "github": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 1
+          },
+          "calls_day_estimate": 0,
+          "calls_hour_estimate": 0.0,
+          "calls_run": 1,
+          "duration_ms": 385,
+          "job": "workflow:customer.lifecycle.sign-observer",
+          "soft_budget": 20,
+          "status": "success"
+        },
+        "calls_totals": {
+          "other_zoho": 1
+        },
+        "duration_ms_mean": 385
+      },
+      "workflow:universal.inbox.observe": {
+        "sample_size": 13,
+        "latest_at": "2026-10-02T01:00:22.002421+00:00",
+        "latest": {
+          "budget_exceeded": false,
+          "calls": {
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "github": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0
+          },
+          "calls_day_estimate": 0,
+          "calls_hour_estimate": 0.0,
+          "calls_run": 0,
+          "duration_ms": 15,
+          "job": "workflow:universal.inbox.observe",
+          "soft_budget": 20,
+          "status": "success"
+        },
+        "calls_totals": {},
+        "duration_ms_mean": 14
+      },
+      "workflow:platform.smoke-test": {
+        "sample_size": 1,
+        "latest_at": "2026-10-01T23:39:09.474172+00:00",
+        "latest": {
+          "budget_exceeded": false,
+          "calls": {
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "github": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0
+          },
+          "calls_day_estimate": 0,
+          "calls_hour_estimate": 0.0,
+          "calls_run": 0,
+          "duration_ms": 25,
+          "job": "workflow:platform.smoke-test",
+          "soft_budget": 20,
+          "status": "success"
+        },
+        "calls_totals": {},
+        "duration_ms_mean": 25
+      }
+    }
+  },
+  "plans": {
+    "phase9-form-receipts.db:receipt_order": {
+      "query": "SELECT * FROM form_receipts ORDER BY occurred_at DESC LIMIT 100",
+      "plan": [
+        [
+          5,
+          0,
+          0,
+          "SCAN form_receipts USING INDEX idx_form_receipts_occurred"
+        ]
+      ]
+    },
+    "phase9-form-receipts.db:connector_order": {
+      "query": "SELECT * FROM connector_receipts ORDER BY occurred_at DESC LIMIT 100",
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SCAN connector_receipts"
+        ],
+        [
+          26,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ]
+    },
+    "phase10-service-events.db:service_by_account": {
+      "query": "SELECT * FROM service_events WHERE account_id='fixture' ORDER BY occurred_at_utc DESC LIMIT 100",
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SCAN service_events"
+        ],
+        [
+          23,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ]
+    },
+    "phase9-intake.db:feedback_by_canonical": {
+      "query": "SELECT * FROM feedback_events WHERE canonical_id='fixture' ORDER BY occurred_at,feedback_id",
+      "plan": [
+        [
+          3,
+          0,
+          0,
+          "SCAN feedback_events"
+        ],
+        [
+          19,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ]
+    },
+    "phase12-autonomy.db:actions_order": {
+      "query": "SELECT * FROM actions ORDER BY updated_at DESC LIMIT 100",
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SCAN actions"
+        ],
+        [
+          33,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ]
+    },
+    "phase12-autonomy.db:scheduled_due": {
+      "query": "SELECT * FROM scheduled WHERE state='pending' AND due_at<'2026-10-02' ORDER BY due_at LIMIT 4",
+      "plan": [
+        [
+          5,
+          0,
+          0,
+          "SEARCH scheduled USING INDEX idx_phase12_scheduled_due (state=? AND due_at<?)"
+        ]
+      ]
+    },
+    "automation.db:runs_recent": {
+      "query": "SELECT * FROM automation_runs ORDER BY created_at DESC LIMIT 100",
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SCAN automation_runs"
+        ],
+        [
+          24,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ]
+    },
+    "automation.db:runs_status_recent": {
+      "query": "SELECT * FROM automation_runs WHERE status='failed' ORDER BY created_at DESC LIMIT 100",
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SCAN automation_runs"
+        ],
+        [
+          26,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ]
+    },
+    "automation.db:audit_recent": {
+      "query": "SELECT * FROM automation_audit ORDER BY id DESC LIMIT 100",
+      "plan": [
+        [
+          4,
+          0,
+          0,
+          "SCAN automation_audit"
+        ]
+      ]
+    },
+    "automation.db:events_by_type_recent": {
+      "query": "SELECT * FROM automation_events WHERE event_type='fixture' ORDER BY created_at DESC LIMIT 100",
+      "plan": [
+        [
+          5,
+          0,
+          0,
+          "SEARCH automation_events USING INDEX idx_automation_events_type (event_type=?)"
+        ],
+        [
+          28,
+          0,
+          0,
+          "USE TEMP B-TREE FOR ORDER BY"
+        ]
+      ]
+    }
+  },
+  "state_counts": {
+    "unmatched_forms": 0,
+    "forms_needing_review": 1,
+    "phase12-autonomy.db:actions": {
+      "deferred": 1,
+      "denied": 3,
+      "stale": 5,
+      "succeeded": 7
+    },
+    "phase12-autonomy.db:approvals": {
+      "consumed": 1
+    },
+    "phase12-autonomy.db:scheduled": {
+      "exception": 1,
+      "succeeded": 1
+    },
+    "automation.db:automation_runs": {
+      "completed": 681,
+      "human_action_required": 10
+    },
+    "automation.db:automation_event_processing": {
+      "routed": 978
+    }
+  },
+  "historical_sqlite": [
+    {
+      "path": "/var/lib/optibrain/phase9/mission2/form-receipts-stage.db",
+      "bytes": 53248,
+      "journal_mode": "delete",
+      "quick_check": "ok",
+      "tables": {
+        "form_receipts": 1,
+        "form_receipt_links": 1,
+        "connector_receipts": 3,
+        "form_provider_matches": 1
+      }
+    },
+    {
+      "path": "/var/lib/optibrain/phase9/closure/phase9-intake.before-permission-fix.db",
+      "bytes": 28672,
+      "journal_mode": "delete",
+      "quick_check": "ok",
+      "tables": {
+        "intake_events": 6,
+        "feedback_events": 7
+      }
+    },
+    {
+      "path": "/var/lib/optibrain/phase10/test-lab/lifecycle-events.db",
+      "bytes": 12288,
+      "journal_mode": "delete",
+      "quick_check": "ok",
+      "tables": {
+        "lifecycle_events": 19
+      }
+    }
+  ]
+}

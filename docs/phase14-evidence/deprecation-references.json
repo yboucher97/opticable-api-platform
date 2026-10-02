@@ -1,0 +1,2293 @@
+{
+  "pdf_unreachable_crm_body": {
+    "search_terms": [
+      "ZohoCrmClient",
+      "update_generated_password_fields",
+      "wifi_pdf.zoho_crm"
+    ],
+    "references": [
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/pipeline.py",
+        "line": 25,
+        "category": "imports",
+        "symbols": [
+          "ZohoCrmClient"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/pipeline.py",
+        "line": 175,
+        "category": "code_or_installed",
+        "symbols": [
+          "ZohoCrmClient"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/pipeline.py",
+        "line": 176,
+        "category": "code_or_installed",
+        "symbols": [
+          "update_generated_password_fields"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/zoho_crm.py",
+        "line": 12,
+        "category": "code_or_installed",
+        "symbols": [
+          "ZohoCrmClient"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/zoho_crm.py",
+        "line": 19,
+        "category": "code_or_installed",
+        "symbols": [
+          "update_generated_password_fields"
+        ]
+      },
+      {
+        "path": "docs/phase13-control-matrix.md",
+        "line": 66,
+        "category": "docs",
+        "symbols": [
+          "ZohoCrmClient",
+          "update_generated_password_fields"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1031,
+        "category": "docs",
+        "symbols": [
+          "update_generated_password_fields"
+        ]
+      }
+    ],
+    "counts": {
+      "systemd": 0,
+      "workflow": 0,
+      "recovery": 0,
+      "imports": 1,
+      "tests": 0,
+      "docs": 2,
+      "code_or_installed": 4
+    },
+    "limit": "Static string and import evidence; absence is not proof of no external/manual/recovery use."
+  },
+  "pdf_unreachable_workdrive_body": {
+    "search_terms": [
+      "ZohoWorkDriveClient",
+      "resolve_upload_folder_id"
+    ],
+    "references": [
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/pipeline.py",
+        "line": 24,
+        "category": "imports",
+        "symbols": [
+          "ZohoWorkDriveClient"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/pipeline.py",
+        "line": 150,
+        "category": "code_or_installed",
+        "symbols": [
+          "ZohoWorkDriveClient"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/pipeline.py",
+        "line": 151,
+        "category": "code_or_installed",
+        "symbols": [
+          "resolve_upload_folder_id"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/workdrive.py",
+        "line": 17,
+        "category": "code_or_installed",
+        "symbols": [
+          "ZohoWorkDriveClient"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/workdrive.py",
+        "line": 37,
+        "category": "code_or_installed",
+        "symbols": [
+          "resolve_upload_folder_id"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/workdrive.py",
+        "line": 45,
+        "category": "code_or_installed",
+        "symbols": [
+          "resolve_upload_folder_id"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/workdrive.py",
+        "line": 81,
+        "category": "code_or_installed",
+        "symbols": [
+          "resolve_upload_folder_id"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/workdrive.py",
+        "line": 140,
+        "category": "code_or_installed",
+        "symbols": [
+          "resolve_upload_folder_id"
+        ]
+      }
+    ],
+    "counts": {
+      "systemd": 0,
+      "workflow": 0,
+      "recovery": 0,
+      "imports": 1,
+      "tests": 0,
+      "docs": 0,
+      "code_or_installed": 7
+    },
+    "limit": "Static string and import evidence; absence is not proof of no external/manual/recovery use."
+  },
+  "retired_development_runtime": {
+    "search_terms": [
+      "/opt/optibrain-agent",
+      "optibrain-agent-dispatch",
+      "optibrain-agent-status",
+      "optibrain-agent-usage"
+    ],
+    "references": [
+      {
+        "path": "docs/OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md",
+        "line": 83,
+        "category": "docs",
+        "symbols": [
+          "/opt/optibrain-agent"
+        ]
+      },
+      {
+        "path": "docs/phase13-closure-evidence/verification.json",
+        "line": 95,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch"
+        ]
+      },
+      {
+        "path": "docs/phase13-closure-evidence/verification.json",
+        "line": 99,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch"
+        ]
+      },
+      {
+        "path": "docs/phase13-closure-evidence/verification.json",
+        "line": 103,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "docs/phase13-closure-evidence/verification.json",
+        "line": 107,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "docs/phase13-closure-evidence/verification.json",
+        "line": 111,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-closure-evidence/verification.json",
+        "line": 115,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/completion.json",
+        "line": 87,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/completion.json",
+        "line": 92,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/completion.json",
+        "line": 97,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/completion.json",
+        "line": 102,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/completion.json",
+        "line": 107,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/completion.json",
+        "line": 112,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/deployed-components.json",
+        "line": 123,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/deployed-components.json",
+        "line": 126,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/deployed-components.json",
+        "line": 137,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/deployed-components.json",
+        "line": 140,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/deployed-components.json",
+        "line": 151,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/deployed-components.json",
+        "line": 154,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1314,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1318,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1322,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1326,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1330,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1334,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1414,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1419,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1424,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1429,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1434,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1439,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-p1-cleanup.md",
+        "line": 47,
+        "category": "docs",
+        "symbols": [
+          "/opt/optibrain-agent"
+        ]
+      },
+      {
+        "path": "docs/phase13-remediation-evidence/final-safety.json",
+        "line": 35,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch"
+        ]
+      },
+      {
+        "path": "docs/phase13-remediation-evidence/final-safety.json",
+        "line": 41,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "docs/phase13-remediation-evidence/final-safety.json",
+        "line": 47,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-remediation-evidence/final-safety.json",
+        "line": 53,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch"
+        ]
+      },
+      {
+        "path": "docs/phase13-remediation-evidence/final-safety.json",
+        "line": 58,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "docs/phase13-remediation-evidence/final-safety.json",
+        "line": 63,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-timer-matrix.md",
+        "line": 20,
+        "category": "docs",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status",
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "docs/phase13-timer-matrix.md",
+        "line": 32,
+        "category": "docs",
+        "symbols": [
+          "/opt/optibrain-agent"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-reply-closure-reconcile.py",
+        "line": 42,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status",
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-test-lab-draft-fix-reconcile.py",
+        "line": 40,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status",
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase9-release-reconcile-9135350.py",
+        "line": 66,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase9-release-reconcile-9135350.py",
+        "line": 67,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase11-closure-reconcile-b6c7058.py",
+        "line": 87,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status",
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-sales-queue-reconcile.py",
+        "line": 61,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-sales-queue-reconcile.py",
+        "line": 62,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase9-release-reconcile-5ed29f7.py",
+        "line": 68,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase9-release-reconcile-5ed29f7.py",
+        "line": 69,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase11-release-reconcile-bd04a99.py",
+        "line": 95,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase11-release-reconcile-bd04a99.py",
+        "line": 96,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-oauth-reconcile.py",
+        "line": 61,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-oauth-reconcile.py",
+        "line": 62,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase9-release-reconcile-060bba7.py",
+        "line": 68,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase9-release-reconcile-060bba7.py",
+        "line": 69,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase9-release-reconcile-267d91e.py",
+        "line": 66,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase9-release-reconcile-267d91e.py",
+        "line": 67,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase9-release-reconcile-92ab65c.py",
+        "line": 65,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase9-release-reconcile-92ab65c.py",
+        "line": 66,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase10-release-reconcile-80cda79.py",
+        "line": 86,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase10-release-reconcile-80cda79.py",
+        "line": 87,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase10-release-reconcile-f461e49.py",
+        "line": 75,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase10-release-reconcile-f461e49.py",
+        "line": 76,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-task-relation-reconcile.py",
+        "line": 61,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-task-relation-reconcile.py",
+        "line": 62,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase12-reconcile-823dd55.py",
+        "line": 48,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status",
+          "optibrain-agent-usage"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-test-lab-reconcile.py",
+        "line": 39,
+        "category": "code_or_installed",
+        "symbols": [
+          "optibrain-agent-dispatch",
+          "optibrain-agent-status",
+          "optibrain-agent-usage"
+        ]
+      }
+    ],
+    "counts": {
+      "systemd": 0,
+      "workflow": 0,
+      "recovery": 0,
+      "imports": 0,
+      "tests": 0,
+      "docs": 40,
+      "code_or_installed": 27
+    },
+    "limit": "Static string and import evidence; absence is not proof of no external/manual/recovery use."
+  },
+  "legacy_phase4_resume": {
+    "search_terms": [
+      "resume_production_closeout",
+      "phase4.production_campaign",
+      "ops/phase4/production_campaign.py"
+    ],
+    "references": [
+      {
+        "path": "apps/workflow-api/tests/test_phase4_campaign.py",
+        "line": 13,
+        "category": "tests",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/tests/test_phase4_ops.py",
+        "line": 16,
+        "category": "tests",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/tests/test_phase4_resume.py",
+        "line": 20,
+        "category": "tests",
+        "symbols": [
+          "resume_production_closeout"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/tests/test_phase4_resume.py",
+        "line": 294,
+        "category": "tests",
+        "symbols": [
+          "resume_production_closeout",
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/OPTIBRAIN_PHASE4_ENGINEERING_RECORD.md",
+        "line": 301,
+        "category": "docs",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/OPTIBRAIN_PHASE4_ENGINEERING_RECORD.md",
+        "line": 653,
+        "category": "docs",
+        "symbols": [
+          "resume_production_closeout"
+        ]
+      },
+      {
+        "path": "docs/OPTIBRAIN_PHASE4_ENGINEERING_RECORD.md",
+        "line": 731,
+        "category": "docs",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/OPTIBRAIN_PHASE4_ENGINEERING_RECORD.md",
+        "line": 732,
+        "category": "docs",
+        "symbols": [
+          "resume_production_closeout"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/feature-flags.json",
+        "line": 288,
+        "category": "docs",
+        "symbols": [
+          "resume_production_closeout"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1120,
+        "category": "docs",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1129,
+        "category": "docs",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1138,
+        "category": "docs",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1145,
+        "category": "docs",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1152,
+        "category": "docs",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1159,
+        "category": "docs",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1166,
+        "category": "docs",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1175,
+        "category": "docs",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1200,
+        "category": "docs",
+        "symbols": [
+          "resume_production_closeout"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1209,
+        "category": "docs",
+        "symbols": [
+          "resume_production_closeout"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1216,
+        "category": "docs",
+        "symbols": [
+          "resume_production_closeout"
+        ]
+      },
+      {
+        "path": "ops/phase4/resume_production_closeout.py",
+        "line": 38,
+        "category": "code_or_installed",
+        "symbols": [
+          "resume_production_closeout",
+          "ops/phase4/production_campaign.py"
+        ]
+      },
+      {
+        "path": "ops/phase5/production_campaign.py",
+        "line": 25,
+        "category": "code_or_installed",
+        "symbols": [
+          "ops/phase4/production_campaign.py"
+        ]
+      }
+    ],
+    "counts": {
+      "systemd": 0,
+      "workflow": 0,
+      "recovery": 0,
+      "imports": 0,
+      "tests": 4,
+      "docs": 16,
+      "code_or_installed": 2
+    },
+    "limit": "Static string and import evidence; absence is not proof of no external/manual/recovery use."
+  },
+  "legacy_phase5_campaign": {
+    "search_terms": [
+      "ops/phase5/production_campaign.py",
+      "phase5.production_campaign",
+      "crm_campaign"
+    ],
+    "references": [
+      {
+        "path": "apps/workflow-api/tests/test_phase5_campaign.py",
+        "line": 13,
+        "category": "tests",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/tests/test_phase6_release_security.py",
+        "line": 151,
+        "category": "tests",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/OPTIBRAIN_PHASE5_ENGINEERING_RECORD.md",
+        "line": 59,
+        "category": "docs",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/feature-flags.json",
+        "line": 150,
+        "category": "docs",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/feature-flags.json",
+        "line": 166,
+        "category": "docs",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/feature-flags.json",
+        "line": 301,
+        "category": "docs",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/feature-flags.json",
+        "line": 315,
+        "category": "docs",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/feature-flags.json",
+        "line": 328,
+        "category": "docs",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/feature-flags.json",
+        "line": 497,
+        "category": "docs",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/feature-flags.json",
+        "line": 509,
+        "category": "docs",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1452,
+        "category": "docs",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1459,
+        "category": "docs",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 1466,
+        "category": "docs",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      },
+      {
+        "path": "ops/phase5/README.md",
+        "line": 5,
+        "category": "code_or_installed",
+        "symbols": [
+          "crm_campaign"
+        ]
+      },
+      {
+        "path": "ops/phase6/production_campaign.py",
+        "line": 27,
+        "category": "code_or_installed",
+        "symbols": [
+          "ops/phase5/production_campaign.py"
+        ]
+      }
+    ],
+    "counts": {
+      "systemd": 0,
+      "workflow": 0,
+      "recovery": 0,
+      "imports": 0,
+      "tests": 2,
+      "docs": 11,
+      "code_or_installed": 2
+    },
+    "limit": "Static string and import evidence; absence is not proof of no external/manual/recovery use."
+  },
+  "legacy_phase6_release_loader": {
+    "search_terms": [
+      "phase6-release-loader",
+      "phase6-release-authorization",
+      "phase6.active-release"
+    ],
+    "references": [
+      {
+        "path": "apps/workflow-api/tests/test_phase6_release_security.py",
+        "line": 108,
+        "category": "tests",
+        "symbols": [
+          "phase6-release-loader"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/tests/test_phase6_release_security.py",
+        "line": 125,
+        "category": "tests",
+        "symbols": [
+          "phase6-release-loader"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/tests/test_phase6_release_security.py",
+        "line": 130,
+        "category": "tests",
+        "symbols": [
+          "phase6-release-loader"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/tests/test_phase6_release_security.py",
+        "line": 150,
+        "category": "tests",
+        "symbols": [
+          "phase6-release-loader"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/tests/test_phase6_release_security.py",
+        "line": 166,
+        "category": "tests",
+        "symbols": [
+          "phase6-release-loader"
+        ]
+      },
+      {
+        "path": "deploy/README.md",
+        "line": 102,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase6-release-loader"
+        ]
+      },
+      {
+        "path": "deploy/phase6-release-loader.py",
+        "line": 23,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase6-release-authorization"
+        ]
+      },
+      {
+        "path": "deploy/production-root-command.sh",
+        "line": 25,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase6-release-authorization"
+        ]
+      },
+      {
+        "path": "docs/OPTIBRAIN_PHASE6_GATE_G_RECOVERY.md",
+        "line": 25,
+        "category": "docs",
+        "symbols": [
+          "phase6-release-loader"
+        ]
+      },
+      {
+        "path": "docs/OPTIBRAIN_PHASE6_GATE_G_RECOVERY.md",
+        "line": 26,
+        "category": "docs",
+        "symbols": [
+          "phase6-release-authorization"
+        ]
+      },
+      {
+        "path": "ops/phase6/production_campaign.py",
+        "line": 24,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase6-release-authorization"
+        ]
+      },
+      {
+        "path": "ops/phase6/release_trust.py",
+        "line": 20,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase6-release-authorization"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/optibrain-phase6-release-loader",
+        "line": 26,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase6-release-authorization"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root-phase6",
+        "line": 25,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase6-release-authorization"
+        ]
+      }
+    ],
+    "counts": {
+      "systemd": 0,
+      "workflow": 0,
+      "recovery": 0,
+      "imports": 0,
+      "tests": 5,
+      "docs": 2,
+      "code_or_installed": 7
+    },
+    "limit": "Static string and import evidence; absence is not proof of no external/manual/recovery use."
+  },
+  "historical_phase8_executor": {
+    "search_terms": [
+      "phase8-root-executor",
+      "phase8-trusted-release-adapter",
+      "phase8-main-push-hook"
+    ],
+    "references": [
+      {
+        "path": "/usr/local/lib/optibrain/phase8-static-release-gates.py",
+        "line": 29,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase8-main-push-hook"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-static-release-gates.py",
+        "line": 30,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase8-trusted-release-adapter"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-static-release-gates.py",
+        "line": 31,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase8-root-executor"
+        ]
+      }
+    ],
+    "counts": {
+      "systemd": 0,
+      "workflow": 0,
+      "recovery": 0,
+      "imports": 0,
+      "tests": 0,
+      "docs": 0,
+      "code_or_installed": 3
+    },
+    "limit": "Static string and import evidence; absence is not proof of no external/manual/recovery use."
+  },
+  "historical_release_reconcilers": {
+    "search_terms": [
+      "phase7-offset-reconcile",
+      "phase8-sales-view-reconcile",
+      "phase9-release-reconcile",
+      "phase10-release-reconcile",
+      "phase11-release-reconcile",
+      "phase12-reconcile"
+    ],
+    "references": [
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.phase10-service-before",
+        "line": 15,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase7-offset-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.phase10-service-before",
+        "line": 17,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase8-sales-view-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.phase10-service-before",
+        "line": 37,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase9-release-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.phase10-service-before",
+        "line": 39,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase9-release-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.phase10-service-before",
+        "line": 41,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase9-release-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.phase10-service-before",
+        "line": 43,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase9-release-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.phase10-service-before",
+        "line": 45,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase9-release-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.phase10-service-before",
+        "line": 47,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase10-release-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.before-phase10",
+        "line": 15,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase7-offset-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.before-phase10",
+        "line": 17,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase8-sales-view-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.before-phase10",
+        "line": 37,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase9-release-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.before-phase10",
+        "line": 39,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase9-release-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.before-phase10",
+        "line": 41,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase9-release-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.before-phase10",
+        "line": 43,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase9-release-reconcile"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.before-phase10",
+        "line": 45,
+        "category": "code_or_installed",
+        "symbols": [
+          "phase9-release-reconcile"
+        ]
+      }
+    ],
+    "counts": {
+      "systemd": 0,
+      "workflow": 0,
+      "recovery": 0,
+      "imports": 0,
+      "tests": 0,
+      "docs": 0,
+      "code_or_installed": 15
+    },
+    "limit": "Static string and import evidence; absence is not proof of no external/manual/recovery use."
+  },
+  "disabled_github_business_workflows": {
+    "search_terms": [
+      "customer-lifecycle-mailbox-poll.yml",
+      "customer-lifecycle-digest.yml",
+      "schedule-customer-lifecycle.yml"
+    ],
+    "references": [
+      {
+        "path": ".github/workflows/schedule-customer-lifecycle.yml",
+        "line": 7,
+        "category": "workflow",
+        "symbols": [
+          "schedule-customer-lifecycle.yml"
+        ]
+      },
+      {
+        "path": ".github/workflows/validate-api-platform.yml",
+        "line": 21,
+        "category": "workflow",
+        "symbols": [
+          "schedule-customer-lifecycle.yml"
+        ]
+      },
+      {
+        "path": ".github/workflows/validate-api-platform.yml",
+        "line": 41,
+        "category": "workflow",
+        "symbols": [
+          "schedule-customer-lifecycle.yml"
+        ]
+      },
+      {
+        "path": "docs/phase13-closure-evidence/verification.json",
+        "line": 315,
+        "category": "docs",
+        "symbols": [
+          "customer-lifecycle-digest.yml"
+        ]
+      },
+      {
+        "path": "docs/phase13-closure-evidence/verification.json",
+        "line": 316,
+        "category": "docs",
+        "symbols": [
+          "customer-lifecycle-mailbox-poll.yml"
+        ]
+      },
+      {
+        "path": "docs/phase13-closure-evidence/verification.json",
+        "line": 317,
+        "category": "docs",
+        "symbols": [
+          "schedule-customer-lifecycle.yml"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1346,
+        "category": "docs",
+        "symbols": [
+          "customer-lifecycle-digest.yml"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1361,
+        "category": "docs",
+        "symbols": [
+          "customer-lifecycle-mailbox-poll.yml"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 1394,
+        "category": "docs",
+        "symbols": [
+          "schedule-customer-lifecycle.yml"
+        ]
+      },
+      {
+        "path": "docs/phase13-remediation-evidence/interruption-reconciliation.json",
+        "line": 46,
+        "category": "docs",
+        "symbols": [
+          "customer-lifecycle-digest.yml"
+        ]
+      },
+      {
+        "path": "docs/phase13-remediation-evidence/interruption-reconciliation.json",
+        "line": 47,
+        "category": "docs",
+        "symbols": [
+          "customer-lifecycle-mailbox-poll.yml"
+        ]
+      },
+      {
+        "path": "docs/phase13-remediation-evidence/interruption-reconciliation.json",
+        "line": 48,
+        "category": "docs",
+        "symbols": [
+          "schedule-customer-lifecycle.yml"
+        ]
+      },
+      {
+        "path": "docs/phase13-remediation-evidence/provider-containment.json",
+        "line": 2,
+        "category": "docs",
+        "symbols": [
+          "customer-lifecycle-digest.yml"
+        ]
+      },
+      {
+        "path": "docs/phase13-remediation-evidence/provider-containment.json",
+        "line": 3,
+        "category": "docs",
+        "symbols": [
+          "customer-lifecycle-mailbox-poll.yml"
+        ]
+      },
+      {
+        "path": "docs/phase13-remediation-evidence/provider-containment.json",
+        "line": 4,
+        "category": "docs",
+        "symbols": [
+          "schedule-customer-lifecycle.yml"
+        ]
+      }
+    ],
+    "counts": {
+      "systemd": 0,
+      "workflow": 3,
+      "recovery": 0,
+      "imports": 0,
+      "tests": 0,
+      "docs": 12,
+      "code_or_installed": 0
+    },
+    "limit": "Static string and import evidence; absence is not proof of no external/manual/recovery use."
+  },
+  "legacy_core_pipeline": {
+    "search_terms": [
+      "workflow.pipeline",
+      "from .pipeline",
+      "_run_job",
+      "site-and-password"
+    ],
+    "references": [
+      {
+        "path": "README.md",
+        "line": 43,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "README.md",
+        "line": 161,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "README.md",
+        "line": 162,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "README.md",
+        "line": 169,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "README.md",
+        "line": 173,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "README.md",
+        "line": 174,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/__init__.py",
+        "line": 1,
+        "category": "imports",
+        "symbols": [
+          "from .pipeline"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/api.py",
+        "line": 13,
+        "category": "imports",
+        "symbols": [
+          "from .pipeline"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/api.py",
+        "line": 43,
+        "category": "code_or_installed",
+        "symbols": [
+          "_run_job"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/api.py",
+        "line": 113,
+        "category": "code_or_installed",
+        "symbols": [
+          "_run_job"
+        ]
+      },
+      {
+        "path": "apps/password-pdf-service/wifi_pdf/cli.py",
+        "line": 8,
+        "category": "imports",
+        "symbols": [
+          "from .pipeline"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/README.md",
+        "line": 41,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/README.md",
+        "line": 42,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/README.md",
+        "line": 43,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/README.md",
+        "line": 44,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/README.md",
+        "line": 45,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/README.md",
+        "line": 46,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/README.md",
+        "line": 49,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/README.md",
+        "line": 52,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 24,
+        "category": "imports",
+        "symbols": [
+          "from .pipeline"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 117,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 118,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 119,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 120,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 121,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 462,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 833,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 869,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 870,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 935,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 938,
+        "category": "code_or_installed",
+        "symbols": [
+          "_run_job"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 1199,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 1985,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 1986,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 2014,
+        "category": "code_or_installed",
+        "symbols": [
+          "_run_job"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 2029,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 2030,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 2031,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/api.py",
+        "line": 2033,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/api-blueprint.md",
+        "line": 42,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/api-blueprint.md",
+        "line": 43,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/api-blueprint.md",
+        "line": 152,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/api-blueprint.md",
+        "line": 153,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/api-blueprint.md",
+        "line": 165,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/architecture.md",
+        "line": 39,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/architecture.md",
+        "line": 75,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/omada-operation-strategy.md",
+        "line": 145,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 484,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/mutation-call-sites.json",
+        "line": 502,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 649,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 654,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "docs/phase13-evidence/summary.json",
+        "line": 669,
+        "category": "docs",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "install.sh",
+        "line": 110,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "install.sh",
+        "line": 112,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "install.sh",
+        "line": 113,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "install.sh",
+        "line": 780,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "install.sh",
+        "line": 1074,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      },
+      {
+        "path": "install.sh",
+        "line": 1075,
+        "category": "code_or_installed",
+        "symbols": [
+          "site-and-password"
+        ]
+      }
+    ],
+    "counts": {
+      "systemd": 0,
+      "workflow": 0,
+      "recovery": 0,
+      "imports": 4,
+      "tests": 0,
+      "docs": 13,
+      "code_or_installed": 41
+    },
+    "limit": "Static string and import evidence; absence is not proof of no external/manual/recovery use."
+  },
+  "current_release_gate": {
+    "search_terms": [
+      "manual-guarded-release.py",
+      "opticable-api-deploy-root"
+    ],
+    "references": [
+      {
+        "path": ".github/workflows/validate-api-platform.yml",
+        "line": 11,
+        "category": "workflow",
+        "symbols": [
+          "manual-guarded-release.py"
+        ]
+      },
+      {
+        "path": ".github/workflows/validate-api-platform.yml",
+        "line": 31,
+        "category": "workflow",
+        "symbols": [
+          "manual-guarded-release.py"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/tests/test_phase6_release_security.py",
+        "line": 99,
+        "category": "tests",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "deploy/bootstrap-deploy-user.sh",
+        "line": 7,
+        "category": "code_or_installed",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "deploy/bootstrap-deploy-user.sh",
+        "line": 38,
+        "category": "code_or_installed",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md",
+        "line": 74,
+        "category": "docs",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md",
+        "line": 825,
+        "category": "docs",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "ops/backup/optibrain-backup.sh",
+        "line": 296,
+        "category": "recovery",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "ops/phase6/production_campaign.py",
+        "line": 278,
+        "category": "code_or_installed",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "/etc/sudoers.d/opticable-api-deploy",
+        "line": 1,
+        "category": "code_or_installed",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-root-executor.py",
+        "line": 30,
+        "category": "code_or_installed",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain/phase8-static-release-gates.py",
+        "line": 28,
+        "category": "code_or_installed",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "/usr/local/lib/optibrain-backup/optibrain-backup.sh",
+        "line": 296,
+        "category": "recovery",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.phase10-service-before",
+        "line": 2,
+        "category": "code_or_installed",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.phase10-service-before",
+        "line": 7,
+        "category": "code_or_installed",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.before-phase10",
+        "line": 2,
+        "category": "code_or_installed",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-root.before-phase10",
+        "line": 7,
+        "category": "code_or_installed",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      },
+      {
+        "path": "/usr/local/sbin/opticable-api-deploy-command",
+        "line": 12,
+        "category": "code_or_installed",
+        "symbols": [
+          "opticable-api-deploy-root"
+        ]
+      }
+    ],
+    "counts": {
+      "systemd": 0,
+      "workflow": 2,
+      "recovery": 2,
+      "imports": 0,
+      "tests": 1,
+      "docs": 2,
+      "code_or_installed": 11
+    },
+    "limit": "Static string and import evidence; absence is not proof of no external/manual/recovery use."
+  },
+  "duplicate_timestamp_helpers": {
+    "search_terms": [
+      "def utc_now_iso",
+      "def utc_timestamp",
+      "def instant(",
+      "def _aware(",
+      "def aware("
+    ],
+    "references": [
+      {
+        "path": "apps/workflow-api/workflow/automation/business_autonomy.py",
+        "line": 46,
+        "category": "code_or_installed",
+        "symbols": [
+          "def aware("
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/automation/followup_mail.py",
+        "line": 17,
+        "category": "code_or_installed",
+        "symbols": [
+          "def aware("
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/automation/models.py",
+        "line": 10,
+        "category": "code_or_installed",
+        "symbols": [
+          "def utc_now_iso"
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/automation/outbound_approval.py",
+        "line": 40,
+        "category": "code_or_installed",
+        "symbols": [
+          "def _aware("
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/automation/phase9_form_enrichment.py",
+        "line": 33,
+        "category": "code_or_installed",
+        "symbols": [
+          "def aware("
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/automation/phase9_intake.py",
+        "line": 26,
+        "category": "code_or_installed",
+        "symbols": [
+          "def instant("
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/automation/sales_decision.py",
+        "line": 103,
+        "category": "code_or_installed",
+        "symbols": [
+          "def _aware("
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/automation/sales_lab.py",
+        "line": 19,
+        "category": "code_or_installed",
+        "symbols": [
+          "def aware("
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/automation/sales_operator_view.py",
+        "line": 25,
+        "category": "code_or_installed",
+        "symbols": [
+          "def _aware("
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/automation/sales_queue.py",
+        "line": 29,
+        "category": "code_or_installed",
+        "symbols": [
+          "def aware("
+        ]
+      },
+      {
+        "path": "apps/workflow-api/workflow/utils.py",
+        "line": 15,
+        "category": "code_or_installed",
+        "symbols": [
+          "def utc_timestamp"
+        ]
+      },
+      {
+        "path": "ops/phase11/onboard_test_deal.py",
+        "line": 32,
+        "category": "code_or_installed",
+        "symbols": [
+          "def aware("
+        ]
+      }
+    ],
+    "counts": {
+      "systemd": 0,
+      "workflow": 0,
+      "recovery": 0,
+      "imports": 0,
+      "tests": 0,
+      "docs": 0,
+      "code_or_installed": 12
+    },
+    "limit": "Static string and import evidence; absence is not proof of no external/manual/recovery use."
+  }
+}

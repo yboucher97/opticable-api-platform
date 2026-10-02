@@ -1,0 +1,23 @@
+{
+  "captured_at": "2026-10-02T03:09:36.303618+00:00",
+  "status": "PASS",
+  "checks": {
+    "json_files_valid": 15,
+    "local_links_valid": 38,
+    "protected_records_unchanged": 123,
+    "configuration_and_helper_hashes_unchanged": true,
+    "universal_test_and_real_kills_preserved": true,
+    "development_worker_off": true,
+    "production_local_main_origin_sha": "4bc1beec112c55b161c3025529733d0f0b1213b3",
+    "production_tracked_files_unchanged": true,
+    "api_health_http": 200,
+    "api_version": "1.11.0",
+    "actual_credential_value_matches": 0,
+    "private_key_blocks": 0,
+    "state_file_register_entries": 1425,
+    "document_register_entries": 71,
+    "test_definitions_static": 825,
+    "full_release_regression": "NOT RUN: documentation-only mission",
+    "executable_production_code_changed": false
+  }
+}

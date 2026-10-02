@@ -1,0 +1,154 @@
+{
+  "captured_at": "2026-10-02T02:30:05.720572+00:00",
+  "environment_files": [
+    {
+      "path": "/etc/optibrain/phase12-runner.env",
+      "keys": [
+        "OPTIBRAIN_BUSINESS_AUTO_WRITES",
+        "OPTIBRAIN_AUTO_TEST_TASK",
+        "OPTIBRAIN_AUTO_TEST_PROJECT",
+        "OPTIBRAIN_AUTO_TEST_INTERNAL"
+      ],
+      "safe_flags": {
+        "OPTIBRAIN_BUSINESS_AUTO_WRITES": "0",
+        "OPTIBRAIN_AUTO_TEST_TASK": "1",
+        "OPTIBRAIN_AUTO_TEST_PROJECT": "0",
+        "OPTIBRAIN_AUTO_TEST_INTERNAL": "0"
+      },
+      "sha256": "7d0dc9e6afb9140dcb2c07e1c65309f2e759acf6cfdc0e2a86704a994ab9879d"
+    },
+    {
+      "path": "/etc/optibrain/phase9-form-enrichment.env",
+      "keys": [
+        "OPTIBRAIN_PHASE9_FORM_ENRICHMENT",
+        "OPTIBRAIN_PHASE9_FORM_GO_LIVE"
+      ],
+      "safe_flags": {
+        "OPTIBRAIN_PHASE9_FORM_ENRICHMENT": "off",
+        "OPTIBRAIN_PHASE9_FORM_GO_LIVE": "2026-10-01T12:00:08+00:00"
+      },
+      "sha256": "4bf895d7b874a30e63fb958777481c34d8b8a2f9f13157f28e4f20b082879e4d"
+    },
+    {
+      "path": "/etc/optibrain/phase9-receipt-export.env",
+      "keys": [
+        "OPTIBRAIN_RECEIPT_EXPORT_KEY"
+      ],
+      "safe_flags": {},
+      "sha256": "20998a8a6cd809cc92bb03b9c96fa8a1a2b7b760860be9b3257da0861275993d"
+    },
+    {
+      "path": "/etc/optibrain/r2-uploader.env",
+      "keys": [],
+      "safe_flags": {},
+      "sha256": "ab7f21bfd25647d688cc00aa7928f7d12586ccbbf9a46acbc6ca97c841419177"
+    },
+    {
+      "path": "/etc/opticable-omada-site.env",
+      "keys": [
+        "NODE_ENV",
+        "OMADA_SITE_CREATOR_HOST",
+        "OMADA_SITE_CREATOR_PORT",
+        "OMADA_SITE_CREATOR_DATA_DIR",
+        "PLAYWRIGHT_BROWSERS_PATH",
+        "OMADA_SITE_CREATOR_WEBHOOK_TOKEN",
+        "OMADA_SITE_CREATOR_HEADLESS",
+        "OMADA_SITE_CREATOR_BROWSER_CHANNEL"
+      ],
+      "safe_flags": {},
+      "sha256": "6adadb050ff04dddc5f6633a9641014c29f7ec9de1575e8146ee47ea1a0a78c8"
+    },
+    {
+      "path": "/etc/opticable-password-pdf.env",
+      "keys": [
+        "WIFI_PDF_API_KEY",
+        "ZOHO_WORKDRIVE_PARENT_FOLDER_ID",
+        "ZOHO_OAUTH_CREDENTIALS_PATH"
+      ],
+      "safe_flags": {},
+      "sha256": "a4608c8555afbcaeee37b24d26b7a98faf3b84a37b1bc7fc4bf5b262d4dca057"
+    },
+    {
+      "path": "/etc/opticable-workflow-api.env",
+      "keys": [
+        "SITE_WORKFLOW_API_KEY",
+        "SITE_WORKFLOW_HOST",
+        "SITE_WORKFLOW_PORT",
+        "SITE_WORKFLOW_OUTPUT_ROOT",
+        "SITE_WORKFLOW_SSID_PREFIX",
+        "SITE_WORKFLOW_SSID_TEMPLATE",
+        "SITE_WORKFLOW_SSID_SUFFIX_LENGTH",
+        "SITE_WORKFLOW_PASSWORD_SPECIALS",
+        "PASSWORD_PDF_BASE_URL",
+        "PASSWORD_PDF_API_KEY",
+        "PASSWORD_PDF_TIMEOUT_SECONDS",
+        "OMADA_SITE_CREATOR_BASE_URL",
+        "OMADA_SITE_CREATOR_WEBHOOK_TOKEN",
+        "OMADA_SITE_CREATOR_TIMEOUT_SECONDS",
+        "OMADA_ORGANIZATION_NAME",
+        "OMADA_CLOUD_BASE_URL",
+        "OMADA_BROWSER_CHANNEL",
+        "OMADA_HEADLESS",
+        "OMADA_DEFAULT_REGION",
+        "OMADA_DEFAULT_TIMEZONE",
+        "OMADA_DEFAULT_SCENARIO",
+        "ZOHO_OAUTH_CLIENT_ID",
+        "ZOHO_OAUTH_CLIENT_SECRET",
+        "ZOHO_OAUTH_ACCOUNTS_BASE_URL",
+        "ZOHO_OAUTH_REDIRECT_URI",
+        "ZOHO_OAUTH_SCOPES",
+        "ZOHO_OAUTH_CREDENTIALS_PATH",
+        "GOOGLE_OAUTH_CLIENT_ID",
+        "GOOGLE_OAUTH_CLIENT_SECRET",
+        "GOOGLE_OAUTH_REDIRECT_URI",
+        "GOOGLE_OAUTH_SCOPES",
+        "GOOGLE_OAUTH_CREDENTIALS_PATH",
+        "OMADA_SITE_CREATOR_CLOUD_EMAIL",
+        "OMADA_SITE_CREATOR_CLOUD_PASSWORD",
+        "OMADA_SITE_CREATOR_DEVICE_USERNAME",
+        "OMADA_SITE_CREATOR_DEVICE_PASSWORD",
+        "WINDSOR_API_KEY",
+        "OVH_ENDPOINT",
+        "OVH_APPLICATION_KEY",
+        "OVH_APPLICATION_SECRET",
+        "OVH_CONSUMER_KEY",
+        "CLOUDFLARE_API_TOKEN",
+        "CLOUDFLARE_ACCOUNT_ID",
+        "GITHUB_APP_ID",
+        "GITHUB_APP_INSTALLATION_ID",
+        "GITHUB_APP_PRIVATE_KEY_PATH",
+        "GITHUB_OWNER",
+        "APOLLO_API_KEY",
+        "OPTIBRAIN_ALLOW_APOLLO_CREDIT_CONSUMPTION",
+        "OPENAI_API_KEY",
+        "OPENAI_MODEL",
+        "ANTHROPIC_API_KEY",
+        "ANTHROPIC_MODEL",
+        "ANTHROPIC_WORKSPACE_ID",
+        "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL",
+        "OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY",
+        "OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT",
+        "OPTIBRAIN_CRM_DRIFT_ENABLED",
+        "OPTIBRAIN_WEBHOOK_CONFIG",
+        "OPTIBRAIN_SYNC_CONFIG",
+        "OPTIBRAIN_PHASE7_REGISTRATION",
+        "OPTIBRAIN_PHASE7_RELEASE_SHA"
+      ],
+      "safe_flags": {
+        "OPTIBRAIN_ALLOW_APOLLO_CREDIT_CONSUMPTION": "false",
+        "OPTIBRAIN_CRM_DRIFT_ENABLED": "true"
+      },
+      "sha256": "063c4b5cc75a681ce65dd2141efafb797062ae4ec64c7f8a8d70615c0dc3740d"
+    }
+  ],
+  "mutation_control": {
+    "schema": 1,
+    "test_writes_enabled": false,
+    "allowed_actions": [
+      "crm.task.create"
+    ],
+    "real_canary_allowed": false
+  },
+  "persistent_authorization_present": false,
+  "development_runtime_present": false
+}

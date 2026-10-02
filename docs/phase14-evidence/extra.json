@@ -1,0 +1,253 @@
+{
+  "captured_at": "2026-10-02T02:37:12.083183+00:00",
+  "connector_workflow_crons": {
+    "deploy-worker.yml": {
+      "source_sha": "6fc09e1c511c6278793dfc857ea82b1260928348",
+      "cron_lines": []
+    },
+    "step4-routing-tests.yml": {
+      "source_sha": "a8fb8287af92f49cd2b9c0439ffd02fd59f211d3",
+      "cron_lines": []
+    },
+    "validate-worker.yml": {
+      "source_sha": "eb10b46e07fcb1f529e96241904effb15ccfa34b",
+      "cron_lines": []
+    }
+  },
+  "phase13_ci_jobs": [
+    {
+      "name": "omada-containment",
+      "conclusion": "success",
+      "started_at": "2026-10-02T01:15:15Z",
+      "completed_at": "2026-10-02T01:15:27Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "started_at": "2026-10-02T01:15:16Z",
+          "completed_at": "2026-10-02T01:15:16Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v6",
+          "started_at": "2026-10-02T01:15:16Z",
+          "completed_at": "2026-10-02T01:15:17Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "started_at": "2026-10-02T01:15:17Z",
+          "completed_at": "2026-10-02T01:15:18Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm ci --ignore-scripts",
+          "started_at": "2026-10-02T01:15:18Z",
+          "completed_at": "2026-10-02T01:15:23Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run build",
+          "started_at": "2026-10-02T01:15:23Z",
+          "completed_at": "2026-10-02T01:15:25Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "started_at": "2026-10-02T01:15:25Z",
+          "completed_at": "2026-10-02T01:15:26Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v6",
+          "started_at": "2026-10-02T01:15:26Z",
+          "completed_at": "2026-10-02T01:15:26Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "started_at": "2026-10-02T01:15:26Z",
+          "completed_at": "2026-10-02T01:15:26Z",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "control-plane-worker",
+      "conclusion": "success",
+      "started_at": "2026-10-02T01:15:15Z",
+      "completed_at": "2026-10-02T01:15:25Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "started_at": "2026-10-02T01:15:16Z",
+          "completed_at": "2026-10-02T01:15:16Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v6",
+          "started_at": "2026-10-02T01:15:16Z",
+          "completed_at": "2026-10-02T01:15:17Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "started_at": "2026-10-02T01:15:17Z",
+          "completed_at": "2026-10-02T01:15:18Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install dependencies",
+          "started_at": "2026-10-02T01:15:18Z",
+          "completed_at": "2026-10-02T01:15:21Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Validate durable control-plane Worker",
+          "started_at": "2026-10-02T01:15:21Z",
+          "completed_at": "2026-10-02T01:15:23Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "started_at": "2026-10-02T01:15:23Z",
+          "completed_at": "2026-10-02T01:15:23Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v6",
+          "started_at": "2026-10-02T01:15:23Z",
+          "completed_at": "2026-10-02T01:15:24Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "started_at": "2026-10-02T01:15:24Z",
+          "completed_at": "2026-10-02T01:15:24Z",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "workflow-api",
+      "conclusion": "success",
+      "started_at": "2026-10-02T01:15:15Z",
+      "completed_at": "2026-10-02T01:15:59Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "started_at": "2026-10-02T01:15:16Z",
+          "completed_at": "2026-10-02T01:15:17Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v6",
+          "started_at": "2026-10-02T01:15:17Z",
+          "completed_at": "2026-10-02T01:15:18Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "started_at": "2026-10-02T01:15:18Z",
+          "completed_at": "2026-10-02T01:15:18Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install dependencies",
+          "started_at": "2026-10-02T01:15:18Z",
+          "completed_at": "2026-10-02T01:15:32Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Validate deployment shell scripts",
+          "started_at": "2026-10-02T01:15:32Z",
+          "completed_at": "2026-10-02T01:15:32Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify authoritative runbook digest",
+          "started_at": "2026-10-02T01:15:32Z",
+          "completed_at": "2026-10-02T01:15:32Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Compile Python",
+          "started_at": "2026-10-02T01:15:32Z",
+          "completed_at": "2026-10-02T01:15:33Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run automation kernel tests",
+          "started_at": "2026-10-02T01:15:33Z",
+          "completed_at": "2026-10-02T01:15:56Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-python@v5",
+          "started_at": "2026-10-02T01:15:56Z",
+          "completed_at": "2026-10-02T01:15:57Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v6",
+          "started_at": "2026-10-02T01:15:57Z",
+          "completed_at": "2026-10-02T01:15:57Z",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "started_at": "2026-10-02T01:15:57Z",
+          "completed_at": "2026-10-02T01:15:57Z",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "sync_failure": [
+    {
+      "status": "failed",
+      "last_error": "authentication_failed",
+      "last_success_at": "2026-09-30T23:29:02.194407Z"
+    }
+  ],
+  "native_journal_binding_matches_current": false,
+  "cron_jobs": {
+    "root": [],
+    "optibrain": [],
+    "opticable-workflow-api": []
+  },
+  "cron_references": [],
+  "installed_legacy_sbin": [
+    {
+      "path": "/usr/local/sbin/optibrain-phase6-release-loader",
+      "sha256": "aeaa7272371e1d762090e68560c8cee59bf4b933766c69d13f3815e58bf32b1c"
+    },
+    {
+      "path": "/usr/local/sbin/opticable-api-deploy-root.phase10-service-before",
+      "sha256": "4d57be03216d85d763fd933f2ec314513b7fa71a616e66a64dc0a44a6c491771"
+    },
+    {
+      "path": "/usr/local/sbin/opticable-api-deploy-root.before-phase10",
+      "sha256": "f69590322c500bdebafaaf09b5030880c67fedeb96bd7f01017cf3ce1a5c9864"
+    },
+    {
+      "path": "/usr/local/sbin/optibrain-admin",
+      "sha256": "b6313a79357afed164d3d7bfd363dd14403b3c8853927c721370e1e94df17244"
+    },
+    {
+      "path": "/usr/local/sbin/optibrain-admin-update",
+      "sha256": "8f1f2fdecb8603f94f746532ecfa2b90a26f9ee4e57b3d6e70e74509e166dfe6"
+    },
+    {
+      "path": "/usr/local/sbin/opticable-api-deploy-root-phase6",
+      "sha256": "00fc9a5bbbd95d7a65e77e13b409541859c801ebe59bf1a9717bbcffba759cdb"
+    },
+    {
+      "path": "/usr/local/sbin/opticable-api-deploy-command",
+      "sha256": "eaa504477fc4d3af6e25101f127ab6ce4a28bbb9f9fd2b058d0a0193bfaab215"
+    },
+    {
+      "path": "/usr/local/sbin/opticable-api-deploy-root",
+      "sha256": "790152dae53bd40d3bc37d094d0209f27c0b823c1b134f47d422619b12b8906a"
+    }
+  ]
+}
