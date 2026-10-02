@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](../../../docs/OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # WiFi PDF Generator
 
 This package generates one tenant WiFi PDF per record plus one merged PDF for the full batch. It uses direct PDF drawing with ReportLab as the final recommendation because it gives the most deterministic layout control, the least deployment complexity on a VM, and the cleanest path for long-term maintenance.

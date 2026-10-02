@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 10 customer lifecycle foundation
 
 The authenticated, read-only `/v1/operator/phase10/customer-lifecycle` view has `scope=live` (default) and `scope=lab`. It reads bounded Zoho Accounts, Contacts and Deals; a provider Account ID is the relationship anchor. It does not mint another customer ID. Lab scope requires registered IDs plus `OptiBrain_Test=true`; live scope excludes that marker. The existing Phase 9 source-attributed Account→Contact→Deal is reused as the active-project scenario, preserving its first source and campaign. No provider write route, outreach route, Books integration or autonomous job is added.

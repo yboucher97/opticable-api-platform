@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](../../../../docs/OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Linux VPS Deployment
 
 This folder contains the Linux service assets for running `Omada Site Creator` unattended on an Ubuntu VM.

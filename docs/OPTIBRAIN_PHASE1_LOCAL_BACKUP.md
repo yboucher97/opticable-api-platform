@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # OptiBrain Hardening Phase 1: Local Backup and Recovery
 
 Status: Phase 1 finalized on 2026-09-26. Phase 2A advanced on 2026-09-27;

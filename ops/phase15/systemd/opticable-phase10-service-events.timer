@@ -1,0 +1,13 @@
+# Current reviewed runtime reconstruction; nothing is enabled by bootstrap.
+# /etc/systemd/system/opticable-phase10-service-events.timer
+[Unit]
+Description=Refresh OptiBrain service lifecycle events every hour
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=1h
+AccuracySec=1min
+Unit=opticable-phase10-service-events.service
+
+[Install]
+WantedBy=timers.target

@@ -1,30 +1,11 @@
-# OptiBrain Safety & Autonomy Invariants
+# OptiBrain safety controls
 
-These rules are mandatory for every automated production mutation.
+SECURITY / CONTROL — CURRENT. [Onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) and [runbook](OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md) define current scope. Protected123 READ ONLY; real/Test automatic business writes OFF; real canary false; customer sends/Books writes0; persistent development worker OFF.
 
-## Change transaction
-1. Identify and record the current last-known-good Git SHA and runtime release.
-2. Create a pre-change snapshot before any mutation.
-3. Apply the smallest reversible change.
-4. Validate syntax, tests, health endpoints, and critical provider connectivity.
-5. On validation failure, stop and roll back to the pre-change snapshot.
-6. On success, create a post-change snapshot and mark it as the new candidate known-good state.
-7. Record the change, validation evidence, rollback point, and outcome in the audit/runbook log.
+Universal trusted root mutation kill, exact central action/payload/target/version, TEST marker **and** root registry ownership, protected baseline precedence, immutable journal/envelope, stale-state reconciliation and independent create-only off-host claims are conjunctive. Missing/corrupt/untrusted control denies writes. Books non-GET is independently denied; legacy Mail/Sign/WorkDrive/PDF/Omada/connector writers remain contained. Native Forms CRM integrations remain owner-disabled and fallback OFF. Runtime provider scopes never grant action authority; current non-GET provider/admin surfaces are denied unless the exact separate authorized technical root scope permits the supported call.
 
-## Backup separation
-Git history is not a complete backup. Production recovery must use independent copies for source, runtime configuration, databases/state, and secrets metadata. Secret values must never be committed to Git.
+Authentication fails closed at edge and origin; the shared API key never substitutes for human Access identity. No automatic failover, cron, workflow toggle, read projection or health result can authorize a business effect. Restore/rollback/state loss never erases reconciliation or permits duplicate action. Preserve action/approval/receipt/claim evidence and expired authority as historical evidence, never replay authorization.
 
-At least one backup copy must be outside the primary GitHub account/credential boundary. Backup credentials must not have write/delete access to production.
+Engineering change transaction: record source/runtime/rollback recovery point, make bounded reversible changes, run appropriate focused/final release checks, rollback code/config on failure preserving state/newer credentials, then capture source/health/safety/backup evidence. Secrets remain out of Git/logs/chat; owner-held AGE identity remains offline. Fresh recovery defaults mask timers/TEST service/dev units, force writers and internal automation OFF and require provider reconciliation before any later approved activation.
 
-## Autonomous execution
-All scheduled or event-driven jobs must be idempotent, bounded by timeouts, use retries with exponential backoff for transient failures, and send exhausted work to a recoverable dead-letter/error state rather than silently dropping it.
-
-Health monitoring must verify both HTTP availability and critical dependency/provider state. A failed health check must not automatically deploy new code.
-
-## Destructive and financial guardrails
-Zoho Books and CRM-synced finance modules may have full OAuth scopes, but they are operationally **strictly read-only**. All Books/Books-synced POST, PUT, PATCH, and DELETE operations are blocked in the canonical gateway with no approval bypass. Other Zoho applications retain the broader autonomous gateway policy. Irreversible deletes/purges elsewhere remain audited.
-
-Bulk deletes, destructive migrations, credential rotation, permission expansion, and irreversible external actions require an explicit safety gate and verified recovery point.
-
-## Recovery objective
-A future operator or ChatGPT session must be able to determine: what is running, what changed, the last known-good version, the pre-change version, how validation behaved, and how to restore service without reconstructing history from memory.
+A new explicit exact human mission is required for real canary/automation/customer actions, protected-record changes, provider/financial destructive actions, permission expansion, snapshot-over-production/reinstall/OVH destruction or retired worker activation. Nothing in historical phase documents grants those permissions.

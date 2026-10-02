@@ -1,0 +1,1631 @@
+{
+  "schema": 1,
+  "classification": "AUTHORITATIVE CURRENT MATRIX",
+  "inventory_date": "2026-10-02",
+  "no_secret_values": true,
+  "configuration_items": [
+    {
+      "location": "/etc/optibrain/PHASE13_CONTAINMENT_README.md",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/admin-helper.sha256",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/age-recipient",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/backup.conf",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/cloudflare-test-token",
+      "owner": "root",
+      "secret": true,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/control-plane.key",
+      "owner": "root",
+      "secret": true,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/github-actions-deploy-ed25519",
+      "owner": "root",
+      "secret": true,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/github-actions-deploy-ed25519.pub",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/github-app.pem",
+      "owner": "root",
+      "secret": true,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/manual-release-authorization.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "historical expired authority; never restore execution grant"
+    },
+    {
+      "location": "/etc/optibrain/master-runbook.sha256",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/mutation-control.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase11-operations.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase12-runner.env",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/customer-lifecycle-approved-email-reply.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/customer-lifecycle-contract-send.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/customer-lifecycle-digest.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/customer-lifecycle-email-analysis.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/customer-lifecycle-finance-observer.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/customer-lifecycle-lead-intake.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/customer-lifecycle-mailbox-poll.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/customer-lifecycle-meeting.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/customer-lifecycle-qualify-promote.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/customer-lifecycle-quote-review.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/customer-lifecycle-sign-observer.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/opticable-crm-lead-observe.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/opticable-crm-lead-reconcile.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/opticable-sales-draft.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/platform-smoke-test.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase13-observe-workflows/universal-inbox-observe.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase2a.conf",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase5/delta-sync.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase5/webhooks.yaml",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase7-canary-registration.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase7-first-canary-release-authorization.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "historical expired authority; never restore execution grant"
+    },
+    {
+      "location": "/etc/optibrain/phase7-first-canary-sourcepin-authorization.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "historical expired authority; never restore execution grant"
+    },
+    {
+      "location": "/etc/optibrain/phase7-release-authorization.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "historical expired authority; never restore execution grant"
+    },
+    {
+      "location": "/etc/optibrain/phase8-test-lab-registry.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase9-form-enrichment.env",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase9-protected-baseline.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase9-receipt-export-private.pem",
+      "owner": "root",
+      "secret": true,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/phase9-receipt-export.env",
+      "owner": "root",
+      "secret": true,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/protected-runtime-versions.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/r2-uploader.env",
+      "owner": "root",
+      "secret": true,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/optibrain/zoho-oauth-traverse-recovery.txt",
+      "owner": "root",
+      "secret": true,
+      "source_of_truth": "root-reviewed file",
+      "deployed": "reviewed root install",
+      "restored": "protected app archive; fresh denial supersedes grants",
+      "verified": "owner/mode/hash and exact read-only checks",
+      "backed_up": "application archive",
+      "purpose": "root safety/observation/ownership/recovery control"
+    },
+    {
+      "location": "/etc/opticable-workflow-api.env",
+      "owner": "root",
+      "secret": true,
+      "source_of_truth": "root-reviewed environment",
+      "deployed": "systemd EnvironmentFile",
+      "restored": "protected application archive or owner rotation",
+      "verified": "mode; private live inspector; minimal provider reads",
+      "backed_up": "application archive",
+      "purpose": "runtime configuration"
+    },
+    {
+      "location": "/etc/opticable-password-pdf.env",
+      "owner": "root",
+      "secret": true,
+      "source_of_truth": "root-reviewed environment",
+      "deployed": "systemd EnvironmentFile",
+      "restored": "protected application archive or owner rotation",
+      "verified": "mode; private live inspector; minimal provider reads",
+      "backed_up": "application archive",
+      "purpose": "runtime configuration"
+    },
+    {
+      "location": "/etc/opticable-omada-site.env",
+      "owner": "root",
+      "secret": true,
+      "source_of_truth": "root-reviewed environment",
+      "deployed": "systemd EnvironmentFile",
+      "restored": "protected application archive or owner rotation",
+      "verified": "mode; private live inspector; minimal provider reads",
+      "backed_up": "application archive",
+      "purpose": "runtime configuration"
+    },
+    {
+      "location": "/etc/systemd/system",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": false,
+      "source_of_truth": "ops/phase15/systemd",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "application archive + repository recipe",
+      "purpose": "service definitions/drop-ins/masks"
+    },
+    {
+      "location": "/etc/caddy",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": false,
+      "source_of_truth": "ops/phase15/caddy",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "application archive + repository recipe",
+      "purpose": "reverse-proxy denial and routing"
+    },
+    {
+      "location": "/etc/systemd/journald.conf.d/30-optibrain-retention.conf",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": false,
+      "source_of_truth": "ops/phase13-p1/30-optibrain-retention.conf",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "application archive + repository recipe",
+      "purpose": "bounded diagnostic retention"
+    },
+    {
+      "location": "/etc/ufw",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": false,
+      "source_of_truth": "root host firewall",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "infrastructure supplement + source",
+      "purpose": "public-port policy"
+    },
+    {
+      "location": "/etc/netplan",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": false,
+      "source_of_truth": "OVH fresh-host network",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "infrastructure supplement + source",
+      "purpose": "host interface/address configuration"
+    },
+    {
+      "location": "/etc/ssh",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": true,
+      "source_of_truth": "owner-reviewed host policy",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "application archive + repository recipe",
+      "purpose": "SSH identity/authentication"
+    },
+    {
+      "location": "/etc/sudoers.d",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": false,
+      "source_of_truth": "root-reviewed sudo rules",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "infrastructure supplement + source",
+      "purpose": "engineering/restricted deployment rights"
+    },
+    {
+      "location": "/var/lib/caddy",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": true,
+      "source_of_truth": "Caddy ACME state",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "infrastructure supplement + source",
+      "purpose": "origin TLS keys/certificates"
+    },
+    {
+      "location": "/usr/local/sbin",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": false,
+      "source_of_truth": "reviewed repository deploy/admin helpers",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "infrastructure supplement + source",
+      "purpose": "installed root trust boundary"
+    },
+    {
+      "location": "/usr/local/lib/optibrain",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": false,
+      "source_of_truth": "reviewed repository helper sources",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "application archive + repository recipe",
+      "purpose": "runner/readiness/retention helpers"
+    },
+    {
+      "location": "/usr/local/lib/optibrain-backup",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": false,
+      "source_of_truth": "ops/backup",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "application archive + repository recipe",
+      "purpose": "backup/upload/restore helpers"
+    },
+    {
+      "location": "/var/lib/opticable-api-platform/shared",
+      "owner": "opticable-workflow-api:opticable-workflow-api; root-reviewed credential provisioning",
+      "secret": true,
+      "source_of_truth": "approved Zoho OAuth flow",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "application archive + repository recipe",
+      "purpose": "core credential binding"
+    },
+    {
+      "location": "/var/lib/opticable-workflow-api/output/automation",
+      "owner": "opticable-workflow-api:opticable-workflow-api (root-owned protected policy/registries are separate)",
+      "secret": true,
+      "source_of_truth": "workflow schema/writers",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "application archive + repository recipe",
+      "purpose": "five active databases and OAuth cache"
+    },
+    {
+      "location": "/var/lib/optibrain",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": true,
+      "source_of_truth": "root evidence/receipt writers",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory; Git bundle verify and SHA/ref identity",
+      "backed_up": "application archive + repository recipe",
+      "purpose": "immutable claims/ownership/backup/release evidence; recovery-source/current.bundle exact-source history for offline Git recovery"
+    },
+    {
+      "location": "/var/backups/optibrain",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": true,
+      "source_of_truth": "root backup script",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "application archive + repository recipe",
+      "purpose": "online plaintext archives/manifests"
+    },
+    {
+      "location": "/run/optibrain-readiness",
+      "owner": "root (named service writers per runtime/state contract)",
+      "secret": false,
+      "source_of_truth": "installed read-only samplers",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "ephemeral; regenerate",
+      "purpose": "temporary redacted readiness"
+    },
+    {
+      "location": "Cloudflare DNS/TLS/Access/Workers/Queues/Workflow/R2",
+      "owner": "provider owner/admin",
+      "secret": true,
+      "source_of_truth": "provider account + repository Worker config",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "provider owner recovery + metadata evidence",
+      "purpose": "external control-plane settings"
+    },
+    {
+      "location": "GitHub repository/actions/secrets",
+      "owner": "provider owner/admin",
+      "secret": true,
+      "source_of_truth": "main workflow files + owner settings",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "provider owner recovery + metadata evidence",
+      "purpose": "CI and disabled business schedules"
+    },
+    {
+      "location": "Zoho schemas/native watch/Forms settings",
+      "owner": "provider owner/admin",
+      "secret": true,
+      "source_of_truth": "provider truth/owner UI",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "provider owner recovery + metadata evidence",
+      "purpose": "business provider settings"
+    },
+    {
+      "location": "OVH account/VPS/snapshot",
+      "owner": "provider owner/admin",
+      "secret": true,
+      "source_of_truth": "provider owner/admin",
+      "deployed": "reviewed explicit admin/install",
+      "restored": "current recovery guide; name-based permissions",
+      "verified": "runtime/state consistency and read-only inventory",
+      "backed_up": "provider owner recovery + metadata evidence",
+      "purpose": "infrastructure identity/recovery"
+    },
+    {
+      "location": "/etc/optibrain/rebuild-safety.env",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "ops/phase15/bootstrap.py",
+      "deployed": "final recovery EnvironmentFile",
+      "restored": "regenerate fresh OFF",
+      "verified": "bootstrap VERIFY",
+      "backed_up": "replacement app backup",
+      "purpose": "replacement-only safety override"
+    },
+    {
+      "location": "/var/log/optibrain",
+      "owner": "root:root 0700",
+      "secret": false,
+      "source_of_truth": "installed root admin audit writer",
+      "deployed": "fresh bootstrap creates private audit directory",
+      "restored": "recreate directory; admin operations append private audit, durable release/reconciliation receipts restore separately",
+      "verified": "root directory0700 and append-file0600; actual isolated admin verify",
+      "backed_up": "not present in golden application archive; diagnostic admin trace is separate from mandatory immutable business/release/backup evidence",
+      "purpose": "private administrative command trace"
+    }
+  ],
+  "environment_key_references": [
+    {
+      "path": "/etc/opticable-workflow-api.env",
+      "keys": [
+        "ANTHROPIC_API_KEY",
+        "ANTHROPIC_MODEL",
+        "ANTHROPIC_WORKSPACE_ID",
+        "APOLLO_API_KEY",
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_API_TOKEN",
+        "GITHUB_APP_ID",
+        "GITHUB_APP_INSTALLATION_ID",
+        "GITHUB_APP_PRIVATE_KEY_PATH",
+        "GITHUB_OWNER",
+        "GOOGLE_OAUTH_CLIENT_ID",
+        "GOOGLE_OAUTH_CLIENT_SECRET",
+        "GOOGLE_OAUTH_CREDENTIALS_PATH",
+        "GOOGLE_OAUTH_REDIRECT_URI",
+        "GOOGLE_OAUTH_SCOPES",
+        "OMADA_BROWSER_CHANNEL",
+        "OMADA_CLOUD_BASE_URL",
+        "OMADA_DEFAULT_REGION",
+        "OMADA_DEFAULT_SCENARIO",
+        "OMADA_DEFAULT_TIMEZONE",
+        "OMADA_HEADLESS",
+        "OMADA_ORGANIZATION_NAME",
+        "OMADA_SITE_CREATOR_BASE_URL",
+        "OMADA_SITE_CREATOR_CLOUD_EMAIL",
+        "OMADA_SITE_CREATOR_CLOUD_PASSWORD",
+        "OMADA_SITE_CREATOR_DEVICE_PASSWORD",
+        "OMADA_SITE_CREATOR_DEVICE_USERNAME",
+        "OMADA_SITE_CREATOR_TIMEOUT_SECONDS",
+        "OMADA_SITE_CREATOR_WEBHOOK_TOKEN",
+        "OPENAI_API_KEY",
+        "OPENAI_MODEL",
+        "OPTIBRAIN_ALLOW_APOLLO_CREDIT_CONSUMPTION",
+        "OPTIBRAIN_CRM_DRIFT_ENABLED",
+        "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL",
+        "OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY",
+        "OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT",
+        "OPTIBRAIN_PHASE7_REGISTRATION",
+        "OPTIBRAIN_PHASE7_RELEASE_SHA",
+        "OPTIBRAIN_SYNC_CONFIG",
+        "OPTIBRAIN_WEBHOOK_CONFIG",
+        "OVH_APPLICATION_KEY",
+        "OVH_APPLICATION_SECRET",
+        "OVH_CONSUMER_KEY",
+        "OVH_ENDPOINT",
+        "PASSWORD_PDF_API_KEY",
+        "PASSWORD_PDF_BASE_URL",
+        "PASSWORD_PDF_TIMEOUT_SECONDS",
+        "SITE_WORKFLOW_API_KEY",
+        "SITE_WORKFLOW_HOST",
+        "SITE_WORKFLOW_OUTPUT_ROOT",
+        "SITE_WORKFLOW_PASSWORD_SPECIALS",
+        "SITE_WORKFLOW_PORT",
+        "SITE_WORKFLOW_SSID_PREFIX",
+        "SITE_WORKFLOW_SSID_SUFFIX_LENGTH",
+        "SITE_WORKFLOW_SSID_TEMPLATE",
+        "WINDSOR_API_KEY",
+        "ZOHO_OAUTH_ACCOUNTS_BASE_URL",
+        "ZOHO_OAUTH_CLIENT_ID",
+        "ZOHO_OAUTH_CLIENT_SECRET",
+        "ZOHO_OAUTH_CREDENTIALS_PATH",
+        "ZOHO_OAUTH_REDIRECT_URI",
+        "ZOHO_OAUTH_SCOPES"
+      ]
+    },
+    {
+      "path": "/etc/opticable-password-pdf.env",
+      "keys": [
+        "WIFI_PDF_API_KEY",
+        "ZOHO_OAUTH_CREDENTIALS_PATH",
+        "ZOHO_WORKDRIVE_PARENT_FOLDER_ID"
+      ]
+    },
+    {
+      "path": "/etc/opticable-omada-site.env",
+      "keys": [
+        "NODE_ENV",
+        "OMADA_SITE_CREATOR_BROWSER_CHANNEL",
+        "OMADA_SITE_CREATOR_DATA_DIR",
+        "OMADA_SITE_CREATOR_HEADLESS",
+        "OMADA_SITE_CREATOR_HOST",
+        "OMADA_SITE_CREATOR_PORT",
+        "OMADA_SITE_CREATOR_WEBHOOK_TOKEN",
+        "PLAYWRIGHT_BROWSERS_PATH"
+      ]
+    },
+    {
+      "path": "/etc/optibrain/phase12-runner.env",
+      "keys": [
+        "OPTIBRAIN_AUTO_TEST_INTERNAL",
+        "OPTIBRAIN_AUTO_TEST_PROJECT",
+        "OPTIBRAIN_AUTO_TEST_TASK",
+        "OPTIBRAIN_BUSINESS_AUTO_WRITES"
+      ]
+    },
+    {
+      "path": "/etc/optibrain/phase9-receipt-export.env",
+      "keys": [
+        "OPTIBRAIN_RECEIPT_EXPORT_KEY"
+      ]
+    },
+    {
+      "path": "/etc/optibrain/phase9-form-enrichment.env",
+      "keys": [
+        "OPTIBRAIN_PHASE9_FORM_ENRICHMENT",
+        "OPTIBRAIN_PHASE9_FORM_GO_LIVE"
+      ]
+    }
+  ],
+  "secret_references": [
+    {
+      "name": "ANTHROPIC_API_KEY",
+      "provider": "Anthropic",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "APOLLO_API_KEY",
+      "provider": "Apollo",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "CLOUDFLARE_API_TOKEN",
+      "provider": "Cloudflare",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "GITHUB_APP_PRIVATE_KEY_PATH",
+      "provider": "GitHub",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "GOOGLE_OAUTH_CLIENT_ID",
+      "provider": "Google",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "GOOGLE_OAUTH_CLIENT_SECRET",
+      "provider": "Google",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "GOOGLE_OAUTH_CREDENTIALS_PATH",
+      "provider": "Google",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "OMADA_SITE_CREATOR_CLOUD_EMAIL",
+      "provider": "Omada",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "OMADA_SITE_CREATOR_CLOUD_PASSWORD",
+      "provider": "Omada",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "OMADA_SITE_CREATOR_DEVICE_PASSWORD",
+      "provider": "Omada",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "OMADA_SITE_CREATOR_DEVICE_USERNAME",
+      "provider": "Omada",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "OMADA_SITE_CREATOR_WEBHOOK_TOKEN",
+      "provider": "Omada",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "OPENAI_API_KEY",
+      "provider": "OpenAI",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL",
+      "provider": "OptiBrain internal",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "OVH_APPLICATION_KEY",
+      "provider": "OVHcloud Canada",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "OVH_APPLICATION_SECRET",
+      "provider": "OVHcloud Canada",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "OVH_CONSUMER_KEY",
+      "provider": "OVHcloud Canada",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "PASSWORD_PDF_API_KEY",
+      "provider": "OptiBrain internal",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "PASSWORD_PDF_BASE_URL",
+      "provider": "OptiBrain internal",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "PASSWORD_PDF_TIMEOUT_SECONDS",
+      "provider": "OptiBrain internal",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "SITE_WORKFLOW_API_KEY",
+      "provider": "OptiBrain internal",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "SITE_WORKFLOW_PASSWORD_SPECIALS",
+      "provider": "OptiBrain internal",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "WINDSOR_API_KEY",
+      "provider": "Windsor",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "ZOHO_OAUTH_CLIENT_ID",
+      "provider": "Zoho",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "ZOHO_OAUTH_CLIENT_SECRET",
+      "provider": "Zoho",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "ZOHO_OAUTH_CREDENTIALS_PATH",
+      "provider": "Zoho",
+      "storage": "/etc/opticable-workflow-api.env",
+      "consumer": "opticable-workflow-api",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "WIFI_PDF_API_KEY",
+      "provider": "OptiBrain internal",
+      "storage": "/etc/opticable-password-pdf.env",
+      "consumer": "opticable-password-pdf",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "ZOHO_OAUTH_CREDENTIALS_PATH",
+      "provider": "Zoho",
+      "storage": "/etc/opticable-password-pdf.env",
+      "consumer": "opticable-password-pdf",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "OMADA_SITE_CREATOR_WEBHOOK_TOKEN",
+      "provider": "Omada",
+      "storage": "/etc/opticable-omada-site.env",
+      "consumer": "opticable-omada-site",
+      "purpose": "credential/authentication reference; presence does not authorize provider use",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "aws_access_key_id",
+      "provider": "Cloudflare R2",
+      "storage": "/etc/optibrain/r2-uploader.env [default]",
+      "consumer": "root uploader/independent claims",
+      "purpose": "fixed-bucket scoped S3 credential",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "aws_secret_access_key",
+      "provider": "Cloudflare R2",
+      "storage": "/etc/optibrain/r2-uploader.env [default]",
+      "consumer": "root uploader/independent claims",
+      "purpose": "fixed-bucket scoped S3 credential",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected application archive"
+    },
+    {
+      "name": "Zoho refresh/access tokens",
+      "provider": "Zoho",
+      "storage": "/var/lib/opticable-api-platform/shared/zoho-oauth.json",
+      "consumer": "API/PDF",
+      "purpose": "credential state; never print",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected app archive"
+    },
+    {
+      "name": "Zoho bound access cache",
+      "provider": "Zoho",
+      "storage": "/var/lib/opticable-workflow-api/output/automation/zoho-access-cache.json",
+      "consumer": "core read observers",
+      "purpose": "credential state; never print",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected app archive"
+    },
+    {
+      "name": "GitHub App PEM",
+      "provider": "GitHub",
+      "storage": "/etc/optibrain/github-app.pem",
+      "consumer": "API GitHub client",
+      "purpose": "credential state; never print",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected app archive"
+    },
+    {
+      "name": "deploy SSH private key",
+      "provider": "GitHub/SSH",
+      "storage": "/etc/optibrain/github-actions-deploy-ed25519",
+      "consumer": "restricted deployment",
+      "purpose": "credential state; never print",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected app archive"
+    },
+    {
+      "name": "receipt export RSA key",
+      "provider": "connector",
+      "storage": "/etc/optibrain/phase9-receipt-export-private.pem",
+      "consumer": "root OAuth/export recovery",
+      "purpose": "credential state; never print",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected app archive"
+    },
+    {
+      "name": "control-plane shared key",
+      "provider": "Cloudflare",
+      "storage": "/etc/optibrain/control-plane.key",
+      "consumer": "root control-plane setup",
+      "purpose": "credential state; never print",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected app archive"
+    },
+    {
+      "name": "Cloudflare test token",
+      "provider": "Cloudflare",
+      "storage": "/etc/optibrain/cloudflare-test-token",
+      "consumer": "bounded engineering tests",
+      "purpose": "credential state; never print",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected app archive"
+    },
+    {
+      "name": "Omada browser sessions",
+      "provider": "Omada",
+      "storage": "/var/lib/opticable-omada-site/data",
+      "consumer": "contained service; no browser execution",
+      "purpose": "credential state; never print",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "protected app archive"
+    },
+    {
+      "name": "Caddy TLS private keys",
+      "provider": "ACME/Caddy",
+      "storage": "/var/lib/caddy",
+      "consumer": "Caddy",
+      "purpose": "credential state; never print",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "encrypted infrastructure supplement"
+    },
+    {
+      "name": "CONNECTOR_API_KEY",
+      "provider": "OptiBrain internal",
+      "storage": "Cloudflare Worker opticable-ai-connector secret binding",
+      "consumer": "opticable-ai-connector",
+      "purpose": "provider/runtime authentication",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "OPTIBRAIN_RECEIPT_EXPORT_KEY",
+      "provider": "OptiBrain internal",
+      "storage": "Cloudflare Worker opticable-ai-connector secret binding",
+      "consumer": "opticable-ai-connector",
+      "purpose": "provider/runtime authentication",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "OVH_APPLICATION_KEY",
+      "provider": "OVHcloud Canada",
+      "storage": "Cloudflare Worker opticable-ai-connector secret binding",
+      "consumer": "opticable-ai-connector",
+      "purpose": "provider/runtime authentication",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "OVH_APPLICATION_SECRET",
+      "provider": "OVHcloud Canada",
+      "storage": "Cloudflare Worker opticable-ai-connector secret binding",
+      "consumer": "opticable-ai-connector",
+      "purpose": "provider/runtime authentication",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "OVH_CONSUMER_KEY",
+      "provider": "OVHcloud Canada",
+      "storage": "Cloudflare Worker opticable-ai-connector secret binding",
+      "consumer": "opticable-ai-connector",
+      "purpose": "provider/runtime authentication",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "ZOHO_CLIENT_SECRET",
+      "provider": "Zoho",
+      "storage": "Cloudflare Worker opticable-ai-connector secret binding",
+      "consumer": "opticable-ai-connector",
+      "purpose": "provider/runtime authentication",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "CONTROL_PLANE_API_KEY",
+      "provider": "OptiBrain internal",
+      "storage": "Cloudflare Worker opticable-control-plane secret binding",
+      "consumer": "opticable-control-plane",
+      "purpose": "provider/runtime authentication",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "CORE_API_KEY",
+      "provider": "OptiBrain internal",
+      "storage": "Cloudflare Worker opticable-control-plane secret binding",
+      "consumer": "opticable-control-plane",
+      "purpose": "provider/runtime authentication",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "OAUTH KV token state",
+      "provider": "Zoho/Google",
+      "storage": "Cloudflare opticable-ai-connector OAUTH KV",
+      "consumer": "contained connector",
+      "purpose": "separate OAuth authority",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "provider storage; owner reconnect if lost"
+    },
+    {
+      "name": "CLOUDFLARE_ACCOUNT_ID",
+      "provider": "GitHub Actions",
+      "storage": "GitHub repository secret CLOUDFLARE_ACCOUNT_ID",
+      "consumer": "workflow files",
+      "purpose": "deployment/control-plane/health secret or restricted host reference",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "CLOUDFLARE_API_TOKEN",
+      "provider": "GitHub Actions",
+      "storage": "GitHub repository secret CLOUDFLARE_API_TOKEN",
+      "consumer": "workflow files",
+      "purpose": "deployment/control-plane/health secret or restricted host reference",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "OPTICABLE_API_DEPLOY_HOST",
+      "provider": "GitHub Actions",
+      "storage": "GitHub repository secret OPTICABLE_API_DEPLOY_HOST",
+      "consumer": "workflow files",
+      "purpose": "deployment/control-plane/health secret or restricted host reference",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "OPTICABLE_API_DEPLOY_KNOWN_HOSTS",
+      "provider": "GitHub Actions",
+      "storage": "GitHub repository secret OPTICABLE_API_DEPLOY_KNOWN_HOSTS",
+      "consumer": "workflow files",
+      "purpose": "deployment/control-plane/health secret or restricted host reference",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "OPTICABLE_API_DEPLOY_PORT",
+      "provider": "GitHub Actions",
+      "storage": "GitHub repository secret OPTICABLE_API_DEPLOY_PORT",
+      "consumer": "workflow files",
+      "purpose": "deployment/control-plane/health secret or restricted host reference",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "OPTICABLE_API_DEPLOY_SSH_KEY",
+      "provider": "GitHub Actions",
+      "storage": "GitHub repository secret OPTICABLE_API_DEPLOY_SSH_KEY",
+      "consumer": "workflow files",
+      "purpose": "deployment/control-plane/health secret or restricted host reference",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "OPTICABLE_API_PUBLIC_BASE_URL",
+      "provider": "GitHub Actions",
+      "storage": "GitHub repository secret OPTICABLE_API_PUBLIC_BASE_URL",
+      "consumer": "workflow files",
+      "purpose": "deployment/control-plane/health secret or restricted host reference",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "OPTICABLE_CONTROL_PLANE_API_KEY",
+      "provider": "GitHub Actions",
+      "storage": "GitHub repository secret OPTICABLE_CONTROL_PLANE_API_KEY",
+      "consumer": "workflow files",
+      "purpose": "deployment/control-plane/health secret or restricted host reference",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "OPTICABLE_CORE_API_KEY",
+      "provider": "GitHub Actions",
+      "storage": "GitHub repository secret OPTICABLE_CORE_API_KEY",
+      "consumer": "workflow files",
+      "purpose": "deployment/control-plane/health secret or restricted host reference",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "protected archive or owner/provider secret reentry",
+      "owner_held_offline": false,
+      "backed_up": "values not exportable; owner/provider recovery"
+    },
+    {
+      "name": "AGE private identity",
+      "provider": "AGE",
+      "storage": "owner offline trusted storage",
+      "consumer": "owner disaster recovery only",
+      "purpose": "decrypt verified off-host archive; never upload/regenerate",
+      "rotation": "owner/provider-authorized minimum-scope rotation; synchronize consumers; verify reads and old-key denial; preserve replay evidence",
+      "recovery_requirement": "owner offline identity/device",
+      "owner_held_offline": true,
+      "backed_up": "EXCLUDED from every VPS/source/backup/log"
+    }
+  ],
+  "external_bindings": {
+    "opticable-ai-connector": [
+      {
+        "name": "CONNECTOR_API_KEY",
+        "type": "secret_text"
+      },
+      {
+        "name": "GOOGLE_ADS_CUSTOMER_ID",
+        "type": "plain_text"
+      },
+      {
+        "name": "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+        "type": "plain_text"
+      },
+      {
+        "name": "GOOGLE_REDIRECT_URI",
+        "type": "plain_text"
+      },
+      {
+        "name": "OAUTH",
+        "type": "kv_namespace"
+      },
+      {
+        "name": "OPTIBRAIN_RECEIPT_EXPORT_KEY",
+        "type": "secret_text"
+      },
+      {
+        "name": "OVH_APPLICATION_KEY",
+        "type": "secret_text"
+      },
+      {
+        "name": "OVH_APPLICATION_SECRET",
+        "type": "secret_text"
+      },
+      {
+        "name": "OVH_CONSUMER_KEY",
+        "type": "secret_text"
+      },
+      {
+        "name": "OVH_ENDPOINT",
+        "type": "plain_text"
+      },
+      {
+        "name": "ZOHO_ACCOUNTS_BASE",
+        "type": "plain_text"
+      },
+      {
+        "name": "ZOHO_CLIENT_ID",
+        "type": "plain_text"
+      },
+      {
+        "name": "ZOHO_CLIENT_SECRET",
+        "type": "secret_text"
+      },
+      {
+        "name": "ZOHO_MAIL_BASE",
+        "type": "plain_text"
+      },
+      {
+        "name": "ZOHO_REDIRECT_URI",
+        "type": "plain_text"
+      },
+      {
+        "name": "ZOHO_SCOPES",
+        "type": "plain_text"
+      }
+    ],
+    "opticable-control-plane": [
+      {
+        "name": "BUSINESS_WORKFLOW",
+        "type": "workflow"
+      },
+      {
+        "name": "CONTROL_PLANE_API_KEY",
+        "type": "secret_text"
+      },
+      {
+        "name": "CORE_API_KEY",
+        "type": "secret_text"
+      },
+      {
+        "name": "CORE_API_URL",
+        "type": "plain_text"
+      },
+      {
+        "name": "EVENTS",
+        "type": "queue"
+      }
+    ]
+  }
+}

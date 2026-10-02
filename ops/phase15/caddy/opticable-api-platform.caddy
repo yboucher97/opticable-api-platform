@@ -1,0 +1,39 @@
+optibrain.opticable.ca {
+	route {
+
+	@phase13LegacyJobCreate {
+		method POST
+		path /v1/omada/jobs /v1/omada/workdrive/jobs /v1/site-and-password/jobs /v1/workflows/site-and-password /webhooks/zoho/site-and-password /webhooks/zoho/site-workflow /v1/site-and-password/webhooks/zoho /pdf/webhooks/zoho/wifi-pdfs /workflow/v1/omada/jobs /workflow/v1/omada/workdrive/jobs /workflow/v1/site-and-password/jobs /workflow/v1/workflows/site-and-password /workflow/webhooks/zoho/site-and-password /workflow/webhooks/zoho/site-workflow /workflow/v1/site-and-password/webhooks/zoho
+	}
+	respond @phase13LegacyJobCreate "Phase 13: legacy provider mutation routes are suspended" 403
+	# Phase 13: unauthenticated legacy infrastructure routes are contained.
+	@phase13OmadaBlocked {
+		path /omada /omada/*
+		not path /omada/api/health
+	}
+	respond @phase13OmadaBlocked "Phase 13: operator authentication required; route contained" 403
+	@phase13PdfJobs path /pdf/jobs /pdf/jobs/* /jobs/* /v1/site-and-password/jobs/* /v1/workflows/site-and-password/jobs/* /workflow/jobs/* /workflow/v1/site-and-password/jobs/* /workflow/v1/workflows/site-and-password/jobs/*
+	respond @phase13PdfJobs "Phase 13: job results require operator authentication" 403
+
+	@pdfRoot path /pdf
+	redir @pdfRoot /pdf/ 308
+	@omadaRoot path /omada
+	redir @omadaRoot /omada/ 308
+	@workflowRoot path /workflow
+	redir @workflowRoot /workflow/ 308
+
+	handle_path /pdf/* {
+		reverse_proxy 127.0.0.1:8000
+	}
+
+	handle_path /omada/* {
+		reverse_proxy 127.0.0.1:3210
+	}
+
+	handle_path /workflow/* {
+		reverse_proxy 127.0.0.1:8100
+	}
+
+	reverse_proxy 127.0.0.1:8100
+	}
+}

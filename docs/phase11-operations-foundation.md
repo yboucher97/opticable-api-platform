@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 11 operations foundation — 2026-10-01
 
 The manually initiated Test Lab uses existing Zoho CRM Accounts, Contacts,

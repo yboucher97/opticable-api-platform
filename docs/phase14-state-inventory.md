@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 14 state and database inventory
 
 **No DB migration, pruning, VACUUM, restore or queue replay performed.** File metadata captured 2026-10-02T02:30:05Z. [File inventory](phase14-evidence/state-files.json) lists 1425 files with path, bytes, UID, mode, modification time and symlink status; [SQLite](phase14-evidence/sqlite.json) contains active schema/index/count metadata; [query plans/counters](phase14-evidence/db-review.json) contains read-only plans and three historical DB summaries. No business rows or credential values were exported.

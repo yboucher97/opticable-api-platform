@@ -1,0 +1,43 @@
+# Current reviewed runtime reconstruction; nothing is enabled by bootstrap.
+# /etc/systemd/system/optibrain-backup.service
+[Unit]
+Description=OptiBrain local backup
+Documentation=https://github.com/yboucher97/opticable-api-platform/blob/main/docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md
+After=local-fs.target
+
+[Service]
+Type=oneshot
+TimeoutStartSec=45min
+# The default root identity retains the bounded setuid/setgid capabilities
+# needed by the script's read-only runuser Git probe. Explicit User=root with
+# NoNewPrivileges drops that identity-switch ability on this host.
+CapabilityBoundingSet=CAP_CHOWN CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH CAP_FOWNER CAP_SETGID CAP_SETUID
+ExecStart=/opt/opticable-api-platform/ops/backup/optibrain-backup.sh
+StandardOutput=journal
+StandardError=journal
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/backups/optibrain
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+
+# /etc/systemd/system/optibrain-backup.service.d/identity-switch.conf
+[Service]
+# Keep the default root identity so the read-only Git helper can switch to
+# optibrain under NoNewPrivileges/RestrictSUIDSGID. Bound capabilities to those
+# required for the protected backup and that identity switch.
+User=
+Group=
+CapabilityBoundingSet=CAP_CHOWN CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH CAP_FOWNER CAP_SETGID CAP_SETUID
+
+# /etc/systemd/system/optibrain-backup.service.d/preserve-existing.conf
+[Service]
+ExecStart=
+ExecStart=/bin/bash /usr/local/lib/optibrain-backup/optibrain-backup.sh --preserve-existing

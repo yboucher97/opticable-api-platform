@@ -1,0 +1,1015 @@
+{
+  "schema": 1,
+  "primary_documents": [
+    "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+    "docs/OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md",
+    "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md",
+    "docs/OPTIBRAIN_OPERATOR_GUIDE.md",
+    "docs/OPTIBRAIN_DEPLOYMENT_GUIDE.md",
+    "docs/OPTIBRAIN_RECOVERY_GUIDE.md",
+    "docs/OPTIBRAIN_CONFIGURATION_INVENTORY.md",
+    "docs/OPTIBRAIN_RUNTIME_CONTRACT.md",
+    "docs/OPTIBRAIN_STATE_CONTRACT.md",
+    "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md"
+  ],
+  "precedence": [
+    "ONBOARDING",
+    "ARCHITECTURE",
+    "RUNBOOK",
+    "SPECIALIZED GUIDE",
+    "CURRENT MATRICES",
+    "HISTORICAL EVIDENCE"
+  ],
+  "counts": {
+    "AUTHORITATIVE CURRENT": 11,
+    "RECOVERY": 1,
+    "SECURITY / CONTROL": 1,
+    "AUDIT EVIDENCE": 70,
+    "HISTORICAL": 48,
+    "SUPERSEDED": 9,
+    "OBSOLETE": 0,
+    "UNKNOWN": 0
+  },
+  "documents": [
+    {
+      "path": "README.md",
+      "classification": "SUPERSEDED",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "apps/README.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "apps/control-plane-worker/README.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "apps/omada-site-service/README.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "apps/omada-site-service/deploy/linux/README.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "apps/password-pdf-service/README.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "apps/password-pdf-service/docs/wifi-pdf-ubuntu-esxi.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "apps/password-pdf-service/wifi_pdf/README.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "apps/workflow-api/README.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "apps/workflow-api/config/automation/desired-state/README.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "deploy/README.md",
+      "classification": "SUPERSEDED",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN-SAFETY-INVARIANTS.md",
+      "classification": "SECURITY / CONTROL",
+      "current": true,
+      "superseded_by": "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md",
+      "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_AUTONOMOUS_PROGRESS.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_CONFIGURATION_INVENTORY.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_DEPLOYMENT_GUIDE.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_OPERATOR_GUIDE.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE1_LOCAL_BACKUP.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE2A_OFFHOST_RECOVERY.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE2A_R2_DISCOVERY.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE2B_ROOT_BOOTSTRAP.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE4_ARCHITECTURE.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE4_ENGINEERING_RECORD.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE5_ARCHITECTURE.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE5_AUTONOMY_CAMPAIGN.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE5_ENGINEERING_RECORD.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE6_ENGINEERING_RECORD.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE6_GATE_F_CONTROL_PLANE.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE6_GATE_G_RECOVERY.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE6_SALES_AUTONOMY_V1.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE7_CANARY_CONTROL.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE7_FIRST_CANARY_EXECUTION_CONTROL.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_RECOVERY_GUIDE.md",
+      "classification": "RECOVERY",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_RUNTIME_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_STATE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current contract"
+    },
+    {
+      "path": "docs/README.md",
+      "classification": "SUPERSEDED",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/analysis/mailbox-classification-observations-2026-09-26.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/api-blueprint.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/architecture.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/autonomous-automation-platform.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/google-admin-control-plane.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/history/README.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/history/phase13-OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/history/phase13-OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/omada-operation-strategy.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/optibrain-configuration-register.json",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Current contract"
+    },
+    {
+      "path": "docs/optibrain-documentation-register.json",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Complete document classification"
+    },
+    {
+      "path": "docs/phase10-lifecycle-foundation.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase11-operations-foundation.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase12-business-autonomy.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase12-closure.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-closure-evidence/verification.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-control-matrix.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-evidence/completion.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-evidence/deployed-components.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-evidence/feature-flags.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-evidence/git-inventory.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-evidence/mutation-call-sites.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-evidence/private-evidence-index.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-evidence/summary.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-final-closure.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-independent-audit.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-owner-manual-actions.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-p0-remediation.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-p1-cleanup.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-p1-evidence/conditional-proof.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-p1-evidence/provider-proof.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-p1-evidence/regression.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/completion-regression.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/core-key-rotation.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/crm-channel-rotation.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/encrypted-roundtrip.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/final-safety.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/interruption-reconciliation.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/provider-containment.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/replacement-host.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/task-proof.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-remediation-final-report.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase13-timer-matrix.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-code-and-documentation-inventory.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-deprecation-list.md",
+      "classification": "SUPERSEDED",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DEPLOYMENT_GUIDE.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-documentation-register.json",
+      "classification": "SUPERSEDED",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/configuration.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/db-review.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/deprecation-references.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/documentation-register.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/external.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/extra.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/protected-check.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/resources.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/routes.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/runtime.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/source-map.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/sqlite.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/state-files.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/systemd.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-evidence/validation.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-final-report.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-evidence/access-routing-reconciled.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-evidence/external-schedules-current.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-evidence/operator-edge-final.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-evidence/performance-after.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-evidence/performance-before.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-evidence/performance-today.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-evidence/protected-before.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-evidence/release-validation.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-evidence/retired-helper-receipt.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-evidence/sqlite-integrity.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-evidence/sqlite-measurement.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-evidence/storage-family-inventory.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-implementation-plan.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-optimization-backlog.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-provider-usage.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-reconnaissance.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-recovery-runbook.md",
+      "classification": "SUPERSEDED",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_RECOVERY_GUIDE.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-retention-policy.md",
+      "classification": "SUPERSEDED",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_RECOVERY_GUIDE.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-runtime-inventory.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-runtime-matrix.md",
+      "classification": "SUPERSEDED",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_RUNTIME_CONTRACT.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-state-inventory.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase14-state-store-matrix.md",
+      "classification": "SUPERSEDED",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_STATE_CONTRACT.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase15-final-report.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase15-onboarding-validation.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase15-rebuild-evidence.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase5/additive-plan-review.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase5/candidate-validation.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase5/crm-inventory-20260928.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase5/crm-inventory-changes-20260928.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase5/hardening-validation-20260928.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase5/live-drift-20260928.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase5/live-field-apply-20260928.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase5/live-governance-plan-20260928.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase5/supplemental-metadata-20260928.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_DOCUMENTATION_INDEX.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase8-test-lab.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/phase9-intake-foundation.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/repository-structure.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/runbooks/universal-inbox-routing.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "ops/phase5/README.md",
+      "classification": "HISTORICAL",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+      "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    }
+  ]
+}

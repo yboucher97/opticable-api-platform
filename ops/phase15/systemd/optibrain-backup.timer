@@ -1,0 +1,13 @@
+# Current reviewed runtime reconstruction; nothing is enabled by bootstrap.
+# /etc/systemd/system/optibrain-backup.timer
+[Unit]
+Description=Scheduled OptiBrain local backup
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 UTC
+Persistent=true
+RandomizedDelaySec=15m
+Unit=optibrain-backup.service
+
+[Install]
+WantedBy=timers.target

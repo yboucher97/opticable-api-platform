@@ -1,0 +1,22 @@
+# Current reviewed runtime reconstruction; nothing is enabled by bootstrap.
+# /etc/systemd/system/opticable-phase10-service-events.service
+[Unit]
+Description=Reconcile OptiBrain service lifecycle evidence from read-only Zoho CRM
+After=network-online.target opticable-workflow-api.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+TimeoutStartSec=300
+User=opticable-workflow-api
+Group=opticable-workflow-api
+WorkingDirectory=/opt/opticable-api-platform/apps/workflow-api
+EnvironmentFile=/etc/opticable-workflow-api.env
+ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python /opt/opticable-api-platform/ops/phase10/collect_service_events.py
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/opticable-workflow-api/output/automation /var/lib/opticable-api-platform/shared/zoho-oauth.json
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6

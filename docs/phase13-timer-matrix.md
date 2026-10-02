@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 13 authoritative timer matrix
 
 Current state 2026-10-01 (bounded P1 cleanup), America/Toronto. Five legitimate OptiBrain application timers remain ACTIVE. Six persistent Codex development units remain MASKED/inactive. Recovered execution queues were never resumed. Last execution timestamps/results are independently captured in the final mission receipt; this table is the configuration contract.

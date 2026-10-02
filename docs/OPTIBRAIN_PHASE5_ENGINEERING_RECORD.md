@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 5 engineering and recovery record
 
 Date: 2026-09-28 UTC. Specification: [authoritative campaign](OPTIBRAIN_PHASE5_AUTONOMY_CAMPAIGN.md). Architecture and provider limitations: [architecture](OPTIBRAIN_PHASE5_ARCHITECTURE.md).

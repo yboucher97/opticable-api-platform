@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # OptiBrain autonomous resume journal
 
 Roadmap version: OptiBrain approved Phase 2B–12 roadmap, 2026-09-27.

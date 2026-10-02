@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 12 closure: central follow-up policy and scheduled Test Lab runner
 
 The selected legacy executor is `lifecycle.crm_create_followup_task`. It was

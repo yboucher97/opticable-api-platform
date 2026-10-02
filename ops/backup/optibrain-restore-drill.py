@@ -17,6 +17,14 @@ class DrillError(Exception):
     """Fixed non-secret diagnostic suitable for the journal."""
 
 
+def safe_unit_mask(unit):
+    return isinstance(unit,str) and re.fullmatch(
+        r'optibrain-agent-(dispatch|status|usage)\.(service|timer)|'
+        r'(?:optibrain-backup|optibrain-phase2a-upload|opticable-phase9-intake-receipts|'
+        r'opticable-phase10-service-events|opticable-phase12-test-runner)\.timer|'
+        r'opticable-phase12-test-runner\.service',unit) is not None
+
+
 def digest(path):
     h = hashlib.sha256()
     with path.open('rb') as f:
@@ -79,8 +87,8 @@ def validate(archive, expected_sha, workspace):
         metadata = {}
         masks_path=root/'system/systemd-masks.json'
         masks=json.loads(masks_path.read_text()) if masks_path.exists() else []
-        if (not isinstance(masks,list) or any(not re.fullmatch(r'optibrain-agent-(dispatch|status|usage)\.(service|timer)',u) for u in masks)):
-            raise DrillError('unsafe retired unit mask metadata')
+        if (not isinstance(masks,list) or any(not safe_unit_mask(u) for u in masks) or len(set(masks))!=len(masks)):
+            raise DrillError('unsafe unit mask metadata')
         mask_restore=scratch/'restored-masks';mask_restore.mkdir()
         for unit in masks:
             (mask_restore/unit).symlink_to('/dev/null')
@@ -144,7 +152,8 @@ def validate(archive, expected_sha, workspace):
                     metadata_entries_validated=len(metadata),
                     legacy_transient_sqlite_metadata_omissions=excluded_sqlite_sidecars,
                     databases_restored=len(manifest['sqlite_databases']),
-                    retired_unit_masks_restored=len(masks),
+                    retired_unit_masks_restored=sum(u.startswith('optibrain-agent-') for u in masks),
+                    recovery_unit_masks_restored=sum(not u.startswith('optibrain-agent-') for u in masks),
                     critical_configs_restored=len(critical), source_extraction='PASS',
                     scope='isolated archive/database/config/source validation; no services started')
 

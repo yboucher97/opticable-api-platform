@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](../OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Mailbox classification observations — 2026-09-26
 
 Mode: read-only mailbox analysis. No messages moved or deleted. No Zoho Books writes.

@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # OptiBrain Phase 6 Gate F — identity-aware approval control plane
 
 Status: isolated engineering validation PASS on exact candidate `5921473c06470aafae2003607b0a8c85c25f0caf` (84 focused tests / 90 subtests; 556 full-regression tests / 495 subtests; zero failures/errors/skips). Operator routes and outbound sends remain unregistered/disabled. Live identity/mailbox/readiness and send acknowledgement proofs remain separate prerequisites. This document does not authorize production enablement, customer sends, environment changes, or main-branch promotion.

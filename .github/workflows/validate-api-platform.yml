@@ -16,6 +16,9 @@ on:
       - "deploy/production-root-command.sh"
       - "ops/phase6/**"
       - "ops/phase14/**"
+      - "ops/phase15/**"
+      - "docs/OPTIBRAIN_*.md"
+      - "docs/optibrain-*.json"
       - "ops/phase12/systemd/**"
       - ".github/workflows/deploy-api-platform.yml"
       - ".github/workflows/deploy-control-plane.yml"
@@ -38,6 +41,9 @@ on:
       - "deploy/production-root-command.sh"
       - "ops/phase6/**"
       - "ops/phase14/**"
+      - "ops/phase15/**"
+      - "docs/OPTIBRAIN_*.md"
+      - "docs/optibrain-*.json"
       - "ops/phase12/systemd/**"
       - ".github/workflows/deploy-api-platform.yml"
       - ".github/workflows/deploy-control-plane.yml"
@@ -69,6 +75,9 @@ jobs:
 
       - name: Install dependencies
         run: python -m pip install --upgrade pip && pip install -r requirements.txt
+
+      - name: Validate current documentation and rebuild contracts
+        run: python ../../ops/phase15/validate_contracts.py
 
       - name: Validate deployment shell scripts
         run: |

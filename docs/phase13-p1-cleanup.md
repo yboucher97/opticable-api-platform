@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 13 bounded parallel P1 cleanup
 
 This manual mission improves reads, scheduling and expendable state only. Phase13 is NOT closed; Phase14 has NOT begun. MANUAL-01 native Forms containment and MANUAL-02 offline owner AGE decryption remain pending, with the owner checklist unchanged. No real or Test business record mutation is needed. One technical Cloudflare smoke instance proves the safe provider-ID mapping; a malformed test-harness instance was terminated before transport, with no business effect.

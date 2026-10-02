@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](../../../docs/OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # WiFi PDF VM Deployment On ESXi
 
 This is the exact production pattern recommended for this project:

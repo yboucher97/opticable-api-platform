@@ -1,3 +1,5 @@
+> SUPERSEDED — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_RECOVERY_GUIDE.md).
+
 # Phase 14 retention and hold policy
 
 Retention is conservative and local only. Root policy schema 1 retains seven latest plaintext generations plus every exact audit/recovery/release reference; two recent verified ciphertext generations plus owner proof; all failed/uncertain uploads and immutable preparation/readback evidence. It implements no R2 deletion.

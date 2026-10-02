@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 12 business autonomy foundation — 2026-10-01
 
 This is **application workflow autonomy**, not a self-running Codex development

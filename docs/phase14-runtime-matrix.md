@@ -1,3 +1,5 @@
+> SUPERSEDED — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_RUNTIME_CONTRACT.md).
+
 # Phase 14 runtime matrix
 
 Current contract; deployed SHA comes from the schema-1 root release receipt. [Reconnaissance runtime](phase14-runtime-inventory.md) remains the immutable before-state. No business writer, canary or development worker was enabled.

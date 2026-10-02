@@ -1,3 +1,5 @@
+> SUPERSEDED — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_STATE_CONTRACT.md).
+
 # Phase 14 state-store contracts
 
 Five active SQLite stores remain intentionally separate. Three historical stores are ARCHIVE in place, not removed or promoted. Online backup continues to cover eight stores. No journal migration, merged DB or speculative listing index was introduced. Read-only getters use query-only connections; additive Mail cache tables have stable primary keys.

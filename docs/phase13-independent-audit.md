@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 > Historical independent audit snapshot. Current disposition and deployed remediation are in [phase13-remediation-final-report.md](phase13-remediation-final-report.md). The original readiness C and test-failure statements below are superseded by independently validated remediation, not erased from history.
 
 # PHASE 13 INDEPENDENT AUDIT
