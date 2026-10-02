@@ -124,6 +124,12 @@ class NativeNotificationWorker:
         self._stop, self._thread = threading.Event(), None
 
     def poll(self):
+        from .provider_usage import ProviderUsage
+        with ProviderUsage(getattr(self.controller.journal.store,'db_path',None),'observer:native-watch',
+                           runs_per_day=86400/self.interval,soft_budget=2):
+            return self._poll()
+
+    def _poll(self):
         # The existing cross-process Desired State apply lock serializes intent
         # reconciliation. apply() takes the same lock, so planning occurs outside.
         document = self.controller.load(self.document)

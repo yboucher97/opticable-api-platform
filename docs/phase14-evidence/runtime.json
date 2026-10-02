@@ -1,0 +1,340 @@
+{
+  "captured_at": "2026-10-02T02:33:58.006344+00:00",
+  "automation_enabled": true,
+  "standby_enabled": false,
+  "automation_db": "/var/lib/opticable-workflow-api/output/automation/automation.db",
+  "workflow_directory": "/etc/optibrain/phase13-observe-workflows",
+  "zoho_credentials_path": "/var/lib/opticable-api-platform/shared/zoho-oauth.json",
+  "zoho_cache_path": "/var/lib/opticable-workflow-api/output/automation/zoho-access-cache.json",
+  "google_credentials_path": "/var/lib/opticable-workflow-api/output/integrations/google-oauth.json",
+  "sync_jobs": [
+    {
+      "provider": "zoho_crm",
+      "stream": "Leads",
+      "enabled": true,
+      "poll_interval_seconds": 300,
+      "page_limit": 100,
+      "mode": "incremental"
+    }
+  ],
+  "api_process_flags": {
+    "OPTIBRAIN_BUSINESS_AUTO_WRITES": "UNSET",
+    "OPTIBRAIN_AUTO_TEST_TASK": "UNSET",
+    "OPTIBRAIN_AUTO_TEST_PROJECT": "UNSET",
+    "OPTIBRAIN_AUTO_TEST_INTERNAL": "UNSET",
+    "OPTIBRAIN_CRM_CANARY": "UNSET",
+    "OPTIBRAIN_CRM_CANARY_APPROVAL_ID": "UNSET",
+    "OPTIBRAIN_LEAD_CREATE_CANARY": "UNSET",
+    "OPTIBRAIN_LEAD_CREATE_APPROVAL_ID": "UNSET",
+    "OPTIBRAIN_CRM_LEAD_WRITES": "UNSET",
+    "OPTIBRAIN_OUTBOUND_SENDS": "UNSET",
+    "OPTIBRAIN_OUTBOUND_CANARY_APPROVAL_ID": "UNSET",
+    "OPTIBRAIN_PHASE8_TEST_LAB": "UNSET",
+    "OPTIBRAIN_PHASE8_TEST_TASK": "UNSET",
+    "OPTIBRAIN_SALES_DRAFTS": "UNSET",
+    "OPTIBRAIN_PHASE9_FORM_ENRICHMENT": "UNSET",
+    "OPTIBRAIN_CRM_DRIFT_ENABLED": "true",
+    "OPTIBRAIN_ALLOW_APOLLO_CREDIT_CONSUMPTION": "false",
+    "OPTICABLE_AUTOMATION_ENABLED": "UNSET",
+    "OPTICABLE_CONNECT_STANDBY_ENABLED": "UNSET"
+  },
+  "webhooks": [],
+  "webhook_config_shape": [
+    "phase5-crm-leads"
+  ],
+  "root_workflows": {
+    "customer-lifecycle-lead-intake.yaml": {
+      "id": "customer.lifecycle.lead-intake",
+      "enabled": false,
+      "steps": [
+        "lifecycle.normalize_lead",
+        "lifecycle.crm_upsert_lead",
+        "lifecycle.crm_create_followup_task",
+        "event.emit"
+      ]
+    },
+    "opticable-sales-draft.yaml": {
+      "id": "opticable.sales-draft",
+      "enabled": true,
+      "steps": [
+        "lifecycle.sales_draft"
+      ]
+    },
+    "opticable-crm-lead-reconcile.yaml": {
+      "id": "opticable.crm.lead-reconcile",
+      "enabled": true,
+      "steps": [
+        "crm.lead.reconcile"
+      ]
+    },
+    "customer-lifecycle-qualify-promote.yaml": {
+      "id": "customer.lifecycle.qualify-and-promote",
+      "enabled": false,
+      "steps": [
+        "lifecycle.qualify_lead",
+        "lifecycle.crm_promote_lead",
+        "event.emit"
+      ]
+    },
+    "universal-inbox-observe.yaml": {
+      "id": "universal.inbox.observe",
+      "enabled": true,
+      "steps": [
+        "universal_inbox.observe"
+      ]
+    },
+    "platform-smoke-test.yaml": {
+      "id": "platform.smoke-test",
+      "enabled": true,
+      "steps": [
+        "core.set",
+        "event.emit"
+      ]
+    },
+    "customer-lifecycle-mailbox-poll.yaml": {
+      "id": "customer.lifecycle.mailbox-poll",
+      "enabled": true,
+      "steps": [
+        "lifecycle.mailbox_poll"
+      ]
+    },
+    "customer-lifecycle-finance-observer.yaml": {
+      "id": "customer.lifecycle.finance-observer",
+      "enabled": true,
+      "steps": [
+        "lifecycle.books_finance_attention",
+        "event.emit"
+      ]
+    },
+    "customer-lifecycle-sign-observer.yaml": {
+      "id": "customer.lifecycle.sign-observer",
+      "enabled": true,
+      "steps": [
+        "lifecycle.sign_observe_requests",
+        "event.emit"
+      ]
+    },
+    "customer-lifecycle-meeting.yaml": {
+      "id": "customer.lifecycle.meeting-create",
+      "enabled": false,
+      "steps": [
+        "lifecycle.crm_create_meeting",
+        "event.emit"
+      ]
+    },
+    "customer-lifecycle-quote-review.yaml": {
+      "id": "customer.lifecycle.quote-review",
+      "enabled": false,
+      "steps": [
+        "lifecycle.crm_create_quote_review_task",
+        "event.emit"
+      ]
+    },
+    "customer-lifecycle-contract-send.yaml": {
+      "id": "customer.lifecycle.contract-send",
+      "enabled": false,
+      "steps": [
+        "lifecycle.sign_send_contract",
+        "event.emit"
+      ]
+    },
+    "customer-lifecycle-digest.yaml": {
+      "id": "customer.lifecycle.digest",
+      "enabled": false,
+      "steps": [
+        "lifecycle.build_digest",
+        "event.emit"
+      ]
+    },
+    "customer-lifecycle-approved-email-reply.yaml": {
+      "id": "customer.lifecycle.approved-email-reply",
+      "enabled": false,
+      "steps": [
+        "lifecycle.mail_reply_approved",
+        "event.emit"
+      ]
+    },
+    "opticable-crm-lead-observe.yaml": {
+      "id": "opticable.crm.lead-observe",
+      "enabled": true,
+      "steps": [
+        "crm.lead.observe"
+      ]
+    },
+    "customer-lifecycle-email-analysis.yaml": {
+      "id": "customer.lifecycle.email-analysis",
+      "enabled": false,
+      "steps": [
+        "lifecycle.crm_resolve_email_party",
+        "lifecycle.analyze_email",
+        "lifecycle.mail_save_draft",
+        "event.emit"
+      ]
+    }
+  },
+  "pdf_flags": {
+    "branding": {},
+    "fonts": {},
+    "layout": {},
+    "output": {
+      "keep_qr_images": true
+    },
+    "api": {},
+    "crm": {
+      "enabled": false
+    },
+    "workdrive": {
+      "enabled": false,
+      "archive_existing_files": true,
+      "overwrite_existing_files": true,
+      "cleanup_local_after_upload": true,
+      "upload_individual_pdfs": true,
+      "upload_merged_pdf": true,
+      "upload_txt_export": true,
+      "upload_zip_export": true,
+      "upload_ya_export": true
+    }
+  },
+  "sync_states": [
+    {
+      "provider": "zoho_crm",
+      "stream": "Leads",
+      "status": "failed",
+      "failures": 1,
+      "last_success_at": "2026-09-30T23:29:02.194407Z"
+    }
+  ],
+  "observer_audit_counts": {
+    "read-only-drift-observer": [
+      348,
+      "2026-10-02T02:17:16.537406Z"
+    ],
+    "native-renewal": [
+      943,
+      "2026-10-02T02:32:07.429324Z"
+    ],
+    "native-notification-verifier": [
+      839,
+      "2026-10-01T19:37:14.771815Z"
+    ],
+    "delta-sync": [
+      635,
+      "2026-09-30T23:34:02.520493Z"
+    ]
+  },
+  "local_health": {
+    "execution-health": {
+      "status": 200,
+      "keys": [
+        "total",
+        "queued",
+        "claimed",
+        "running",
+        "completed",
+        "failed",
+        "partial",
+        "dead_letter",
+        "human_action_required",
+        "stale_queued",
+        "stale_running",
+        "expired_leases",
+        "recent_failure_count",
+        "oldest_queued_age_seconds",
+        "oldest_running_age_seconds",
+        "oldest_claim_age_seconds",
+        "recovery_worker"
+      ],
+      "safe_fields": {
+        "total": 691,
+        "queued": 0,
+        "claimed": 0,
+        "running": 0,
+        "completed": 681,
+        "failed": 0,
+        "partial": 0,
+        "dead_letter": 0,
+        "human_action_required": 10,
+        "stale_queued": 0,
+        "stale_running": 0,
+        "expired_leases": 0,
+        "recent_failure_count": 0,
+        "oldest_queued_age_seconds": 0,
+        "oldest_running_age_seconds": 0,
+        "oldest_claim_age_seconds": 0
+      }
+    },
+    "native-notifications": {
+      "status": 200,
+      "keys": [
+        "native_subscription_status",
+        "native_subscription_expires_at",
+        "native_subscription_seconds_remaining",
+        "native_subscription_renewal_required",
+        "native_subscription_last_verified_at",
+        "native_subscription_last_renewal_result",
+        "provider_origin_delivery",
+        "provider_emitted_event_proven",
+        "authentication",
+        "evidence"
+      ],
+      "safe_fields": {
+        "native_subscription_status": "configuration_drift",
+        "native_subscription_seconds_remaining": 232218,
+        "native_subscription_renewal_required": false,
+        "provider_emitted_event_proven": false
+      }
+    }
+  },
+  "deployment_receipt": {
+    "state": "deployed",
+    "sha": "4bc1beec112c55b161c3025529733d0f0b1213b3",
+    "baseline": "c30acd6e7b8c37aca00ea02ce05d70aefcc9947e",
+    "ci_run_id": 36950036341,
+    "writers_enabled": false,
+    "at": "2026-10-02T01:16:54.681272+00:00"
+  },
+  "installed_helpers": [
+    {
+      "path": "/etc/systemd/system/opticable-phase9-intake-receipts.service",
+      "sha256": "383fa35ccc3277877e0bb86a28b6dfeefb4767936a105ba18ee6aeb6c4756674",
+      "matches_p1_receipt": true
+    },
+    {
+      "path": "/etc/systemd/system/opticable-phase10-service-events.service",
+      "sha256": "63b09918ef7483cc9106f5140f95d221b9e229892ae7feddb4f4201043febe06",
+      "matches_p1_receipt": true
+    },
+    {
+      "path": "/etc/systemd/system/opticable-phase10-service-events.timer",
+      "sha256": "e37e9779a8f61caeece1ac02ba3c85d904073f9e6a242ac552253d688b098d76",
+      "matches_p1_receipt": true
+    },
+    {
+      "path": "/etc/systemd/system/optibrain-backup.service",
+      "sha256": "b627ad517e2332170b00655f2e22b56d830a3704ee6e143caf895f0f208c1b91",
+      "matches_p1_receipt": true
+    },
+    {
+      "path": "/usr/local/lib/optibrain-backup/optibrain-backup.sh",
+      "sha256": "c1c4ed44d12786dbf14cd252a3e48a56ceb9c1c53ad77f1b453ecc0ed6709e34",
+      "matches_p1_receipt": true
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase12-run-test-lab.py",
+      "sha256": "b51d870fc68fc4750bf0feb589c9e76c70ef25120f6e8ab8415a372d16e905ea",
+      "matches_p1_receipt": true
+    },
+    {
+      "path": "/etc/systemd/journald.conf.d/30-optibrain-retention.conf",
+      "sha256": "ec58f97cc6ecc228f769e80123ef0b75322799571a67d67c555eed187914a488",
+      "matches_p1_receipt": true
+    }
+  ],
+  "helper_pointer": "/opt/optibrain-releases/852e5f7c815c90e56e701436f73ee4133f51a673/venv",
+  "root_control_file_hashes": {
+    "/etc/optibrain/mutation-control.json": "64d080e8afcf6fde1a5f57690512149caca3af083a04c49a930d89b753f833eb",
+    "/etc/optibrain/phase12-runner.env": "7d0dc9e6afb9140dcb2c07e1c65309f2e759acf6cfdc0e2a86704a994ab9879d",
+    "/etc/optibrain/phase9-form-enrichment.env": "4bf895d7b874a30e63fb958777481c34d8b8a2f9f13157f28e4f20b082879e4d",
+    "/etc/optibrain/phase7-canary-registration.json": "324bd9936e8de3f77c136556720bc34aac700ca40dc5c0c89eca81f6daf47b45"
+  }
+}

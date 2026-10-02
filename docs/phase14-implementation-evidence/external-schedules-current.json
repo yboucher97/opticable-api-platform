@@ -1,0 +1,123 @@
+{
+  "at": "2026-10-02T05:57:17.678538+00:00",
+  "github_workflows": [
+    {
+      "name": "Customer Lifecycle Owner Digest",
+      "path": ".github/workflows/customer-lifecycle-digest.yml",
+      "state": "disabled_manually"
+    },
+    {
+      "name": "Customer Lifecycle Mailbox Poll",
+      "path": ".github/workflows/customer-lifecycle-mailbox-poll.yml",
+      "state": "disabled_manually"
+    },
+    {
+      "name": "Deploy API Platform",
+      "path": ".github/workflows/deploy-api-platform.yml",
+      "state": "active"
+    },
+    {
+      "name": "Deploy Durable Control Plane",
+      "path": ".github/workflows/deploy-control-plane.yml",
+      "state": "active"
+    },
+    {
+      "name": "Monitor OptiBrain Production Health",
+      "path": ".github/workflows/monitor-production-health.yml",
+      "state": "active"
+    },
+    {
+      "name": "Schedule Customer Lifecycle",
+      "path": ".github/workflows/schedule-customer-lifecycle.yml",
+      "state": "disabled_manually"
+    },
+    {
+      "name": "Validate API Platform",
+      "path": ".github/workflows/validate-api-platform.yml",
+      "state": "active"
+    },
+    {
+      "name": "Validate Autonomous Core",
+      "path": ".github/workflows/validate-autonomous-core.yml",
+      "state": "active"
+    }
+  ],
+  "cloudflare_schedules": {
+    "schedules": [
+      {
+        "cron": "*/15 * * * *",
+        "created_on": "2026-09-26T16:33:32.582163Z",
+        "modified_on": "2026-10-01T23:38:57.934198Z"
+      }
+    ]
+  },
+  "cloudflare_settings": {
+    "bindings": [
+      {
+        "name": "BUSINESS_WORKFLOW",
+        "type": "workflow"
+      },
+      {
+        "name": "CONTROL_PLANE_API_KEY",
+        "type": "secret_text"
+      },
+      {
+        "name": "CORE_API_KEY",
+        "type": "secret_text"
+      },
+      {
+        "name": "CORE_API_URL",
+        "type": "plain_text"
+      },
+      {
+        "name": "EVENTS",
+        "type": "queue"
+      }
+    ]
+  },
+  "usage": {
+    "schema": 2,
+    "job": "manual:phase14-schedule-revalidation",
+    "status": "success",
+    "calls": {
+      "crm_get": 0,
+      "crm_write": 0,
+      "mail_get": 0,
+      "mail_mutation": 0,
+      "forms_get": 0,
+      "forms_mutation": 0,
+      "sign_get": 0,
+      "sign_mutation": 0,
+      "books_get": 0,
+      "books_write": 0,
+      "other_zoho": 0,
+      "cloudflare": 4,
+      "github": 2,
+      "r2": 0,
+      "google": 0,
+      "oauth_refresh": 0
+    },
+    "calls_by_method": {
+      "github::write": 1,
+      "github::read": 1,
+      "cloudflare::read": 4
+    },
+    "details": {},
+    "outcomes": {
+      "github::ok": 2,
+      "cloudflare::ok": 4
+    },
+    "last_response": {
+      "github": "ok",
+      "cloudflare": "ok"
+    },
+    "calls_run": 6,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": false,
+    "duration_ms": 1792
+  },
+  "cloudflare_queue_count": 2,
+  "cloudflare_workflow_count": 1
+}

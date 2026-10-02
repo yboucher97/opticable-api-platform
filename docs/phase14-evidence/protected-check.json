@@ -1,0 +1,63 @@
+{
+  "captured_at": "2026-10-02T02:35:16.065636+00:00",
+  "reads_only": true,
+  "provider_mutations": 0,
+  "modules": {
+    "Accounts": {
+      "protected_count": 41,
+      "missing": 0,
+      "modified": 0,
+      "test_spoof": 0
+    },
+    "Contacts": {
+      "protected_count": 45,
+      "missing": 0,
+      "modified": 0,
+      "test_spoof": 0
+    },
+    "Deals": {
+      "protected_count": 1,
+      "missing": 0,
+      "modified": 0,
+      "test_spoof": 0
+    },
+    "Leads": {
+      "protected_count": 11,
+      "missing": 0,
+      "modified": 0,
+      "test_spoof": 0
+    },
+    "Service_Locations": {
+      "protected_count": 12,
+      "missing": 0,
+      "modified": 0,
+      "test_spoof": 0
+    },
+    "Services": {
+      "protected_count": 12,
+      "missing": 0,
+      "modified": 0,
+      "test_spoof": 0
+    },
+    "Tasks": {
+      "protected_count": 1,
+      "missing": 0,
+      "modified": 0,
+      "test_spoof": 0
+    }
+  },
+  "calls": 7,
+  "issues": [],
+  "protected_records": 123,
+  "watch_readback": {
+    "matches": 1,
+    "configured_token_matches": true,
+    "configured_destination_matches": true,
+    "configured_expiry_matches": false,
+    "provider_expiry": "2026-10-07T16:38:19-04:00",
+    "events": [
+      "Leads.edit",
+      "Leads.create"
+    ]
+  }
+}

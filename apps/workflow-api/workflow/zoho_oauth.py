@@ -134,13 +134,13 @@ class ZohoOAuthManager:
             )
 
         if response.status_code >= 400:
-            raise ValueError(f"Zoho token exchange failed with status {response.status_code}: {response.text}")
+            raise ValueError(f"Zoho token exchange failed with status {response.status_code}")
 
         payload = response.json()
         refresh_token = str(payload.get("refresh_token", "")).strip()
         access_token = str(payload.get("access_token", "")).strip()
         if not refresh_token and not access_token:
-            raise ValueError(f"Zoho token exchange did not return usable credentials: {payload}")
+            raise ValueError('Zoho token exchange did not return usable credentials')
         return payload
 
     def access_token(self) -> str:
@@ -206,6 +206,25 @@ class ZohoOAuthManager:
                 return token
             finally:
                 fcntl.flock(fd, fcntl.LOCK_UN)
+                os.close(fd)
+
+    def invalidate_access_token(self, rejected_token: str) -> None:
+        """Invalidate only the rejected token, preserving a concurrent fresh token."""
+        with self._token_lock:
+            if self._access_token == rejected_token:
+                self._access_token=None
+                self._access_token_expires_at=0
+            fd=os.open(self.cache_path.with_suffix('.lock'),os.O_CREAT|os.O_RDWR|os.O_CLOEXEC|os.O_NOFOLLOW,0o600)
+            try:
+                info=os.fstat(fd)
+                if (not stat.S_ISREG(info.st_mode) or info.st_nlink!=1 or stat.S_IMODE(info.st_mode)!=0o600
+                        or info.st_uid!=self.settings.credentials_path.stat().st_uid):
+                    raise ValueError('Zoho OAuth refresh lock is not trusted')
+                fcntl.flock(fd,fcntl.LOCK_EX)
+                cache=self._read_cache()
+                if cache.get('access_token')==rejected_token:
+                    self._write_cache({'binding':cache.get('binding'),'access_token_expires_at':0})
+            finally:
                 os.close(fd)
 
     def _read_cache(self) -> dict[str, Any]:

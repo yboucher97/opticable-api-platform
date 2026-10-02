@@ -109,7 +109,9 @@ steps:
             self.assertEqual(first_result["skipped_sent"], 1)
             self.assertEqual(first_result["mailbox_mutations"], 0)
             self.assertEqual(second_result["accepted"], 0)
-            self.assertEqual(second_result["duplicates"], 1)
+            self.assertEqual(second_result["duplicates"], 0)
+            self.assertEqual(second_result['cache_hits'], 1)
+            self.assertEqual(second_result['content_reads'], 0)
             self.assertTrue(all(call["method"] == "GET" for call in zoho.calls))
         finally:
             tmp.cleanup()

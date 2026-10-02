@@ -1,102 +1,16 @@
-# Deploy
+# Canonical OptiBrain deployment
 
-Deployment assets for the monorepo can live here when they apply to the whole platform.
+The sole current application release gate is root-owned `/usr/local/sbin/opticable-api-deploy-root`, sourced from `manual-guarded-release.py`. The restricted SSH command `deploy <40-hex-SHA>` requests this same gate. CI success alone grants no root authority or business writes.
 
-Current note:
+1. Work on a clean implementation branch. Preserve evidence/history. Run focused checks after bounded changes, then one complete local release regression with zero failures/errors/skips/blocked network attempts.
+2. Create a PR, obtain successful exact-head CI and merge validated work. Confirm remote main and the final main CI SHA. Local/remote/production must converge on that exact commit.
+3. In the authorized manual root session, verify a fresh local backup/checksum and independently retained off-host/owner recovery coverage. Prepare `/opt/optibrain-releases/SHA/venv` as root-owned immutable dependencies. Reuse only when requirements are identical to a validated retained release; otherwise test a new isolated environment.
+4. Root-review `/etc/optibrain/manual-release-authorization.json` (mode600) with candidate/baseline SHA, expiry, exact main CI run ID, passed full validation receipt (tests/subtests/failures/errors/skips/network attempts), rollback archive path and SHA256. This mission already authorizes the concrete engineering release; do not invent a second routine permission flow.
+5. Invoke `sudo /usr/local/sbin/opticable-api-deploy-root EXACT_SHA`. It validates private authority, fixed-repository main CI, remote identity/ancestry, clean production, backup hash, immutable venv and closed safety flags. It extracts source/version as data, clears execution pins, switches/restarts only the API and checks version/service/timer/DB health.
+6. Independently verify protected123unchanged, provider reads/delta/native watch, backup/off-host proof, all safety/containment flags and exact production/local-main/remote-main equality. Save final-verification evidence. A regression causes automatic code/config/venv rollback without replaying a stale DB.
 
-- the root `install.sh` remains the canonical Linux bootstrap entrypoint because it is convenient to fetch directly with `curl`
+Machine receipt schema1/type`optibrain.release`: SHA, API version, tests, migration state, service health, timer health, safety flags, rollback SHA/archive/hash and UTC timestamp. `/var/lib/optibrain/releases/SHA.json` is release history; `current.json` the current pointer; `/var/lib/optibrain/phase13-remediation/deployment.json` a compatibility pointer using the same format. No receipt records secret values.
 
-Service-specific deployment files stay inside each service folder under `apps/*/deploy/`.
+`bootstrap-deploy-user.sh` installs the canonical gate and restricted SSH identity from a complete reviewed bundle; it is a privileged one-time setup, not a routine app deploy. Existing key/policy were retained in Phase14. Never fetch-and-run mutable code as root or install dependencies into the live venv.
 
-
-## Production workflow API deployment
-
-The workflow API has a validation-gated, rollback-safe deployment path.
-
-Files:
-
-- `deploy/update-production.sh` — validates an exact main-branch commit in a temporary worktree, updates only the workflow API, restarts it, health-checks it, and rolls back on failure.
-- `deploy/bootstrap-deploy-user.sh` — creates a restricted `opticable-deploy` SSH identity that cannot open a shell or run arbitrary remote commands.
-- `.github/workflows/deploy-api-platform.yml` — deploys only after the `Validate API Platform` workflow succeeds on `main`.
-
-### Trust model
-
-The GitHub Actions private key should **not** be a normal root SSH key.
-
-The bootstrap creates a forced-command SSH account. Its authorized key is restricted with:
-
-- no interactive shell
-- no PTY
-- no agent forwarding
-- no TCP port forwarding
-- no X11 forwarding
-- no user rc
-- one forced deployment command
-
-The only accepted request is:
-
-`deploy <40-hex-commit-sha>`
-
-The reviewed Phase 6 root wrapper is a static health-only verifier. It never downloads or executes a deployment script. It checks root-private unexpired human authority, completed backup/recovery gates, exact fixed-repository GitHub CI, main/Phase 6 SHA and ancestry, already-staged production identity and health. Caller-controlled Git configuration and production Git configuration cannot execute as root. During staging, every ordinary deploy request fails closed until recovery gates and guarded main promotion complete.
-
-For Phase 6, automatic deployment is reconciliation only: the exact candidate must already be running following the separately authorized staged campaign. A fresh Phase 6 checkout switch through the ordinary SSH deployment path is refused. See [the Phase 6 recovery supplement](../docs/OPTIBRAIN_PHASE6_GATE_G_RECOVERY.md). The inherited rollback flow below applies to earlier releases; it is not a Phase 6 rollback authorization.
-
-### One-time deploy identity setup
-
-Generate a dedicated SSH key pair on a trusted administrator machine. Do not reuse your normal workstation or root key.
-
-Example:
-
-```bash
-ssh-keygen -t ed25519 -f opticable-api-github-deploy -C "github-actions-opticable-api" -N ""
-```
-
-Only the **public** key is needed by the server bootstrap.
-
-Only after separate administrative approval, use a complete, verified release source bundle containing both `deploy/bootstrap-deploy-user.sh` and its adjacent `deploy/production-root-command.sh`. The bootstrap fails before changes if the reviewed wrapper is missing. The following changes privileged state and must not run during engineering readiness:
-
-```bash
-# Run from the reviewed immutable source bundle; preserve the existing key policy.
-bash deploy/bootstrap-deploy-user.sh 'ssh-ed25519 PUBLIC_KEY_MATERIAL'
-```
-
-Never put the private key in the repository.
-
-### Required GitHub Actions secrets
-
-Repository: `yboucher97/opticable-api-platform`
-
-- `OPTICABLE_API_DEPLOY_HOST` — production SSH hostname/IP
-- `OPTICABLE_API_DEPLOY_SSH_KEY` — private half of the dedicated deploy-only key
-- `OPTICABLE_API_DEPLOY_KNOWN_HOSTS` — trusted SSH host-key line for the VM
-- `OPTICABLE_API_DEPLOY_PORT` — optional; defaults to 22
-- `OPTICABLE_API_PUBLIC_BASE_URL` — optional; defaults to `https://optibrain.opticable.ca`
-
-For the known-hosts value, prefer deriving the key from the VM itself through an already trusted administrative session rather than trusting a network scan. For example, on the VM:
-
-```bash
-# Use the independently verified SSH host; it need not equal the API hostname.
-printf '%s %s\n' 'REVIEWED_SSH_HOST' "$(cut -d' ' -f1-2 /etc/ssh/ssh_host_ed25519_key.pub)"
-```
-
-### Inherited deployment sequence (before Phase 6)
-
-1. Push/merge to `main`.
-2. `Validate API Platform` compiles and tests the workflow service and shell deployment scripts.
-3. Only a successful validation run triggers `Deploy API Platform`.
-4. The GitHub runner connects using the deploy-only SSH key.
-5. The VM validates the requested SHA belongs to `origin/main`.
-6. A temporary worktree + temporary virtualenv is built.
-7. Python compilation and unit tests run against the target.
-8. Only then is the production checkout switched.
-9. Production dependencies are updated.
-10. Only `opticable-workflow-api` is restarted.
-11. The local health endpoint is checked repeatedly.
-12. On failure, the previous commit and dependencies are restored and the service is restarted.
-13. GitHub performs a public health check after successful remote deployment.
-
-This intentionally does **not** reinstall the PDF service, Omada service, Caddy, firewall, OAuth credentials, or other VM configuration on routine application deployments.
-
-For Phase 6, backup, restore, encrypted off-host verification and staged health gates precede main promotion. CI then validates main and the forced-command deployment reconciles the already-running exact SHA without a checkout change or restart. Public health must report the version declared by that exact source tree. No deploy-only SSH command authorizes provider writes or customer sends.
-
-For separately approved human-root staging, use only the independently reviewed static `deploy/phase6-release-loader.py`. It establishes repository/SHA/ancestry/CI/backup/recovery authorization before reading and verifying a link-free candidate archive and executing the reviewed campaign. It uses the trusted system interpreter and a fresh root-owned source repository. Never execute the campaign directly from a mutable branch checkout as root. Neither this loader nor the new SSH wrapper has been installed or executed during engineering. Direct baseline dispatch on Phase 6 state is unsafe; corrected-code forward recovery preserves V2 approval/journal evidence. See the recovery supplement for retention holds and remaining live prerequisites.
+DEPRECATED direct entrypoints: `production-root-command.sh`, `update-production.sh`, root/workflow `install.sh`, `phase6-release-loader.py`. They refuse execution and retain their old source for security fixtures/history. They must never overwrite the canonical installed gate. [Current recovery](../docs/phase14-recovery-runbook.md) covers new-OS planning; complete replacement OS and DNS/TLS cutover are not claimed proven.

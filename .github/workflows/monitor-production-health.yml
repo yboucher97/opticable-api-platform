@@ -71,6 +71,19 @@ jobs:
               check_provider '.providers.apollo.configured == true and .providers.apollo.credit_consumption_enabled == false' "Apollo unavailable or credit guard changed"
               check_provider '.providers.openai.configured == true and .providers.openai.model_configured == true' "OpenAI unconfigured"
               check_provider '.providers.anthropic.configured == true and .providers.anthropic.model_configured == true' "Anthropic unconfigured"
+              readiness_body="$(mktemp)"
+              readiness_code="$(curl --silent --show-error --max-time 15 -o "$readiness_body" -w "%{http_code}" \
+                -H "X-API-Key: $CORE_API_KEY" "https://optibrain.opticable.ca/v1/system/readiness" 2>/dev/null || true)"
+              if [[ "$readiness_code" == "200" ]]; then
+                while IFS= read -r attention; do
+                  failed+=("readiness: $attention")
+                done < <(jq -r '.signals[] | select(.state == "ACTION REQUIRED") | .name' "$readiness_body")
+              elif [[ "$readiness_code" != "404" ]]; then
+                failed+=("readiness: authenticated summary HTTP $readiness_code")
+              fi
+              # A missing endpoint during the bounded 1.11 -> 1.12 rollout is
+              # informational. UNKNOWN/soft warnings do not create incidents.
+              rm -f "$readiness_body" "$provider_body"
             fi
           fi
 
@@ -87,12 +100,18 @@ jobs:
         shell: bash
         run: |
           existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$HEALTH_ISSUE_TITLE in:title" --json number --jq '.[0].number // empty')"
-          body="$(printf 'Automated OptiBrain health check failed at %s UTC.\n\nFailed endpoints:\n\n' "$(date -u +'%Y-%m-%d %H:%M:%S')"; sed 's/^/- /' /tmp/failed-health.txt)"
+          body_file="$(mktemp)"
+          printf 'Automated OptiBrain health check failed.\n\nFailed endpoints:\n\n' > "$body_file"
+          sort -u /tmp/failed-health.txt | sed 's/^/- /' >> "$body_file"
           if [[ -n "$existing" ]]; then
-            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+            old_body="$(gh issue view "$existing" --repo "$GITHUB_REPOSITORY" --json body --jq .body)"
+            if [[ "$old_body" != "$(cat "$body_file")" ]]; then
+              gh issue edit "$existing" --repo "$GITHUB_REPOSITORY" --body-file "$body_file"
+            fi
           else
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "$HEALTH_ISSUE_TITLE" --body "$body"
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$HEALTH_ISSUE_TITLE" --body-file "$body_file"
           fi
+          rm -f "$body_file"
           exit 1
 
       - name: Close recovered incident

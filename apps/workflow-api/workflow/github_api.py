@@ -70,12 +70,16 @@ class GithubApiClient:
         return token if isinstance(token, str) else token.decode("utf-8")
 
     def _refresh_installation_token(self) -> str:
+        from .automation.provider_usage import record_call
+        record_call('github','POST','auth_exchange')
         response = httpx.post(
             f"{self.BASE}/app/installations/{self.settings.installation_id}/access_tokens",
             headers=self._headers(self._app_jwt()),
             json={},
             timeout=httpx.Timeout(float(self.settings.timeout_seconds), connect=20.0),
         )
+        from .automation.provider_usage import record_response
+        record_response('github', 'POST', 'auth_exchange', response.status_code)
         try:
             data: Any = response.json()
         except json.JSONDecodeError:
@@ -115,6 +119,7 @@ class GithubApiClient:
         from .automation.mutation_control import require_technical_admin, safe_read
         safe_read('github', path)
         require_technical_admin(self, 'github', method, path, body)
+        token=self._auth_token()
         from .automation.provider_usage import record_call
         record_call("github", method, path)
         response = httpx.request(
@@ -122,9 +127,11 @@ class GithubApiClient:
             self.BASE + path,
             params=params or {},
             json=body if body is not None and method not in {"GET", "DELETE"} else None,
-            headers=self._headers(self._auth_token()),
+            headers=self._headers(token),
             timeout=httpx.Timeout(float(self.settings.timeout_seconds), connect=20.0),
         )
+        from .automation.provider_usage import record_response
+        record_response('github', method, path, response.status_code)
         try:
             data: Any = response.json()
         except json.JSONDecodeError:

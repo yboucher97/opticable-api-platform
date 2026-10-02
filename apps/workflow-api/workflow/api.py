@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import hmac
 import threading
 import time
@@ -113,7 +114,7 @@ register_lifecycle_actions(automation_engine, zoho_gateway_client, automation_st
 register_lifecycle_extended_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_phase2_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_mailbox_actions(automation_engine, zoho_gateway_client, automation_store)
-API_VERSION = "1.11.0"
+API_VERSION = "1.12.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
 PRIMARY_JOB_STATUS_PATH = "/v1/site-and-password/jobs/{job_id}"
@@ -823,9 +824,9 @@ app = FastAPI(
     title="Opticable API Platform",
     version=API_VERSION,
     description=(
-        "Master API platform for Opticable workflow automation. "
-        "This service accepts webhook payloads, generates or validates WiFi credentials, "
-        "runs PDF generation and WorkDrive upload, and optionally creates Omada sites."
+        "Opticable owner views, provider observation and journaled events. "
+        "Business mutations require central authorization; real automation and legacy "
+        "PDF, WorkDrive and Omada execution remain contained."
     ),
     lifespan=lifespan,
     openapi_tags=[
@@ -841,9 +842,14 @@ app = FastAPI(
 # Phase 7 operator controls are absent by default. A root-owned exact-SHA
 # registration manifest and explicit mode are required to install any route.
 from .phase7_registration import maybe_install_phase7
+def _readiness_payload():
+    from .automation.readiness import build_readiness
+    return build_readiness(automation_store,native_health(automation_store),api_version=API_VERSION,
+                           auth_configured=bool(os.getenv(settings.api.api_key_env)))
+
 phase7_registration = maybe_install_phase7(
     app, client=zoho_gateway_client, store=automation_store,
-    engine=automation_engine, api_version=API_VERSION)
+    engine=automation_engine, api_version=API_VERSION,readiness=_readiness_payload)
 
 
 def _validate_api_key(provided_api_key: str | None) -> None:
@@ -860,6 +866,20 @@ def _validate_inspection_api_key(provided_api_key: str | None) -> None:
     if not expected_api_key or not expected_api_key.strip():
         raise HTTPException(status_code=503, detail="Inspection authentication is unavailable.")
     _validate_api_key(provided_api_key)
+
+
+@app.middleware("http")
+async def account_provider_transport(request, call_next):
+    from .automation.provider_usage import ProviderUsage
+    # Nested job/view scopes own their calls. Unscoped API work is attributed
+    # only to a route template; customer IDs, queries and health hits are absent.
+    with ProviderUsage(automation_store.db_path,'http:request',persist_empty=False) as usage:
+        try:
+            return await call_next(request)
+        finally:
+            route=request.scope.get('route')
+            template=getattr(route,'path','unknown')
+            usage.job=('http:'+request.method+':'+re.sub(r'[^A-Za-z0-9_.:-]','.',template))[:100]
 
 
 @app.middleware("http")
@@ -1079,6 +1099,12 @@ async def health() -> HealthResponse:
 @app.get("/v1/system/catalog", response_model=PlatformIndexResponse, tags=["platform"])
 async def platform_catalog() -> PlatformIndexResponse:
     return await platform_index()
+
+
+@app.get('/v1/system/readiness', tags=['platform'])
+async def system_readiness(x_api_key: str | None = Header(default=None, alias='X-API-Key')):
+    _validate_inspection_api_key(x_api_key)
+    return await run_in_threadpool(_readiness_payload)
 
 @app.get("/v1/system/providers", tags=["platform"])
 async def provider_inventory(

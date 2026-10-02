@@ -74,6 +74,17 @@ class FakeCRM:
 
 
 class OperationalTests(unittest.TestCase):
+    def test_project_detail_does_not_fetch_unrelated_registered_projects(self):
+        records,projection,lab=fixture();identity=next(iter(projection['projects']))
+        unrelated=json.loads(json.dumps(projection['projects'][identity]));unrelated['id']=stable_id('Deals','402');unrelated['provider']['Deals']='402'
+        projection['projects'][unrelated['id']]=unrelated
+        with tempfile.TemporaryDirectory() as tmp:
+            p,l=Path(tmp)/'project.json',Path(tmp)/'lab.json'
+            p.write_text(json.dumps(projection));l.write_text(json.dumps(lab))
+            value=build_operations(FakeCRM(records),scope='lab',project_id=identity,projection_path=p,lab_path=l,now=NOW)
+            self.assertEqual([row['id'] for row in value['projects']],[identity])
+            with self.assertRaises(LookupError):build_operations(object(),scope='lab',project_id=stable_id('Deals','999'),projection_path=p,lab_path=l,now=NOW)
+
     def view(self, records, projection, lab):
         with tempfile.TemporaryDirectory() as root:
             p, l = Path(root) / "project.json", Path(root) / "lab.json"

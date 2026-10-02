@@ -134,7 +134,12 @@ class FormReceiptLedger:
     def __init__(self, path):
         self.path = Path(path)
 
-    def _connect(self):
+    def _connect(self, *, read_only=False):
+        if read_only:
+            db=sqlite3.connect(self.path.resolve().as_uri()+'?mode=ro',uri=True,timeout=10)
+            db.row_factory=sqlite3.Row
+            db.execute('PRAGMA query_only=ON')
+            return db
         self.path.parent.mkdir(parents=True, exist_ok=True)
         try:
             fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
@@ -408,26 +413,33 @@ class FormReceiptLedger:
 
     def timeline(self, canonical_id):
         """Source chronology for one provider identity, without CRM mutation."""
-        if not re.fullmatch(r"[0-9]{1,30}", str(canonical_id)):
-            raise ValueError("Invalid CRM identity")
         self.initialize()
-        with self._connect() as db:
-            forms = db.execute("SELECT r.* FROM form_receipts r "
+        return self.timelines([canonical_id])[str(canonical_id)]
+
+    def timelines(self, identities):
+        identities=sorted(set(str(i) for i in identities))
+        if len(identities)>100 or any(not re.fullmatch(r'[0-9]{1,30}',i) for i in identities):raise ValueError('Invalid CRM identities')
+        if not identities:return {}
+        placeholders=','.join('?' for _ in identities)
+        with self._connect(read_only=True) as db:
+            forms = db.execute("SELECT r.*,COALESCE(l.canonical_id,m.crm_id) AS _canonical_id FROM form_receipts r "
                 "LEFT JOIN form_receipt_links l ON l.event_id=r.event_id "
                 "LEFT JOIN form_provider_matches m ON m.event_id=r.event_id "
-                "WHERE COALESCE(l.canonical_id,m.crm_id)=?", (str(canonical_id),)).fetchall()
-            connector = db.execute("SELECT * FROM connector_receipts WHERE canonical_id=?",
-                                   (str(canonical_id),)).fetchall()
+                'WHERE COALESCE(l.canonical_id,m.crm_id) IN ('+placeholders+')', identities).fetchall()
+            connector = db.execute('SELECT * FROM connector_receipts WHERE canonical_id IN ('+placeholders+')',identities).fetchall()
         events = [{"event_id": r["event_id"], "source": "zoho_form",
                    "occurred_at": r["occurred_at"], "campaign": None,
-                   "action": "form_provider_matched"} for r in forms]
+                   "action": "form_provider_matched",'_canonical_id':r['_canonical_id']} for r in forms]
         for row in connector:
             evidence = json.loads(row["evidence_json"])
             events.append({"event_id": row["event_id"], "source": row["source"],
                            "occurred_at": row["occurred_at"],
                            "campaign": (evidence.get("attribution") or {}).get("last_campaign"),
-                           "action": row["action"]})
-        return sorted(events, key=lambda row: (instant(row["occurred_at"]), row["event_id"]))
+                           "action": row["action"], '_canonical_id':row['canonical_id']})
+        result={identity:[] for identity in identities}
+        for event in sorted(events,key=lambda row:(instant(row['occurred_at']),row['event_id'])):
+            identity=event.pop('_canonical_id');result[identity].append(event)
+        return result
 
 
 def collect_form_mail(client, ledger, *, account_id=ACCOUNT_ID, now=None, days=7):

@@ -97,6 +97,7 @@ def register_lifecycle_mailbox_actions(
     *,
     allow_legacy_reply: bool = False,
 ) -> None:
+    from ..mail_observation_cache import MailObservationCache
     def poll_mailbox(context: dict[str, Any], step: WorkflowStep) -> dict[str, Any]:
         account_id = str(step.inputs.get("account_id") or "1083319000000008002").strip()
         mailbox_address = str(step.inputs.get("mailbox_address") or "yboucher@opticable.ca").strip().lower()
@@ -110,17 +111,30 @@ def register_lifecycle_mailbox_actions(
         if not account_id or "@" not in mailbox_address:
             raise ValueError("Mailbox polling requires account_id and mailbox_address.")
 
+        clock = datetime.now(timezone.utc)
+        cache = MailObservationCache(store,account_id,now=clock)
         toronto = ZoneInfo("America/Toronto")
-        today = datetime.now(toronto).date()
-        start = today - timedelta(days=window_days)
+        today = clock.astimezone(toronto).date()
+        start = today - timedelta(days=7 if cache.full_scan else window_days)
         search_key = f"fromDate:{start.strftime('%d-%b-%Y')}::toDate:{today.strftime('%d-%b-%Y')}"
-        response = client.request(
-            "mail",
-            "GET",
-            f"/api/accounts/{account_id}/messages/search",
-            query={"searchKey": search_key, "start": 0, "limit": limit},
-        )
-        rows = _mail_rows(response)
+        rows=[];seen=set();search_pages=0
+        # Complete bounded metadata pagination before any content retrieval/intake.
+        for page in range(10):
+            response = client.request('mail','GET',f'/api/accounts/{account_id}/messages/search',
+                                      query={'searchKey':search_key,'start':page*limit+1,'limit':limit,
+                                             'receivedTime':int((clock-timedelta(minutes=2)).timestamp()*1000),
+                                             'includeto':'true'})
+            search_pages+=1
+            data=_provider_data(response)
+            page_rows=data.get('data') if isinstance(data,dict) else data
+            if response.get('ok') is False or not isinstance(page_rows,list) or len(page_rows)>limit or any(not isinstance(r,dict) for r in page_rows):
+                raise ValueError('Mail metadata search incomplete or malformed')
+            identities=[str(r.get('messageId') or '') for r in page_rows]
+            if len(set(identities))!=len(identities) or any(i in seen for i in identities):
+                raise ValueError('Mail metadata pages overlap; retry with unchanged checkpoint')
+            seen.update(identities);rows.extend(page_rows)
+            if len(page_rows)<limit:break
+        else:raise ValueError('Mail metadata search exceeds bounded view; checkpoint unchanged')
         parent = AutomationEvent.model_validate(context["event"])
 
         scanned = 0
@@ -130,6 +144,9 @@ def register_lifecycle_mailbox_actions(
         accepted = 0
         duplicates = 0
         failed = 0
+        cache_hits = 0
+        revalidated = 0
+        content_reads = 0
         child_event_ids: list[str] = []
 
         for item in rows:
@@ -148,16 +165,28 @@ def register_lifecycle_mailbox_actions(
                 continue
 
             try:
+                if cache.hit(item):
+                    cache_hits+=1
+                    continue
+                content_reads+=1
                 content_response = client.request(
                     "mail",
                     "GET",
                     f"/api/accounts/{account_id}/folders/{folder_id}/messages/{message_id}/content",
                 )
+                if content_response.get('ok') is False:
+                    raise ValueError('Mail content response unavailable')
                 body = _plain_body(_message_content(content_response))
                 if not body:
                     body = str(item.get("summary") or "").strip()
                 if not body:
                     skipped_empty += 1
+                    continue
+
+                # Revalidating an already committed message never emits a duplicate.
+                if message_id in cache.known:
+                    cache.remember(item,body)
+                    revalidated+=1
                     continue
 
                 payload = {
@@ -191,6 +220,7 @@ def register_lifecycle_mailbox_actions(
                     payload=payload,
                 )
                 result = engine.ingest(child)
+                cache.remember(item,body)
                 child_event_ids.append(result.event_id)
                 if result.duplicate:
                     duplicates += 1
@@ -208,6 +238,11 @@ def register_lifecycle_mailbox_actions(
                     metadata={"error": type(exc).__name__, "folder_id": folder_id},
                 )
 
+        if not failed:
+            cache.commit()
+        else:
+            from ..provider_usage import mail_observation_failed
+            mail_observation_failed(failed)
         return {
             "account_id": account_id,
             "search_key": search_key,
@@ -218,6 +253,12 @@ def register_lifecycle_mailbox_actions(
             "skipped_sent": skipped_sent,
             "skipped_empty": skipped_empty,
             "failed": failed,
+            "cache_hits": cache_hits,
+            "revalidated": revalidated,
+            "content_reads": content_reads,
+            "search_pages": search_pages,
+            "full_scan": cache.full_scan,
+            "checkpoint_advanced": not failed,
             "child_event_ids": child_event_ids,
             "mailbox_mutations": 0,
         }

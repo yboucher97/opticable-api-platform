@@ -1,0 +1,128 @@
+[
+  {
+    "path": "/var/backups/optibrain",
+    "bytes": 8999518592,
+    "files": 70,
+    "classification": "AUTHORITATIVE BACKUP / RECOVERY HOLD",
+    "action": "KEEP",
+    "retention_rule": "Exact generation holds and seven newest",
+    "hold": true
+  },
+  {
+    "path": "/var/lib/optibrain/phase2a",
+    "bytes": 833670985,
+    "files": 42,
+    "classification": "OFF-HOST VERIFIED / STAGING / AUDIT HOLD",
+    "action": "KEEP",
+    "retention_rule": "Two recent verified ciphertexts plus owner generation and all evidence",
+    "hold": true
+  },
+  {
+    "path": "/var/lib/optibrain/restore-drills",
+    "bytes": 11564,
+    "files": 22,
+    "classification": "AUDIT HOLD",
+    "action": "KEEP",
+    "retention_rule": "Recovery drill evidence; preserve",
+    "hold": true
+  },
+  {
+    "path": "/var/lib/optibrain/phase13/recovery",
+    "bytes": 412352,
+    "files": 41,
+    "classification": "RECOVERY HOLD",
+    "action": "KEEP",
+    "retention_rule": "Owner recovery manifests; preserve",
+    "hold": true
+  },
+  {
+    "path": "/var/lib/optibrain/phase13/private-evidence",
+    "bytes": 1324200,
+    "files": 91,
+    "classification": "AUDIT HOLD",
+    "action": "KEEP",
+    "retention_rule": "Protected/action comparison; preserve",
+    "hold": true
+  },
+  {
+    "path": "/var/lib/optibrain/phase13-p1",
+    "bytes": 3054142,
+    "files": 17,
+    "classification": "AUDIT HOLD",
+    "action": "KEEP",
+    "retention_rule": "Verified release/restore evidence; preserve",
+    "hold": true
+  },
+  {
+    "path": "/var/lib/optibrain/autonomous-worker-retired-20260930T205928Z",
+    "bytes": 3013035,
+    "files": 2,
+    "classification": "OBSOLETE / AUDIT HOLD",
+    "action": "KEEP",
+    "retention_rule": "Retired runtime evidence archive; preserve",
+    "hold": true
+  },
+  {
+    "path": "/home/optibrain/phase13-remediation-evidence",
+    "bytes": 77295018,
+    "files": 4712,
+    "classification": "AUDIT HOLD",
+    "action": "KEEP",
+    "retention_rule": "Historical release source, tests and provider proof; preserve",
+    "hold": true
+  },
+  {
+    "path": "/home/optibrain/phase14-implementation-evidence",
+    "bytes": 39418861,
+    "files": 55,
+    "classification": "AUDIT HOLD / TEMPORARY",
+    "action": "MANUAL REVIEW",
+    "retention_rule": "This mission proof, private copied DB fixtures; keep until certification",
+    "hold": true
+  },
+  {
+    "path": "/var/lib/opticable-workflow-api/output/logs",
+    "bytes": 69350,
+    "files": 1,
+    "classification": "TEMPORARY",
+    "action": "MANUAL REVIEW",
+    "retention_rule": "Existing bounded logs, critical audit elsewhere retained",
+    "hold": false
+  },
+  {
+    "path": "/var/log/journal",
+    "bytes": 134217728,
+    "files": 9,
+    "classification": "TEMPORARY",
+    "action": "MANUAL REVIEW",
+    "retention_rule": "Existing journal policy and 128/512 MiB growth threshold",
+    "hold": false
+  },
+  {
+    "path": "/var/lib/optibrain/phase10/test-lab/lifecycle-events.db",
+    "bytes": 12288,
+    "classification": "AUDIT HOLD / HISTORICAL DB",
+    "action": "ARCHIVE",
+    "reason": "No current route, timer or workflow; historical backup/restore dependencies remain",
+    "retention_rule": "Indefinite historical recovery evidence",
+    "hold": true
+  },
+  {
+    "path": "/var/lib/optibrain/phase9/closure/phase9-intake.before-permission-fix.db",
+    "bytes": 28672,
+    "classification": "AUDIT HOLD / HISTORICAL DB",
+    "action": "ARCHIVE",
+    "reason": "No current route, timer or workflow; historical backup/restore dependencies remain",
+    "retention_rule": "Indefinite historical recovery evidence",
+    "hold": true
+  },
+  {
+    "path": "/var/lib/optibrain/phase9/mission2/form-receipts-stage.db",
+    "bytes": 53248,
+    "classification": "AUDIT HOLD / HISTORICAL DB",
+    "action": "ARCHIVE",
+    "reason": "No current route, timer or workflow; historical backup/restore dependencies remain",
+    "retention_rule": "Indefinite historical recovery evidence",
+    "hold": true
+  }
+]

@@ -11,6 +11,7 @@ import re
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, ConfigDict, Field
 
 from .automation.phase7_canary import build_canary_plan, build_review_package, hydrate_unique_lead
@@ -28,6 +29,8 @@ from .automation.phase9_form_receipts import FormReceiptLedger
 from .automation.outbound_approval import OutboundApproval, OutboundApprovalLedger
 from .operator_access import AccessIdentityVerifier
 from .zoho_gateway import ZohoGatewayError
+from .automation.provider_usage import measured
+from .automation.read_inventory_cache import build_lifecycle_display
 from html import escape
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -64,7 +67,7 @@ class IssueBusinessApprovalRequest(BaseModel):
 def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifier,
                                  client, store, account_id: str, from_address: str,
                                  allowed_origin: str, clock=None, consume_callback=None,
-                                 outbound_consume_callback=None) -> None:
+                                 outbound_consume_callback=None, readiness=None) -> None:
     origin = str(allowed_origin or "").rstrip("/")
     if not origin.startswith("https://") or len(origin) > 255:
         raise ValueError("Canary operator surface requires exact HTTPS origin")
@@ -72,6 +75,15 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
     ledger = CrmCanaryApprovalLedger(store)
     outbound_ledger = OutboundApprovalLedger(store)
     business_journal = BusinessJournal(Path(store.db_path).with_name("phase12-autonomy.db"))
+    from .automation.today import TodaySources,build_today,render_today,render_system_health
+    today_sources=TodaySources(client,Path(store.db_path),account_id,from_address)
+    def system_health():
+        return readiness() if readiness else {'state':'UNKNOWN','signals':[{
+            'name':'Runtime observations','state':'UNKNOWN','reason':'Readiness callback unavailable'}]}
+    private_headers={
+        'Cache-Control':'private, no-store, max-age=0','Pragma':'no-cache',
+        'Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff',
+        'X-Frame-Options':'DENY','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'"}
 
     def identity(token):
         try:
@@ -107,10 +119,35 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
                                      "Pragma": "no-cache", "Referrer-Policy": "no-referrer",
                                      "X-Content-Type-Options": "nosniff"})
 
+    def today_payload():
+        instant=now();sources={};unavailable=[]
+        for name in ('sales','lifecycle','operations'):
+            try:sources[name]=today_sources.read(name,instant)
+            except (ValueError,LookupError,OSError,ZohoGatewayError):
+                sources[name]={};unavailable.append(name.title())
+        return build_today(sources['sales'],sources['lifecycle'],sources['operations'],
+                           business_journal.view(),system_health(),now=instant,unavailable=unavailable)
+
+    @app.get('/v1/operator',response_class=HTMLResponse,tags=['operator'])
+    @app.get('/v1/operator/today',response_class=HTMLResponse,tags=['operator'])
+    @measured(store.db_path,'operator:today')
+    async def today(cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        identity(cf_access_jwt_assertion)
+        view=await run_in_threadpool(today_payload)
+        return HTMLResponse(render_today(view),headers=private_headers)
+
+    @app.get('/v1/operator/system-health',response_class=HTMLResponse,tags=['operator'])
+    @measured(store.db_path,'operator:system-health')
+    async def operator_system_health(cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        identity(cf_access_jwt_assertion)
+        view=await run_in_threadpool(system_health)
+        return HTMLResponse(render_system_health(view),headers=private_headers)
+
     for section in ("autonomy", "approvals", "exceptions"):
         def install_section(name):
             @app.get(f"/v1/operator/phase12/{name}", tags=["operator-phase12"],
                      response_class=HTMLResponse)
+            @measured(store.db_path, "operator:phase12:"+name)
             async def phase12_view(cf_access_jwt_assertion: str | None = Header(
                     default=None, alias="Cf-Access-Jwt-Assertion")):
                 identity(cf_access_jwt_assertion)
@@ -136,6 +173,7 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         return result(approval, 201)
 
     @app.get("/v1/operator/phase7/canary/{lead_id}", tags=["operator-phase7"])
+    @measured(store.db_path, "operator:preview")
     async def preview(lead_id: str, reviewed_language: str | None = None,
                       cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
         person = identity(cf_access_jwt_assertion)
@@ -146,6 +184,7 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
 
     @app.get("/v1/operator/phase8/sales-view/{lead_id}", tags=["operator-phase8"],
              response_class=HTMLResponse)
+    @measured(store.db_path, "operator:sales_view")
     async def sales_view(lead_id: str,
                          cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
         identity(cf_access_jwt_assertion)
@@ -167,6 +206,7 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
 
     @app.get("/v1/operator/phase8/sales-queue", tags=["operator-phase8"],
              response_class=HTMLResponse)
+    @measured(store.db_path, "operator:sales_queue")
     async def sales_queue(scope: str = "live",
             cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
         identity(cf_access_jwt_assertion)
@@ -185,11 +225,12 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
 
     @app.get("/v1/operator/phase10/customer-lifecycle", tags=["operator-phase10"],
              response_class=HTMLResponse)
+    @measured(store.db_path, "operator:customer_lifecycle")
     async def customer_lifecycle(scope: str = "live",
             cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
         identity(cf_access_jwt_assertion)
         try:
-            view = build_customer_lifecycle(client, scope=scope, now=now())
+            view = build_lifecycle_display(client,Path(store.db_path).with_name('phase10-service-events.db'),scope=scope,now=now())
         except (ValueError, OSError) as exc:
             raise HTTPException(status_code=409, detail="Fresh lifecycle evidence needs review") from exc
         except ZohoGatewayError as exc:
@@ -202,11 +243,12 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
 
     @app.get("/v1/operator/phase10/recurring-services", tags=["operator-phase10"],
              response_class=HTMLResponse)
+    @measured(store.db_path, "operator:recurring_services")
     async def recurring_services(scope: str = "live",
             cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
         identity(cf_access_jwt_assertion)
         try:
-            lifecycle = build_customer_lifecycle(client, scope=scope, now=now())
+            lifecycle = build_lifecycle_display(client,Path(store.db_path).with_name('phase10-service-events.db'),scope=scope,now=now())
             view = build_recurring_view(lifecycle)
         except (ValueError, OSError) as exc:
             raise HTTPException(status_code=409, detail="Fresh service evidence needs review") from exc
@@ -220,6 +262,7 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
 
     @app.get("/v1/operator/phase11/operations", tags=["operator-phase11"],
              response_class=HTMLResponse)
+    @measured(store.db_path, 'operator:operations')
     async def operations(scope: str = "live",
             cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
         identity(cf_access_jwt_assertion)
@@ -237,11 +280,14 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
 
     @app.get("/v1/operator/phase11/project/{project_id}", tags=["operator-phase11"],
              response_class=HTMLResponse)
+    @measured(store.db_path, 'operator:project')
     async def project_trace(project_id: str,
             cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
         identity(cf_access_jwt_assertion)
         try:
-            view = build_operations(client, scope="lab", now=now())
+            view = build_operations(client, scope="lab", now=now(),project_id=project_id)
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail='Project not registered') from exc
         except (ValueError, OSError) as exc:
             raise HTTPException(status_code=409, detail="Operational evidence needs review") from exc
         except ZohoGatewayError as exc:
@@ -257,6 +303,7 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
 
     @app.get("/v1/operator/phase9/source-trace/{lead_id}", tags=["operator-phase9"],
              response_class=HTMLResponse)
+    @measured(store.db_path, "operator:source_trace")
     async def source_trace(lead_id: str,
             cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
         identity(cf_access_jwt_assertion)
@@ -357,6 +404,7 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
 
     @app.get("/v1/operator/phase9/intake-receipts", tags=["operator-phase9"],
              response_class=HTMLResponse)
+    @measured(store.db_path, "operator:intake_receipts")
     async def intake_receipts(
             cf_access_jwt_assertion: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion")):
         identity(cf_access_jwt_assertion)

@@ -1,0 +1,143 @@
+{
+  "mail-observer-1": {
+    "job": "mail-observer-1",
+    "status": "success",
+    "calls": {
+      "crm_get": 0,
+      "crm_write": 0,
+      "mail_get": 33,
+      "mail_mutation": 0,
+      "other_zoho": 0,
+      "cloudflare": 0,
+      "github": 0,
+      "oauth_refresh": 0
+    },
+    "calls_run": 33,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": true,
+    "duration_ms": 8481,
+    "observer": {
+      "scanned": 100,
+      "accepted": 0,
+      "duplicates": 32,
+      "skipped_internal": 13,
+      "skipped_sent": 55,
+      "skipped_empty": 0,
+      "failed": 0,
+      "mailbox_mutations": 0
+    }
+  },
+  "mail-observer-2": {
+    "job": "mail-observer-2",
+    "status": "success",
+    "calls": {
+      "crm_get": 0,
+      "crm_write": 0,
+      "mail_get": 33,
+      "mail_mutation": 0,
+      "other_zoho": 0,
+      "cloudflare": 0,
+      "github": 0,
+      "oauth_refresh": 0
+    },
+    "calls_run": 33,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": true,
+    "duration_ms": 8379,
+    "observer": {
+      "scanned": 100,
+      "accepted": 0,
+      "duplicates": 32,
+      "skipped_internal": 13,
+      "skipped_sent": 55,
+      "skipped_empty": 0,
+      "failed": 0,
+      "mailbox_mutations": 0
+    }
+  },
+  "lifecycle": {
+    "job": "lifecycle",
+    "status": "success",
+    "calls": {
+      "crm_get": 5,
+      "crm_write": 0,
+      "mail_get": 0,
+      "mail_mutation": 0,
+      "other_zoho": 0,
+      "cloudflare": 0,
+      "github": 0,
+      "oauth_refresh": 0
+    },
+    "calls_run": 5,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": false,
+    "duration_ms": 2365
+  },
+  "recurring": {
+    "job": "recurring",
+    "status": "success",
+    "calls": {
+      "crm_get": 5,
+      "crm_write": 0,
+      "mail_get": 0,
+      "mail_mutation": 0,
+      "other_zoho": 0,
+      "cloudflare": 0,
+      "github": 0,
+      "oauth_refresh": 0
+    },
+    "calls_run": 5,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": false,
+    "duration_ms": 2558
+  },
+  "project-detail": {
+    "job": "project-detail",
+    "status": "success",
+    "calls": {
+      "crm_get": 9,
+      "crm_write": 0,
+      "mail_get": 0,
+      "mail_mutation": 0,
+      "other_zoho": 0,
+      "cloudflare": 0,
+      "github": 0,
+      "oauth_refresh": 0
+    },
+    "calls_run": 9,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": false,
+    "duration_ms": 3672
+  },
+  "sales-queue": {
+    "job": "sales-queue",
+    "status": "success",
+    "calls": {
+      "crm_get": 6,
+      "crm_write": 0,
+      "mail_get": 3,
+      "mail_mutation": 0,
+      "other_zoho": 0,
+      "cloudflare": 0,
+      "github": 0,
+      "oauth_refresh": 0
+    },
+    "calls_run": 9,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": false,
+    "duration_ms": 3353
+  },
+  "test_only_projection_count": 3
+}

@@ -176,7 +176,8 @@ class AutomationEngine:
         # Existing trusted workflow IDs; no provider text or execution payload in metrics.
         import re
         name=definition.id if re.fullmatch(r'[A-Za-z0-9_.:-]{1,80}',definition.id) else 'other'
-        with ProviderUsage(self.store.db_path,'workflow:'+name):
+        with ProviderUsage(self.store.db_path,'workflow:'+name,
+                           soft_budget=200 if name=='customer.lifecycle.mailbox-poll' else 20):
             return self._execute_run(run_id,definition,event,worker_id=worker_id)
 
     def _execute_run(self, run_id: str, definition: WorkflowDefinition, event: AutomationEvent,

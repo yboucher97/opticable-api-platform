@@ -12,10 +12,10 @@ class Phase6ReleaseVersionTests(unittest.TestCase):
             with self.subTest(path=path):
                 response = client.get(path)
                 self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.json()["version"], "1.11.0")
+                self.assertEqual(response.json()["version"], "1.12.0")
                 self.assertEqual(response.json()["status"], "ok")
-        self.assertEqual(api.app.version, "1.11.0")
+        self.assertEqual(api.app.version, "1.12.0")
 
-    def test_version_matches_authoritative_phase6_contract(self):
-        contract = Path(__file__).resolve().parents[3] / "docs/OPTIBRAIN_PHASE6_SALES_AUTONOMY_V1.md"
-        self.assertIn("Target API for the first Phase 6 candidate: `" + api.API_VERSION + "`", contract.read_text())
+    def test_version_matches_current_architecture_contract(self):
+        contract = Path(__file__).resolve().parents[3] / "docs/OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md"
+        self.assertIn("Current API contract: `" + api.API_VERSION + "`", contract.read_text())

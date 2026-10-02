@@ -2,7 +2,8 @@
 
 Every module is checked each run. Daily full reads detect deletions/relationship
 removal; failed or incomplete runs do not advance any cursor. Operator APIs and
-central mutation preconditions use their original fresh clients, not this cache.
+central mutation preconditions use their original fresh clients. Operator display
+reads may reuse one complete inventory for five minutes; source age is explicit.
 """
 from datetime import datetime,timezone,timedelta
 import hashlib,json,re,sqlite3
@@ -58,3 +59,63 @@ class ChangedInventory:
             for module,values in self.pending.items():
                 db.execute('INSERT INTO crm_display_snapshots VALUES(?,?,?,?,?) ON CONFLICT(module) DO UPDATE SET '
                     'fields_hash=excluded.fields_hash,rows_json=excluded.rows_json,cursor_at=excluded.cursor_at,full_at=excluded.full_at',(module,*values))
+
+
+class DisplayInventory:
+    """Read projection only. Reuse all five modules together or refresh together."""
+    def __init__(self,client,db_path,*,now=None,max_age=300):
+        from pathlib import Path
+        self.client,self.db_path=client,db_path
+        self.now=now or datetime.now(timezone.utc)
+        self.cached={};self.refresh=None;self.observed_at=None
+        if self.now.utcoffset() is None:raise ValueError('Aware display clock required')
+        try:
+            with sqlite3.connect(Path(db_path).resolve().as_uri()+'?mode=ro',uri=True,timeout=1) as db:
+                rows=db.execute('SELECT module,fields_hash,rows_json,cursor_at,full_at FROM crm_display_snapshots').fetchall()
+            cursors={row[3] for row in rows}
+            if ({r[0] for r in rows}!=MODULES or len(cursors)!=1
+                    or any(not timedelta(0)<=self.now-datetime.fromisoformat(r[3])<=timedelta(seconds=max_age)
+                           or not timedelta(0)<=self.now-datetime.fromisoformat(r[4])<timedelta(days=1) for r in rows)):
+                return
+            for row in rows:
+                value=json.loads(row[2])
+                if not isinstance(value,list) or len(value)>200 or any(not isinstance(v,dict) for v in value):return
+            self.cached={r[0]:r for r in rows};self.observed_at=next(iter(cursors))
+        except (OSError,sqlite3.Error,ValueError,TypeError):pass
+
+    def request(self,service,method,path,**kwargs):
+        module=path.strip('/').split('/')[-1]
+        query=dict(kwargs.get('query') or {})
+        if (service!='zohoapis' or method!='GET' or path!='/crm/v8/'+module or module not in MODULES
+                or set(kwargs)!={'query'} or set(query)!={'fields','per_page','page'}
+                or query['page']!=1 or query['per_page']!=200):
+            raise ValueError('Display projection cannot authorize other requests')
+        old=self.cached.get(module)
+        fields_hash=hashlib.sha256(str(query['fields']).encode()).hexdigest()
+        if old and old[1]==fields_hash and self.refresh is None:
+            return {'ok':True,'status':200,'data':{'data':json.loads(old[2]),'info':{'more_records':False}},'provider_path':'shared_read_projection'}
+        self.cached={};self.observed_at=self.now.isoformat()
+        if self.refresh is None:self.refresh=ChangedInventory(self.client,self.db_path,now=self.now)
+        return self.refresh.request(service,method,path,**kwargs)
+
+    def commit(self):
+        if self.refresh:
+            if set(self.refresh.pending)!=MODULES:raise ValueError('Complete display projection required')
+            self.refresh.commit()
+
+
+def build_lifecycle_display(client,db_path,*,scope='live',now=None,registry_path=None):
+    from .customer_lifecycle import build_customer_lifecycle,_local,ACCOUNT_FIELDS,CONTACT_FIELDS,DEAL_FIELDS
+    from .service_inventory import LOCATION_FIELDS,SERVICE_FIELDS
+    projection=DisplayInventory(client,db_path,now=now)
+    fields={'Accounts':ACCOUNT_FIELDS,'Contacts':CONTACT_FIELDS,'Deals':DEAL_FIELDS,
+            'Service_Locations':LOCATION_FIELDS,'Services':SERVICE_FIELDS}
+    if projection.cached and any(projection.cached[module][1]!=hashlib.sha256(value.encode()).hexdigest() for module,value in fields.items()):
+        projection.cached={}
+    view=build_customer_lifecycle(projection,scope=scope,now=projection.now,
+                                  **({'registry_path':registry_path} if registry_path is not None else {}))
+    projection.commit()
+    view['projection_observed_at']=projection.observed_at
+    view['projection_cached']=projection.refresh is None
+    view['read_at']=_local(projection.observed_at)
+    return view

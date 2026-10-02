@@ -15,6 +15,8 @@ on:
       - "deploy/bootstrap-deploy-user.sh"
       - "deploy/production-root-command.sh"
       - "ops/phase6/**"
+      - "ops/phase14/**"
+      - "ops/phase12/systemd/**"
       - ".github/workflows/deploy-api-platform.yml"
       - ".github/workflows/deploy-control-plane.yml"
       - ".github/workflows/monitor-production-health.yml"
@@ -35,6 +37,8 @@ on:
       - "deploy/bootstrap-deploy-user.sh"
       - "deploy/production-root-command.sh"
       - "ops/phase6/**"
+      - "ops/phase14/**"
+      - "ops/phase12/systemd/**"
       - ".github/workflows/deploy-api-platform.yml"
       - ".github/workflows/deploy-control-plane.yml"
       - ".github/workflows/monitor-production-health.yml"
@@ -86,7 +90,7 @@ jobs:
           PYCODE
 
       - name: Compile Python
-        run: python -m compileall -q workflow tests ../../ops/phase6
+        run: python -m compileall -q workflow tests ../../ops/phase6 ../../ops/phase14 ../../deploy/manual-guarded-release.py
 
       - name: Run automation kernel tests
         run: python -I ../../ops/phase6/validate.py --suite full

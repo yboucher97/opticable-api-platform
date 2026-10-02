@@ -158,21 +158,29 @@ class IntakeLedger:
         return identity
 
     def trace(self, canonical_id):
-        if not ID.fullmatch(str(canonical_id)):
-            raise ValueError("Invalid canonical ID")
+        return self.traces([canonical_id])[str(canonical_id)]
+
+    def traces(self, identities):
+        identities=sorted(set(str(i) for i in identities))
+        if len(identities)>100 or any(not ID.fullmatch(i) for i in identities):raise ValueError('Invalid canonical IDs')
+        if not identities:return {}
+        placeholders=','.join('?' for _ in identities)
         with self._connect(read_only=True) as db:
-            events = [dict(r) for r in db.execute("SELECT * FROM intake_events WHERE canonical_id=? ORDER BY occurred_at,event_id", (canonical_id,))]
-            feedback = [dict(r) for r in db.execute("SELECT * FROM feedback_events WHERE canonical_id=? "
+            events = [dict(r) for r in db.execute('SELECT * FROM intake_events WHERE canonical_id IN ('+placeholders+') ORDER BY occurred_at,event_id', identities)]
+            feedback = [dict(r) for r in db.execute('SELECT * FROM feedback_events WHERE canonical_id IN ('+placeholders+') '
                 "ORDER BY occurred_at, CASE kind WHEN 'LEAD_CREATED' THEN 0 "
                 "WHEN 'QUALIFIED_LEAD' THEN 1 WHEN 'QUOTE_READY' THEN 2 "
                 "WHEN 'OPPORTUNITY_CREATED' THEN 3 WHEN 'WON' THEN 4 WHEN 'LOST' THEN 5 ELSE 9 END, feedback_id",
-                (canonical_id,))]
-        if not events:
-            return None
+                identities)]
         for event in events:
             event["occurred_at_montreal"] = datetime.fromisoformat(event["occurred_at"]).astimezone(TORONTO).isoformat()
         for outcome in feedback:
             outcome["occurred_at_montreal"] = datetime.fromisoformat(outcome["occurred_at"]).astimezone(TORONTO).isoformat()
-        return {"canonical_id": str(canonical_id), "first_touch": events[0]["source"],
-                "latest_touch": events[-1]["source"], "events": events,
-                "feedback": feedback, "test_only": True, "external_exports_enabled": False}
+        result={}
+        for identity in identities:
+            selected=[e for e in events if e['canonical_id']==identity]
+            result[identity]=({'canonical_id':identity,'first_touch':selected[0]['source'],
+                'latest_touch':selected[-1]['source'],'events':selected,
+                'feedback':[e for e in feedback if e['canonical_id']==identity],
+                'test_only':True,'external_exports_enabled':False} if selected else None)
+        return result

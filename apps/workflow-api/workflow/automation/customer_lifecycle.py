@@ -293,7 +293,7 @@ def render_customer_lifecycle(view):
             "<style>body{font:16px/1.45 system-ui;max-width:1100px;margin:2rem auto;padding:0 1rem;color:#182536}"
             "article{border:1px solid #ccd;border-radius:.5rem;padding:.8rem 1rem;margin:1rem 0}small{color:#526174}"
             "summary{font-weight:700}</style>"
-            f"<h1>Customer lifecycle · {h(view['scope'].upper())}</h1><p>Fresh CRM read {h(view['read_at'])}. "
+            f"<h1>Customer lifecycle · {h(view['scope'].upper())}</h1><p>CRM projection observed {h(view['read_at'])}. "
             "Calendar dates use Montreal business time. "
             "Recommendations are read-only; no outreach or finance action is enabled.</p>"
             f"<p><b>{s['needs_attention']}</b> need review · {s['renewal_due']} renewals · "

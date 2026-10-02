@@ -1,0 +1,108 @@
+{
+  "captured_at": "2026-10-02T02:30:05.720572+00:00",
+  "loadavg": "0.14 0.12 0.04 1/295 284347",
+  "memory": "total        used        free      shared  buff/cache   available\nMem:      8127705088  1243897856  1196318720      409600  6008856576  6883807232\nSwap:     2147479552    21987328  2125492224",
+  "disk": "Filesystem       1B-blocks        Used   Available Use% Mounted on\n/dev/sda1      76887154688 32738205696 44132171776  43% /\ntmpfs            812773376     1097728   811675648   1% /run",
+  "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           40 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  4\nOn-line CPU(s) list:                     0-3\nVendor ID:                               GenuineIntel\nBIOS Vendor ID:                          QEMU\nModel name:                              Intel Core Processor (Haswell, no TSX)\nBIOS Model name:                         pc-i440fx-9.2  CPU @ 2.0GHz\nBIOS CPU family:                         1\nCPU family:                              6\nModel:                                   60\nThread(s) per core:                      1\nCore(s) per socket:                      1\nSocket(s):                               4\nStepping:                                1\nBogoMIPS:                                4799.98\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx rdtscp lm constant_tsc rep_good nopl xtopology cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm cpuid_fault pti tpr_shadow flexpriority ept vpid ept_ad fsgsbase bmi1 avx2 smep bmi2 erms invpcid xsaveopt arat vnmi md_clear\nVirtualization:                          VT-x\nHypervisor vendor:                       KVM\nVirtualization type:                     full\nL1d cache:                               128 KiB (4 instances)\nL1i cache:                               128 KiB (4 instances)\nL2 cache:                                16 MiB (4 instances)\nL3 cache:                                64 MiB (4 instances)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-3\nVulnerability Gather data sampling:      Not affected\nVulnerability Indirect target selection: Mitigation; Aligned branch/return thunks\nVulnerability Itlb multihit:             KVM: Mitigation: VMX disabled\nVulnerability L1tf:                      Mitigation; PTE Inversion; VMX conditional cache flushes, SMT disabled\nVulnerability Mds:                       Mitigation; Clear CPU buffers; SMT Host state unknown\nVulnerability Meltdown:                  Mitigation; PTI\nVulnerability Mmio stale data:           Unknown: No mitigations\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Vulnerable\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Retpolines; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Retpoline\nVulnerability Srbds:                     Unknown: Dependent on hypervisor status\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected",
+  "cpu_sample": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0  21472 1168280 154016 5714008    0    0    23   384  429    1  1  0 98  0  0  0\n 0  0  21472 1168280 154016 5714008    0    0     0     0  649  662  2  1 97  0  0  0",
+  "process_count": 157,
+  "application_processes": [
+    {
+      "pid": 777,
+      "uid": 999,
+      "exe": "/usr/bin/caddy",
+      "cgroup": "0::/system.slice/caddy.service",
+      "argv_paths": []
+    },
+    {
+      "pid": 10147,
+      "uid": 1001,
+      "exe": "/home/optibrain/.codex/packages/app-server-daemon/releases/0.160.0-x86_64-unknown-linux-musl/bin/codex",
+      "cgroup": "0::/user.slice/user-1001.slice/session-3.scope",
+      "argv_paths": []
+    },
+    {
+      "pid": 256586,
+      "uid": 1001,
+      "exe": "/usr/bin/node",
+      "cgroup": "0::/user.slice/user-1001.slice/session-679.scope",
+      "argv_paths": []
+    },
+    {
+      "pid": 256593,
+      "uid": 1001,
+      "exe": "/usr/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "cgroup": "0::/user.slice/user-1001.slice/session-679.scope",
+      "argv_paths": []
+    },
+    {
+      "pid": 270987,
+      "uid": 995,
+      "exe": "/usr/bin/node",
+      "cgroup": "0::/system.slice/opticable-omada-site.service",
+      "argv_paths": [
+        "/opt/opticable-api-platform/apps/omada-site-service/dist/server.js"
+      ]
+    },
+    {
+      "pid": 271561,
+      "uid": 997,
+      "exe": "/usr/bin/python3.12",
+      "cgroup": "0::/system.slice/opticable-password-pdf.service",
+      "argv_paths": [
+        "/opt/opticable-api-platform/apps/password-pdf-service/.venv/bin/python3",
+        "/opt/opticable-api-platform/apps/password-pdf-service/.venv/bin/uvicorn"
+      ]
+    },
+    {
+      "pid": 272636,
+      "uid": 1001,
+      "exe": "/home/optibrain/.codex/packages/app-server-daemon/releases/0.160.0-x86_64-unknown-linux-musl/bin/codex",
+      "cgroup": "0::/user.slice/user-1001.slice/session-3.scope",
+      "argv_paths": []
+    },
+    {
+      "pid": 272862,
+      "uid": 1001,
+      "exe": "/home/optibrain/.codex/packages/app-server-daemon/releases/0.160.0-x86_64-unknown-linux-musl/bin/codex-code-mode-host",
+      "cgroup": "0::/user.slice/user-1001.slice/session-3.scope",
+      "argv_paths": []
+    },
+    {
+      "pid": 282992,
+      "uid": 994,
+      "exe": "/usr/bin/python3.12",
+      "cgroup": "0::/system.slice/opticable-workflow-api.service",
+      "argv_paths": [
+        "/opt/optibrain-releases/852e5f7c815c90e56e701436f73ee4133f51a673/venv/bin/python3",
+        "/opt/opticable-api-platform/apps/workflow-api/.venv/bin/uvicorn"
+      ]
+    },
+    {
+      "pid": 283750,
+      "uid": 1001,
+      "exe": "/usr/bin/node",
+      "cgroup": "0::/user.slice/user-1001.slice/session-679.scope",
+      "argv_paths": []
+    },
+    {
+      "pid": 283757,
+      "uid": 1001,
+      "exe": "/usr/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "cgroup": "0::/user.slice/user-1001.slice/session-679.scope",
+      "argv_paths": []
+    }
+  ],
+  "journal_disk": "Archived and active journals take up 81.4M in the file system.",
+  "directory_sizes": {
+    "/var/lib/opticable-workflow-api": "13064549",
+    "/var/lib/optibrain": "9515231576",
+    "/var/lib/opticable-api-platform": "3732",
+    "/var/lib/opticable-password-pdf": "5821",
+    "/var/lib/opticable-omada-site": "649994237",
+    "/etc/optibrain": "71997",
+    "/usr/local/lib/optibrain": "333509",
+    "/var/backups/optibrain": "8441766578"
+  },
+  "backup_count": 31
+}

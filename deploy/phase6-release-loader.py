@@ -154,6 +154,7 @@ def execute(candidate):
 
 
 if __name__ == '__main__':
+    raise SystemExit('ARCHIVED: Phase 6 campaign loader; use the current guarded release path')
     parser=argparse.ArgumentParser()
     parser.add_argument('--candidate',required=True)
     parser.add_argument('--execute',action='store_true')

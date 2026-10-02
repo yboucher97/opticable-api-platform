@@ -15,6 +15,12 @@ class DesiredDriftObserver:
     def poll(self):
         if time.monotonic() < self.next_scan:
             return
+        from .provider_usage import ProviderUsage
+        with ProviderUsage(getattr(self.controller.journal.store,'db_path',None),'observer:desired-drift',
+                           runs_per_day=86400/self.interval,soft_budget=20):
+            return self._scan()
+
+    def _scan(self):
         paths = sorted(self.directory.glob("opticable-*.json"))
         notification = self.directory / "zoho-crm-notification.template.json"
         if notification.is_file():

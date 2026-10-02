@@ -1,0 +1,251 @@
+{
+  "mail-observer-1": {
+    "schema": 2,
+    "job": "mail-observer-1",
+    "status": "success",
+    "calls": {
+      "crm_get": 0,
+      "crm_write": 0,
+      "mail_get": 135,
+      "mail_mutation": 0,
+      "forms_get": 0,
+      "forms_mutation": 0,
+      "sign_get": 0,
+      "sign_mutation": 0,
+      "books_get": 0,
+      "books_write": 0,
+      "other_zoho": 0,
+      "cloudflare": 0,
+      "github": 0,
+      "r2": 0,
+      "google": 0,
+      "oauth_refresh": 0
+    },
+    "calls_by_method": {
+      "mail_get::read": 135
+    },
+    "details": {
+      "mail_content_get": 129
+    },
+    "outcomes": {
+      "mail_get::ok": 135
+    },
+    "calls_run": 135,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": true,
+    "duration_ms": 35719,
+    "observer": {
+      "scanned": 593,
+      "accepted": 0,
+      "duplicates": 0,
+      "skipped_internal": 126,
+      "skipped_sent": 338,
+      "skipped_empty": 0,
+      "failed": 0,
+      "cache_hits": 0,
+      "revalidated": 129,
+      "content_reads": 129,
+      "search_pages": 6,
+      "full_scan": true,
+      "checkpoint_advanced": true,
+      "mailbox_mutations": 0
+    }
+  },
+  "mail-observer-2": {
+    "schema": 2,
+    "job": "mail-observer-2",
+    "status": "success",
+    "calls": {
+      "crm_get": 0,
+      "crm_write": 0,
+      "mail_get": 4,
+      "mail_mutation": 0,
+      "forms_get": 0,
+      "forms_mutation": 0,
+      "sign_get": 0,
+      "sign_mutation": 0,
+      "books_get": 0,
+      "books_write": 0,
+      "other_zoho": 0,
+      "cloudflare": 0,
+      "github": 0,
+      "r2": 0,
+      "google": 0,
+      "oauth_refresh": 0
+    },
+    "calls_by_method": {
+      "mail_get::read": 4
+    },
+    "details": {},
+    "outcomes": {
+      "mail_get::ok": 4
+    },
+    "calls_run": 4,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": false,
+    "duration_ms": 1288,
+    "observer": {
+      "scanned": 307,
+      "accepted": 0,
+      "duplicates": 0,
+      "skipped_internal": 85,
+      "skipped_sent": 168,
+      "skipped_empty": 0,
+      "failed": 0,
+      "cache_hits": 54,
+      "revalidated": 0,
+      "content_reads": 0,
+      "search_pages": 4,
+      "full_scan": false,
+      "checkpoint_advanced": true,
+      "mailbox_mutations": 0
+    }
+  },
+  "lifecycle": {
+    "schema": 2,
+    "job": "lifecycle",
+    "status": "success",
+    "calls": {
+      "crm_get": 5,
+      "crm_write": 0,
+      "mail_get": 0,
+      "mail_mutation": 0,
+      "forms_get": 0,
+      "forms_mutation": 0,
+      "sign_get": 0,
+      "sign_mutation": 0,
+      "books_get": 0,
+      "books_write": 0,
+      "other_zoho": 0,
+      "cloudflare": 0,
+      "github": 0,
+      "r2": 0,
+      "google": 0,
+      "oauth_refresh": 0
+    },
+    "calls_by_method": {
+      "crm_get::read": 5
+    },
+    "details": {},
+    "outcomes": {
+      "crm_get::ok": 5
+    },
+    "calls_run": 5,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": false,
+    "duration_ms": 2435
+  },
+  "recurring": {
+    "schema": 2,
+    "job": "recurring",
+    "status": "success",
+    "calls": {
+      "crm_get": 0,
+      "crm_write": 0,
+      "mail_get": 0,
+      "mail_mutation": 0,
+      "forms_get": 0,
+      "forms_mutation": 0,
+      "sign_get": 0,
+      "sign_mutation": 0,
+      "books_get": 0,
+      "books_write": 0,
+      "other_zoho": 0,
+      "cloudflare": 0,
+      "github": 0,
+      "r2": 0,
+      "google": 0,
+      "oauth_refresh": 0
+    },
+    "calls_by_method": {},
+    "details": {},
+    "outcomes": {},
+    "calls_run": 0,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": false,
+    "duration_ms": 4
+  },
+  "project-detail": {
+    "schema": 2,
+    "job": "project-detail",
+    "status": "success",
+    "calls": {
+      "crm_get": 6,
+      "crm_write": 0,
+      "mail_get": 0,
+      "mail_mutation": 0,
+      "forms_get": 0,
+      "forms_mutation": 0,
+      "sign_get": 0,
+      "sign_mutation": 0,
+      "books_get": 0,
+      "books_write": 0,
+      "other_zoho": 0,
+      "cloudflare": 0,
+      "github": 0,
+      "r2": 0,
+      "google": 0,
+      "oauth_refresh": 0
+    },
+    "calls_by_method": {
+      "crm_get::read": 6
+    },
+    "details": {},
+    "outcomes": {
+      "crm_get::ok": 6
+    },
+    "calls_run": 6,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": false,
+    "duration_ms": 2783
+  },
+  "sales-queue": {
+    "schema": 2,
+    "job": "sales-queue",
+    "status": "success",
+    "calls": {
+      "crm_get": 6,
+      "crm_write": 0,
+      "mail_get": 3,
+      "mail_mutation": 0,
+      "forms_get": 0,
+      "forms_mutation": 0,
+      "sign_get": 0,
+      "sign_mutation": 0,
+      "books_get": 0,
+      "books_write": 0,
+      "other_zoho": 0,
+      "cloudflare": 0,
+      "github": 0,
+      "r2": 0,
+      "google": 0,
+      "oauth_refresh": 0
+    },
+    "calls_by_method": {
+      "crm_get::read": 6,
+      "mail_get::read": 3
+    },
+    "details": {},
+    "outcomes": {
+      "crm_get::ok": 6,
+      "mail_get::ok": 3
+    },
+    "calls_run": 9,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": false,
+    "duration_ms": 3647
+  },
+  "test_only_projection_count": 1
+}

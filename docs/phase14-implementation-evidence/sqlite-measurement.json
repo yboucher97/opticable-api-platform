@@ -1,0 +1,60 @@
+[
+  {
+    "db": "automation.db",
+    "query": "SELECT event_id FROM automation_events ORDER BY occurred_at DESC LIMIT 100",
+    "plan": [
+      "SCAN automation_events",
+      "USE TEMP B-TREE FOR ORDER BY"
+    ],
+    "median_ms": 0.7842880440875888,
+    "max_ms": 4.789441940374672
+  },
+  {
+    "db": "automation.db",
+    "query": "SELECT * FROM provider_usage ORDER BY id DESC LIMIT 300",
+    "plan": [
+      "SCAN provider_usage"
+    ],
+    "median_ms": 0.04658498801290989,
+    "max_ms": 0.15716697089374065
+  },
+  {
+    "db": "phase12-autonomy.db",
+    "query": "SELECT * FROM actions ORDER BY updated_at DESC LIMIT 100",
+    "plan": [
+      "SCAN actions",
+      "USE TEMP B-TREE FOR ORDER BY"
+    ],
+    "median_ms": 0.09336590301245451,
+    "max_ms": 0.44355099089443684
+  },
+  {
+    "db": "phase12-autonomy.db",
+    "query": "SELECT * FROM approvals ORDER BY issued_at DESC LIMIT 100",
+    "plan": [
+      "SCAN approvals",
+      "USE TEMP B-TREE FOR ORDER BY"
+    ],
+    "median_ms": 0.019088038243353367,
+    "max_ms": 0.11683604680001736
+  },
+  {
+    "db": "phase12-autonomy.db",
+    "query": "SELECT * FROM runner_runs ORDER BY started_at DESC LIMIT 1",
+    "plan": [
+      "SCAN runner_runs",
+      "USE TEMP B-TREE FOR ORDER BY"
+    ],
+    "median_ms": 0.03667408600449562,
+    "max_ms": 0.08972303476184607
+  },
+  {
+    "db": "phase9-form-receipts.db",
+    "query": "SELECT * FROM form_receipts ORDER BY occurred_at DESC LIMIT 100",
+    "plan": [
+      "SCAN form_receipts USING INDEX idx_form_receipts_occurred"
+    ],
+    "median_ms": 0.02038001548498869,
+    "max_ms": 0.06086495704948902
+  }
+]

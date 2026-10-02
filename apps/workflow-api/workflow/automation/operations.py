@@ -133,7 +133,7 @@ def ticket_action(status: str, linked_orders: list[dict]) -> tuple[str, str]:
 
 
 def build_operations(client, *, scope: str, projection_path: Path = PROJECTION,
-                     lab_path: Path = LAB, now: datetime | None = None) -> dict:
+                     lab_path: Path = LAB, now: datetime | None = None, project_id: str | None = None) -> dict:
     if scope not in {"live", "lab"}:
         raise ValueError("Unknown operations scope")
     now = now or datetime.now(timezone.utc)
@@ -150,6 +150,10 @@ def build_operations(client, *, scope: str, projection_path: Path = PROJECTION,
             or not isinstance(projection.get("crosswalk"), dict)):
         raise ValueError("Operations projection invalid")
     crosswalk = projection["crosswalk"]
+    if project_id is not None:
+        if not re.fullmatch(r'OB-J-[0-9A-F]{12}',project_id) or project_id not in projection['projects']:
+            raise LookupError('Project is not registered')
+        projection={**projection,'projects':{project_id:projection['projects'][project_id]}}
     requested={module:set() for module in READ_FIELDS}
     for record in projection['projects'].values():
         for module in ('Accounts','Contacts','Service_Locations','Deals'):

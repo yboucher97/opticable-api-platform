@@ -115,10 +115,10 @@ class GoogleOAuthManager:
                 },
             )
         if response.status_code >= 400:
-            raise ValueError(f"Google token exchange failed with status {response.status_code}: {response.text}")
+            raise ValueError(f"Google token exchange failed with status {response.status_code}")
         payload = response.json()
         if not payload.get("access_token"):
-            raise ValueError(f"Google token exchange did not return an access token: {payload}")
+            raise ValueError(f"Google token exchange did not return an access token")
         return payload
 
     def load_saved_credentials(self) -> dict[str, Any] | None:
@@ -188,11 +188,11 @@ class GoogleOAuthManager:
                     },
                 )
             if response.status_code >= 400:
-                raise ValueError(f"Google token refresh failed with status {response.status_code}: {response.text}")
+                raise ValueError(f"Google token refresh failed with status {response.status_code}")
             payload = response.json()
             access_token = str(payload.get("access_token") or "")
             if not access_token:
-                raise ValueError(f"Google token refresh did not return an access token: {payload}")
+                raise ValueError(f"Google token refresh did not return an access token")
 
             expires_in = int(payload.get("expires_in") or 3600)
             saved["access_token"] = access_token
