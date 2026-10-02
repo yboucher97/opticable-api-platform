@@ -14,7 +14,7 @@ REPO = Path(__file__).resolve().parents[2]
 USERS = ('optibrain', 'opticable-workflow-api', 'opticable-password-pdf', 'opticable-omada-site')
 APP = ('opticable-workflow-api', 'opticable-password-pdf', 'opticable-omada-site')
 TIMERS = ('optibrain-backup','optibrain-phase2a-upload','opticable-phase9-intake-receipts',
-          'opticable-phase10-service-events','opticable-phase12-test-runner')
+          'opticable-phase10-service-events','opticable-phase12-test-runner','opticable-lifecycle-internal')
 RETIRED = tuple(f'optibrain-agent-{n}.{k}' for n in ('dispatch','status','usage') for k in ('service','timer'))
 SAFETY = {
     'OPTICABLE_AUTOMATION_ENABLED':'false', 'OPTIBRAIN_CRM_DRIFT_ENABLED':'false',
@@ -38,7 +38,8 @@ HELPERS = {'/usr/local/sbin/opticable-api-deploy-root':'deploy/manual-guarded-re
     '/usr/local/lib/optibrain/phase12-run-test-lab.py':'ops/phase12/run_test_lab.py',
     '/usr/local/lib/optibrain/phase14-runtime-snapshot.py':'ops/phase14/runtime_snapshot.py',
     '/usr/local/lib/optibrain/phase14-retention.py':'ops/phase14/retention.py',
-    '/usr/local/lib/optibrain/queue-metrics.py':'ops/phase15/queue_metrics.py'}
+    '/usr/local/lib/optibrain/queue-metrics.py':'ops/phase15/queue_metrics.py',
+    '/usr/local/lib/optibrain/lifecycle_runner.py':'ops/phase16_17/lifecycle_runner.py'}
 
 
 def require(condition, message):
@@ -180,7 +181,7 @@ def verify(root):
     pw,groups=ids(root)
     p=root/'etc/optibrain/mutation-control.json';info=p.lstat()
     flags=dict(r.split('=',1) for r in (root/'etc/optibrain/rebuild-safety.env').read_text().splitlines())
-    masks=[n+'.timer' for n in TIMERS]+['opticable-phase12-test-runner.service']+list(RETIRED)
+    masks=[n+'.timer' for n in TIMERS]+['opticable-phase12-test-runner.service','opticable-lifecycle-internal.service']+list(RETIRED)
     require(all((root/'etc/systemd/system'/n).is_symlink() and os.readlink(root/'etc/systemd/system'/n)=='/dev/null'
                 for n in masks),'Recovery timers or retired units unmasked')
     require(policy['test_writes_enabled'] is False and policy['real_canary_allowed'] is False,'Writers enabled')

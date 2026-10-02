@@ -82,9 +82,14 @@ def bind_task_claim(action, client, body, claim):
                  hash=fingerprint('zohoapis', 'POST', '/crm/v8/Tasks', body))
 
 
-def require_business_transport(client, service, method, path, body, headers=None, *, recheck=False):
+def require_business_transport(client, service, method, path, body, headers=None, *, recheck=False,
+                               content_type='application/json', query=None):
     if method == 'GET':
         safe_read(service, path, headers)
+        return
+    from .lifecycle_control import check_transport
+    if check_transport(client,service,method,path,body,headers,recheck=recheck,
+                       content_type=content_type,query=query):
         return
     try:
         control = read_control()  # Missing/corrupt/untrusted policy is a denial.
@@ -113,6 +118,11 @@ def require_business_transport(client, service, method, path, body, headers=None
 
 
 def record_business_response(response):
+    from .lifecycle_control import GRANT
+    grant=GRANT.get()
+    if grant and grant['used']:
+        grant['journal'].append(grant['effect'],'provider_response',response)
+        return
     value = _ACTION.get()
     if value and value['used']:
         value['journal'].record_evidence(value['action'].action_id, 'provider_response', response)

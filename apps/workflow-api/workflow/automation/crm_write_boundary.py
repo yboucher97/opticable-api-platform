@@ -216,6 +216,8 @@ def _enabled(value):
 
 def require_authority(client, service, method, path, body, headers):
     if method == 'GET' or not is_crm(service,path): return
+    from .lifecycle_control import check_crm_authority
+    if check_crm_authority(client,method,path,body,headers): return
     value = _AUTHORITY.get()
     if not _enabled(value) or value.get('client') is not client or value.get('used') is not False or value.get('hash') != fingerprint(method,path,body,headers):
         raise ValueError('CRM mutation requires exact single-use reconciler authority')
@@ -238,6 +240,8 @@ def verify_transport_authority(client, service, method, path, body, headers):
     """Recheck the consumed exact grant immediately before local/standby transport."""
     if method == 'GET' or not is_crm(service, path):
         return
+    from .lifecycle_control import check_crm_authority
+    if check_crm_authority(client,method,path,body,headers,recheck=True): return
     value = _AUTHORITY.get()
     if not _enabled(value) or value.get('client') is not client or value.get('used') is not True or value.get('hash') != fingerprint(method, path, body, headers):
         raise ValueError('CRM transport authority changed before the provider call')

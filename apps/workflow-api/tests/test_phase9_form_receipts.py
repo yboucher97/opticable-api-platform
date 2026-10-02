@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import json
 from pathlib import Path
 import stat
 import sqlite3
@@ -72,6 +73,14 @@ class FormReceiptsTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 parse_notification(message_id=MESSAGE, details=details,
                                    content={"content": HTML}, headers=headers, now=clock)
+    def test_controlled_owner_destination_and_phase16_lineage(self):
+        content=HTML.replace(EMAIL,'logs@opticable.ca').replace('OPTIBRAIN TEST — PHASE 9 — Warehouse','OPTIBRAIN TEST — PHASE 16 — Form Company').replace('OBP9-FORM-1','phase16-20261002-lifecycle-v1-form-fr')
+        details={**DETAILS,'toAddress':'&lt;yboucher@opticable.ca&gt;'}
+        receipt=parse_notification(message_id=MESSAGE,details=details,content={'content':content},headers=HEADERS,now=NOW)
+        self.assertTrue(receipt['test_only'])
+        for recipient in ('soumissions@opticable.ca.evil.example','customer@example.net'):
+            with self.subTest(recipient=recipient),self.assertRaises(ValueError):
+                parse_notification(message_id=MESSAGE,details={**details,'toAddress':recipient},content={'content':content},headers=HEADERS,now=NOW)
 
     def test_link_requires_registered_test_provider_readback(self):
         self.ledger.record(self.receipt)
@@ -85,6 +94,32 @@ class FormReceiptsTests(unittest.TestCase):
         self.assertEqual(self.ledger.link_test_lead(self.receipt["event_id"], crm, {"123456"}), "LINKED")
         self.assertEqual(self.ledger.link_test_lead(self.receipt["event_id"], crm, {"123456"}), "REPLAY")
         self.assertEqual(self.ledger.list()[0]["canonical_id"], "123456")
+
+    def test_new_test_classifier_preserves_original_provider_receipt(self):
+        original = {**self.receipt, "test_only": False}
+        self.ledger.record(original)
+        self.assertEqual(self.ledger.record(self.receipt), "REPLAY")
+        row = self.ledger.list()[0]
+        self.assertTrue(row["test_only"])
+        self.assertFalse(row["original_test_only"])
+        self.assertEqual(json.loads(row["evidence_json"]), original)
+        with sqlite3.connect(self.ledger.path) as db:
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM form_test_classifications").fetchone()[0], 1)
+            for statement in ("DELETE FROM form_test_classifications", "UPDATE form_test_classifications SET event_id='other'"):
+                with self.subTest(statement=statement), self.assertRaises(sqlite3.IntegrityError):
+                    db.execute(statement)
+        with self.assertRaisesRegex(ValueError, "conflicts"):
+            self.ledger.record({**self.receipt, "fields": {**self.receipt["fields"], "company": "changed"}})
+
+    def test_classification_cannot_turn_real_intake_into_test_or_reverse_exclusion(self):
+        real = {**self.receipt, "submitted_email": "customer@example.net", "test_only": False}
+        self.ledger.record(real)
+        with self.assertRaisesRegex(ValueError, "conflicts"):
+            self.ledger.record({**real, "test_only": True})
+        other = FormReceiptLedger(Path(self.temp.name) / "other.db")
+        other.record(self.receipt)
+        with self.assertRaisesRegex(ValueError, "conflicts"):
+            other.record({**self.receipt, "test_only": False})
 
     def test_unique_main_form_crm_match_is_read_only_and_missing_email_is_visible(self):
         self.ledger.record(self.receipt)

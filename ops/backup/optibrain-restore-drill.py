@@ -21,8 +21,8 @@ def safe_unit_mask(unit):
     return isinstance(unit,str) and re.fullmatch(
         r'optibrain-agent-(dispatch|status|usage)\.(service|timer)|'
         r'(?:optibrain-backup|optibrain-phase2a-upload|opticable-phase9-intake-receipts|'
-        r'opticable-phase10-service-events|opticable-phase12-test-runner)\.timer|'
-        r'opticable-phase12-test-runner\.service',unit) is not None
+        r'opticable-phase10-service-events|opticable-phase12-test-runner|opticable-lifecycle-internal)\.timer|'
+        r'(?:opticable-phase12-test-runner|opticable-lifecycle-internal)\.service',unit) is not None
 
 
 def digest(path):

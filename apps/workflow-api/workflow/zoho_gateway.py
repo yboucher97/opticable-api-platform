@@ -26,7 +26,8 @@ def is_books_api_path(service: str, path: str) -> bool:
     return service == "zohoapis" and str(path or "").lower().startswith("/books/")
 
 
-_BOOKS_SYNCED_CRM_MODULES = {"custommodule5001", "custommodule5002", "custommodule5003", "custommodule5004"}
+_BOOKS_SYNCED_CRM_MODULES = {"custommodule5001", "custommodule5002", "custommodule5003", "custommodule5004",
+                             "custommodule5006", "custommodule5007"}
 
 
 def is_books_synced_crm_path(service: str, path: str) -> bool:
@@ -156,11 +157,17 @@ class ZohoGatewayClient:
         if body is not None and method not in {"GET", "DELETE"}:
             if content_type == "application/x-www-form-urlencoded" and isinstance(body, dict):
                 kwargs["data"] = {str(k): str(v) for k, v in body.items()}
+            elif content_type == "multipart/form-data":
+                # Central lifecycle policy validates this canonical descriptor;
+                # no filesystem path, arbitrary binary or overwrite is accepted.
+                kwargs["data"] = {"parent_id": body["parent_id"], "filename": body["filename"]}
+                kwargs["files"] = {"content": (body["filename"], body["content"].encode("utf-8"), "text/plain")}
             elif content_type == "text/plain":
                 kwargs["content"] = body if isinstance(body, str) else json.dumps(body)
             else:
                 kwargs["json"] = body
-            request_headers["Content-Type"] = content_type
+            if content_type != "multipart/form-data":
+                request_headers["Content-Type"] = content_type
 
         from .automation.provider_usage import record_call
         record_call(service, method, path)
@@ -271,13 +278,18 @@ class ZohoGatewayClient:
             raise ValueError('Mutation path must be canonical and cannot contain escapes')
         require_authority(self, service, normalized_method, path, body, headers)
         from .automation.mutation_control import require_business_transport, record_business_response
-        if mutation and (query or content_type != 'application/json'):
+        from .automation.lifecycle_control import GRANT
+        if mutation and (query or content_type != 'application/json') and GRANT.get() is None:
             raise ValueError('Mutation query parameters and alternate encodings are forbidden')
-        require_business_transport(self, service, normalized_method, path, body, headers)
+        require_business_transport(self, service, normalized_method, path, body, headers,
+                                   content_type=content_type,query=query)
 
         def standby() -> dict[str, Any]:
+            if mutation and GRANT.get() is not None:
+                raise ZohoGatewayError('Scoped lifecycle mutations require the verified direct provider path.')
             verify_transport_authority(self, service, normalized_method, path, body, headers)
-            require_business_transport(self, service, normalized_method, path, body, headers, recheck=True)
+            require_business_transport(self, service, normalized_method, path, body, headers, recheck=True,
+                                       content_type=content_type,query=query)
             result = self._standby_request(
                 service,
                 normalized_method,
@@ -313,7 +325,8 @@ class ZohoGatewayClient:
 
         try:
             verify_transport_authority(self, service, normalized_method, path, body, headers)
-            require_business_transport(self, service, normalized_method, path, body, headers, recheck=True)
+            require_business_transport(self, service, normalized_method, path, body, headers, recheck=True,
+                                       content_type=content_type,query=query)
             result = self._local_request(
                 service,
                 normalized_method,

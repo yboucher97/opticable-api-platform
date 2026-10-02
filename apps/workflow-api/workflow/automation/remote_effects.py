@@ -68,7 +68,9 @@ class RemoteEffects:
         return value
 
     def claim(self, action):
-        if action.action_type!='crm.task.create' or action.target_module!='Leads':
+        from .lifecycle_control import LifecycleEffect
+        lifecycle=isinstance(action,LifecycleEffect) and action.action_type=='lifecycle.scoped'
+        if not lifecycle and (action.action_type!='crm.task.create' or action.target_module!='Leads'):
             raise ValueError('Unsupported off-host execution claim')
         value={'schema':1,'action_id':action.action_id,'payload_hash':action.payload_hash,
                'target_id':action.target_id,'created_at':utc_now(),'envelope':action.__dict__}
@@ -89,7 +91,9 @@ class RemoteEffects:
         return FreshClaim(action.action_id,action.payload_hash,key,True)
 
     def complete(self, action, provider_id):
-        if not str(provider_id).isdigit(): raise ValueError('Exact provider ID required')
+        from .lifecycle_control import LifecycleEffect
+        valid=bool(re.fullmatch(r'[A-Za-z0-9]{1,80}',str(provider_id))) if isinstance(action,LifecycleEffect) else str(provider_id).isdigit()
+        if not valid: raise ValueError('Exact provider ID required')
         value={'schema':1,'action_id':action.action_id,'payload_hash':action.payload_hash,
                'target_id':action.target_id,'provider_id':str(provider_id),'verified_at':utc_now()}
         try:
