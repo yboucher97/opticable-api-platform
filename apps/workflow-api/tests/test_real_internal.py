@@ -23,6 +23,12 @@ def receipt(at=None):
     return {'schema':1,'source':'ai_website','origin':'https://ai.opticable.ca','inquiry_id':'new-inquiry-1','request':body,'payload_hash':lc.digest(body),'request_hash':lc.digest(body),'occurred_at':at or NOW.isoformat(),'submitted_email':body['email']}
 
 class RealPlanningTests(unittest.TestCase):
+    def test_native_conversion_result_requires_qualified_identity(self):
+        lead={'Email':'alice@customer.test','Company':'Customer Company'}
+        ri.verify_conversion_identity('Contacts',{'Email':'ALICE@customer.test'},lead)
+        ri.verify_conversion_identity('Accounts',{'Account_Name':'Customer Company'},lead)
+        for module,record in [('Contacts',{'Email':'someone@customer.test'}),('Accounts',{'Account_Name':'Another Company'})]:
+            with self.subTest(module=module),self.assertRaises(ri.UnsafeOutcome):ri.verify_conversion_identity(module,record,lead)
     def test_form_scope_uses_parser_identity_not_user_message_words(self):
         from workflow.automation.phase9_form_receipts import MAIN_FORM,ENGLISH_FORM
         self.assertTrue(ri.approved_form({'form_id':MAIN_FORM,'test_only':False}))
@@ -188,4 +194,20 @@ class RealAuthorityTests(unittest.TestCase):
     def test_record_remarked_test_cannot_be_updated_as_real(self):
         e=self.engine();self.source(e)
         with self.assertRaises(ri.HumanAttention):e.update('changed','Leads',{'id':'101','OptiBrain_Test':True},{'Last_Name':'Changed'})
+        self.assertEqual(self.client.mutations,0)
+    def test_late_acceptance_never_rewinds_owner_deal_progression(self):
+        e=self.engine();self.source(e)
+        lineage={'site_id':'400','account_id':'200','contact_id':'300'}
+        with patch.object(e,'list',side_effect=ri.HumanAttention('end of bounded test')),patch.object(e,'update') as update:
+            for stage in ('Contracts In Progress','Contracts Signed','Scheduling','Installation','Installation Booked'):
+                with self.subTest(stage=stage),self.assertRaises(ri.HumanAttention):
+                    e.accepted({'id':'201','Stage':stage,'Service_Types':'Structured Cabling'},lineage,{})
+            update.assert_not_called()
+    def test_owner_service_suppression_stops_installation_preparation(self):
+        e=self.engine();self.source(e)
+        service={'id':'500','Linked_Service_Location':{'id':'400'},'Linked_Deal':{'id':'201'},'Service_Type':'Cabling Installation'}
+        lineage={'site_id':'400','account_id':'200','contact_id':'300'}
+        for stage in ('Cancelled','Suspended'):
+            with self.subTest(stage=stage),patch.object(e,'list',return_value=[{**service,'Service_Stage':stage}]),self.assertRaises(ri.HumanAttention):
+                e.accepted({'id':'201','Stage':'Contracts In Progress','Service_Types':'Structured Cabling'},lineage,{})
         self.assertEqual(self.client.mutations,0)
