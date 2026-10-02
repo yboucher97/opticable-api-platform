@@ -773,6 +773,72 @@
       "verified": "root directory0700 and append-file0600; actual isolated admin verify",
       "backed_up": "not present in golden application archive; diagnostic admin trace is separate from mandatory immutable business/release/backup evidence",
       "purpose": "private administrative command trace"
+    },
+    {
+      "location": "/etc/optibrain/lifecycle-runtime.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "reviewed exact-SHA repository plus root current activation",
+      "deployed": "manual exact release root staging; unit disabled until scope gate",
+      "restored": "approved backup; OFF/masked until independent reconciliation",
+      "verified": "root ownership/mode/source hashes and read-only scope/health evidence",
+      "backed_up": "application/infrastructure archive; /run display regenerated",
+      "purpose": "exact-SHA immutable root source/interpreter manifest"
+    },
+    {
+      "location": "/var/lib/optibrain/lifecycle",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "reviewed exact-SHA repository plus root current activation",
+      "deployed": "manual exact release root staging; unit disabled until scope gate",
+      "restored": "approved backup; OFF/masked until independent reconciliation",
+      "verified": "root ownership/mode/source hashes and read-only scope/health evidence",
+      "backed_up": "application/infrastructure archive; /run display regenerated",
+      "purpose": "root activation, source/authorization/ownership, HOLD, context and effect evidence"
+    },
+    {
+      "location": "/usr/local/lib/optibrain/lifecycle_runner.py",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "reviewed exact-SHA repository plus root current activation",
+      "deployed": "manual exact release root staging; unit disabled until scope gate",
+      "restored": "approved backup; OFF/masked until independent reconciliation",
+      "verified": "root ownership/mode/source hashes and read-only scope/health evidence",
+      "backed_up": "application/infrastructure archive; /run display regenerated",
+      "purpose": "reviewed root launcher verifies source before import"
+    },
+    {
+      "location": "/etc/systemd/system/opticable-lifecycle-internal.service",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "reviewed exact-SHA repository plus root current activation",
+      "deployed": "manual exact release root staging; unit disabled until scope gate",
+      "restored": "approved backup; OFF/masked until independent reconciliation",
+      "verified": "root ownership/mode/source hashes and read-only scope/health evidence",
+      "backed_up": "application/infrastructure archive; /run display regenerated",
+      "purpose": "bounded scoped internal runner, root oneshot"
+    },
+    {
+      "location": "/etc/systemd/system/opticable-lifecycle-internal.timer",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "reviewed exact-SHA repository plus root current activation",
+      "deployed": "manual exact release root staging; unit disabled until scope gate",
+      "restored": "approved backup; OFF/masked until independent reconciliation",
+      "verified": "root ownership/mode/source hashes and read-only scope/health evidence",
+      "backed_up": "application/infrastructure archive; /run display regenerated",
+      "purpose": "five-minute scoped observer/action cycle"
+    },
+    {
+      "location": "/run/optibrain-readiness/lifecycle.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "reviewed exact-SHA repository plus root current activation",
+      "deployed": "manual exact release root staging; unit disabled until scope gate",
+      "restored": "approved backup; OFF/masked until independent reconciliation",
+      "verified": "root ownership/mode/source hashes and read-only scope/health evidence",
+      "backed_up": "application/infrastructure archive; /run display regenerated",
+      "purpose": "root display only; rebuildable; no authority"
     }
   ],
   "environment_key_references": [

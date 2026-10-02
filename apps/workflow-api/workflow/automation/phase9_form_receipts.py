@@ -9,6 +9,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from html import unescape
 from html.parser import HTMLParser
+from email.utils import getaddresses
 import hashlib
 import json
 import os
@@ -22,6 +23,7 @@ from .phase9_intake import event_id, instant
 ACCOUNT_ID = "1083319000000008002"
 SENDER = "notifications@zohoforms.com"
 DESTINATION = "soumissions@opticable.ca"
+DESTINATIONS = frozenset({DESTINATION,"yboucher@opticable.ca"})
 MAIN_FORM = "i6pIlfoGOFER0OCZ4oUH_KMxVWRZKC9Of8vbyNAjR0g"
 ENGLISH_FORM = "5kpuPyq6HG3cmmNAHG_2cFprnp16uoMzojC7Fxq42xo"
 TORONTO = ZoneInfo("America/Toronto")
@@ -80,13 +82,26 @@ def _one_header(headers, key):
     return str(values[0]).strip() if isinstance(values, list) and len(values) == 1 else ""
 
 
+def controlled_test_identity(email, fields):
+    """Classification only; this never grants CRM or transport authority."""
+    company = str(fields.get("company") or "")
+    notes = str(fields.get("notes") or "")
+    reference = str(fields.get("reference") or "")
+    return (bool(re.fullmatch(r"hckyan97\+obp9[a-z0-9]+@gmail\.com", email))
+            and "OPTIBRAIN TEST" in company and "TEST ONLY" in notes) or (
+        email == "logs@opticable.ca" and company.startswith("OPTIBRAIN TEST — PHASE 16")
+        and "TEST ONLY" in notes and (
+            re.fullmatch(r"phase16-20261002-lifecycle-v1-form-(fr|en)", reference) is not None
+            or re.search(r"\bphase16-20261002-lifecycle-v1-form-(fr|en)\b", notes) is not None))
+
+
 def parse_notification(*, message_id, details, content, headers, now):
     """Require provider identity and authenticated Zoho Forms origin."""
     if not re.fullmatch(r"[0-9]{1,30}", str(message_id)):
         raise ValueError("Invalid provider message ID")
     if (str(details.get("messageId")) != str(message_id)
             or str(details.get("fromAddress") or "").casefold() != SENDER
-            or DESTINATION not in unescape(str(details.get("toAddress") or "")).casefold()):
+            or not ({email.casefold() for _,email in getaddresses([unescape(str(details.get("toAddress") or ""))])} & DESTINATIONS)):
         raise ValueError("Mail identity does not match Zoho Forms notification")
     authentication = " ".join(headers.get("Authentication-Results") or [])
     if not re.search(r"dkim=pass\b", authentication, re.I) or not re.search(r"dmarc=pass\b", authentication, re.I):
@@ -116,9 +131,7 @@ def parse_notification(*, message_id, details, content, headers, now):
     if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email):
         raise ValueError("Form notification has no valid submitted email")
     reference = str(fields.get("reference") or "")
-    test_only = (bool(re.fullmatch(r"hckyan97\+obp9[a-z0-9]+@gmail\.com", email))
-                 and "OPTIBRAIN TEST" in str(fields.get("company") or "")
-                 and "TEST ONLY" in str(fields.get("notes") or ""))
+    test_only = controlled_test_identity(email, fields)
     raw_hash = hashlib.sha256(str(content["content"]).encode()).hexdigest()
     return {
         "event_id": event_id("zoho_form", internet_id), "provider_message_id": str(message_id),
@@ -165,6 +178,14 @@ class FormReceiptLedger:
                     BEGIN SELECT RAISE(ABORT,'form receipt is immutable'); END;
                 CREATE TRIGGER IF NOT EXISTS form_receipts_no_delete BEFORE DELETE ON form_receipts
                     BEGIN SELECT RAISE(ABORT,'form receipt is immutable'); END;
+                CREATE TABLE IF NOT EXISTS form_test_classifications (
+                    event_id TEXT PRIMARY KEY REFERENCES form_receipts(event_id),
+                    evidence_json TEXT NOT NULL, recorded_at TEXT NOT NULL
+                );
+                CREATE TRIGGER IF NOT EXISTS form_test_classifications_no_update BEFORE UPDATE ON form_test_classifications
+                    BEGIN SELECT RAISE(ABORT,'test classification is immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS form_test_classifications_no_delete BEFORE DELETE ON form_test_classifications
+                    BEGIN SELECT RAISE(ABORT,'test classification is immutable'); END;
                 CREATE TABLE IF NOT EXISTS form_receipt_links (
                     event_id TEXT PRIMARY KEY REFERENCES form_receipts(event_id),
                     canonical_module TEXT NOT NULL, canonical_id TEXT NOT NULL,
@@ -258,7 +279,17 @@ class FormReceiptLedger:
             prior = db.execute("SELECT evidence_json FROM form_receipts WHERE event_id=?", (receipt["event_id"],)).fetchone()
             if prior:
                 if prior["evidence_json"] != payload:
-                    raise ValueError("Provider replay conflicts with immutable form receipt")
+                    original = json.loads(prior["evidence_json"])
+                    # A newly supported deterministic TEST lineage may have
+                    # been collected by an older release. Preserve its original
+                    # receipt; append only a derived exclusion. All provider
+                    # facts must remain byte-for-byte equivalent.
+                    if (original.get("test_only") is not False or receipt.get("test_only") is not True
+                            or {**original, "test_only": True} != receipt
+                            or not controlled_test_identity(receipt["submitted_email"], receipt["fields"])):
+                        raise ValueError("Provider replay conflicts with immutable form receipt")
+                    db.execute("INSERT OR IGNORE INTO form_test_classifications VALUES(?,?,?)", (
+                        receipt["event_id"], payload, datetime.now(timezone.utc).isoformat()))
                 return "REPLAY"
             db.execute("INSERT INTO form_receipts VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", (
                 receipt["event_id"], receipt["provider_message_id"], receipt["internet_message_id"],
@@ -272,11 +303,17 @@ class FormReceiptLedger:
         self.initialize()
         with self._connect() as db:
             row = db.execute("SELECT * FROM form_receipts WHERE event_id=?", (event_id_value,)).fetchone()
-            if not row or row["test_only"] != 1:
+            classified = row and db.execute("SELECT 1 FROM form_test_classifications WHERE event_id=?",
+                                           (event_id_value,)).fetchone()
+            if not row or (row["test_only"] != 1 and not classified):
                 raise ValueError("Only controlled Test Lab form receipts may be linked")
             record_id = str(crm.get("id") or "")
+            description = str(crm.get("Description") or "")
+            visible_test = description.startswith("OPTIBRAIN TEST — PHASE ") or (
+                description.startswith("[OPTIBRAIN TEST] TEST ONLY.")
+                and re.search(r"\bphase16-20261002-lifecycle-v1-form-(fr|en)\b", description) is not None)
             if (record_id not in registered_ids or crm.get("OptiBrain_Test") is not True
-                    or not str(crm.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE ")
+                    or not visible_test
                     or str(crm.get("Email") or "").strip().casefold() != row["submitted_email"]):
                 raise ValueError("CRM readback is not registered Test Lab identity")
             digest = hashlib.sha256(json.dumps({"event_id": event_id_value, "crm_id": record_id,
@@ -294,11 +331,17 @@ class FormReceiptLedger:
         self.initialize()
         with self._connect() as db:
             rows = db.execute("SELECT r.*,COALESCE(l.canonical_id,m.crm_id) AS canonical_id,"
-                "m.status AS provider_match_status,l.canonical_id AS reviewed_test_link "
+                "m.status AS provider_match_status,l.canonical_id AS reviewed_test_link,"
+                "CASE WHEN c.event_id IS NOT NULL THEN 1 ELSE r.test_only END AS effective_test_only "
                 "FROM form_receipts r LEFT JOIN form_receipt_links l ON l.event_id=r.event_id "
                 "LEFT JOIN form_provider_matches m ON m.event_id=r.event_id "
+                "LEFT JOIN form_test_classifications c ON c.event_id=r.event_id "
                 "ORDER BY r.occurred_at DESC LIMIT ?", (limit,)).fetchall()
-        return [dict(row) for row in rows]
+        result = [dict(row) for row in rows]
+        for row in result:
+            row["original_test_only"] = row["test_only"]
+            row["test_only"] = row.pop("effective_test_only")
+        return result
 
     def enrichment_state(self, event_id_value):
         self.initialize()
@@ -335,7 +378,8 @@ class FormReceiptLedger:
         with self._connect() as db:
             rows = db.execute("SELECT j.crm_id FROM form_enrichment_journal j "
                 "JOIN form_receipts r ON r.event_id=j.event_id "
-                "WHERE j.state='VERIFIED' AND r.test_only=1 AND NOT EXISTS ("
+                "WHERE j.state='VERIFIED' AND (r.test_only=1 OR EXISTS ("
+                "SELECT 1 FROM form_test_classifications c WHERE c.event_id=r.event_id)) AND NOT EXISTS ("
                 "SELECT 1 FROM form_enrichment_journal n WHERE n.event_id=j.event_id AND n.id>j.id)").fetchall()
         return {str(row["crm_id"]) for row in rows}
 

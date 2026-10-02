@@ -100,6 +100,7 @@ def runtime_receipt(target,previous,auth,*,db_root=Path('/var/lib/opticable-work
 def verify_closed():
     control=json.loads(Path('/etc/optibrain/mutation-control.json').read_text())
     require(control['test_writes_enabled'] is False and control['real_canary_allowed'] is False,'writers_enabled')
+    require(not control.get('lifecycle',{}).get('enabled') and not control.get('lifecycle',{}).get('real_scopes'), 'scoped_lifecycle_writers_enabled')
     for p in [ENV,Path('/etc/optibrain/phase12-runner.env')]:
         vals=dict(x.split('=',1) for x in p.read_text().splitlines() if '=' in x and not x.startswith('#'))
         require(vals.get('OPTIBRAIN_BUSINESS_AUTO_WRITES','0')=='0','automatic_writes_enabled')

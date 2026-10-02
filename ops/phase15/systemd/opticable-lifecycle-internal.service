@@ -1,0 +1,28 @@
+# Rebuild defaults: this service/timer remain masked until reconciliation and exact activation.
+[Unit]
+Description=OptiBrain individually scoped new-record internal lifecycle
+After=network-online.target opticable-workflow-api.service
+Wants=network-online.target
+ConditionPathExists=/etc/optibrain/lifecycle-runtime.json
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+EnvironmentFile=/etc/opticable-workflow-api.env
+ExecStart=/usr/bin/python3 -I -B /usr/local/lib/optibrain/lifecycle_runner.py --once
+TimeoutStartSec=300
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/optibrain/lifecycle /var/lib/opticable-workflow-api/output/automation /run/optibrain-readiness
+ReadOnlyPaths=/etc/optibrain /opt/optibrain-releases
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH CAP_FOWNER
+UMask=0077

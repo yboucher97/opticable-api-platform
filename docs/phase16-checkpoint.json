@@ -1,0 +1,129 @@
+{
+  "at": "2026-10-02T21:18:58.949573+00:00",
+  "attribution": {
+    "ai_and_connector": "PASS",
+    "cross_site": "PASS",
+    "ga4": "DEFERRED \u2014 measurement ID unset",
+    "native_forms_campaign_fields": "UNAVAILABLE; no attribution fabricated",
+    "returning_visitor": "PASS"
+  },
+  "crm_lifecycle": "PASS",
+  "dead_letters": {
+    "active": 0,
+    "classified": 129,
+    "expired_contents_unavailable": 21,
+    "initial": 129,
+    "provider_expired": 121,
+    "purged": 0,
+    "replayed": 0,
+    "retained": 8,
+    "unknown_disposition": 0
+  },
+  "direct_books_writes": 0,
+  "duplicate_replay": "PASS \u2014 final duplicates zero; one transient TEST site corrected with evidence",
+  "evidence_sha256": {
+    "books-test-exclusion.json": "6d0a35571b2e94f710e69cf413bc42e1dc928e37b5f64fde71c7b8b045a09ce6",
+    "dead-letter-disposition.json": "aba0af8557296fc4dc4e9436cd0e3a04839147d189d3a3bd3adbc634e43f3359",
+    "failure-recovery-evidence.json": "11428d26a3e22f3b1aa7b500e30b3ac30841af689f7847481b17bf14e1cce159",
+    "mail-reminder-evidence.json": "a7c178fdcec17b2ff71618c940e743cb9bf84c3adcf264b1850aeb0eb340d364",
+    "metric-views-final.json": "2928c584636760eb82ac98f665da3d9ad4f7df205dced14b0f0d7b2ae21bffd7",
+    "native-reuse-proof.json": "1f31730ae84e2d7754d1575f8bbd1144c8288774489a0864a63ef4a2ead929b4",
+    "native-workflow-containment-final.json": "ba437fc84c8a791b99bf6f5cf2b692614ce35a154ded8990ab7c1b637f140459",
+    "ownership.json": "ccc346c31864373f13f0ac0127c756f4ffc33cb5f5d6b16a8a133c1430340f2c",
+    "phase16-gate-protected.json": "a7a37866eae2d04817411884447ee1ac45c1568aca0b8ad421bf74531dcc3849",
+    "queue-final.json": "c35e746c339eb18774d3f4e0bbdb6fc70fdf4c17ad43feadf7c2eb223e50d86d",
+    "scenario-replay-evidence.json": "238b76022c5d9d9e9ea79befc3973fa9e5da522c0e8b43c50c5402a546b76aa4",
+    "test-lab.json": "65c52597c97e6ae43d17dea892ffe0b3eeced7747b65a14ac87a93482aba4396"
+  },
+  "failure_recovery": "PASS \u2014 two lost acknowledgements reconciled without resending",
+  "finance": "PASS \u2014 native independent relationship observation; no test transactions; pricing/create/send HUMAN",
+  "focused_checks": [
+    {
+      "failures": 0,
+      "network_attempts": 0,
+      "subtests": 59,
+      "tests": 71
+    },
+    {
+      "failures": 0,
+      "network_attempts": 0,
+      "subtests": 23,
+      "tests": 18
+    }
+  ],
+  "forms": {
+    "en": "DEFERRED \u2014 native HTTP200 thank-you; notification unobserved; not eligible for real scope",
+    "fr": "PASS \u2014 browser submission/authenticated receipt/central Lead+Task",
+    "owner_exception": "controlled soumissions mailbox and native subject permitted for two tests; auto-replies OFF"
+  },
+  "mail_test_sends": 2,
+  "native_books_test_customer_sync": 1,
+  "native_legacy_workflows": "3 disabled; definitions preserved",
+  "next": "PHASE 17 authorized by mission; no real scope activated by this checkpoint",
+  "phase16": "PASS",
+  "protected": {
+    "calls": 7,
+    "missing": 0,
+    "modified": 0,
+    "modules": {
+      "Accounts": {
+        "missing": 0,
+        "modified": 0,
+        "records": 41,
+        "test_spoof": 0
+      },
+      "Contacts": {
+        "missing": 0,
+        "modified": 0,
+        "records": 45,
+        "test_spoof": 0
+      },
+      "Deals": {
+        "missing": 0,
+        "modified": 0,
+        "records": 1,
+        "test_spoof": 0
+      },
+      "Leads": {
+        "missing": 0,
+        "modified": 0,
+        "records": 11,
+        "test_spoof": 0
+      },
+      "Service_Locations": {
+        "missing": 0,
+        "modified": 0,
+        "records": 12,
+        "test_spoof": 0
+      },
+      "Services": {
+        "missing": 0,
+        "modified": 0,
+        "records": 12,
+        "test_spoof": 0
+      },
+      "Tasks": {
+        "missing": 0,
+        "modified": 0,
+        "records": 1,
+        "test_spoof": 0
+      }
+    },
+    "records": 123,
+    "test_spoof": 0,
+    "unchanged": true
+  },
+  "real_financial_writes": 0,
+  "run": "phase16-20261002-lifecycle-v1",
+  "safety_critical_failures": 0,
+  "scenarios": {
+    "A": "PASS",
+    "B": "PASS",
+    "C": "PASS"
+  },
+  "schema": 1,
+  "sign": "DEFERRED \u2014 NON-CRITICAL: provider API license code 12000; no request/send; local preparation only",
+  "test_metric_exclusion": "PASS",
+  "unauthorized_customer_sends": 0,
+  "workdrive": "PASS"
+}

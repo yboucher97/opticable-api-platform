@@ -1,10 +1,10 @@
 # Opticable Automation Master Runbook
 
-AUTHORITATIVE CURRENT. API `1.12.0`. This is the operating contract; [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) establishes precedence. [Operator](OPTIBRAIN_OPERATOR_GUIDE.md), [deployment](OPTIBRAIN_DEPLOYMENT_GUIDE.md) and [recovery](OPTIBRAIN_RECOVERY_GUIDE.md) are the only current procedures for those tasks. Historical phase instructions cannot override them.
+AUTHORITATIVE CURRENT. API `1.13.0`. This is the operating contract; [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) establishes precedence. [Operator](OPTIBRAIN_OPERATOR_GUIDE.md), [deployment](OPTIBRAIN_DEPLOYMENT_GUIDE.md) and [recovery](OPTIBRAIN_RECOVERY_GUIDE.md) are the only current procedures for those tasks. Historical phase instructions cannot override them.
 
 ## Standing safety state
 
-123 protected records READ ONLY; protected mutations/customer sends/Books writes 0. Real and TEST automatic business writes OFF. `REAL_CANARY_ALLOWED=false`. Persistent development worker OFF; six retired units masked/inactive. Native French/English Forms CRM integrations DISABLED under owner-admin confirmation; supported APIs cannot read that native setting. Fallback enrichment OFF. Connector/Omada/PDF/WorkDrive/legacy Mail/Sign contained; Books write transport denied. Root kill, fail-closed auth, exact ownership, immutable execution evidence, state-loss/stale-journal reconciliation and independent off-host claims are mandatory.
+123 protected records READ ONLY; protected mutations/customer sends/Books writes 0. Broad real and TEST automatic business writes OFF; only the [scoped new-record internal family](OPTIBRAIN_REAL_AUTOMATION_SCOPE.md) may be active under the current owner mission. `REAL_CANARY_ALLOWED=false`. Persistent development worker OFF; six retired units masked/inactive. Native French/English Forms CRM integrations DISABLED under owner-admin confirmation; supported APIs cannot read that native setting. Fallback enrichment OFF. Connector/Omada/PDF/WorkDrive/legacy Mail/Sign contained; Books write transport denied. Root kill, fail-closed auth, exact ownership, immutable execution evidence, state-loss/stale-journal reconciliation and independent off-host claims are mandatory.
 
 The current manual mission defines engineering scope. Workflow enabled state, an old approval, a successful API response or credential scope never grants provider-write authority. No current document authorizes a real canary or customer action. [Safety controls](OPTIBRAIN-SAFETY-INVARIANTS.md) apply to every host.
 
@@ -15,7 +15,7 @@ Owner home: **https://optibrain.opticable.ca/v1/operator/today**. Use the ownerâ
 ```bash
 curl -fsS http://127.0.0.1:8100/v1/system/health
 sudo optibrain-admin scheduler  # backup/upload pair only
-sudo systemctl list-timers --all optibrain-backup.timer optibrain-phase2a-upload.timer opticable-phase9-intake-receipts.timer opticable-phase10-service-events.timer opticable-phase12-test-runner.timer --no-pager
+sudo systemctl list-timers --all optibrain-backup.timer optibrain-phase2a-upload.timer opticable-phase9-intake-receipts.timer opticable-phase10-service-events.timer opticable-phase12-test-runner.timer opticable-lifecycle-internal.timer --no-pager
 sudo optibrain-admin capacity
 sudo optibrain-admin verify-latest
 sudo cat /run/optibrain-readiness/status.json

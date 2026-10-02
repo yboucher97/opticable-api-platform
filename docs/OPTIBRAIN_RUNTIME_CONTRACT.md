@@ -1,6 +1,6 @@
 # Runtime, network and health contract
 
-AUTHORITATIVE CURRENT. Units/proxy reconstruction source: [ops/phase15](../ops/phase15/). [Configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) defines precedence; [state](OPTIBRAIN_STATE_CONTRACT.md) defines stores. Four long-running services, five application timer/oneshot pairs. Six retired engineering units masked/inactive. Current services/timers are read from systemd, not inferred from Git.
+AUTHORITATIVE CURRENT. Units/proxy reconstruction source: [ops/phase15](../ops/phase15/). [Configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) defines precedence; [state](OPTIBRAIN_STATE_CONTRACT.md) defines stores. Four long-running services, six application timer/oneshot pairs. Six retired engineering units masked/inactive. Current services/timers are read from systemd, not inferred from Git.
 
 ## Services
 
@@ -64,3 +64,7 @@ No unexplained listener. Public firewall permits TCP22/80/443; app ports remain 
 Runtime samples older than90min are UNKNOWN. Timer deadlines: backup/upload48h, receipts15min, services150min, runner90min. Local/off-host backup readiness uses36h. Disk warn80%, action90%. Staging warn15GiB/action25GiB; active DBs128/512MiB; app diagnostic logs64/128MiB; system journal576/640MiB allows active-file overhead above its512MiB cap. Application rotates5×5MiB, journal max90d. Business evidence is not log retention.
 
 Queue backlog: DLQ>0 or active message age>30min = ACTION REQUIRED; active count>100 = DEGRADED; fresh empty/within-bound active queues = OK; absent/malformed/stale sample = UNKNOWN. Sampling never pulls/acknowledges/replays messages. Source: [Cloudflare GET queue metrics](https://developers.cloudflare.com/api/resources/queues/methods/get_metrics/). First observed DLQ129 is retained delivery work, not a Phase15 provider mutation.
+
+## Scoped internal lifecycle
+
+`opticable-lifecycle-internal.service` / `.timer`: root, every five minutes after completion (±20s), 300s timeout, no automatic restart. Inputs: private connector export, authenticated French Forms Mail, native CRM UI timeline and Finance/Books GETs. Outputs: individually allowed new-record CRM/WorkDrive effects plus root evidence and read-only Today projection. No Mail/Sign send, Books write, OVH action, price or schedule. Root source is an immutable exact-SHA tree under `/opt/optibrain-releases/SHA/source`; launcher verifies every Python file before import. Fixed root env references use existing provider credentials, never logging values. Root FLOCK; 12 effects/160 reads per cycle and initial 20 new-Lead verification bound. Live mutation policy rechecked before transport; HOLD or stale/missing authority blocks writes. Replacement hosts mask service/timer until recovery/reconciliation and exact scope activation. Canonical definitions live beside the other units; no new listener. Backup root lifecycle evidence/authority, preserve off-host claims. See [scope](OPTIBRAIN_REAL_AUTOMATION_SCOPE.md).

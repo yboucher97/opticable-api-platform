@@ -21,14 +21,12 @@
     "HISTORICAL EVIDENCE"
   ],
   "counts": {
-    "AUTHORITATIVE CURRENT": 11,
-    "RECOVERY": 1,
-    "SECURITY / CONTROL": 1,
-    "AUDIT EVIDENCE": 70,
-    "HISTORICAL": 48,
     "SUPERSEDED": 9,
-    "OBSOLETE": 0,
-    "UNKNOWN": 0
+    "HISTORICAL": 48,
+    "SECURITY / CONTROL": 1,
+    "AUTHORITATIVE CURRENT": 15,
+    "AUDIT EVIDENCE": 72,
+    "RECOVERY": 1
   },
   "documents": [
     {
@@ -1010,6 +1008,48 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_FINANCE_INTEGRATION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
+    },
+    {
+      "path": "docs/OPTIBRAIN_TEST_LAB_RUNBOOK.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
+    },
+    {
+      "path": "docs/OPTIBRAIN_LIFECYCLE_AUTOMATION_MATRIX.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
+    },
+    {
+      "path": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
+    },
+    {
+      "path": "docs/phase16-checkpoint.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
+      "purpose": "Durable bounded mission evidence; no operational authority"
+    },
+    {
+      "path": "docs/phase16-checkpoint.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
+      "purpose": "Durable bounded mission evidence; no operational authority"
     }
   ]
 }

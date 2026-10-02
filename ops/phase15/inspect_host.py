@@ -42,6 +42,9 @@ def inspect(protected=False, ovh=False):
     value['release'] = json.loads(Path('/var/lib/optibrain/releases/current.json').read_text())
     value['policy'] = json.loads(Path('/etc/optibrain/mutation-control.json').read_text())
     value['automatic_mutations'] = Policy.from_environment().automatic_mutations
+    scoped=value['policy'].get('lifecycle',{})
+    value['internal_scopes']={'enabled':scoped.get('enabled',False),'scopes':scoped.get('real_scopes',[]),
+        'activated_at':scoped.get('activated_at'),'expires_at':scoped.get('expires_at')}
     value['development_authorization'] = Path('/etc/optibrain/authorize-persistent-codex-development').exists()
     value['endpoints'] = {}
     for name, route in [('health','/v1/system/health'), ('readiness','/v1/system/readiness')]:
@@ -51,7 +54,8 @@ def inspect(protected=False, ovh=False):
             value['endpoints'][name] = json.load(response)
     units = ('opticable-workflow-api.service','opticable-password-pdf.service','opticable-omada-site.service','caddy.service',
              'optibrain-backup.timer','optibrain-phase2a-upload.timer','opticable-phase9-intake-receipts.timer',
-             'opticable-phase10-service-events.timer','opticable-phase12-test-runner.timer')
+             'opticable-phase10-service-events.timer','opticable-phase12-test-runner.timer',
+             'opticable-lifecycle-internal.timer','opticable-lifecycle-internal.service')
     units += tuple(f'optibrain-agent-{n}.{k}' for n in ('dispatch','status','usage') for k in ('service','timer'))
     value['units'] = {u: dict(line.split('=',1) for line in run('systemctl','show',u,'-p','ActiveState',
         '-p','UnitFileState','-p','Result','-p','ExecMainStatus').splitlines() if '=' in line) for u in units}

@@ -75,7 +75,7 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
     ledger = CrmCanaryApprovalLedger(store)
     outbound_ledger = OutboundApprovalLedger(store)
     business_journal = BusinessJournal(Path(store.db_path).with_name("phase12-autonomy.db"))
-    from .automation.today import TodaySources,build_today,render_today,render_system_health
+    from .automation.today import TodaySources,build_today,render_today,render_system_health,read_internal_attention
     today_sources=TodaySources(client,Path(store.db_path),account_id,from_address)
     def system_health():
         return readiness() if readiness else {'state':'UNKNOWN','signals':[{
@@ -126,7 +126,7 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
             except (ValueError,LookupError,OSError,ZohoGatewayError):
                 sources[name]={};unavailable.append(name.title())
         return build_today(sources['sales'],sources['lifecycle'],sources['operations'],
-                           business_journal.view(),system_health(),now=instant,unavailable=unavailable)
+                           business_journal.view(),system_health(),now=instant,unavailable=unavailable,internal=read_internal_attention(instant))
 
     @app.get('/v1/operator',response_class=HTMLResponse,tags=['operator'])
     @app.get('/v1/operator/today',response_class=HTMLResponse,tags=['operator'])

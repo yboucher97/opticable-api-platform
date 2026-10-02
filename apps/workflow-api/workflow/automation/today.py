@@ -4,6 +4,10 @@ from datetime import datetime, timezone
 from html import escape
 from threading import Lock
 from time import monotonic
+import json
+import os
+from pathlib import Path
+import stat
 
 from .business_autonomy import attention_scope
 from .operations import build_operations
@@ -36,7 +40,22 @@ class TodaySources:
             return value
 
 
-def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=()):
+def read_internal_attention(now):
+    """Root-owned display projection; never grants authority or executes actions."""
+    path=Path('/run/optibrain-readiness/lifecycle.json')
+    try:
+        fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW)
+        with os.fdopen(fd) as f:
+            s=os.fstat(f.fileno())
+            if s.st_uid!=0 or s.st_mode&0o022 or not stat.S_ISREG(s.st_mode) or s.st_size>262144:return None
+            value=json.load(f)
+        at=datetime.fromisoformat(value['at'])
+        if at.tzinfo is None or not 0<=(now-at).total_seconds()<=900:return None
+        if value.get('schema')!=1 or value.get('scope')!='live' or value.get('read_only') is not True:return None
+        return value
+    except (OSError,ValueError,KeyError,TypeError):return None
+
+def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None):
     now=now or datetime.now(timezone.utc)
     sections={name:[] for name in CATEGORIES}
     def add(category,context,why,next_action,source,link,*,priority='MEDIUM',due=None,freshness=None):
@@ -86,6 +105,14 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
             'Reconcile exact evidence before any retry' if row['state']=='reconcile' else 'Review the existing action evidence',
             'Immutable action journal',LINKS[category.lower()],priority='HIGH',freshness=row.get('updated_at'))
     signals=[r for r in readiness.get('signals',[]) if r['state']!='OK']
+    if internal:
+        if internal.get('scope')!='live' or internal.get('read_only') is not True:raise ValueError('Internal Today projection must be read-only live evidence')
+        for row in internal.get('attention',[]):
+            if row.get('test_only') or 'OPTIBRAIN TEST' in str(row.get('context','')).upper():continue
+            module=row.get('module');identity=str(row.get('identity',''))
+            link='https://crm.zoho.com/crm/org763070937/tab/'+module+'/'+identity if module in {'Leads','Deals','Installations','Tasks'} and identity.isdecimal() else LINKS['health']
+            add('Exceptions' if row.get('priority')=='HIGH' else 'Projects and install work',row.get('context'),row.get('why'),row.get('next_action'),'Scoped internal lifecycle',link,priority=row.get('priority','MEDIUM'),freshness=internal.get('at'))
+        signals.append({'name':'Internal lifecycle','state':'ACTION REQUIRED' if internal.get('state')=='HOLD' else 'OK','reason':internal.get('state','UNKNOWN')})
     for name in unavailable:
         signals.append(dict(name=name,state='ACTION REQUIRED',reason='Current business evidence unavailable; open its source view'))
     order={'HIGH':0,'MEDIUM':1,'LOW':2}
