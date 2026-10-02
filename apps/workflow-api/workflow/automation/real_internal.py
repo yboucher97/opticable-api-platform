@@ -119,6 +119,12 @@ def conversion_deal(lead,now=None):
         'Stage':'Qualification','Closing_Date':(now+timedelta(days=30)).date().isoformat(),
         'Service_Types':lead.get('Service_Types') or '', 'Description':str(lead.get('Description') or '')[:4000],**fields}
 
+def verify_conversion_identity(module,actual,lead):
+    if module=='Contacts' and email_or_empty(actual.get('Email'))!=email_or_empty(lead.get('Email')):
+        raise UnsafeOutcome('Native conversion Contact email disagrees with qualified inquiry')
+    if module=='Accounts' and lead.get('Company') and folded(actual.get('Account_Name'))!=folded(lead['Company']):
+        raise UnsafeOutcome('Native conversion Account disagrees with qualified inquiry')
+
 class Engine:
     def __init__(self,client,*,dry_run=False):
         if os.geteuid()!=0:raise ValueError('Root orchestrator required')
@@ -311,6 +317,7 @@ class Engine:
                 if set(result)!={'Accounts','Contacts','Deals'}:raise UnsafeOutcome('Native conversion IDs incomplete')
                 for module,prior in [('Accounts',account),('Contacts',contact),('Deals',None)]:
                     actual=self.record(module,result[module])
+                    verify_conversion_identity(module,actual,lead)
                     if prior and actual['id']!=prior['id']:raise UnsafeOutcome('Native reuse returned wrong customer')
                     if prior:
                         metadata={'Modified_Time','Change_Log_Time__s'}
@@ -391,7 +398,7 @@ class Engine:
         plan=accepted_plan(deal.get('Service_Types'),account_id=lineage['account_id'],deal_id=identity,site_id=site_id)
         if plan['decision']!='PREPARE_INTERNAL' or any(s['type']=='Other' for s in plan.get('services',[])):
             raise HumanAttention('Accepted Services require owner-confirmed deterministic catalog mapping')
-        if deal.get('Stage') not in {'Closed Lost','Estimate Rejected','Closed Lost to Competition','Closed Won'}:
+        if deal.get('Stage') in {'Qualification','Value Proposition','Needs Analysis','Id. Decision Makers','Proposal/Price Quote','Negotiation/Review'}:
             self.update('accepted-stage:'+identity,'Deals',deal,{'Stage':'Contracts In Progress'})
         existing=self.list('Services');created=[]
         for s in plan['services']:
@@ -400,6 +407,8 @@ class Engine:
                 raise HumanAttention('Existing durable Service: review expansion versus reuse in CRM')
             if matches:
                 service=matches[0]
+                if service.get('Service_Stage') in {'Cancelled','Suspended'}:
+                    raise HumanAttention('Service was suppressed by the owner; review accepted work manually')
                 if service['id'] not in self.ownership['records']:raise HumanAttention('Service has no new-record ownership')
             else:service=self.create('service:'+identity+':'+s['type'],'Services',{'Name':s['label']+' — '+deal['Deal_Name'],
                 'Linked_Service_Location':{'id':site_id},'Linked_Deal':{'id':identity},'Service_Type':s['type'],'Service_Stage':'Ready for Scheduling'})
