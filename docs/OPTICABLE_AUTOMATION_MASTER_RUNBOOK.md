@@ -54,3 +54,5 @@ Root authorization for this runbook's digest comes from the manually initiated P
 ## Recovery evidence limits
 
 [Phase 13 closure](phase13-final-closure.md) proves owner offline decryption/hash/archive readability and prior isolated source/config/eight-DB/mask/application restore. Full replacement OS, live provider reconnect, DNS/TLS cutover and guaranteed RTO remain unproven. Phase 14 improves procedures/tooling without claiming another recovery drill. Recovery always starts with writers OFF, dev units masked, preserved claims/journals and expired old execution/approval authority.
+
+Owner entry: https://optibrain.opticable.ca/v1/operator/today. The existing Cloudflare Access app now protects the operator prefix on this proxied hostname with its unchanged audience, owner/service policies and IdPs; API owner JWT/allowlist checks remain independent. The origin IP and zone TLS setting are unchanged. Source/Access/DNS routing receipts are retained in private Phase14 evidence. Approval POST origin remains its historical root constraint; this read-only home does not extend mutation authority.

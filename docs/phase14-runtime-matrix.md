@@ -65,3 +65,5 @@ The root owner controls safety policy, source-pinned registration and runtime en
 
 
 Fresh Cloudflare GET inventory confirms `*/15 * * * *`, two queues and one durable Workflow. GitHub confirms the single scheduled health monitor and all three business workflows `disabled_manually`. They serve different host/edge delivery and public-health responsibilities; no schedule was removed or reactivated.
+
+Owner routing was revalidated at final closure: legacy Access app `admin.opticable.ca/*` had no public DNS; the canonical Today URL is now `https://optibrain.opticable.ca/v1/operator/today`. The same application/audience/policies/IdPs protect the exact operator prefix. Only the existing optibrain A-record proxy state changed; its origin IP and all other DNS records/settings remain untouched. Edge login redirects and origin 401 denials are independently checked; public health and legacy 403 containment remain healthy. The historical domain is retained.

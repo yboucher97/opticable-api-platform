@@ -1,0 +1,83 @@
+{
+  "statuses": {
+    "/v1/operator/today": {
+      "status": 302,
+      "access_login_redirect": true
+    },
+    "/v1/operator/system-health": {
+      "status": 302,
+      "access_login_redirect": true
+    },
+    "/v1/operator": {
+      "status": 302,
+      "access_login_redirect": true
+    },
+    "/v1/operator/phase12/autonomy": {
+      "status": 302,
+      "access_login_redirect": true
+    },
+    "/v1/system/health": {
+      "status": 200,
+      "access_login_redirect": false
+    },
+    "/pdf/health": {
+      "status": 200,
+      "access_login_redirect": false
+    },
+    "/omada/api/health": {
+      "status": 200,
+      "access_login_redirect": false
+    },
+    "/omada/api/runs": {
+      "status": 403,
+      "access_login_redirect": false
+    },
+    "/jobs/test": {
+      "status": 403,
+      "access_login_redirect": false
+    }
+  },
+  "cloudflare_edge_verified": true,
+  "root_auth_still_fail_closed": true,
+  "service_health_preserved": true,
+  "readiness_state": "DEGRADED",
+  "usage": {
+    "schema": 2,
+    "job": "manual:phase14-operator-edge-proof",
+    "status": "success",
+    "calls": {
+      "crm_get": 0,
+      "crm_write": 0,
+      "mail_get": 0,
+      "mail_mutation": 0,
+      "forms_get": 0,
+      "forms_mutation": 0,
+      "sign_get": 0,
+      "sign_mutation": 0,
+      "books_get": 0,
+      "books_write": 0,
+      "other_zoho": 0,
+      "cloudflare": 1,
+      "github": 0,
+      "r2": 0,
+      "google": 0,
+      "oauth_refresh": 0
+    },
+    "calls_by_method": {
+      "cloudflare::read": 1
+    },
+    "details": {},
+    "outcomes": {
+      "cloudflare::ok": 1
+    },
+    "last_response": {
+      "cloudflare": "ok"
+    },
+    "calls_run": 1,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": false,
+    "duration_ms": 3191
+  }
+}
