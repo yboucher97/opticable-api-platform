@@ -1,0 +1,174 @@
+{
+  "schema": 1,
+  "active_dependency_references": [],
+  "helpers": [
+    {
+      "path": "/usr/local/lib/optibrain/phase10-release-reconcile-80cda79.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase10-release-reconcile-80cda79.py",
+      "before_sha256": "8cf7a04b681a6aec42b92a2c7bafed1090578e490e0e32dae0e03bdd643ce93a",
+      "stub_sha256": "1b9841e17ed6eafbdb4c3aca27c27466a6365d128e6462a984506d3757996697",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase10-release-reconcile-f461e49.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase10-release-reconcile-f461e49.py",
+      "before_sha256": "4443682d245dad7bac86cf668efb0cebeed132c49c2275b2d65b2d8610f17073",
+      "stub_sha256": "447aadfb25a60db57b414392a49bbed621b5dcedd093e4d6276ce00edbd8f06f",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase11-closure-reconcile-b6c7058.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase11-closure-reconcile-b6c7058.py",
+      "before_sha256": "fd149bf56a463cae3897b48e3c18c93906db8eee25c5eb7db745f9c1ed37f25a",
+      "stub_sha256": "6cdf873c21237da0a8748740f842e4cdf14625af6d564f555bcf8fe1b8ece071",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase11-release-reconcile-bd04a99.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase11-release-reconcile-bd04a99.py",
+      "before_sha256": "198c769cce4b3b3da61cb5afe6811a623705b6832fbde033e8ea9937b5b49d6a",
+      "stub_sha256": "728e3261408e22bb3ef6ff36acf5379a2cbe533aa5193b2be990c112688b8c69",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase12-reconcile-823dd55.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase12-reconcile-823dd55.py",
+      "before_sha256": "0a4cc04edc99fe3a3a56a16405f24c5587ef902de919f6bfc4d4d6855f64db90",
+      "stub_sha256": "dc28d130d157507d3016704d42b37e861ae51cd6755efa7e9de14cb30d1e372a",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase7-offset-reconcile.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase7-offset-reconcile.py",
+      "before_sha256": "f9aa884a7512307b50f4f6756b5af2103146649dee01b3c29f5922e32b4075c8",
+      "stub_sha256": "f63cfe2d592c2eb37ae329fa532a415dd834e60069a5dccf1a45cd743cad06b3",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase8-inbox-followup-reconcile.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase8-inbox-followup-reconcile.py",
+      "before_sha256": "0c595ce6b2ad7f75a3ec9e9615689ee19017c25adb1efdf51ccb0b9ce253dc6a",
+      "stub_sha256": "d6c088aed7df8ed25e8f294b96b07a544e6dbf813fcf03b317deea472ceafa9b",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase8-oauth-reconcile.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase8-oauth-reconcile.py",
+      "before_sha256": "d00218f2afbece1568180439b50980d0796c27ac6ea32b5d8bf3352d58c8b7aa",
+      "stub_sha256": "f80d369464a31f0d85149907c392819f5f2cb0d5af68afc32b72bf688b2cb761",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase8-reply-closure-reconcile.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase8-reply-closure-reconcile.py",
+      "before_sha256": "c0bf47c3c7871e5516b348b83d2cd34b27c5ba53202938cb94976ac22de2d856",
+      "stub_sha256": "e51ed6dfc5a5ae39856cef72ffded7790870cbe6564b4300539d8b35c7d10db2",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase8-sales-queue-reconcile.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase8-sales-queue-reconcile.py",
+      "before_sha256": "bdcdf32bec61d86caedcb03b879a4e085e53f075d357409df578b6526f14a76c",
+      "stub_sha256": "02f1ede9e34e7bb3a04cafc5c46cb20f0f92ee99f3bd2c1153eb0f8b47817c6c",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase8-sales-view-history-reconcile.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase8-sales-view-history-reconcile.py",
+      "before_sha256": "ac3bc30ac8b9e8d100bef83c30d4ddc94cfec89a07a44fbfbbc09fbe71c02775",
+      "stub_sha256": "0b698e53bfa35d034e979e58050cf61f3c3f8075625a5140cfa248a5867f6c7d",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase8-sales-view-reconcile.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase8-sales-view-reconcile.py",
+      "before_sha256": "297c1b22c28f694f7c8031fe5f64fe2d9a68c2465b9533cc6956077cecf6042d",
+      "stub_sha256": "e536b05a594c2b32d1d54435eab71d1729a45d93eee4e606f7afc45ed056e763",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase8-task-relation-reconcile.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase8-task-relation-reconcile.py",
+      "before_sha256": "93480a78f3175ba471410ad5a68583ba9cf4e950dd7d6651ba132769125ae2e0",
+      "stub_sha256": "966a96f36d233b5f8f6f2e0eb692263b2659e6d7f9185bb57e5e0576e61a9250",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase8-test-lab-draft-fix-reconcile.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase8-test-lab-draft-fix-reconcile.py",
+      "before_sha256": "9c2da143804a632303e263e9c817bfe89f8c15ac8c762f58884c3ef6b0b1d5a6",
+      "stub_sha256": "bb60813b02454fceca1b3b246300d400dbbad51c6a8663ddc7462ec6f63c2ab7",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase8-test-lab-reconcile.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase8-test-lab-reconcile.py",
+      "before_sha256": "38267406755ba0c21436e803ddb6c46b4dbd83473349d19a1fd32a406618d4b2",
+      "stub_sha256": "7b0cf2a7f8985d9b965cae93b74a6c766a4d5db6f0142c2c04920007986f0ae8",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase9-release-reconcile-060bba7.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase9-release-reconcile-060bba7.py",
+      "before_sha256": "15bd96303411239f0ca240df266f0ca84d2cc3925e6dc44adaf8aeef107e84c6",
+      "stub_sha256": "cab180d7e04c96aae0cc33672b5613e503d3608396e3db9252303620a200d356",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase9-release-reconcile-267d91e.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase9-release-reconcile-267d91e.py",
+      "before_sha256": "08a87f13380d33d104d29282916acb1217d0dc739d89f842e283c06c55b66479",
+      "stub_sha256": "b714743a05529a2b45781ef365407bd3dc29e5d791ecc810d20f1394599174e5",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase9-release-reconcile-5ed29f7.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase9-release-reconcile-5ed29f7.py",
+      "before_sha256": "377df1ac7c45f19fe50e15fe5ebf6e529b21a0d0cc5f8014579dbdd6e1a7e020",
+      "stub_sha256": "e3797e8d9c372c66f6898cd185eecaba21a64217b77d402e9119a7ad81ac0529",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase9-release-reconcile-9135350.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase9-release-reconcile-9135350.py",
+      "before_sha256": "8ad4a233b5412bbc5fb0b44be91ffceff08c29e2bbf5013315699ab4ffc117e8",
+      "stub_sha256": "6421f9f05ccf8cd72f04a1aa471abeb8c36dc8dfb5db8a61ae921311499c41d5",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/lib/optibrain/phase9-release-reconcile-92ab65c.py",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/phase9-release-reconcile-92ab65c.py",
+      "before_sha256": "e3683f76b9c5daa32372897e9ceb32413cf8ccde20913fb08e537607113894a8",
+      "stub_sha256": "e770e7a178199ef39e3410f4aadf2db67162e88cb155cfa44864660da6ab3d7a",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/sbin/optibrain-phase6-release-loader",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/optibrain-phase6-release-loader",
+      "before_sha256": "aeaa7272371e1d762090e68560c8cee59bf4b933766c69d13f3815e58bf32b1c",
+      "stub_sha256": "a7aeb03afb154ee7a7dbac9160101222848d92dfed5eafff7f58aadad07b4969",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/sbin/opticable-api-deploy-root-phase6",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/opticable-api-deploy-root-phase6",
+      "before_sha256": "00fc9a5bbbd95d7a65e77e13b409541859c801ebe59bf1a9717bbcffba759cdb",
+      "stub_sha256": "935acd5278767b091957164887457a4f5b0e6e7ffa8d440ff9bd184db7c7405e",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/sbin/opticable-api-deploy-root.before-phase10",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/opticable-api-deploy-root.before-phase10",
+      "before_sha256": "f69590322c500bdebafaaf09b5030880c67fedeb96bd7f01017cf3ce1a5c9864",
+      "stub_sha256": "ac8f93f3045fda0fd5f777f3113c1c9861c12b1ca33da7a208a887e570a40724",
+      "decision": "ARCHIVED; direct execution refused"
+    },
+    {
+      "path": "/usr/local/sbin/opticable-api-deploy-root.phase10-service-before",
+      "archived_source": "/var/lib/optibrain/phase14/retired-release-helpers/opticable-api-deploy-root.phase10-service-before",
+      "before_sha256": "4d57be03216d85d763fd933f2ec314513b7fa71a616e66a64dc0a44a6c491771",
+      "stub_sha256": "40ed86a5cd76a8deb8405c51e8aade4e6af6d82a61a8df88022bac55e7af0912",
+      "decision": "ARCHIVED; direct execution refused"
+    }
+  ]
+}

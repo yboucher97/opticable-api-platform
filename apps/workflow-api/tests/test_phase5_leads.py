@@ -17,6 +17,7 @@ from workflow.automation.crm_delta import CrmLeadDeltaAdapter
 from workflow.automation.delta_sync import DeltaSync, SyncFailure
 from workflow.automation.engine import AutomationEngine
 from workflow.automation.events import EventLedger
+from workflow.automation.event_schema import digest
 from workflow.automation.models import AutomationEvent, WorkflowDefinition, WorkflowStep
 from workflow.automation.providers.crm_leads import lead_plan, register_crm_lead_actions
 from workflow.automation.store import AutomationStore
@@ -82,6 +83,48 @@ class LeadEventTests(unittest.TestCase):
 
     def drain(self):
         for _ in range(3): self.engine.recover_pending(limit=10)
+
+    def observe(self, hint):
+        return self.engine._actions["crm.lead.observe"]({"event": hint.model_dump(mode="json")}, None)
+
+    def test_same_version_at_different_observation_times_reuses_immutable_review(self):
+        hint = self.hint()
+        hint.occurred_at = "2026-09-28T14:00:00Z"
+        first = self.observe(hint)["review_event_ids"][0]
+        original = self.ledger.inspect(first)["envelope"]
+        later = self.hint("later")
+        later.occurred_at = "2026-10-02T14:00:00Z"
+        self.assertEqual(self.observe(later)["review_event_ids"], [first])
+        self.assertEqual(self.ledger.inspect(first)["envelope"], original)
+        self.assertEqual(len(self.ledger.list_events(limit=20)), 1)
+        self.assertEqual(len([a for a in self.store.recent_audit() if a["category"] == "crm_lead_review"]), 1)
+        self.assertFalse(self.fake.writes)
+
+    def test_legacy_review_is_reused_without_payload_upgrade(self):
+        version = lead_plan(self.fake.lead)["version"]
+        legacy = AutomationEvent(event_type="opticable.crm.lead.reviewed", source="crm-lead-observer",
+            source_account="org-fixture", provider_event_id=digest(["123", version]),
+            subject_type="Leads", subject_id="123",
+            payload={"lead_id": "123", "version": version})
+        accepted, identity, _ = self.ledger.capture(legacy)
+        self.assertTrue(accepted)
+        before = self.ledger.inspect(identity)["envelope"]
+        self.assertEqual(self.observe(self.hint())["review_event_ids"], [identity])
+        self.assertEqual(self.ledger.inspect(identity)["envelope"], before)
+        self.assertNotIn("sales_decision", before["payload"])
+        self.assertFalse(self.fake.writes)
+
+    def test_same_version_changed_fields_fail_closed_and_new_version_is_discovered(self):
+        original = self.observe(self.hint())["review_event_ids"][0]
+        self.fake.lead["City"] = "Ottawa"
+        with self.assertRaisesRegex(ValueError, "without a new provider version"):
+            self.observe(self.hint("changed"))
+        self.assertEqual(len(self.ledger.list_events(limit=20)), 1)
+        self.fake.lead["Modified_Time"] = "2026-10-02T14:00:00Z"
+        new = self.observe(self.hint("new-version"))["review_event_ids"][0]
+        self.assertNotEqual(new, original)
+        self.assertEqual(len(self.ledger.list_events(limit=20)), 2)
+        self.assertFalse(self.fake.writes)
 
     def test_normalization_preserves_attribution_and_relationships(self):
         plan = lead_plan(self.fake.lead, now=datetime(2026, 9, 28, tzinfo=timezone.utc))

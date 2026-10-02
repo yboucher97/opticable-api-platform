@@ -36,7 +36,7 @@ class TodayTests(unittest.TestCase):
         self.assertEqual(view['attention_count'],2)
         rendered=render_today(view)
         self.assertNotIn('<script>',rendered);self.assertIn('&lt;script&gt;',rendered)
-        self.assertIn('/v1/operator/phase8/sales-view/1',rendered)
+        self.assertIn('/v1/operator/phase8/sales-queue#lead-1',rendered)
         self.assertIn('Fresh fixture time',rendered);self.assertNotIn('<form',rendered)
         with self.assertRaisesRegex(ValueError,'live'):build_today({'scope':'lab'}, {}, {},{}, {'signals':[]})
     def test_display_cache_preserves_source_time_and_does_not_cache_failed_reads(self):

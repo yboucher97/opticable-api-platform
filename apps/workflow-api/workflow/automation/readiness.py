@@ -47,10 +47,28 @@ def provider_read_signal(directory, name, kind, now, max_age):
         return signal(name, 'UNKNOWN', 'No measured provider read yet')
     at, summary = latest
     age = age_seconds(at, now)
-    failed = summary.get('status')!='success' or summary.get('outcomes', {}).get(kind+'::failed', 0)>0
+    failed = summary.get('status')!='success' or summary.get('last_response',{}).get(kind)=='failed'
     state = 'ACTION REQUIRED' if failed else 'DEGRADED' if age is None or age>max_age else 'OK'
     return signal(name, state, 'Last observed read failed' if failed else
                   'Last observed read is stale' if state!='OK' else 'Recent read succeeded', at=at, age_seconds=age)
+
+
+def usage_anomalies(directory,now):
+    recent={}
+    for path in sorted(directory.glob('*.db')):
+        try:
+            with readonly(path) as db:
+                rows=db.execute('SELECT recorded_at,summary_json FROM provider_usage ORDER BY id DESC LIMIT 300').fetchall()
+            for row in rows:
+                age=age_seconds(row['recorded_at'],now)
+                if age is None or age>7200:continue
+                value=json.loads(row['summary_json']);job=value['job']
+                if value.get('schema')!=2:continue
+                recent.setdefault(job,[]).append((row['recorded_at'],value.get('budget_exceeded',False)))
+        except (OSError,sqlite3.Error,ValueError,KeyError,TypeError):continue
+    count=sum(len(values)>=2 and all(flag for _,flag in sorted(values,reverse=True)[:2]) for values in recent.values())
+    return signal('Provider call anomalies','DEGRADED' if count else 'OK',
+                  'Repeated soft-budget excess requires review' if count else 'No repeated recent soft-budget excess',jobs_over_budget=count)
 
 
 def build_readiness(store, native, *, api_version, auth_configured, runtime_path=RUNTIME, now=None):
@@ -61,6 +79,7 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
     directory = Path(store.db_path).parent
     rows.extend([provider_read_signal(directory,'CRM reads','crm_get',now,7200),
                  provider_read_signal(directory,'Mail reads','mail_get',now,7200)])
+    rows.append(usage_anomalies(directory,now))
     try:
         with readonly(store.db_path) as db:
             checkpoints = db.execute('SELECT status,last_error,last_success_at FROM automation_sync_checkpoints').fetchall()
@@ -74,12 +93,23 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
                                'Observation is stale' if stale else 'Incremental observation is current',
                                checkpoint_count=len(checkpoints), failed_count=sum(c['status'] in {'failed','resync_required'} for c in checkpoints)))
         health = store.execution_health()
-        blocked = sum(health.get(k,0) for k in ('stale_queued','stale_running','expired_leases','dead_letter','failed'))
+        try:
+            sample=json.loads(Path(runtime_path).read_text())
+            sample_age=age_seconds(sample.get('captured_at'),now)
+            ids=sample.get('resolved_read_only_run_ids',[]) if sample.get('schema')==1 and sample_age is not None and sample_age<=5400 else []
+            resolved=0
+            if isinstance(ids,list) and 0<len(ids)<=20 and all(isinstance(i,str) for i in ids) and len(set(ids))==len(ids):
+                with readonly(store.db_path) as db:
+                    resolved=db.execute("SELECT COUNT(DISTINCT r.run_id) FROM automation_runs r JOIN automation_run_steps s ON s.run_id=r.run_id "
+                        "WHERE r.status='failed' AND r.workflow_id='opticable.crm.lead-observe' AND s.action='crm.lead.observe' "
+                        "AND s.error='EventConflict' AND r.run_id IN ("+','.join('?' for _ in ids)+')',ids).fetchone()[0]
+        except (OSError,ValueError,TypeError):resolved=0
+        blocked = sum(health.get(k,0) for k in ('stale_queued','stale_running','expired_leases','dead_letter','failed'))-resolved
         rows.append(signal('Queue','ACTION REQUIRED' if blocked else 'OK',
                            'Work requires reconciliation' if blocked else 'No stale or failed queued work',
                            queued=health.get('queued',0),running=health.get('running',0),blocked=blocked))
         rows.append(signal('Retained exceptions','OK','Retained runs are separate from current business attention',
-                           retained_human_review=health.get('human_action_required',0)))
+                           retained_human_review=health.get('human_action_required',0),reconciled_read_only_failures=resolved))
     except (OSError,sqlite3.Error):
         rows.extend([signal('Delta checkpoint','UNKNOWN','Checkpoint unavailable'),signal('Queue','UNKNOWN','Queue state unavailable')])
     status = native.get('native_subscription_status','unconfigured')

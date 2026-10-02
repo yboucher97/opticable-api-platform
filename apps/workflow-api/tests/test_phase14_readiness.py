@@ -55,6 +55,27 @@ class ReadinessTests(unittest.TestCase):
     def test_usage_without_store_keeps_in_memory_observation(self):
         with ProviderUsage(None,'fixture') as usage:record_call('sign','GET','/fixture')
         self.assertEqual(usage.summary['calls']['sign_get'],1)
+    def test_successful_single_read_retry_keeps_failed_attempt_without_false_failure(self):
+        with ProviderUsage(None,'fixture') as usage:
+            record_call('zohoapis','GET','/crm/v8/Leads');record_response('zohoapis','GET','/crm/v8/Leads',401)
+            record_call('zohoapis','GET','/crm/v8/Leads');record_response('zohoapis','GET','/crm/v8/Leads',200)
+        self.assertEqual(usage.summary['calls']['crm_get'],2)
+        self.assertEqual(usage.summary['outcomes']['crm_get::failed'],1);self.assertEqual(usage.summary['status'],'success')
+    def test_read_only_acknowledgement_cannot_hide_unrelated_or_new_failures(self):
+        with sqlite3.connect(self.store.db_path) as db:
+            for identity,workflow,error in [('known','opticable.crm.lead-observe','EventConflict'),('other','opticable.crm.lead-reconcile','EventConflict')]:
+                db.execute('INSERT INTO automation_runs(run_id,workflow_id,event_id,correlation_id,status,created_at) VALUES(?,?,?,?,?,?)',
+                           (identity,workflow,'fixture','fixture','failed',NOW.isoformat()))
+                db.execute('INSERT INTO automation_run_steps(run_id,step_id,action,attempt,status,started_at,error) VALUES(?,?,?,?,?,?,?)',
+                           (identity,'fixture','crm.lead.observe',1,'failed',NOW.isoformat(),error))
+        sample=dict(schema=1,captured_at=NOW.isoformat(),signals=[],resolved_read_only_run_ids=['known','other'])
+        (self.root/'runtime.json').write_text(json.dumps(sample))
+        by={s['name']:s for s in self.summary()['signals']}
+        self.assertEqual(by['Queue']['blocked'],1);self.assertEqual(by['Queue']['state'],'ACTION REQUIRED')
+        self.assertEqual(by['Retained exceptions']['reconciled_read_only_failures'],1)
+        sample['captured_at']=(NOW-timedelta(hours=2)).isoformat()
+        (self.root/'runtime.json').write_text(json.dumps(sample))
+        self.assertEqual(next(s for s in self.summary()['signals'] if s['name']=='Queue')['blocked'],2)
 
 
 if __name__=='__main__':unittest.main()

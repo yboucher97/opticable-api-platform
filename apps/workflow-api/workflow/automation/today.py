@@ -9,6 +9,7 @@ from .business_autonomy import attention_scope
 from .operations import build_operations
 from .read_inventory_cache import build_lifecycle_display
 from .sales_queue import build_sales_queue
+from .sales_operator_view import CONTROLLED_LEAD_ID
 
 CATEGORIES=('Leads needing response','Follow-ups due','Quote-ready opportunities',
             'Projects and install work','Maintenance and renewal','Exceptions','Approvals')
@@ -48,7 +49,8 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
         if row.get('test_only') or str(row.get('name','')).startswith('OPTIBRAIN TEST'):continue
         context=row.get('name') or row.get('company') or 'Lead needing review'
         identity=str(row.get('id',''))
-        link='/v1/operator/phase8/sales-view/'+identity if identity.isdecimal() else LINKS['sales']
+        link=('/v1/operator/phase8/sales-view/'+identity if identity==CONTROLLED_LEAD_ID
+              else LINKS['sales']+'#lead-'+identity if identity.isdecimal() else LINKS['sales'])
         details=dict(priority=row.get('priority','MEDIUM'),due=row.get('deadline'),freshness=sales.get('read_at'))
         if row.get('reply') in {'REPLIED','REPLIED — NEEDS RESPONSE'} or row.get('followup')=='REPLIED — REVIEW RESPONSE':
             category='Leads needing response'

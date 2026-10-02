@@ -44,6 +44,7 @@ def record_response(provider,method,path,status):
     with scope.lock:
         key=call_kind(provider,method,path)
         scope.outcomes[key+('::ok' if 200<=status<300 or status==304 else '::failed')]+=1
+        scope.last_response[key]='ok' if 200<=status<300 or status==304 else 'failed'
 
 def mail_observation_failed(count):
     scope=CURRENT.get()
@@ -68,15 +69,15 @@ class ProviderUsage:
         if not re.fullmatch(r'[A-Za-z0-9_.:-]{1,100}',job):raise ValueError('Invalid metric job name')
         self.db_path,self.job,self.runs_per_day,self.soft_budget=db_path,job,runs_per_day,soft_budget
         self.persist_empty=persist_empty
-        self.counts=Counter();self.methods=Counter();self.details=Counter();self.outcomes=Counter()
+        self.counts=Counter();self.methods=Counter();self.details=Counter();self.outcomes=Counter();self.last_response={}
         self.lock=Lock();self.started=monotonic();self.summary=None
     def __enter__(self):
         self.token=CURRENT.set(self);return self
     def __exit__(self,kind,value,tb):
         CURRENT.reset(self.token)
         counts={k:self.counts[k] for k in KINDS};total=sum(counts.values())
-        self.summary={'schema':2,'job':self.job,'status':'failed' if kind or self.details['mail_observation_failed'] or any(k.endswith('::failed') for k in self.outcomes) else 'success','calls':counts,
-            'calls_by_method':dict(self.methods),'details':dict(self.details),'outcomes':dict(self.outcomes),
+        self.summary={'schema':2,'job':self.job,'status':'failed' if kind or self.details['mail_observation_failed'] or 'failed' in self.last_response.values() else 'success','calls':counts,
+            'calls_by_method':dict(self.methods),'details':dict(self.details),'outcomes':dict(self.outcomes),'last_response':self.last_response,
             'calls_run':total,'calls_hour_estimate':total*self.runs_per_day/24,
             'calls_day_estimate':total*self.runs_per_day,'soft_budget':self.soft_budget,
             'budget_exceeded':total>self.soft_budget,'duration_ms':int((monotonic()-self.started)*1000)}

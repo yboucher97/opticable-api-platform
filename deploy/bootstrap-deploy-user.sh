@@ -13,8 +13,8 @@ fail() {
 }
 
 [[ "${EUID}" -eq 0 ]] || fail "Run as root."
-[[ -f "$(dirname "${BASH_SOURCE[0]}")/production-root-command.sh" ]] \
-  || fail "Use the complete reviewed deployment source bundle; production-root-command.sh is required."
+[[ -f "$(dirname "${BASH_SOURCE[0]}")/manual-guarded-release.py" ]] \
+  || fail "Use the complete reviewed source bundle; manual-guarded-release.py is required."
 [[ -n "${DEPLOY_PUBLIC_KEY}" ]] || fail "Provide the dedicated deploy PUBLIC key as the first argument or OPTICABLE_DEPLOY_PUBLIC_KEY."
 [[ "${DEPLOY_PUBLIC_KEY}" =~ ^(ssh-ed25519|ecdsa-sha2-nistp256|sk-ssh-ed25519@openssh.com)[[:space:]] ]] \
   || fail "Deploy public key must be an SSH public key."
@@ -38,7 +38,7 @@ sha="${BASH_REMATCH[1]}"
 exec /usr/bin/sudo -n /usr/local/sbin/opticable-api-deploy-root "${sha}"
 EOF
 
-install -m 755 "$(dirname "${BASH_SOURCE[0]}")/production-root-command.sh" "${ROOT_WRAPPER}"
+install -m 755 "$(dirname "${BASH_SOURCE[0]}")/manual-guarded-release.py" "${ROOT_WRAPPER}"
 
 chown root:root "${COMMAND_WRAPPER}" "${ROOT_WRAPPER}"
 chmod 755 "${COMMAND_WRAPPER}" "${ROOT_WRAPPER}"

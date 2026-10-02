@@ -1,0 +1,50 @@
+[
+  {
+    "path": "/var/lib/optibrain/phase10/test-lab/lifecycle-events.db",
+    "bytes": 12288,
+    "integrity": "ok",
+    "user_version": 0
+  },
+  {
+    "path": "/var/lib/optibrain/phase9/closure/phase9-intake.before-permission-fix.db",
+    "bytes": 28672,
+    "integrity": "ok",
+    "user_version": 0
+  },
+  {
+    "path": "/var/lib/optibrain/phase9/mission2/form-receipts-stage.db",
+    "bytes": 53248,
+    "integrity": "ok",
+    "user_version": 0
+  },
+  {
+    "path": "/var/lib/opticable-workflow-api/output/automation/automation.db",
+    "bytes": 12787712,
+    "integrity": "ok",
+    "user_version": 2
+  },
+  {
+    "path": "/var/lib/opticable-workflow-api/output/automation/phase10-service-events.db",
+    "bytes": 114688,
+    "integrity": "ok",
+    "user_version": 0
+  },
+  {
+    "path": "/var/lib/opticable-workflow-api/output/automation/phase12-autonomy.db",
+    "bytes": 114688,
+    "integrity": "ok",
+    "user_version": 0
+  },
+  {
+    "path": "/var/lib/opticable-workflow-api/output/automation/phase9-form-receipts.db",
+    "bytes": 147456,
+    "integrity": "ok",
+    "user_version": 0
+  },
+  {
+    "path": "/var/lib/opticable-workflow-api/output/automation/phase9-intake.db",
+    "bytes": 28672,
+    "integrity": "ok",
+    "user_version": 0
+  }
+]

@@ -114,7 +114,7 @@ register_lifecycle_actions(automation_engine, zoho_gateway_client, automation_st
 register_lifecycle_extended_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_phase2_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_mailbox_actions(automation_engine, zoho_gateway_client, automation_store)
-API_VERSION = "1.11.0"
+API_VERSION = "1.12.0"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
 PRIMARY_JOB_STATUS_PATH = "/v1/site-and-password/jobs/{job_id}"
@@ -824,9 +824,9 @@ app = FastAPI(
     title="Opticable API Platform",
     version=API_VERSION,
     description=(
-        "Master API platform for Opticable workflow automation. "
-        "This service accepts webhook payloads, generates or validates WiFi credentials, "
-        "runs PDF generation and WorkDrive upload, and optionally creates Omada sites."
+        "Opticable owner views, provider observation and journaled events. "
+        "Business mutations require central authorization; real automation and legacy "
+        "PDF, WorkDrive and Omada execution remain contained."
     ),
     lifespan=lifespan,
     openapi_tags=[

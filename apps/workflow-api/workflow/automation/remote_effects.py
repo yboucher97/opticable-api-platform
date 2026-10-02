@@ -39,10 +39,13 @@ class RemoteEffects:
                       if '=' in line and not line.startswith('#'))
         account = config['OPTIBRAIN_PHASE2A_ACCOUNT_ID'].strip().strip('"\'')
         if not re.fullmatch('[0-9a-f]{32}',account): raise ValueError('Invalid off-host account')
-        return cls(boto3.client('s3',endpoint_url=f'https://{account}.r2.cloudflarestorage.com',
+        client=boto3.client('s3',endpoint_url=f'https://{account}.r2.cloudflarestorage.com',
             aws_access_key_id=credentials['default']['aws_access_key_id'],
             aws_secret_access_key=credentials['default']['aws_secret_access_key'],region_name='auto',
-            config=Config(connect_timeout=10,read_timeout=20,retries={'max_attempts':0})))
+            config=Config(connect_timeout=10,read_timeout=20,retries={'max_attempts':0}))
+        from .provider_usage import record_call
+        client.meta.events.register('before-send.s3',lambda request,**kwargs:record_call('r2',request.method))
+        return cls(client)
 
     @staticmethod
     def key(action, kind):

@@ -1,4 +1,7 @@
 #!/bin/bash
+# DEPRECATED Phase 14: retained historical implementation; direct execution refused.
+printf '%s\n' 'DEPRECATED: use the reviewed /usr/local/sbin/opticable-api-deploy-root or current recovery runbook.' >&2
+exit 64
 # Static verifier: no candidate-controlled code enters root execution.
 set -Eeuo pipefail
 [[ ${EUID} -eq 0 && $# -eq 1 && $1 =~ ^[0-9a-f]{40}$ ]] || exit 64

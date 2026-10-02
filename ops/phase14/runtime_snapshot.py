@@ -2,6 +2,7 @@
 """Root-installed local sampler. No credentials, provider calls or repair actions."""
 from datetime import datetime, timezone
 import json
+import hashlib
 import os
 from pathlib import Path
 import shutil
@@ -15,6 +16,21 @@ TIMERS = {'optibrain-backup':172800,'optibrain-phase2a-upload':172800,
 DB_ROOT = Path('/var/lib/opticable-workflow-api/output/automation')
 DBS = ('automation.db','phase9-form-receipts.db','phase9-intake.db',
        'phase10-service-events.db','phase12-autonomy.db')
+
+
+def resolved_read_reviews(receipt_path,producer_path,db_path):
+    """A display acknowledgement only for exact, read-proven retained failures."""
+    try:
+        receipt=json.loads(Path(receipt_path).read_text());ids=receipt['run_ids']
+        if not (receipt.get('schema')==1 and receipt.get('provider_mutations')==0 and receipt.get('new_events')==0
+                and receipt['producer_sha256']==hashlib.sha256(Path(producer_path).read_bytes()).hexdigest()
+                and isinstance(ids,list) and 0<len(ids)<=20 and all(isinstance(i,str) for i in ids) and len(set(ids))==len(ids)):
+            return []
+        with sqlite3.connect(Path(db_path).as_uri()+'?mode=ro',uri=True,timeout=2) as db:
+            return [row[0] for row in db.execute("SELECT DISTINCT r.run_id FROM automation_runs r JOIN automation_run_steps s ON s.run_id=r.run_id "
+                "WHERE r.status='failed' AND r.workflow_id='opticable.crm.lead-observe' AND s.action='crm.lead.observe' "
+                "AND s.error='EventConflict' AND r.run_id IN ("+','.join('?' for _ in ids)+')',ids)]
+    except (OSError,ValueError,KeyError,TypeError,sqlite3.Error):return []
 
 
 def size(path):
@@ -63,7 +79,7 @@ def collect(now=None):
         except (OSError,sqlite3.Error):db_errors.append(name)
     add('DB health','ACTION REQUIRED' if db_errors else 'OK','SQLite check failed' if db_errors else 'Five active SQLite stores pass quick_check',checked=5,failed=len(db_errors),bytes=db_bytes)
     staging=size('/var/backups/optibrain')+size('/var/lib/optibrain/phase2a')
-    logs=size('/var/lib/opticable-workflow-api/output/logs')
+    logs=size('/var/lib/opticable-workflow-api/output/logs')+size('/var/log/journal')
     add('Growth','ACTION REQUIRED' if staging>25*1024**3 or db_bytes>512*1024**2 or logs>512*1024**2 else
         'DEGRADED' if staging>15*1024**3 or db_bytes>128*1024**2 or logs>128*1024**2 else 'OK',
         'Storage thresholds sampled',backup_staging_bytes=staging,db_bytes=db_bytes,log_bytes=logs)
@@ -75,7 +91,10 @@ def collect(now=None):
     sha=subprocess.check_output(['git','-c','safe.directory=/opt/opticable-api-platform','-C','/opt/opticable-api-platform','rev-parse','HEAD'],text=True,timeout=5).strip()
     manifest=json.loads(Path('/etc/optibrain/phase7-canary-registration.json').read_text())
     add('Deployment','OK' if receipt.get('sha')==sha==manifest.get('candidate_sha') else 'ACTION REQUIRED','Release receipt, source and manifest compared')
-    return dict(schema=1,captured_at=now.isoformat(),deployment_sha=sha,signals=signals)
+    resolved=resolved_read_reviews('/var/lib/optibrain/phase14/observer-reconciliation/lead-review-resolution.json',
+        '/opt/opticable-api-platform/apps/workflow-api/workflow/automation/providers/crm_leads.py',DB_ROOT/'automation.db')
+    return dict(schema=1,captured_at=now.isoformat(),deployment_sha=sha,signals=signals,
+                resolved_read_only_failures=len(resolved),resolved_read_only_run_ids=resolved)
 
 
 def main():

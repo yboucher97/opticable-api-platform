@@ -56,6 +56,7 @@ _PINNED_SOURCES = frozenset({
     "workflow/automation/read_inventory_cache.py", "workflow/automation/mail_observation_cache.py",
     "workflow/automation/customer_lifecycle.py", "workflow/automation/operations.py",
     "workflow/automation/providers/lifecycle_mailbox.py",
+    "workflow/automation/providers/crm_leads.py",
     "workflow/zoho_gateway.py", "workflow/google_api.py", "workflow/cloudflare_api.py", "workflow/github_api.py",
 })
 
@@ -94,7 +95,7 @@ def validate_registration(manifest: dict, *, checkout_sha: str, env: dict) -> di
     if (manifest["mode"] != MODE or not isinstance(checkout_sha, str)
             or not _SHA.fullmatch(checkout_sha) or manifest["candidate_sha"] != checkout_sha
             or env.get("OPTIBRAIN_PHASE7_RELEASE_SHA") != checkout_sha
-            or manifest["api_version"] != "1.11.0"):
+            or manifest["api_version"] != "1.12.0"):
         raise ValueError("Phase 7 registration is not bound to this release")
     if not isinstance(manifest["business_actions_enabled"], bool):
         raise ValueError("Invalid Phase 7 business-action setting")
@@ -149,8 +150,8 @@ def maybe_install_phase7(app, *, client, store, engine, api_version: str,
                          manifest_path: Path = MANIFEST, readiness=None):
     if os.environ.get("OPTIBRAIN_PHASE7_REGISTRATION") is None:
         return {"registered": False, "create": False, "crm": False, "outbound": False}
-    if api_version != "1.11.0":
-        raise ValueError("Phase 7 registration requires API 1.11.0")
+    if api_version != "1.12.0":
+        raise ValueError("Phase 7 registration requires API 1.12.0")
     manifest = _trusted_manifest(manifest_path)
     plan = validate_registration(manifest, checkout_sha=manifest["candidate_sha"], env=os.environ)
     if not plan["registered"]:

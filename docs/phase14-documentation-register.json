@@ -1,0 +1,364 @@
+{
+  "schema": 1,
+  "authoritative_current": [
+    "docs/README.md",
+    "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
+    "docs/OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md",
+    "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md",
+    "docs/OPTIBRAIN-SAFETY-INVARIANTS.md",
+    "docs/phase14-runtime-matrix.md",
+    "docs/phase14-state-store-matrix.md",
+    "docs/phase14-provider-usage.md",
+    "docs/phase14-retention-policy.md",
+    "docs/phase14-deprecation-list.md",
+    "docs/phase14-recovery-runbook.md",
+    "docs/phase14-final-report.md"
+  ],
+  "authoritative_count": 12,
+  "deployment_companion": "deploy/README.md",
+  "preexisting_count": 71,
+  "historical_and_audit": [
+    {
+      "path": "docs/OPTIBRAIN_AUTONOMOUS_PROGRESS.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "9712cc8db2576ccc69a4a76ce544cca01cadde260d3482896e66222b7163535f"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE1_LOCAL_BACKUP.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "4dc4edd3d1c58889a74d3bbc92077098c8c6d5c327ed0462a642a79b3e7dc7c8"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE2A_OFFHOST_RECOVERY.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "f60c85ae9843a569e9dac7bb2f0d14a86ff9d826dca38c4a4300948dbfb60b77"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE2A_R2_DISCOVERY.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "8def6a4b565ee59b2be031e0704788ccedd0769bd14598a40b5929d89dc32dcd"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE2B_ROOT_BOOTSTRAP.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "0b169497d295a2039102d440c0b22adf14053ef5d2c8a988ce6dd224ceb017bb"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE4_ARCHITECTURE.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "afe0871800d1051849d0a0e80d0efbcda7d9355486a76721e48142ea3001814e"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE4_ENGINEERING_RECORD.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "e8947b11b9ba6941193757b5db79991c5bcc4e5f32d69cb9a6c30a7bfdd5853b"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE5_ARCHITECTURE.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "99b4ca992b8d15c4627e6377438bc1c45091cb74a836f5e6dbf0f088132f3134"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE5_AUTONOMY_CAMPAIGN.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "dcc9f60ec9d08d91b35e097d97d77cd701a9a575ebd4ba6bab7f9ca7a7b95881"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE5_ENGINEERING_RECORD.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "391efce1b14198c4073017dd150290129e3985501714d24176a8cb384f6883fc"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE6_ENGINEERING_RECORD.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "f0cc35c852d38da44b95178a6e0a5a58477045b56642dd5d9760f31fb30fe758"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE6_GATE_F_CONTROL_PLANE.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "c25987132afd0891836d0b82f918eb92d097e5622b7294c929636c571298ad79"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE6_GATE_G_RECOVERY.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "c4e7c28c79ec71006a812008eacf9330d0d463671dc2f889796d433b6fc50411"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE6_SALES_AUTONOMY_V1.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "fa535400ec550447993322f1a937196a66f2091f936540b5faafbced5261d2bf"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE7_CANARY_CONTROL.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "5f3b800020859b673c531177da6bf1c916a288dae424f2cdd8297495863fcdef"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE7_FIRST_CANARY_EXECUTION_CONTROL.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "dafa3c54ec3295254bec71cad87008b21d35b82c79aa98cfcd00faf25fab7eeb"
+    },
+    {
+      "path": "docs/analysis/mailbox-classification-observations-2026-09-26.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "56e11c67eda8a38ce8c3e6c7661be6db7e8a7238ae4fa9b4bb73c3ae71d0b7fa"
+    },
+    {
+      "path": "docs/api-blueprint.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "fe8a7c37e8623337cd43741bcbdb6b4606e84ea8d422b861a91550652008459c"
+    },
+    {
+      "path": "docs/architecture.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "882d727ae66cff4861baaf0f2a97678dd7f7fa224fab676e7aebe5d648f11608"
+    },
+    {
+      "path": "docs/autonomous-automation-platform.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "08b208ef5f5dc94312c6dca47fa8b6a3c9eaabdb181b34bdd6ceb53a5a6bc901"
+    },
+    {
+      "path": "docs/google-admin-control-plane.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "4ab5a27e44bc3868ade084efdd525c82981b5047c93b26570d604cea6ba19400"
+    },
+    {
+      "path": "docs/omada-operation-strategy.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "7804eb522734869d56ab33f42dea3eae38f54b67d2272dd59a56c0dc8295229d"
+    },
+    {
+      "path": "docs/phase10-lifecycle-foundation.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "fe3d68b5d9837157eb91ac6507e01136c92291309003d11da366c6d85857cf2f"
+    },
+    {
+      "path": "docs/phase11-operations-foundation.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "14c1325e82ef752da5e356f4bca1738517eeb295fb97dd7eb708877114221e0c"
+    },
+    {
+      "path": "docs/phase12-business-autonomy.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "46e74e31066748b1e5ad1423aceccacaeae656cb76bcc7507241dc535a3aecf5"
+    },
+    {
+      "path": "docs/phase12-closure.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "e5758adb160a6395bf68436f47af39b095f3e0ff8a9586b999a21427a0aab67c"
+    },
+    {
+      "path": "docs/phase13-closure-evidence/verification.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "a921e604aa3810660cf88d06d9ff0bf635f2002eb4f978d8efad4d3c602423b9"
+    },
+    {
+      "path": "docs/phase13-control-matrix.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "8d48838cc8640315b2cc5124e032f53c0847894e7f8b12517438fe18601d9615"
+    },
+    {
+      "path": "docs/phase13-evidence/completion.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "3596deb7ecf8ad750142c564162d575e12a0e3967775c53ae47ffb946cf9fef4"
+    },
+    {
+      "path": "docs/phase13-evidence/deployed-components.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "310c99b9d693c8ba30f6f004c28236151dae2e17a5829687eee5843187f3d32c"
+    },
+    {
+      "path": "docs/phase13-evidence/feature-flags.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "b97db30fd3c98282a53bfee051652ce8ba273a9030cb991045cd20fdc3814816"
+    },
+    {
+      "path": "docs/phase13-evidence/git-inventory.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "1d853f950b1561e759fe6fe519cf32b5e85b479d151c612ca192915c84e90616"
+    },
+    {
+      "path": "docs/phase13-evidence/mutation-call-sites.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "7b51aaabd79a8eeedc26301a57722fc8f1ae137147298f759c0714ce1f5b72e0"
+    },
+    {
+      "path": "docs/phase13-evidence/private-evidence-index.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "49c4c9eaec60e7f30ff745e2c2be5cfe8ac61f592a4b01ee0a3fbae22155f041"
+    },
+    {
+      "path": "docs/phase13-evidence/summary.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "428453d3cecde7b7b7fa62681aa98e86ad8f5bd83543ab61c7473c4c9a73eda9"
+    },
+    {
+      "path": "docs/phase13-final-closure.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "eaf03842585b0067b1eaec419ca025eacf5bc8b70aa5b3c6a817bdf55a46e816"
+    },
+    {
+      "path": "docs/phase13-independent-audit.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "298f59b0f3822717f5e6cfc0c0f5ca63c1053c13eb10671f5d110a459f39d417"
+    },
+    {
+      "path": "docs/phase13-owner-manual-actions.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "4abf0fbb44b4dce167bb7b2e304c4b810d44cc8269fb330ae5b43b239676ed6e"
+    },
+    {
+      "path": "docs/phase13-p0-remediation.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "f489caa3bad5bc3ee183a81feca3b9867760a66849feefde612f1ccf111b7b93"
+    },
+    {
+      "path": "docs/phase13-p1-cleanup.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "ec97cb3cb96bcb39fb5c4283f004072c93b9c4d64ed1b3aaf87384eb5e627dd2"
+    },
+    {
+      "path": "docs/phase13-p1-evidence/conditional-proof.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "2d911bb90d378dc9bf00ff79ef9ea521c36c57e0e35dd940d0c257488123115b"
+    },
+    {
+      "path": "docs/phase13-p1-evidence/provider-proof.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "289b903d2f13ba2a1ebfda728f05af44e6687c15ee59c9d2f18fa394d32065ef"
+    },
+    {
+      "path": "docs/phase13-p1-evidence/regression.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "26c8101257c394f8d44f3b7cd5b055ad5bd444fb482fc260dc825a85028a45e1"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/completion-regression.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "91a5235072d07250fb4f7ce816e14931884fd166da48dbe0bd8b32ca20be6df0"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/core-key-rotation.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "c92074731c4da372d5c9748873724baad84579e1e8baf71819904749b97390d2"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/crm-channel-rotation.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "74f3f7d1ed375387903a2e6e9d1a15e8ba5589d03390a7a014c83db5a5da41b9"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/encrypted-roundtrip.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "fbea9cb1d328932398705aea55890a3e47195db581073365f49246317dd01929"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/final-safety.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "6f896b6613b162d8332767e0b6d86f012ff7c5cd1b3a8fa0909f81e284fbff55"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/interruption-reconciliation.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "c9ba69c882611b9c306c324002f3184be25b5971a211ad691f0447e260036b2a"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/provider-containment.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "5b4f73db19e9b164722d7624002b65c9b464f6b24ba66d822eeb0d29c564d3e4"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/replacement-host.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "a8749f5519b80ba5d5976e62065ae6a5e136289eab2ab7522b92c9afed975ef6"
+    },
+    {
+      "path": "docs/phase13-remediation-evidence/task-proof.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "16151bae21e5ba7c6d4dec27ed18eaefe3e8279869d24b0583732ce2658d330d"
+    },
+    {
+      "path": "docs/phase13-remediation-final-report.md",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "c4c6e6f12a06edf07243b74ba6b87ac2aef72eb837eb6f9baa19bb88d2d6cd6f"
+    },
+    {
+      "path": "docs/phase13-timer-matrix.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "a7b54214b3deaac8d3a61159c48bd98f613f8d96919510ec9769adf1ed428db8"
+    },
+    {
+      "path": "docs/phase14-optimization-backlog.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "fcd47892456188b90840bc398732da43a3b8caea0e7e27585a3a91d06844ebcc"
+    },
+    {
+      "path": "docs/phase5/additive-plan-review.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "30feb2f04e5607694342760dd5411f83b93ba40cebbc490c1d920586579f3595"
+    },
+    {
+      "path": "docs/phase5/candidate-validation.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "c1920103f37bd512f9c6289c6a41f9315b863b453b6fa401e1c13113d55aaf10"
+    },
+    {
+      "path": "docs/phase5/crm-inventory-20260928.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "8cf01f1a2a5d626da82981622e386c3ccbbafe287b3852c416371f1ccace09a3"
+    },
+    {
+      "path": "docs/phase5/crm-inventory-changes-20260928.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "cab027cdfed1249d5920352333df7ee451fa8030f7a8bacfc5552ed840182621"
+    },
+    {
+      "path": "docs/phase5/hardening-validation-20260928.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "b6bcdf1d52e5f6353e41ad594f0cec197e2fe828a9a5465e5aecd96b6407f54f"
+    },
+    {
+      "path": "docs/phase5/live-drift-20260928.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "4ff8459499d890a4453ca7b44ae1df4b8fb10757a8e9c460020433be807c4cb0"
+    },
+    {
+      "path": "docs/phase5/live-field-apply-20260928.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "00c6a97a7a411827f02089c52334c679a87985a433ee72d0bfe3920cd7ef224b"
+    },
+    {
+      "path": "docs/phase5/live-governance-plan-20260928.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "ff08f2a020e50e695c6b8457ff23e5715b31391d95fa874963214aa1b5dc2a92"
+    },
+    {
+      "path": "docs/phase5/supplemental-metadata-20260928.json",
+      "role": "AUDIT / RECOVERY EVIDENCE",
+      "baseline_sha256": "02dd67e6e7d871b61907e8f5ed8c560d5e7e5733d417cdfa85472ad80d705c9a"
+    },
+    {
+      "path": "docs/phase8-test-lab.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "75ca703279262837f6143be40e2a43e6e15a1930abee117a2847bae8bba1b46e"
+    },
+    {
+      "path": "docs/phase9-intake-foundation.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "7c1430f89635384117a15b0566374ebccc7f05919746bbc8dae911449625a141"
+    },
+    {
+      "path": "docs/repository-structure.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "d145c464b1442a45810cf251770e137f15494d4e4daba3dc3e8536087451bd1c"
+    },
+    {
+      "path": "docs/runbooks/universal-inbox-routing.md",
+      "role": "HISTORICAL PHASE RECORD / DESIGN REFERENCE",
+      "baseline_sha256": "350c4085620ccf91d43674b1d6d90c05473d9bcec7a14a28ab5104f2eda01521"
+    }
+  ],
+  "preserved_recon_commit": "1a13a8d41684bb8d40620c829a4e9bda6554ab6a",
+  "recon_evidence_files": 15
+}

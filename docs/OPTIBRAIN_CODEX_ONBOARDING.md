@@ -1,81 +1,43 @@
 # OptiBrain Codex onboarding
 
-Start here. **This snapshot is Phase 14 preparation, not implementation or authority to activate automation.** Production/current main: `4bc1beec112c55b161c3025529733d0f0b1213b3`; API 1.11.0; Phase 13 COMPLETE/PASS. Revalidate current state before changing anything. Read the current user instruction as the mission scope.
+Start here. Current API contract: `1.12.0`. Phase 14 is a manually authorized technical implementation; it grants no real business-write or customer-contact authority. Read the latest user instruction for task scope. Use `/var/lib/optibrain/releases/current.json` and `/var/lib/optibrain/phase14/final-verification.json` for the deployed SHA and verified result. Git history preserves the Phase 13 baseline `4bc1beec112c55b161c3025529733d0f0b1213b3` and documentation-only reconnaissance `1a13a8d41684bb8d40620c829a4e9bda6554ab6a` as implementation ancestors.
 
-## Minimum reading and authority
+Read [safety invariants](OPTIBRAIN-SAFETY-INVARIANTS.md), [current architecture](OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md) and [master runbook](OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md). Then select the relevant [runtime matrix](phase14-runtime-matrix.md), [state contracts](phase14-state-store-matrix.md), [provider usage](phase14-provider-usage.md), [retention policy](phase14-retention-policy.md), [deployment](../deploy/README.md), or [recovery procedure](phase14-recovery-runbook.md). [The documentation index](README.md) separates current contracts from historical phase records and audit/recovery evidence. Older phase statements never override current root policy.
 
-1. [Safety invariants](OPTIBRAIN-SAFETY-INVARIANTS.md) and [master runbook](OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md).
-2. [Phase 13 closure](phase13-final-closure.md), with `/var/lib/optibrain/phase13-closure/final-receipt.json` and current `/var/lib/optibrain/phase13-remediation/deployment.json` for actual final/deployed SHA.
-3. [Phase 14 reconnaissance](phase14-reconnaissance.md) and [implementation order](phase14-implementation-plan.md).
+## Architecture and authority
 
-Use [runtime/authority](phase14-runtime-inventory.md), [state/DB](phase14-state-inventory.md), [flags/code/tests/docs](phase14-code-and-documentation-inventory.md), [control matrix](phase13-control-matrix.md) and [timer matrix](phase13-timer-matrix.md) for a relevant drill-down. Recovery-only tasks also use [local backup](OPTIBRAIN_PHASE1_LOCAL_BACKUP.md), [encrypted off-host recovery](OPTIBRAIN_PHASE2A_OFFHOST_RECOVERY.md), [root bootstrap](OPTIBRAIN_PHASE2B_ROOT_BOOTSTRAP.md), [forward recovery](OPTIBRAIN_PHASE6_GATE_G_RECOVERY.md) and [owner procedure](phase13-owner-manual-actions.md). Do not reconstruct 13 phases before doing ordinary work; older phase docs are historical evidence, not present authority.
+One VPS hosts the FastAPI core and five separate SQLite stores. Zoho CRM owns business records. Local journals own receipt chronology, crosswalks and action evidence. Cloudflare's durable control plane schedules and delivers authenticated observation events. The separate connector handles contained intake/receipt export and its own OAuth domain. Owner HTML views use Cloudflare Access JWT verification, allowlists and private/no-store responses.
 
-Live root policy/config and independently validated runtime receipts are operational truth. Repository defaults, filenames, old roadmap statements and `production-state.yaml` are not current deploy proof. An enabled workflow/approved item does not overrule provider transport denial. The master runbook digest is root-authorized; a casual doc edit must not silently repin that contract.
+Canonical code is `apps/workflow-api/workflow`. Central mutation control, the CRM ownership fence and immutable business-action/off-host claims are independent guards. Read projections, Today caches, workflow enabled settings and HTTP health cannot authorize mutations. The TEST runner reconciles before honoring the global kill. PDF/WorkDrive, Omada and legacy Mail/Sign writers retain explicit denial surfaces.
 
-## Architecture
+Production: `/opt/opticable-api-platform`, detached release. Local main: `/home/optibrain/phase10-lifecycle`. Implementation worktree: `/home/optibrain/phase14-implementation`. Never run `git clean` on production or overwrite credentials from old release copies. Never execute candidate checkout scripts as unattended root release authority. Manual Codex sessions retain full sudo/root.
 
-OptiBrain is the Opticable owner/operator's event and business-observation platform. One Linux core hosts FastAPI (`apps/workflow-api/workflow`) and SQLite journals. Cloudflare durable control plane schedules/queues safe observation events into the authenticated core. A separate AI connector handles provider reads/OAuth/intake receipt export. Existing owner HTML views are implemented in Python renderers, with Cloudflare Access JWT verification and private/no-store responses.
+## Runtime and state
 
-Core event intake normalizes, deduplicates, routes and journals work. Providers execute only through independent gateway/control fences. Central BusinessJournal holds action proposals, risk/ownership/approvals/schedules and immutable effect evidence. Root runner reconciles Test effects before deciding whether killed work can proceed. Current real business writes are forbidden. Adjacent PDF and Omada services remain running but provider mutators/legacy public job paths are contained.
+Three application services: `opticable-workflow-api`, `opticable-password-pdf`, `opticable-omada-site`; shared proxy `caddy`. Core listens on loopback 8100. Five legitimate application timers remain: backup, off-host upload, receipt collection, service observation and bounded TEST reconciliation. The TEST runner additionally samples local readiness every 30 minutes. No new timer or persistent development worker was added. All six `optibrain-agent-{dispatch,status,usage}.{service,timer}` units remain masked/inactive.
 
-Important code: `automation/mutation_control.py`, `crm_write_boundary.py`, `business_autonomy.py`, `remote_effects.py`, `test_lab_boundary.py`, `events.py`, `store.py`, `zoho_gateway.py`, `zoho_oauth.py`, `phase7_registration.py`, `operator_access.py`; read/projection code `sales_queue.py`, `sales_operator_view.py`, `phase9_form_receipts.py`, `customer_lifecycle.py`, `service_inventory.py`, `operations.py`. Shared display state never authorizes a mutation.
+Canonical state lives in `/var/lib/opticable-workflow-api/output/automation`: `automation.db`, `phase9-form-receipts.db`, `phase9-intake.db`, `phase10-service-events.db`, `phase12-autonomy.db`. Root policy/registries are under `/etc/optibrain`; root attempt/recovery evidence under `/var/lib/optibrain`. Local backups are `/var/backups/optibrain`; encrypted spool is `/var/lib/optibrain/phase2a`. Online backup covers five active and three historical DBs. AGE private identity remains offline with the owner.
 
-## Host/services/timers
+Core Zoho refresh credentials: `/var/lib/opticable-api-platform/shared/zoho-oauth.json`. Do not print credentials, process environments or provider payloads. Access-token cache uses a trusted process/file lock and credential binding. A read-only 401 permits one refresh/retry; 403, throttle, transport ambiguity and mutations are not blindly retried. Inspect and reconcile before credential replacement.
 
-Production checkout `/opt/opticable-api-platform` (detached release); main checkout `/home/optibrain/phase10-lifecycle`; this recon checkout `/home/optibrain/phase14-recon`, branch `phase14/reconnaissance-20261001`. Work in an isolated branch/worktree. Existing installed `.venv` and preserved baseline/diagnostic untracked files are intentional; do not clean production.
+## Current safety state
 
-Three service UIDs run core 8100, PDF 8000, Omada 3210 on loopback. Caddy runs as `caddy`, serves `optibrain.opticable.ca`, strips `/pdf`, `/omada`, `/workflow` prefixes, fences legacy routes 403 before proxy. Admin 2019 is loopback. SSH 22 is separate. Current installed unit/drop-in config takes precedence over repository examples.
+Protected records: 123, read-only. Protected mutations, customer sends and Books writes: 0. Real/Test automatic business writes: OFF. `REAL_CANARY_ALLOWED=false`. Native French/English Forms CRM integrations remain DISABLED under the Phase 13 owner-UI closure evidence; their current native state is not exposed by the supported API. Fallback enrichment OFF. Connector and Omada contained; PDF/WorkDrive and legacy Mail/Sign denied; Books transport write denial independent of flags. Authentication fails closed. State-loss/stale-journal duplicate fences and backup integrity remain mandatory.
 
-Five legitimate timers: local backup 02:30 UTC daily; encrypted upload 03:00 UTC daily; receipts every 5 m; service events hourly; Test runner : 00/: 30. Root jobs: backup/uploader/runner. Collectors use API UID, per-job locks and 300 s timeouts. Root runner 180 s; backup 45 m/upload 46 m. All last results successful at recon.
+Forbidden without a new explicit mission: real canary, protected-record changes, Lead conversion/deletion, customer email/SMS/calls, invoices/payments/credits/Books changes, broad real CRM or Mail automation, restoring the retired development worker, moving the owner AGE key online or deleting recovery/audit evidence.
 
-API also starts recovery 5 s (30 s after errors), health 30 s, delta loop 5 s/configured Leads 300 s, hourly desired drift, native-watch 300 s. **Current delta checkpoint failed authentication and is not polling**; native local binding/expiry drift exists. Do not confuse these with the masked Codex development worker. Six `optibrain-agent-{dispatch,status,usage}.{service,timer}` units remain MASKED; authorization absent. Manual Codex and sudo remain available.
-
-Only one GitHub cron remains: 15 m health. Three GitHub business workflows disabled/source cron removed; orphan Validate Autonomous Core metadata has no file. One CF cron `*/15` generates Toronto-hour Mail, 8 daytime Sign observations/day and daily Books. CF events queue → durable Workflow → core event endpoint. DLQ has no consumer; do not drain.
-
-## Providers and data
-
-Zoho CRM/Service_Locations/Services are canonical business facts, with exact Test ownership and protected baselines. Mail supplies authenticated Forms receipts and controlled reply evidence; Forms native CRM Add/Update/Upsert was disabled by owner-admin confirmation. Do not submit forms or invent supported API proof for native settings. Sign and Books are observers only; Books writes 0. WorkDrive/Projects and PDF provider mutation paths retired/forbidden. Core Zoho refresh credentials/shared access cache have different roles; cache is interprocess-locked.
-
-Google admin, GH App, Cloudflare, OVH, Windsor, Apollo and AI adapters exist; configured does not mean live-auth-verified or scheduled. Apollo creditsOFF; Gemini unconfigured. Connector OAuth/KV is a separate trust domain; do not merge/move secrets. Public health “connected” is generally credential presence, not a successful provider request.
-
-Five active DBs under `/var/lib/opticable-workflow-api/output/automation`: `automation.db` (WAL, core), `phase9-form-receipts.db`, `phase9-intake.db`, `phase10-service-events.db`, `phase12-autonomy.db` (others DELETE). Five active + three historical root DBs are online-backed-up. Root `/etc/optibrain` policy/source/Test/protected/projection files and `/var/lib/optibrain/phase*/test-lab` registries/journals protect ownership and state-loss recovery. Local Phase 11 documents remain canonical. Preserve crosswalk IDs; replacement provider IDs must not regenerate business identity.
-
-## Non-negotiable safety
-
-- Protected 123 records read-only; `test_writes_enabled=false`; runner `OPTIBRAIN_BUSINESS_AUTO_WRITES=0`; `real_canary_allowed=false` (REAL_CANARY_ALLOWED FALSE).
-- Only exact central `crm.task.create` is a potentially admissible Test family, currently killed; all other 22 audited business families forbidden/disabled. Per-family TestTask flag 1 does not enable it.
-- Kill/ownership/source/payload/actor/expiry/version checks and root locked off-host claim must all pass; reconcile before retry. Unknown/ambiguous effects never blindly resend.
-- No real canary, customer sends/drafts/replies, Books writes, provider scope changes or real automation activation without a separate exact owner-authorized mission and all applicable gates.
-- No persistent development worker, stale queue/DLQ replay, old campaign/installer execution or casual source-pin/master-runbook changes.
-- Do not print env/credential/OAuth/cache contents, copy the owner's AGE private identity, move secrets or expand service-UID policy/claim access. Some historical diagnostics may contain sensitive error detail; retain private evidence and summarize fixed categories.
-
-## Deployment and recovery
-
-Canonical core release: exact commit/PR validation →merge →exact-main successful validation →deploy workflow/forced SSH command →installed static root gate and unexpired root-reviewed authorization →prepared root-owned dependency bundle + verified backup →source/env/manifest pins →restart →health/kill checks →root receipt →public version check. Source `deploy/manual-guarded-release.py` matches current installed helper; old repository bootstrap/phase root scripts need review before use. Worker and connector deploy separately. Do not equate main CI with deployment success or venv directory name with application SHA.
-
-Rollback restores prior Git/env/manifest/dependency pointer and healthy core; it does not restore an old DB/replay create work. Keep exact recovery tags/receipts/helpers. Normal backups use online SQLite snapshots; root configs/state and retired immutable development archive included. Ciphertext cache is excluded to avoid recursive archives; last upload state included. Local plaintext/AGE caches currently preserve all generations; do not prune without hold resolution.
-
-Phase 13 owner-key recovery proof generation **20261001T202728Z** is held. Owner AGE private identity stays offline on trusted Windows machine. Isolated restore/boot passed with writersOFF; new-OS production replacement/DNS-TLS/provider reconnect/RTO remain later maturity work. A replacement boot starts with writer timers/dev unitsOFF and provider/off-host/local effect reconciliation first. Do not redo the drill for a read-only audit.
-
-## Useful read-only commands
+## Health and deployment
 
 ```bash
-git -C /opt/opticable-api-platform rev-parse HEAD
-git -C /home/optibrain/phase10-lifecycle status --short --branch
-systemctl list-timers --all --no-pager
-systemctl show opticable-workflow-api.service -p User -p MainPID -p ActiveState -p DropInPaths
-sudo ss -lntup
-curl --fail --silent http://127.0.0.1:8100/health
-df -h /
-free -h
-sudo cat /etc/optibrain/mutation-control.json
-sudo cat /var/lib/optibrain/phase13-remediation/deployment.json
+curl -fsS http://127.0.0.1:8100/v1/system/health
+sudo optibrain-admin scheduler
+sudo optibrain-admin verify-latest
+sudo cat /run/optibrain-readiness/status.json
+sudo cat /var/lib/optibrain/releases/current.json
 ```
 
-DB inspection uses SQLite URI `mode=ro` +`PRAGMA query_only=ON`; schema/COUNT/EXPLAIN only unless the mission needs specific business facts. Do not run migration, VACUUM or restore as discovery. Authenticated reads obtain existing credentials locally without printing them or manufacturing operator identity. `optibrain-admin` has read/status and write/recovery subcommands: inspect its contract before choosing one; backup/upload/restore/timer restart are not harmless status probes.
+Authenticated `/v1/system/readiness` reports OK, DEGRADED, ACTION REQUIRED or UNKNOWN without provider calls. Owner home: `https://approvals.opticable.ca/v1/operator/today`; technical drill-down: `/v1/operator/system-health`. Never forge an operator JWT for live validation. Fake/unit validation uses `python -I ops/phase6/validate.py`; focused patterns require `--suite focused --pattern ...`. Full regression runs once for the final local executable candidate, then exact-head release CI.
 
-Current release regression: `ops/phase6/validate.py --suite full`, 811 tests + 745 subtests passed in prior evidence; do not rerun for doc-only changes. Related executable work needs meaningful changed-area/safety checks and release validation, including worker tests/check and Omada containment where applicable. Never remove safety tests to speed a pass.
+Canonical deploy is the installed root-owned `/usr/local/sbin/opticable-api-deploy-root EXACT_SHA`, sourced from `deploy/manual-guarded-release.py`. It needs root-reviewed exact-SHA authority, successful main CI, a verified rollback archive and immutable dependency environment. It pins source/version, restarts only the API, checks health/state and writes a schema-1 release receipt; failure restores code, environment, manifest and venv without replaying old DB state. The SSH wrapper requests this same gate. Old installers/release helpers refuse direct execution; see deprecations.
 
-## Phase 14 priorities
-
-First account for real hot reads/operational freshness; general Mail current 33 calls/run (~792/day) is the major measured read target. Receipt 7 → 1 and operations 22 → 9 already completed. Retention hold/dry-run precedes any cleanup of~16.7 GiB local archives/cache. Shared lifecycle/recurring/project displays and Today home are useful; five active DBs/root privilege redesign are later contract work. Use the implementation plan's impact/risk/effort/dependencies. Implement only the new user's authorized scope, then stop.
+Revalidate runtime and protected baselines before new work. Phase 13 recovery evidence remains valid within its documented limits; complete replacement OS, live provider reconnect, DNS/TLS cutover and guaranteed RTO are not proven. Do not repeat completed destructive recovery drills merely to update documentation.

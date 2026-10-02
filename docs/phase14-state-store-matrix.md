@@ -1,0 +1,27 @@
+# Phase 14 state-store contracts
+
+Five active SQLite stores remain intentionally separate. Three historical stores are ARCHIVE in place, not removed or promoted. Online backup continues to cover eight stores. No journal migration, merged DB or speculative listing index was introduced. Read-only getters use query-only connections; additive Mail cache tables have stable primary keys.
+
+| Store / family | Canonical writer → reader | Identity | Retention / rebuildability | Backup |
+|---|---|---|---|---|
+| automation.db events/runs/ledger | Authenticated intake and fixed worker → queue/history/reconciliation | event_id; source-account idempotency; run/step IDs | Immutable envelope/dedupe/audit retained; cannot rebuild action safety from provider alone | REQUIRED |
+| Core delta checkpoints | DeltaSync CAS worker; explicit manual reconciler → delta/readiness | provider + account + stream + mode; revision | Keep saved cursor, attempts and failures; do not skip cursor to make green | REQUIRED |
+| Core Mail observation cache | GET-only mailbox observer → same observer | account + message_id + metadata/body hashes | 30-day cache, daily content audit; rebuild only with durable event evidence; gap >7 days requires backfill review | Incidental, not authority |
+| phase9-form-receipts.db | Receipt/connector collector → receipt/source/sales | source namespace + immutable provider/inquiry ID; canonical-link keys | Receipt chronology/links/enrichment attempts indefinite; metadata cache 30 d; no overwrite on conflict | REQUIRED |
+| phase9-intake.db | Reviewed intake/feedback writer → sales/source trace | inquiry/event identity + canonical CRM ID; typed feedback identity | Immutable chronology and feedback retained; source order is occurred time plus stable identity | REQUIRED |
+| phase10-service-events.db | Hourly service observer → lifecycle/recurring/Today | stable service-occurrence ID; module snapshot field signature/cursor | Occurrences retained; five-module display projection rebuildable; max age 300 s/daily full audit | REQUIRED for occurrences; cache incidental |
+| phase12-autonomy.db | Root TEST runner/manual exact approvals → reconciliation/operator | immutable action_id + payload hash; approval ID; run ID | Action envelope/evidence/claims indefinite; never prune to reset retry authority | REQUIRED |
+| Root Test registries | Reviewed root readback/onboarding → ownership fences | exact provider module/ID + baseline hashes | Additive ownership only; marker alone insufficient; not a display cache | REQUIRED |
+| Root operations crosswalk | Reviewed root project writer → project/operations reads | stable internal OB IDs ↔ unique provider IDs | Preserve lineage and created_at; never regenerate after provider replacement | REQUIRED |
+| Exceptions | Same action/run writer → scoped owner view/readiness | action/run ID + retained state | REAL CURRENT / TEST_ONLY / HISTORICAL / RESOLVED; a display label cannot resolve or retry an action | REQUIRED |
+| Provider usage | Transport job/route scope → readiness/operator evidence | metric ID + sanitized job + timestamp | 30 d / 10k rows per store; expendable; never mutation evidence | Incidental |
+| R2 effect claims/results | Root exact central executor → independent reconciliation | business-effects/v1/action ID/kind + payload hash | Create-only; indefinite; no TTL/deletion; survives local loss/rollback | Independent safety state |
+| Release receipts | Root guarded release → readiness/recovery/operator | exact 40-hex SHA, schema 1 | Indefinite release evidence; current pointer plus immutable SHA record | REQUIRED |
+
+Historical stores retained: `/var/lib/optibrain/phase9/mission2/form-receipts-stage.db` (53,248 B, staged provider/restore proof); `/var/lib/optibrain/phase9/closure/phase9-intake.before-permission-fix.db` (28,672 B, before-image); `/var/lib/optibrain/phase10/test-lab/lifecycle-events.db` (12,288 B, 19 old lifecycle events and legacy tooling). Current routes/units use the five active paths; backup/restore and historical proof still reference these stores. All three are ARCHIVE, read-only historical role, retained in recovery generations.
+
+Receipt chronology preserves source-specific IDs, occurred time, received time, canonical links and provider reconciliation evidence. Grouped Lab reads issue two SELECTs per ledger for up to 100 numeric identities, replacing per-row queries without changing order. Display snapshots cannot be used by dispatch, approval consumption or provider precondition checks.
+
+Measured SQLite listing medians: core recent events 0.784 ms; actions 0.093 ms; approvals 0.019 ms; runner latest 0.037 ms; metric history 0.047 ms; receipt listing 0.020 ms. Eight active/historical stores passed integrity_check. Some use temporary sort trees, but present datasets do not justify extra indexes. Existing identity/due/retention indexes remain. Five active integrity checks are required at release; compatibility tests preserve restored eight-DB behavior.
+
+Lead version review identity preserves the first immutable payload across historical schemas and time-dependent triage. New review fingerprints detect fields changing without a new provider version. Seven historical read-only conflicts were proved against copied state without workflow execution; exact source-hash/run-ID root evidence acknowledges only their display status. Failed runs remain failed audit evidence; the acknowledgement cannot authorize replay or mutation.

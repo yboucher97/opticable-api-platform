@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 import os
+import json
 import re
 
 from ...zoho_gateway import ZohoWriteUnconfirmedError
@@ -156,11 +157,28 @@ def register_crm_lead_actions(engine, client, store):
                 subject_type="Leads", subject_id=identity, causation_id=event["event_id"],
                 correlation_id=event.get("correlation_id"), depth=event.get("depth", 0) + 1,
                 payload={"lead_id": identity, "version": plan["version"],
-                         "sales_decision": decision.model_dump()})
+                         "sales_decision": decision.model_dump(),
+                         "record_fingerprint":digest({field:record.get(field) for field in FIELDS.split(',')})})
             # Alert and event must survive (or roll back) together. A restart
             # after capture cannot permanently suppress the internal alert.
             with store._connect() as conn:
                 conn.execute("BEGIN IMMEDIATE")
+                # Native and delta hints can observe one version at different
+                # times. Reuse its first immutable review, rather than changing
+                # its time-dependent decision or upgrading a historical payload.
+                previous=conn.execute('SELECT e.event_id,e.payload_json FROM automation_event_dedupe d '
+                    'JOIN automation_events e ON e.event_id=d.event_id '
+                    'JOIN automation_event_ledger l ON l.event_id=e.event_id '
+                    'WHERE d.source=? AND d.source_account=? AND d.identity=?',
+                    (child.source,child.source_account,'provider:'+digest(child.provider_event_id))).fetchone()
+                if previous:
+                    original=json.loads(previous['payload_json'])
+                    if original.get('lead_id')!=identity or original.get('version')!=plan['version']:
+                        raise ValueError('Stored Lead review identity differs')
+                    if original.get('record_fingerprint') and original['record_fingerprint']!=child.payload['record_fingerprint']:
+                        raise ValueError('Lead fields changed without a new provider version')
+                    emitted.append(previous['event_id'])
+                    continue
                 accepted, child_id, _ = ledger._capture(conn, child)
                 if accepted:
                     metadata = {"event_id": child_id, "version": plan["version"], "stale": plan["stale"],

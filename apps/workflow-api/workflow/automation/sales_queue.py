@@ -380,7 +380,7 @@ def render_sales_queue(view):
                          f"<p class='note'>{h(relation.get('basis'))}</p>"
                          + (f"<p class='note'>Verified links: {verified}</p>" if verified else ""))
         rows.append(
-            f"<article><div class='top'><h2>{h(item['name'])} <small>{h(item['company'])}</small></h2>"
+            f"<article id='lead-{h(item['id'])}'><div class='top'><h2>{h(item['name'])} <small>{h(item['company'])}</small></h2>"
             f"<strong class='{h(item['priority'].lower())}'>{h(item['priority'])}</strong></div>"
             f"<p><b>{h(item.get('state') or item['qualification'])}</b> · Lead {h(item['id'])} · {h(item['status'])} · {h(item['source'])} · {h(item['email'])}</p>"
             f"<p><b>Work:</b> {h(item['action'])} <span class='note'>{h(item['reason'])}</span></p>"
