@@ -46,7 +46,7 @@ def main():
         if configured:env['SITE_WORKFLOW_API_KEY']=key
         else:env.pop('SITE_WORKFLOW_API_KEY',None)
         with (audit/('api-configured.log' if configured else 'api-missing-key.log')).open('w') as log:
-            process=subprocess.Popen(['runuser','-u','opticable-workflow-api','--',
+            process=subprocess.Popen(['/usr/sbin/runuser','-u','opticable-workflow-api','--',
                 '/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python','-I',
                 '/opt/opticable-api-platform/ops/phase15/isolated_api.py'],env=env,
                 cwd='/opt/opticable-api-platform/apps/workflow-api',stdout=log,stderr=log)

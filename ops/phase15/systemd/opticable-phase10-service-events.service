@@ -20,4 +20,3 @@ ProtectHome=yes
 ReadWritePaths=/var/lib/opticable-workflow-api/output/automation /var/lib/opticable-api-platform/shared/zoho-oauth.json
 CapabilityBoundingSet=
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-
