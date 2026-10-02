@@ -8,6 +8,9 @@ from pathlib import Path
 import shutil
 import sqlite3
 import tempfile
+import sys
+
+sys.dont_write_bytecode=True
 
 REPO=Path(__file__).resolve().parents[2]
 spec=importlib.util.spec_from_file_location('recovery_validation',REPO/'ops/backup/optibrain-restore-drill.py')

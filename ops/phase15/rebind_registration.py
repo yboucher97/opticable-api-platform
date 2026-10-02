@@ -33,7 +33,7 @@ def rebind(root, sha):
     p.write_text('\n'.join(rows)+'\nOPTIBRAIN_PHASE7_RELEASE_SHA='+sha+'\n');os.chown(p,0,0);p.chmod(0o600)
     digest=root/'etc/optibrain/master-runbook.sha256'
     digest.write_text(hashlib.sha256((repo/'docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md').read_bytes()).hexdigest()+'\n')
-    os.chown(digest,0,0);digest.chmod(0o600)
+    os.chown(digest,0,0);digest.chmod(0o440)
     return dict(sha=sha,pinned_sources=len(sources),business_actions_enabled=False,approval_pins=None)
 
 

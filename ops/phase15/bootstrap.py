@@ -28,6 +28,18 @@ SAFETY = {
 }
 REQUIRED = ('python3','git','sqlite3','age','caddy','curl','openssl','systemd-analyze','ip','tar','node','npm')
 
+HELPERS = {'/usr/local/sbin/opticable-api-deploy-root':'deploy/manual-guarded-release.py',
+    '/usr/local/sbin/optibrain-admin':'ops/admin/optibrain-admin.py',
+    '/usr/local/sbin/optibrain-admin-update':'ops/admin/optibrain-admin-update.py',
+    '/usr/local/lib/optibrain-backup/optibrain-backup.sh':'ops/backup/optibrain-backup.sh',
+    '/usr/local/lib/optibrain-backup/optibrain-phase2a-upload.sh':'ops/backup/optibrain-phase2a-upload.sh',
+    '/usr/local/lib/optibrain-backup/optibrain-phase2a-upload.py':'ops/backup/optibrain-phase2a-upload.py',
+    '/usr/local/lib/optibrain-backup/optibrain-restore-drill.py':'ops/backup/optibrain-restore-drill.py',
+    '/usr/local/lib/optibrain/phase12-run-test-lab.py':'ops/phase12/run_test_lab.py',
+    '/usr/local/lib/optibrain/phase14-runtime-snapshot.py':'ops/phase14/runtime_snapshot.py',
+    '/usr/local/lib/optibrain/phase14-retention.py':'ops/phase14/retention.py',
+    '/usr/local/lib/optibrain/queue-metrics.py':'ops/phase15/queue_metrics.py'}
+
 
 def require(condition, message):
     if not condition:
@@ -128,23 +140,12 @@ def prepare(root):
         if p.is_file():
             saved=p.with_suffix(p.suffix+'.rebuild-disabled');p.rename(saved)
         p.symlink_to('/dev/null')
-    helpers = {'/usr/local/sbin/opticable-api-deploy-root':'deploy/manual-guarded-release.py',
-        '/usr/local/sbin/optibrain-admin':'ops/admin/optibrain-admin.py',
-        '/usr/local/sbin/optibrain-admin-update':'ops/admin/optibrain-admin-update.py',
-        '/usr/local/lib/optibrain-backup/optibrain-backup.sh':'ops/backup/optibrain-backup.sh',
-        '/usr/local/lib/optibrain-backup/optibrain-phase2a-upload.sh':'ops/backup/optibrain-phase2a-upload.sh',
-        '/usr/local/lib/optibrain-backup/optibrain-phase2a-upload.py':'ops/backup/optibrain-phase2a-upload.py',
-        '/usr/local/lib/optibrain-backup/optibrain-restore-drill.py':'ops/backup/optibrain-restore-drill.py',
-        '/usr/local/lib/optibrain/phase12-run-test-lab.py':'ops/phase12/run_test_lab.py',
-        '/usr/local/lib/optibrain/phase14-runtime-snapshot.py':'ops/phase14/runtime_snapshot.py',
-        '/usr/local/lib/optibrain/phase14-retention.py':'ops/phase14/retention.py',
-        '/usr/local/lib/optibrain/queue-metrics.py':'ops/phase15/queue_metrics.py'}
-    for dest,src in helpers.items():
+    for dest,src in HELPERS.items():
         mode=0o750 if dest.startswith('/usr/local/sbin/optibrain-admin') or dest.endswith(('optibrain-backup.sh','optibrain-phase2a-upload.sh','optibrain-restore-drill.py')) else 0o755
         write(root,dest,(REPO/src).read_text(),mode)
     for name,source in [('admin-helper.sha256','ops/admin/optibrain-admin.sha256'),
                         ('master-runbook.sha256','ops/admin/master-runbook.sha256')]:
-        write(root,'/etc/optibrain/'+name,(REPO/source).read_text(),0o440 if name=='admin-helper.sha256' else 0o600)
+        write(root,'/etc/optibrain/'+name,(REPO/source).read_text(),0o440)
     # Vendor Node tarballs use /usr/local; the live unit contract uses /usr/bin.
     # Only a fresh target without Node at that unit path may receive the link.
     node=target_path(root,'/usr/bin/node')
@@ -164,6 +165,17 @@ def prepare(root):
 
 def verify(root):
     trusted_helper_parents(root)
+    prerequisites=check(root)
+    require(prerequisites['supported_os'] and not prerequisites['missing_commands'],'Recovery prerequisites missing')
+    for name in APP:
+        p=target_path(root,'/etc/'+name+'.env');info=p.stat()
+        require(p.is_file() and info.st_uid==info.st_gid==0 and stat.S_IMODE(info.st_mode)==0o600,'Service environment ownership/mode unsafe')
+        require((root/'etc/systemd/system'/(name+'.service')).is_file(),'Service definition missing')
+    require((root/'etc/caddy/conf.d/opticable-api-platform.caddy').is_file(),'Proxy definition missing')
+    for dest in HELPERS:
+        p=target_path(root,dest);info=p.stat()
+        mode=0o750 if dest.startswith('/usr/local/sbin/optibrain-admin') or dest.endswith(('optibrain-backup.sh','optibrain-phase2a-upload.sh','optibrain-restore-drill.py')) else 0o755
+        require(p.is_file() and info.st_uid==info.st_gid==0 and stat.S_IMODE(info.st_mode)==mode,'Root helper ownership/mode unsafe')
     policy=json.loads((root/'etc/optibrain/mutation-control.json').read_text())
     pw,groups=ids(root)
     p=root/'etc/optibrain/mutation-control.json';info=p.lstat()
