@@ -1,4 +1,4 @@
-# Opticable automation master runbook
+# Opticable Automation Master Runbook
 
 AUTHORITATIVE CURRENT. API `1.12.0`. This is the operating contract; [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) establishes precedence. [Operator](OPTIBRAIN_OPERATOR_GUIDE.md), [deployment](OPTIBRAIN_DEPLOYMENT_GUIDE.md) and [recovery](OPTIBRAIN_RECOVERY_GUIDE.md) are the only current procedures for those tasks. Historical phase instructions cannot override them.
 
