@@ -37,6 +37,12 @@ def size(path):
     return sum(p.stat().st_size for p in Path(path).rglob('*') if p.is_file() and not p.is_symlink())
 
 
+def allocated_size(path):
+    # Journald's limit and journalctl --disk-usage count allocated blocks.
+    # Sparse/preallocated apparent file lengths are not disk consumption.
+    return sum(p.stat().st_blocks*512 for p in Path(path).rglob('*') if p.is_file() and not p.is_symlink())
+
+
 def growth_state(staging, db_bytes, application_logs, system_journal):
     # Journald's 512 MiB cap applies to allocated journal space; allow bounded
     # active-file overhead. Do not classify normal system retention as app growth.
@@ -92,7 +98,7 @@ def collect(now=None):
     add('DB health','ACTION REQUIRED' if db_errors else 'OK','SQLite check failed' if db_errors else 'Five active SQLite stores pass quick_check',checked=5,failed=len(db_errors),bytes=db_bytes)
     staging=size('/var/backups/optibrain')+size('/var/lib/optibrain/phase2a')
     app_logs=size('/var/lib/opticable-workflow-api/output/logs')
-    journal=size('/var/log/journal')
+    journal=allocated_size('/var/log/journal')
     add('Growth',growth_state(staging,db_bytes,app_logs,journal),
         'Backup, database, application logs and bounded system journal sampled',
         backup_staging_bytes=staging,db_bytes=db_bytes,log_bytes=app_logs+journal,

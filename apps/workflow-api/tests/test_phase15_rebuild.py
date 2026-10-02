@@ -63,6 +63,13 @@ class RebuildSafetyTests(unittest.TestCase):
             self.assertTrue(restore.safe_unit_mask(name))
         for name in ('../../etc/passwd','ssh.service','opticable-workflow-api.service','opticable-unknown.timer',False):
             self.assertFalse(restore.safe_unit_mask(name))
+    def test_sparse_journal_lengths_do_not_become_disk_growth(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            p=Path(temporary)/'fixture.journal'
+            with p.open('wb') as stream:stream.truncate(641*1024**2)
+            self.assertEqual(runtime.size(temporary),641*1024**2)
+            self.assertEqual(runtime.allocated_size(temporary),p.stat().st_blocks*512)
+            self.assertLess(runtime.allocated_size(temporary),1024**2)
 
 
 class QueueObservationTests(unittest.TestCase):
