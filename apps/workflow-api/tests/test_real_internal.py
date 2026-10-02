@@ -23,6 +23,18 @@ def receipt(at=None):
     return {'schema':1,'source':'ai_website','origin':'https://ai.opticable.ca','inquiry_id':'new-inquiry-1','request':body,'payload_hash':lc.digest(body),'request_hash':lc.digest(body),'occurred_at':at or NOW.isoformat(),'submitted_email':body['email']}
 
 class RealPlanningTests(unittest.TestCase):
+    def test_form_scope_uses_parser_identity_not_user_message_words(self):
+        from workflow.automation.phase9_form_receipts import MAIN_FORM,ENGLISH_FORM
+        self.assertTrue(ri.approved_form({'form_id':MAIN_FORM,'test_only':False}))
+        self.assertFalse(ri.approved_form({'form_id':ENGLISH_FORM,'test_only':False,'notes':'Courriel'}))
+        self.assertFalse(ri.approved_form({'form_id':MAIN_FORM,'test_only':True}))
+    def test_native_conversion_carries_click_ids_context_and_touch_without_pricing(self):
+        context={'Company':'Customer Company','Last_Name':'Example','Service_Types':'CCTV','Description':'Scope for human review','Inquiry_ID':'new-1',
+            'First_Campaign':'original','Last_Campaign':'returning','Google_GCLID':'safe-click','Google_GBRAID':'safe-braid','Google_WBRAID':'safe-wbraid','Meta_FBCLID':'safe-meta'}
+        deal=ri.conversion_deal(context,NOW)
+        for k,v in context.items():
+            if k not in {'Company','Last_Name'}:self.assertEqual(deal[k],v)
+        self.assertNotIn('Amount',deal);self.assertNotIn('OptiBrain_Test',deal)
     def test_latest_owner_ui_qualification_only(self):
         lead={'id':'101','Lead_Status':'Pre-Qualified','Email':'alice@customer.test'}
         self.assertTrue(ri.human_qualification(lead,[timeline()],ACT))

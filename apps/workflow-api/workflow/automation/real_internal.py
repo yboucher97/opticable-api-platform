@@ -112,6 +112,13 @@ def safe_conversion_references(lead,accounts,contacts,protected):
     if not company and not account:raise HumanAttention('Customer/company required in CRM before conversion')
     return account,contact
 
+def conversion_deal(lead,now=None):
+    now=now or datetime.now(timezone.utc)
+    fields={k:v for k,v in lead.items() if k in ATTR_FIELDS|{'Google_GCLID','Google_GBRAID','Google_WBRAID','Meta_FBCLID','Inquiry_ID'} and v not in (None,'')}
+    return {'Deal_Name':(str(lead.get('Company') or lead['Last_Name'])+' — '+str(lead.get('Service_Types') or 'New opportunity'))[:120],
+        'Stage':'Qualification','Closing_Date':(now+timedelta(days=30)).date().isoformat(),
+        'Service_Types':lead.get('Service_Types') or '', 'Description':str(lead.get('Description') or '')[:4000],**fields}
+
 class Engine:
     def __init__(self,client,*,dry_run=False):
         if os.geteuid()!=0:raise ValueError('Root orchestrator required')
@@ -293,9 +300,7 @@ class Engine:
             self.trigger({'kind':'human_qualification','source':lineage['source'],'occurred_at':datetime.now(timezone.utc).isoformat(),'record':lead,'timeline':timeline})
             for module,row in [('Accounts',account),('Contacts',contact)]:
                 if row:self.register(module,row,reference=True)
-            deal={'Deal_Name':(str(lead.get('Company') or lead['Last_Name'])+' — '+str(lead.get('Service_Types') or 'New opportunity'))[:120],
-                'Stage':'Qualification','Closing_Date':(datetime.now(timezone.utc)+timedelta(days=30)).date().isoformat(),
-                'Service_Types':lead.get('Service_Types') or '',**attribution({'attribution':{k.casefold():v for k,v in lead.items() if k in ATTR_FIELDS}})}
+            deal=conversion_deal(lead)
             row={'overwrite':False,'notify_lead_owner':False,'notify_new_entity_owner':False,'Deals':deal}
             if account:row['Accounts']={'id':account['id']}
             if contact:row['Contacts']={'id':contact['id']}
@@ -529,6 +534,10 @@ def private_receipts():
         if not cursor:return rows
     raise HumanAttention('Private intake export pagination exceeds bound')
 
+def approved_form(receipt):
+    from .phase9_form_receipts import MAIN_FORM
+    return receipt.get('form_id')==MAIN_FORM and receipt.get('test_only') is False
+
 def form_receipts(engine):
     """Fetch provider facts directly; the service-writable receipt ledger is not authority."""
     from .phase9_form_receipts import parse_notification, UnsupportedFormNotification
@@ -546,7 +555,7 @@ def form_receipts(engine):
         if any(not isinstance(v,dict) for v in facts.values()):raise HumanAttention('Form provider facts incomplete')
         try:receipt=parse_notification(message_id=message,details=facts['details'],content=facts['content'],headers=facts['header']['headerContent'],now=datetime.now(timezone.utc))
         except UnsupportedFormNotification:continue
-        if receipt['test_only'] or 'Courriel' not in facts['content'].get('content',''):continue  # English path unproven
+        if not approved_form(receipt):continue  # English path unproven; never infer language from body text.
         f=receipt['fields'];at=receipt['occurred_at']
         payload={'name':f['name'],'email':receipt['submitted_email'],'phone':f['phone'],'company':f['company'],
             'service':f.get('service',''),'message':f.get('notes',''),'consent':True,
