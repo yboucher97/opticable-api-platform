@@ -682,9 +682,9 @@
       "source_of_truth": "root evidence/receipt writers",
       "deployed": "reviewed explicit admin/install",
       "restored": "current recovery guide; name-based permissions",
-      "verified": "runtime/state consistency and read-only inventory",
+      "verified": "runtime/state consistency and read-only inventory; Git bundle verify and SHA/ref identity",
       "backed_up": "application archive + repository recipe",
-      "purpose": "immutable claims/ownership/backup/release evidence"
+      "purpose": "immutable claims/ownership/backup/release evidence; recovery-source/current.bundle exact-source history for offline Git recovery"
     },
     {
       "location": "/var/backups/optibrain",
