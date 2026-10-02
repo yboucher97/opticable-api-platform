@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "at": "2026-10-02T06:35:13.405081+00:00",
+  "owner_url": "https://optibrain.opticable.ca/v1/operator/today",
+  "unchanged_audience": true,
+  "unchanged_policies": true,
+  "added_operator_destinations": [
+    "optibrain.opticable.ca/v1/operator/*",
+    "optibrain.opticable.ca/v1/operator"
+  ],
+  "business_authority": false,
+  "usage": {
+    "schema": 2,
+    "job": "manual:phase14-access-routing",
+    "status": "success",
+    "calls": {
+      "crm_get": 0,
+      "crm_write": 0,
+      "mail_get": 0,
+      "mail_mutation": 0,
+      "forms_get": 0,
+      "forms_mutation": 0,
+      "sign_get": 0,
+      "sign_mutation": 0,
+      "books_get": 0,
+      "books_write": 0,
+      "other_zoho": 0,
+      "cloudflare": 5,
+      "github": 0,
+      "r2": 0,
+      "google": 0,
+      "oauth_refresh": 0
+    },
+    "calls_by_method": {
+      "cloudflare::read": 4,
+      "cloudflare::write": 1
+    },
+    "details": {},
+    "outcomes": {
+      "cloudflare::ok": 5
+    },
+    "last_response": {
+      "cloudflare": "ok"
+    },
+    "calls_run": 5,
+    "calls_hour_estimate": 0.0,
+    "calls_day_estimate": 0,
+    "soft_budget": 20,
+    "budget_exceeded": false,
+    "duration_ms": 2839
+  }
+}

@@ -36,7 +36,7 @@ sudo cat /run/optibrain-readiness/status.json
 sudo cat /var/lib/optibrain/releases/current.json
 ```
 
-Authenticated `/v1/system/readiness` reports OK, DEGRADED, ACTION REQUIRED or UNKNOWN without provider calls. Owner home: `https://approvals.opticable.ca/v1/operator/today`; technical drill-down: `/v1/operator/system-health`. Never forge an operator JWT for live validation. Fake/unit validation uses `python -I ops/phase6/validate.py`; focused patterns require `--suite focused --pattern ...`. Full regression runs once for the final local executable candidate, then exact-head release CI.
+Authenticated `/v1/system/readiness` reports OK, DEGRADED, ACTION REQUIRED or UNKNOWN without provider calls. Owner home: `https://optibrain.opticable.ca/v1/operator/today`; technical drill-down: `/v1/operator/system-health`. Never forge an operator JWT for live validation. Fake/unit validation uses `python -I ops/phase6/validate.py`; focused patterns require `--suite focused --pattern ...`. Full regression runs once for the final local executable candidate, then exact-head release CI.
 
 Canonical deploy is the installed root-owned `/usr/local/sbin/opticable-api-deploy-root EXACT_SHA`, sourced from `deploy/manual-guarded-release.py`. It needs root-reviewed exact-SHA authority, successful main CI, a verified rollback archive and immutable dependency environment. It pins source/version, restarts only the API, checks health/state and writes a schema-1 release receipt; failure restores code, environment, manifest and venv without replaying old DB state. The SSH wrapper requests this same gate. Old installers/release helpers refuse direct execution; see deprecations.
 
