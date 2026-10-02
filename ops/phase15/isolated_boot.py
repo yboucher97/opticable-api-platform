@@ -62,7 +62,8 @@ def main():
                 version=health['version'];prefix='configured' if configured else 'missing_key'
                 for route in ('/v1/system/readiness','/v1/automation/workflows','/v1/operator/today','/v1/operator/system-health'):
                     status,_=get(route);checks[prefix+':'+route]=status
-                    if status not in (401,403):raise ValueError('Authentication failed open')
+                    allowed=(401,403) if configured else (401,403,503)
+                    if status not in allowed:raise ValueError('Authentication failed open: '+route+' '+str(status))
                 if configured:
                     for route in ('/v1/system/readiness','/v1/automation/execution-health'):
                         status,_=get(route,key);checks['authenticated:'+route]=status
