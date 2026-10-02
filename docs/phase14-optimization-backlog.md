@@ -1,6 +1,6 @@
 # Phase 13 remediation and Phase 14 backlog
 
-No work below was begun as Phase 14. The immediate next mission should be **Phase13 closure verification after the owner actions**, with a human-issued instruction; optional simplification remains Phase14 and has not begun. Medium/low optimization waits until that remediation is accepted. Every next mission retains real/protected mutations 0 unless the owner separately authorizes an exact canary.
+Phase13 final closure is PASS / COMPLETE; [both owner gates are CLOSED — PASS](phase13-final-closure.md). The next recommended manual mission is **Phase14 optimization, simplification and maintainability**, with a new human-issued instruction. No Phase14 work has begun in this closure mission. Every next mission retains real/protected mutations 0 unless the owner separately authorizes an exact canary.
 
 ## Bounded Phase13 P1 progress (not formal Phase14)
 
@@ -10,7 +10,7 @@ No work below was begun as Phase 14. The immediate next mission should be **Phas
 
 **Technically closable active P0 controls were implemented in Phase13**, as specified in [the final report](phase13-remediation-final-report.md). Universal transport is root-owned and admits only one exact central TestTask; all other business writers forbidden. State-loss-safe Task claims/readback, immutable execution evidence, kill/approval revalidation, fail-closed auth, route/worker/scheduler containment, credential rotation, secret bindings, backup scope, fresh isolated recovery and durable exact-SHA deployment are complete.
 
-Two owner-only proof gaps BLOCK P0 CLOSURE: MANUAL-01 native Forms CRM integration deactivation/readback and MANUAL-02 actual offline owner AGE identity decryption. Exact steps and safe values are in [the owner checklist](phase13-owner-manual-actions.md). Real human approval before futureR3 DOES NOT BLOCK current containment because everyR3 transport is forbidden.
+Both former owner-only P0 gaps are CLOSED — PASS: MANUAL-01 exact native Forms containment under owner-admin UI evidence, and MANUAL-02 existing offline AGE identity decryption of generation20261001T202728Z with exact matching hashes and exits0. Exact proof and provider limits are in [final closure](phase13-final-closure.md); procedures remain in [the owner checklist](phase13-owner-manual-actions.md). Real human approval before futureR3 DOES NOT BLOCK current containment because everyR3 transport is forbidden.
 
 Before future real autonomy, qualify the exact action/eligible nonprotected target: verified ownership/data/dates/relationships/current state, central real policy, immutable claim/reconciliation across state loss, full evidence, kill, one-effect limit, monitoring/compensation/recovery and SEPARATE owner authorization. Existing root `real_canary_allowed=false` cannot be bypassed by approvals or flags. No existing production real action is ready/authorized simply because these technical repairs merged.
 

@@ -1,5 +1,12 @@
 # Phase 2A encrypted off-host recovery
 
+## Current Phase 13 owner-key recovery proof
+
+**MANUAL-02 CLOSED — PASS; owner-held AGE identity decryption PROVEN.** Exact generation `20261001T202728Z`; ciphertext SHA-256 `801cf07d3b16930e676d39c8640defb856a25bd03debeb881afa2719baa5148f`; public recipient SHA-256 `d3593cf7f443701fe9d863b6fa2b7ba7ff17ed216f6a6f463e1333589cd8a96f`; plaintext SHA-256 `9b37c94a4cb5be5f2bac6907bfcf17754e6fda10f5a464b1360f6b72c7a4be84`. Owner used the existing identity on the trusted Windows recovery computer; AGE exit0 and `tar -tzf` exit0. No private identity was copied to VPS/GitHub/Cloudflare/Codex/ChatGPT or rotated/replaced/regenerated.
+
+Fresh exact off-host streamed GET/hash plus retained root manifest/ciphertext/plaintext/configured public fingerprint independently match these values. Ciphertext integrity, owner-key decryption, plaintext integrity and archive readability PROVEN. Isolated server-side restore and restored actual-service-user API boot PROVEN from existing Phase13 remediation/P1 evidence (eight DBs, six masks, fresh dependencies, no provider network). Full replacement production host/OS NOT FULLY PROVEN; DNS/TLS disaster cutover NOT PROVEN; guaranteed RTO NOT CLAIMED. Provider reconnect/live failover remain future maturity work. See [final closure and evidence limits](phase13-final-closure.md). Historical sections below retain earlier-generation provenance.
+
+
 Status (2026-09-27): human offline decryption/hash and isolated staging restore
 passed. Hardened manual upload passed. `optibrain-phase2a-upload.timer` is installed,
 enabled and active; Phase 1 local timer remains enabled and active. See the progress

@@ -4,7 +4,7 @@ Current disposition after P0 remediation, 2026-10-01. Read [the final report](ph
 
 ## Current control coverage
 
-23 code executor families were found. At audit three families contained a central executor (3/23 =13.0%); that was not universal policy coverage. **Now only ONE provider-write family is admissible and it is central (1/1 =100%). The other22 families have no active business-write authority and are disabled/forbidden at transport.** Test root and runner kills remain OFF. This denominator measures executor families, not test coverage, call volume or real readiness. Native Forms is outside it and needs MANUAL-01.
+23 code executor families were found. At audit three families contained a central executor (3/23 =13.0%); that was not universal policy coverage. **Now only ONE provider-write family is admissible and it is central (1/1 =100%). The other22 families have no active business-write authority and are disabled/forbidden at transport.** Test root and runner kills remain OFF. This denominator measures executor families, not test coverage, call volume or real readiness. Native Forms is outside it; MANUAL-01 CLOSED — PASS under exact owner-admin evidence, with supported provider readback limits recorded in [final closure](phase13-final-closure.md). Active consequential unguarded application mutation paths: 0.
 
 All Zoho non-GET operations require the universal root control and one-use central context before OAuth and recheck before HTTP. Only exact registered TEST_ONLY `crm.task.create` is admitted, with root fresh locked off-host claim, attempted immutable journal evidence, exact client/body/path/action, fresh target and independent lower CRM/Test ownership fence. Lower legacy grants cannot override this. Missing/corrupt/untrusted controls deny. Books, Mail/Sign/drafts, real targets and every other action class are forbidden. GET executable/action/Creator/traversal/query-embedded/method-override paths are blocked. No automatic mutation retry or standby failover.
 
@@ -34,7 +34,7 @@ All Zoho non-GET operations require the universal root control and one-use centr
 |22|Omada/core legacy password/site jobs|RETIRED routes403; Omada health-only|No infrastructure jobs, sessions/uploads/run queues opened|
 |23|Generic Google/Zoho/CF/GH/OVH/Apollo runtime mutators|FORBIDDEN; CF/GH technical administration root one-use only|Service UID cannot mint technical authority; no unattended business grant|
 
-Native Zoho Forms can create/update CRM without passing through either core or connector. Available supported API/scopes cannot prove native integration deactivation; exact owner UI steps are MANUAL-01, BLOCKS P0 CLOSURE. Do not label this producer OFF until provider owner readback exists.
+Native Zoho Forms is an external producer outside core/connector transport. MANUAL-01 CLOSED — PASS: owner reports native CRM Add/Update/Upsert disabled/removed for French `i6pIlfoGOFER0OCZ4oUH_KMxVWRZKC9Of8vbyNAjR0g` and English `5kpuPyq6HG3cmmNAHG_2cFprnp16uoMzojC7Fxq42xo`, preserving forms/submissions. Available supported APIs/tools do not expose the native per-form integration state; the owner-attested provider UI check is authoritative human-admin evidence, not an API readback claim. Forms fallback remains OFF. MANUAL-02 CLOSED — PASS; all current containment P0 gates are closed. REAL_CANARY_ALLOWED remains FALSE.
 
 ## Independent lower and evidence controls
 

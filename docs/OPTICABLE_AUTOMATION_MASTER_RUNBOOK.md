@@ -1,6 +1,13 @@
 # Opticable Automation Master Runbook
 
-Last updated: 2026-10-01 — Phase 13 bounded P1 cleanup; owner closure pending
+## Final Phase 13 closure authority
+
+[Final closure report](phase13-final-closure.md) supersedes earlier pending owner-gate statements. MANUAL-01 CLOSED — PASS: both exact French/English native Forms CRM Add/Update/Upsert integrations disabled per owner-admin UI evidence; API cannot expose that native state. Forms and submissions preserved; fallback OFF. MANUAL-02 CLOSED — PASS: existing offline owner AGE key decrypted generation `20261001T202728Z`, all three exact hashes match, AGE exit0 and archive-list exit0. Key remains on trusted owner Windows computer; no identity or owner plaintext received. All current P0 containment gates CLOSED; readiness A for a future manually initiated Phase 14. REAL_CANARY_ALLOWED FALSE, real/Test provider writes OFF, persistent development worker OFF. Closure grants no real business authority and begins no Phase14.
+
+Recovery: exact off-host ciphertext, ciphertext integrity, owner-key decryption, plaintext integrity and archive readability PROVEN; isolated eight-DB/config/source/mask restore and restored application boot PROVEN from existing remediation/P1 evidence. Replacement production OS/host NOT FULLY PROVEN; DNS/TLS cutover NOT PROVEN; every provider reconnect/live failover NOT PROVEN; guaranteed RTO NOT CLAIMED. Exact hashes and evidence limits are in the closure report. Final release equality/CI is in `/var/lib/optibrain/phase13-closure/final-receipt.json`; root deployment receipt remains current release authority.
+
+
+Last updated: 2026-10-01 America/Toronto (2026-10-02 UTC) — Phase 13 FINAL CLOSURE PASS / COMPLETE
 Authority: Git history + this runbook + machine-readable production state.
 Rule: never store secret values in Git. Record only locations, scopes, IDs that are safe to retain, and recovery procedures.
 
@@ -12,7 +19,7 @@ Local backup has a destination-specific flock and45m timeout; receipt/service co
 
 Cloudflare observers remain canonical; disabled digest producers removed. Three GitHub business schedules remain disabled; health monitor retained. Core/control-plane deployment both require successful exact-main CI. Installed P1 helper/unit versions and current SHA are recorded in `/var/lib/optibrain/phase13-p1/runtime.json` and the existing deployment receipt. Rollback code and P1 unit/helper copies are held in `/var/lib/optibrain/phase13-p1/rollback`.
 
-MANUAL-01 and MANUAL-02 remain pending with unchanged instructions. P1 completion is not Phase13 closure or Phase14 initiation; real canary stays false. After the owner completes both, run the existing final closure verification under a separate manual instruction.
+P1 completion alone did not close Phase13. The subsequent manually initiated final closure verified both owner actions: MANUAL-01 and MANUAL-02 CLOSED — PASS. Real canary stays false; Phase14 has not begun.
 
 ## Phase 13 authoritative safety and recovery override
 
@@ -23,8 +30,8 @@ before older historical sections. Original main was ee7629f7e7954e1ee782c6481d4a
 first remediation release852e5f7c815c90e56e701436f73ee4133f51a673/PR89. Completion release
 is independently identified by `sudo cat /var/lib/optibrain/phase13-remediation/deployment.json`.
 Verify production/local/remote main equality; API1.11.0; America/Toronto. Technical P0
-remediation is complete with two owner-only proof gates; conditional readinessB, no
-real authorization. Phase14 and real canaries have not begun.
+remediation and the final two owner proof gates are COMPLETE; readiness A for future
+Phase14 optimization, with no real authorization. Phase14 and real canaries have not begun.
 
 Persistent development dispatch/status/usage services AND timers are MASKED/inactive.
 Original units are archived under /var/lib/optibrain/phase13-remediation/retired-development-units.
@@ -50,7 +57,8 @@ Preserve source AND configuration containment during deploy/restore:
 
 - Independent connector aa1e084b06184df73847639700a8e540bd433293 denies all provider
   non-GET/HEAD and executable/unsafe read paths pre-OAuth. Connector public CRM ingestion
-  is suspended. Native Forms is external; MANUAL-01 owner deactivation/readback required.
+  is suspended. Native Forms is external and disabled per exact owner-admin evidence;
+  MANUAL-01 CLOSED — PASS. Preserve disablement across recovery; no API readback claimed.
 - /etc/optibrain/phase9-form-enrichment.env OFF; continue receipt reads/reconciliation.
 - /etc/optibrain/phase13-observe-workflows plus source definitions disable Mail analysis,
   digest and Sign contract send. PDF CRM/WorkDrive config false; direct mutators retired.
@@ -79,7 +87,8 @@ six masks stored in system/systemd-masks.json rather than unsafe archive symlink
 Restore uses the included reviewed /usr/local/lib/optibrain-backup helper. Local archive,
 R2 download/hash, eight DB/config/mask/source integrity, temporary-key encrypted roundtrip,
 and fresh-dependency restored unprivileged application boot in network isolation all PASS.
-Actual owner-recipient AGE decryption remains MANUAL-02; private identity stays OFFLINE.
+Actual owner-recipient AGE decryption is PROVEN for generation20261001T202728Z;
+MANUAL-02 CLOSED — PASS. Private identity stays OFFLINE on the owner recovery computer.
 No full newOS/DNS/TLS/provider cutover or guaranteedRTO is claimed. NominalRPO daily;
 retention/pruning/cache/timeout/lock debt remainsP1. Do not delete recovery evidence.
 
@@ -93,8 +102,9 @@ Forms and deployed Cloudflare/GitHub versions/secrets require independent provid
 Only one exact Test Task effect has state-loss proof; all other action classes stay forbidden.
 
 Owner-only P0 actions and safe values/verification are fully specified in
-phase13-owner-manual-actions.md. The next manual mission is Phase13 closure validation,
-expected real/protected mutations0. Real action gates additionally require adequate exact
+phase13-owner-manual-actions.md. Both actions are CLOSED — PASS; see final closure.
+The next recommended manual engineering mission is Phase14 optimization/simplification;
+this closure mission stops without starting it. Expected real/protected mutations0. Real action gates additionally require adequate exact
 nonprotected ownership/data, separate owner authorization, one-effect limit, kill,
 readback/reconciliation, monitoring and compensation/recovery. Do not start Phase14.
 
@@ -820,4 +830,4 @@ Recovery starts with all provider writers OFF and development units masked. The 
 
 R2 `business-effects/v1/` is an indefinite locked execution ledger separate from rolling backup generations. Preserve it across VPS replacement. A missing local attempt never permits deleting or resetting a remote claim. Existing or uncertain claims are reconciliation-only; compare exact provider Task marker, target, fields and payload hash, then adopt the verified provider ID. Never retry a claim merely because provider search is empty. Missing/unavailable R2 blocks new execution. Legacy tasks without markers require their known IDs and historical operations registry; they are read-only observations.
 
-Native Zoho Forms can write CRM outside this application gate. Owner deactivation/verification of its two native CRM integrations is required before universal provider-write closure. Read-only Mail receipt collection can continue. The actual offline AGE owner identity and genuine Access human login/approval have distinct proof requirements; the manual checklist defines their readiness effects. No real canary may run without separate explicit owner authorization.
+Native Zoho Forms is outside this application gate. Its two exact native CRM integrations are now disabled under owner-admin authority (MANUAL-01 CLOSED — PASS), with provider API limits recorded in the final closure. Read-only Mail receipt collection can continue. The actual offline AGE owner identity and genuine Access human login/approval have distinct proof requirements; the manual checklist defines their readiness effects. No real canary may run without separate explicit owner authorization.

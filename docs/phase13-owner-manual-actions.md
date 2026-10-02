@@ -1,10 +1,13 @@
 # Manual actions required from owner
 
+**Current status: both actions CLOSED — PASS.** [Final closure](phase13-final-closure.md) records the exact forms, all three non-secret recovery hashes, AGE exit0/archive-list exit0, independent manifest/off-host consistency and evidence limits. Owner key remains offline. The steps below are retained recovery/administration procedures; they are not new pending requests. No real canary or Phase14 is authorized by completing them.
+
+
 No credentials should be sent in chat, Git, email, documentation or evidence. These actions close external proof gaps; they do not authorize a real canary. All OptiBrain provider writers remain OFF. Phase 14 has not begun.
 
 ## MANUAL-01 — contain native Zoho Forms → CRM
 
-**Severity: P0. Blocks readiness: YES. BLOCKS P0 CLOSURE of universal provider-write containment.**
+**Status: CLOSED — PASS. Historical severity P0; final authoritative owner-admin evidence satisfies this gate.**
 
 **System:** native Zoho Forms / Opticable CRM. Codex has valid CRM read access and technical API administration, but no supported authenticated API with available scopes can deactivate the native per-form CRM integrations. This is separate from the connector and core transport; disabling those cannot control a native Forms write.
 
@@ -24,7 +27,7 @@ No credentials should be sent in chat, Git, email, documentation or evidence. Th
 
 ## MANUAL-02 — prove the actual offline AGE recovery identity
 
-**Severity: P0. Blocks readiness: YES. BLOCKS P0 CLOSURE of owner-recipient disaster-recovery proof.**
+**Status: CLOSED — PASS. Historical severity P0; exact existing owner-key proof and independent manifest/hash consistency satisfy this gate.**
 
 **System:** encrypted R2 recovery backups. The legitimate owner identity is intentionally offline and unavailable to this VPS. Codex proved current ciphertext download/hash, eight DB restores, configuration/masks, fresh dependencies and restored application boot; a temporary-key encrypted R2 roundtrip passed separately. That does not prove your real private identity can decrypt the configured recipient.
 

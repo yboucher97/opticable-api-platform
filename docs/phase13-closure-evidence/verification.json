@@ -1,0 +1,442 @@
+{
+  "captured_at": "2026-10-02T01:05:25.977534+00:00",
+  "mission": "FINAL PHASE 13 CLOSURE; read-only provider verification",
+  "issues": [],
+  "coherence": {
+    "cwd": "/home/optibrain",
+    "verification_checkout": "/home/optibrain/phase13-closure",
+    "verification_branch": "phase13/final-closure-20261001",
+    "production": "c30acd6e7b8c37aca00ea02ce05d70aefcc9947e",
+    "local_main": "c30acd6e7b8c37aca00ea02ce05d70aefcc9947e",
+    "origin_main": "c30acd6e7b8c37aca00ea02ce05d70aefcc9947e",
+    "remote_main": "c30acd6e7b8c37aca00ea02ce05d70aefcc9947e",
+    "local_status": "",
+    "production_status": "?? apps/workflow-api/.venv\n?? apps/workflow-api/.venv.phase13-baseline/\n?? ops/backup/optibrain-cloudflare-auth-diagnostic.sh",
+    "production_status_note": "tracked tree clean; existing installed venv/baseline and read-only legacy diagnostic untracked; no cleanup performed",
+    "deployment_receipt": {
+      "state": "deployed",
+      "sha": "c30acd6e7b8c37aca00ea02ce05d70aefcc9947e",
+      "baseline": "90d071f2c1d94d988a6cae17871f9fb60d909b63",
+      "ci_run_id": 36941815559,
+      "writers_enabled": false,
+      "at": "2026-10-01T23:38:41.087786+00:00"
+    },
+    "installed_P1_hashes": "PASS",
+    "source_pins": "PASS"
+  },
+  "controls": {
+    "mutation_control": {
+      "schema": 1,
+      "test_writes_enabled": false,
+      "allowed_actions": [
+        "crm.task.create"
+      ],
+      "real_canary_allowed": false
+    },
+    "real_auto_writes": false,
+    "forms_fallback": "OFF",
+    "alternative_forms_mutation": "NONE enabled; central gate unchanged",
+    "safety_config_hashes_unchanged": 6,
+    "raw_access_log": "DISABLED",
+    "legacy_workflows": {
+      "customer-lifecycle-lead-intake.yaml": false,
+      "opticable-sales-draft.yaml": true,
+      "opticable-crm-lead-reconcile.yaml": true,
+      "customer-lifecycle-qualify-promote.yaml": false,
+      "universal-inbox-observe.yaml": true,
+      "platform-smoke-test.yaml": true,
+      "customer-lifecycle-mailbox-poll.yaml": true,
+      "customer-lifecycle-finance-observer.yaml": true,
+      "customer-lifecycle-sign-observer.yaml": true,
+      "customer-lifecycle-meeting.yaml": false,
+      "customer-lifecycle-quote-review.yaml": false,
+      "customer-lifecycle-contract-send.yaml": false,
+      "customer-lifecycle-digest.yaml": false,
+      "customer-lifecycle-approved-email-reply.yaml": false,
+      "opticable-crm-lead-observe.yaml": true,
+      "customer-lifecycle-email-analysis.yaml": false
+    },
+    "active_consequential_unguarded_application_paths": 0
+  },
+  "universal_kill": {
+    "mocked_pretransport_denials": 36,
+    "domains": [
+      "CRM",
+      "Mail",
+      "Sign",
+      "project/work orders",
+      "Services",
+      "documents/WorkDrive",
+      "Books"
+    ],
+    "real_provider_mutation_tests": 0
+  },
+  "systemd_scheduler": {
+    "opticable-workflow-api": {
+      "Result": "success",
+      "ActiveState": "active",
+      "SubState": "running"
+    },
+    "opticable-password-pdf": {
+      "Result": "success",
+      "ActiveState": "active",
+      "SubState": "running"
+    },
+    "opticable-omada-site": {
+      "Result": "success",
+      "ActiveState": "active",
+      "SubState": "running"
+    },
+    "caddy": {
+      "Result": "success",
+      "ActiveState": "active",
+      "SubState": "running"
+    },
+    "optibrain-agent-dispatch.service": {
+      "ActiveState": "inactive",
+      "UnitFileState": "masked"
+    },
+    "optibrain-agent-dispatch.timer": {
+      "ActiveState": "inactive",
+      "UnitFileState": "masked"
+    },
+    "optibrain-agent-status.service": {
+      "ActiveState": "inactive",
+      "UnitFileState": "masked"
+    },
+    "optibrain-agent-status.timer": {
+      "ActiveState": "inactive",
+      "UnitFileState": "masked"
+    },
+    "optibrain-agent-usage.service": {
+      "ActiveState": "inactive",
+      "UnitFileState": "masked"
+    },
+    "optibrain-agent-usage.timer": {
+      "ActiveState": "inactive",
+      "UnitFileState": "masked"
+    },
+    "optibrain-backup": {
+      "timer": {
+        "ActiveState": "active",
+        "UnitFileState": "enabled"
+      },
+      "service": {
+        "TimeoutStartUSec": "45min",
+        "Result": "success",
+        "ExecMainStatus": "0"
+      }
+    },
+    "optibrain-phase2a-upload": {
+      "timer": {
+        "ActiveState": "active",
+        "UnitFileState": "enabled"
+      },
+      "service": {
+        "TimeoutStartUSec": "46min",
+        "Result": "success",
+        "ExecMainStatus": "0"
+      }
+    },
+    "opticable-phase9-intake-receipts": {
+      "timer": {
+        "ActiveState": "active",
+        "UnitFileState": "enabled"
+      },
+      "service": {
+        "TimeoutStartUSec": "5min",
+        "Result": "success",
+        "ExecMainStatus": "0"
+      }
+    },
+    "opticable-phase10-service-events": {
+      "timer": {
+        "ActiveState": "active",
+        "UnitFileState": "enabled"
+      },
+      "service": {
+        "TimeoutStartUSec": "5min",
+        "Result": "success",
+        "ExecMainStatus": "0"
+      }
+    },
+    "opticable-phase12-test-runner": {
+      "timer": {
+        "ActiveState": "active",
+        "UnitFileState": "enabled"
+      },
+      "service": {
+        "TimeoutStartUSec": "3min",
+        "Result": "success",
+        "ExecMainStatus": "0"
+      }
+    },
+    "persistent_worker": "OFF",
+    "application_timers": 5,
+    "unexpected_application_timers": 0,
+    "recovered_queues": "PAUSED/RETIRED; no replay initiated"
+  },
+  "authentication": {
+    "privileged_routes": {
+      "/v1/automation/workflows": 401,
+      "/v1/operator/phase12/autonomy": 401,
+      "/v1/automation/workflows authenticated": 200,
+      "/jobs/closure-probe": 403,
+      "/v1/integrations/zoho/oauth/status?api_key=redacted-closure-probe": 400
+    },
+    "production_key_present": true,
+    "access_config_present": true,
+    "fixture_publicly_usable": false,
+    "application_sockets": "LOOPBACK ONLY",
+    "missing_auth_config": "focused test PASS; privileged routes 503"
+  },
+  "protected_baseline": {
+    "policy": "GET ONLY; ID/Modified_Time/OptiBrain_Test comparison",
+    "protected_records": 123,
+    "protected_mutations": 0,
+    "modules": {
+      "Accounts": {
+        "protected_count": 41,
+        "missing": 0,
+        "modified": 0,
+        "test_spoof": 0
+      },
+      "Contacts": {
+        "protected_count": 45,
+        "missing": 0,
+        "modified": 0,
+        "test_spoof": 0
+      },
+      "Deals": {
+        "protected_count": 1,
+        "missing": 0,
+        "modified": 0,
+        "test_spoof": 0
+      },
+      "Leads": {
+        "protected_count": 11,
+        "missing": 0,
+        "modified": 0,
+        "test_spoof": 0
+      },
+      "Service_Locations": {
+        "protected_count": 12,
+        "missing": 0,
+        "modified": 0,
+        "test_spoof": 0
+      },
+      "Services": {
+        "protected_count": 12,
+        "missing": 0,
+        "modified": 0,
+        "test_spoof": 0
+      },
+      "Tasks": {
+        "protected_count": 1,
+        "missing": 0,
+        "modified": 0,
+        "test_spoof": 0
+      }
+    }
+  },
+  "recovery": {
+    "generation": "20261001T202728Z",
+    "encrypted_sha256": "801cf07d3b16930e676d39c8640defb856a25bd03debeb881afa2719baa5148f",
+    "recipient_sha256": "d3593cf7f443701fe9d863b6fa2b7ba7ff17ed216f6a6f463e1333589cd8a96f",
+    "source_sha256": "9b37c94a4cb5be5f2bac6907bfcf17754e6fda10f5a464b1360f6b72c7a4be84",
+    "ciphertext_filename": "20261001T202728Z.tar.gz.age",
+    "offhost_object_key": "backups/2026/10/01/20261001T202728Z.tar.gz.age",
+    "fresh_offhost_ciphertext_hash": "PASS",
+    "ciphertext_bytes": 275804572,
+    "retained_plaintext_hash": "PASS",
+    "configured_public_recipient_hash": "PASS",
+    "owner_evidence_source": "owner results supplied in this manually initiated mission; trusted Windows computer",
+    "owner_identity_existing": true,
+    "age_exit": 0,
+    "archive_list_exit": 0,
+    "owner_decrypt": "PROVEN (owner-run evidence; independently consistent manifest)",
+    "plaintext_integrity": "PROVEN",
+    "archive_readable": "PROVEN (owner tar -tzf exit 0)",
+    "private_identity_copied_to_vps": false,
+    "private_identity_rotated_replaced_regenerated": false,
+    "isolated_restore": "PROVEN from existing remediation/P1 evidence",
+    "restored_application_boot": "PROVEN from existing remediation/P1 evidence",
+    "latest_isolated_restore_source_sha": "c30acd6e7b8c37aca00ea02ce05d70aefcc9947e",
+    "full_replacement_production_host": "NOT FULLY PROVEN",
+    "dns_tls_cutover": "NOT PROVEN",
+    "guaranteed_RTO": "NOT CLAIMED"
+  },
+  "execution_reconciliation": {
+    "action_id": "349a1be6be22628fddf8a4d8b04c7546",
+    "target_module": "Leads",
+    "target_id": "5062683000007898003",
+    "action_type": "crm.task.create",
+    "risk": "R1",
+    "provider_id": "5062683000007945002",
+    "final_state": "succeeded",
+    "history_integrity": "PASS",
+    "event_kinds": [
+      "prepared",
+      "transition",
+      "transport_intent",
+      "provider_response",
+      "transition"
+    ],
+    "timestamps_present": true,
+    "offhost_claim_result": "GET verified exact action/payload/target",
+    "provider_effect": "GET verified existing exact Task",
+    "provider_mutation_lost_ack_reconciliation": "REUSED proven remediation drill; safety/effect code unchanged",
+    "duplicate_writes": 0,
+    "uncertain_actions": 0,
+    "new_provider_mutation_drill": false,
+    "closure_test_covers_current_transport_accounting": true,
+    "historical_task_software_sha": "852e5f7c815c90e56e701436f73ee4133f51a673",
+    "historical_software_provenance": "retained deployment.log + remediation release/Task proof; not retroactively written into the historical journal",
+    "action_created_at": "2026-10-01T20:26:48.086398+00:00",
+    "action_completed_at": "2026-10-01T20:26:52.414742+00:00"
+  },
+  "provider_boundary": {
+    "opticable-ai-connector": {
+      "bundle_sha256": "5ef2d4ebd0944282f2919376b7468979efd62708bd4d7f63a75f79c8ec4e8ea9"
+    },
+    "opticable-control-plane": {
+      "bundle_sha256": "6b611444be10fc84e84dd4b9714828a4dea7557f5d8a4bcdfdb7117d75039ce1"
+    },
+    "public_status": {
+      "/v1/system/health": 200,
+      "/pdf/health": 200,
+      "/omada/api/health": 200,
+      "/omada/api/runs": 403,
+      "/jobs/closure-probe": 403,
+      "/pdf/jobs/closure-probe": 403
+    },
+    "api_version": "1.11.0",
+    "github_business_schedules": {
+      "customer-lifecycle-digest.yml": "disabled_manually",
+      "customer-lifecycle-mailbox-poll.yml": "disabled_manually",
+      "schedule-customer-lifecycle.yml": "disabled_manually"
+    },
+    "cloudflare_cron": {
+      "schedules": [
+        {
+          "cron": "*/15 * * * *",
+          "created_on": "2026-09-26T16:33:32.582163Z",
+          "modified_on": "2026-10-01T23:38:57.934198Z"
+        }
+      ]
+    },
+    "effect_locks": [
+      {
+        "id": "optibrain-business-effects-indefinite",
+        "enabled": true,
+        "prefix": "business-effects/v1/",
+        "condition": {
+          "type": "Indefinite"
+        }
+      }
+    ]
+  },
+  "credentials": {
+    "current_api_key": "active; authenticated read 200",
+    "crm_watch_current_matches": true,
+    "crm_watch_expiry": "2026-10-07T16:38:19-04:00",
+    "old_exposed_credentials": "revoked/replaced; prior 401 evidence reused, current replacement/provider confirmed",
+    "secret_bindings": {
+      "opticable-ai-connector": {
+        "CONNECTOR_API_KEY": "secret_text",
+        "ZOHO_CLIENT_SECRET": "secret_text"
+      },
+      "opticable-control-plane": {
+        "CORE_API_KEY": "secret_text"
+      }
+    },
+    "current_sensitive_env_values_found_in_tracked_files": 0,
+    "new_rotation": false,
+    "credential_url_probe": "synthetic redacted stub only; real credentials sent in headers",
+    "raw_sensitive_access_logging": "DISABLED"
+  },
+  "manual_01": {
+    "forms": [
+      {
+        "language": "French",
+        "public_link_suffix": "i6pIlfoGOFER0OCZ4oUH_KMxVWRZKC9Of8vbyNAjR0g",
+        "CRM_ADD": "DISABLED",
+        "CRM_UPDATE": "DISABLED",
+        "CRM_UPSERT": "DISABLED",
+        "evidence": "owner-attested native admin UI deactivation/removal, supplied in mission; no API integration-state readback claimed"
+      },
+      {
+        "language": "English",
+        "public_link_suffix": "5kpuPyq6HG3cmmNAHG_2cFprnp16uoMzojC7Fxq42xo",
+        "CRM_ADD": "DISABLED",
+        "CRM_UPDATE": "DISABLED",
+        "CRM_UPSERT": "DISABLED",
+        "evidence": "owner-attested native admin UI deactivation/removal, supplied in mission; no API integration-state readback claimed"
+      }
+    ],
+    "provider_evidence_limit": "Catalogued all 1,309 available Zoho CRM MCP tools (three pages); native Zoho Forms per-form integration status is not exposed. Connector has ZohoForms.forms.READ only. Saved browser profiles have no established Zoho admin sign-in. No supported authenticated native integration-status readback path was found.",
+    "fallback": "OFF",
+    "forms_submissions": "preserved per owner attestation; no submit/delete performed",
+    "native_forms_independently_mutating_CRM": "NO (authoritative owner-admin evidence)",
+    "status": "CLOSED \u2014 PASS"
+  },
+  "safety": {
+    "protected_mutations": 0,
+    "real_customer_sends": 0,
+    "books_writes": 0,
+    "test_crm_writes": 0,
+    "persistent_worker": "OFF",
+    "real_auto_writes": "OFF",
+    "REAL_CANARY_ALLOWED": false,
+    "Phase14_started": false
+  },
+  "result": "PASS",
+  "testing": {
+    "focused_closure": {
+      "patterns": [
+        "test_phase13_safety.py",
+        "test_phase13_p1_cleanup.py",
+        "test_phase9_form_enrichment.py",
+        "test_phase12_business_autonomy.py",
+        "test_phase12_closure.py",
+        "test_inspection_boundaries.py",
+        "test_phase7_operator_canary.py"
+      ],
+      "tests": 54,
+      "subtests": 83,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "network_attempts": 0,
+      "passed": true
+    },
+    "previous_remediation_full": {
+      "tests": 797,
+      "subtests": 742,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "network_attempts": 0,
+      "new_run": false
+    },
+    "later_P1_full": "811 tests; successful c30acd6 exact-main CI; historical reused evidence",
+    "new_local_full_regression": false
+  },
+  "readiness": "A \u2014 READY FOR PHASE 14 OPTIMIZATION",
+  "phase13": "COMPLETE",
+  "manual_02": "CLOSED \u2014 PASS",
+  "p0": {
+    "central_mutation_control": "CLOSED",
+    "provider_state_loss_reconciliation": "CLOSED",
+    "universal_kill": "CLOSED",
+    "immutable_execution_evidence": "CLOSED",
+    "credential_remediation": "CLOSED",
+    "authentication_fail_closed": "CLOSED",
+    "offline_owner_key_recovery": "CLOSED",
+    "native_forms_containment": "CLOSED",
+    "exact_canary_qualification": "CLOSED",
+    "critical_route_containment": "CLOSED"
+  },
+  "canary_qualification_scope": "Exact TEST_ONLY gates pass; every real action remains forbidden. CLOSED is the current fail-closed qualification/containment gate, never proof of a qualified or authorized real executor. Each future real action requires separate exact authorization and its action-specific ownership/effect/approval proof.",
+  "documentation_release": "Documentation-only closure descendant; final exact deployed/main SHA is recorded in /var/lib/optibrain/phase13-closure/final-receipt.json and /var/lib/optibrain/phase13-remediation/deployment.json. Application and installed P1 helper bytes remain c30acd6-equivalent."
+}
