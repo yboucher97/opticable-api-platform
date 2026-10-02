@@ -165,6 +165,8 @@ class ZohoGatewayClient:
         from .automation.provider_usage import record_call
         record_call(service, method, path)
         response = httpx.request(method, url, **kwargs)
+        from .automation.provider_usage import record_response
+        record_response(service, method, path, response.status_code)
         content_type_response = response.headers.get("content-type", "")
         try:
             data: Any = response.json()
@@ -334,6 +336,17 @@ class ZohoGatewayClient:
                 ) from exc
             if not self.settings.standby_enabled:
                 raise
+            return standby()
+        except ZohoGatewayError as exc:
+            # One GET-only refresh after an explicit 401. Never retry 403,
+            # throttling, ambiguous transports or any mutation here.
+            if (not mutation and getattr(exc.response,'status_code',None)==401
+                    and callable(getattr(self.oauth,'invalidate_access_token',None))):
+                self.oauth.invalidate_access_token(access_token)
+                token=self.oauth.access_token()
+                return self._local_request(service,normalized_method,path,query=query or {},
+                    headers=safe_headers,body=body,content_type=content_type,access_token=token)
+            if mutation or not self.settings.standby_enabled:raise
             return standby()
         except Exception:
             # Explicit provider responses or local validation errors are never

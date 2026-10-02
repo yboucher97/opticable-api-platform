@@ -27,6 +27,23 @@ class FakeOAuth:
 
 
 class ZohoGatewayTests(unittest.TestCase):
+    def test_read_401_refreshes_exactly_once_and_403_never_retries(self):
+        class OAuth(FakeOAuth):
+            def __init__(self):self.invalid=[];self.calls=0
+            def access_token(self):self.calls+=1;return 'old' if self.calls==1 else 'new'
+            def invalidate_access_token(self,token):self.invalid.append(token)
+        for status in (401,403):
+            oauth=OAuth();client=ZohoGatewayClient(self.settings,oauth)
+            denied=httpx.Response(status,json={'code':'INVALID_TOKEN'},request=httpx.Request('GET','https://www.zohoapis.com/crm/v8/Leads'))
+            good=httpx.Response(200,json={'data':[]},request=denied.request)
+            with patch('workflow.zoho_gateway.httpx.request',side_effect=[denied,good]) as transport:
+                if status==401:
+                    self.assertTrue(client.request('zohoapis','GET','/crm/v8/Leads')['ok'])
+                    self.assertEqual((transport.call_count,oauth.invalid),(2,['old']))
+                else:
+                    with self.assertRaises(ZohoGatewayError):client.request('zohoapis','GET','/crm/v8/Leads')
+                    self.assertEqual((transport.call_count,oauth.invalid),(1,[]))
+
     def setUp(self) -> None:
         self.settings = ZohoGatewaySettings(
             base_url="https://connect.opticable.ca",

@@ -13,12 +13,38 @@ import stat
 import subprocess
 import sys
 import tempfile
+from time import monotonic
 
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
 BUCKET = 'optibrain-recovery-prod'
+
+
+class UploadUsage:
+    """Count actual SDK sends, including retries, without keys or credentials."""
+    def __init__(self,root):
+        self.root=root;self.reads=0;self.writes=0;self.started=monotonic()
+    def sent(self,request,**kwargs):
+        if request.method in {'GET','HEAD'}:self.reads+=1
+        else:self.writes+=1
+    def save(self,success):
+        value={'schema':2,'job':'backup:r2','recorded_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+               'status':'success' if success else 'failed','calls':{'r2':self.reads+self.writes},
+               'calls_by_method':{'r2::read':self.reads,'r2::write':self.writes},
+               'duration_ms':int((monotonic()-self.started)*1000)}
+        # Expendable monitoring only. Immutable upload evidence is separate.
+        try:
+            path=self.root/'provider-usage.jsonl'
+            cutoff=(datetime.datetime.now(datetime.timezone.utc)-datetime.timedelta(days=30)).isoformat()
+            rows=[json.loads(line) for line in path.read_text().splitlines()] if path.exists() else []
+            rows=[row for row in rows if row['recorded_at']>=cutoff][-9999:]+[value]
+            fd,name=tempfile.mkstemp(prefix='.usage-',dir=self.root)
+            with os.fdopen(fd,'w') as stream:
+                for row in rows:stream.write(json.dumps(row,sort_keys=True)+'\n')
+            os.replace(name,path)
+        except (OSError,ValueError,KeyError):print('R2 accounting unavailable; upload evidence retained',file=sys.stderr)
 
 def sha(path):
     h = hashlib.sha256()
@@ -194,18 +220,23 @@ def main():
         raise RuntimeError('unsafe spool directory')
     with open(root / 'lock', 'a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        usage=UploadUsage(root);success=False
+        client.meta.events.register('before-send.s3',usage.sent)
         try:
             archives = sorted(Path('/var/backups/optibrain').glob('optibrain-backup-*.tar.gz'))
             if not archives:
                 raise RuntimeError('no local archive')
             run(client, archives[-1], recipient, root,
                 Path(__file__).with_name('optibrain-backup.sh'))
+            success=True
         except Exception as e:
             # Keep prior success but make latest failure visible and durable.
             atomic(root / 'last-failure.json', {'error_type': type(e).__name__,
                 'time': datetime.datetime.now(datetime.timezone.utc).isoformat()})
             audit(root, 'upload_failed', error_type=type(e).__name__)
             raise
+        finally:
+            usage.save(success)
 
 if __name__ == '__main__':
     try:

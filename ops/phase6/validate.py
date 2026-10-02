@@ -27,7 +27,9 @@ def main():
                   {'PATH':'/usr/bin:/bin','LANG':'C.UTF-8'})
     parser = argparse.ArgumentParser()
     parser.add_argument("--suite", choices=("focused", "full", "approval"), default="full")
+    parser.add_argument('--pattern', action='append', help='Explicit changed-area patterns; requires --suite focused')
     args = parser.parse_args()
+    if args.pattern and args.suite!='focused':parser.error('--pattern requires --suite focused')
     os.environ.clear()
     os.environ.update(PATH="/usr/bin:/bin", LANG="C.UTF-8", PYTHONDONTWRITEBYTECODE="1")
     sys.dont_write_bytecode = True
@@ -48,6 +50,7 @@ def main():
         suite = unittest.TestSuite()
         patterns = ["test*.py"] if args.suite == "full" else (
             ["test_phase6_outbound_approval.py"] if args.suite == "approval" else ["test_phase6*.py"])
+        if args.pattern:patterns=args.pattern
         for pattern in patterns:
             suite.addTests(unittest.defaultTestLoader.discover(str(app / "tests"), pattern=pattern))
         result = unittest.TextTestRunner(verbosity=2, resultclass=module.CountedResult).run(suite)

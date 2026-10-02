@@ -302,11 +302,14 @@ def build_sales_queue(client, db_path, *, account_id, from_address, now=None,
         view = enhance_lab_queue(view, leads, contacts, accounts, deals, tasks, mail_by_id, now=clock)
         ledger_path = Path(db_path).parent / "phase9-intake.db"
         provider_ledger = FormReceiptLedger(provider_path) if provider_path.exists() else None
+        traces=IntakeLedger(ledger_path).traces([str(lead['id']) for lead in leads
+            if str(lead.get('Description') or '').startswith('OPTIBRAIN TEST — PHASE 9')]) if ledger_path.exists() else {}
+        timelines=provider_ledger.timelines([row['id'] for row in view['rows']]) if provider_ledger else {}
+        by_id={str(lead['id']):lead for lead in leads}
         for row in view["rows"]:
-            lead = next(x for x in leads if str(x["id"]) == row["id"])
-            trace = (IntakeLedger(ledger_path).trace(row["id"]) if ledger_path.exists()
-                     and str(lead.get("Description") or "").startswith("OPTIBRAIN TEST — PHASE 9") else None)
-            provider_events = provider_ledger.timeline(row["id"]) if provider_ledger else []
+            lead = by_id[row['id']]
+            trace = traces.get(row['id'])
+            provider_events = timelines.get(row['id'],[])
             historical = trace["events"] if trace else []
             # The old Test Lab ledger used its own ID for a form notification;
             # the provider notification is the authoritative event for that submission.

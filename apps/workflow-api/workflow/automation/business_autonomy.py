@@ -73,6 +73,14 @@ def local_time(value: str | None) -> str | None:
     return aware(value).astimezone(TORONTO).strftime("%b %-d, %Y %-I:%M %p %Z")
 
 
+def attention_scope(row: dict) -> str:
+    """Display classification only; never establishes ownership or permission."""
+    if row.get('ownership')=='TEST_ONLY':return 'TEST_ONLY'
+    if row.get('ownership') in {'PROTECTED','UNKNOWN'}:return 'HISTORICAL'
+    if row.get('state') in {'succeeded','denied','cancelled'}:return 'RESOLVED'
+    return 'REAL CURRENT' if row.get('ownership')=='REAL' else 'HISTORICAL'
+
+
 @dataclass(frozen=True)
 class Action:
     action_type: str
@@ -249,13 +257,13 @@ class BusinessJournal:
             """)
 
     @contextmanager
-    def _db(self):
-        db = sqlite3.connect(self.path, timeout=10)
+    def _db(self, *, read_only=False):
+        db = sqlite3.connect(self.path.resolve().as_uri()+'?mode=ro',uri=True,timeout=10) if read_only else sqlite3.connect(self.path, timeout=10)
         try:
             db.row_factory = sqlite3.Row
             db.execute("PRAGMA foreign_keys=ON")
             db.execute("PRAGMA busy_timeout=10000")
-            db.execute("PRAGMA journal_mode=DELETE")
+            db.execute('PRAGMA query_only=ON' if read_only else 'PRAGMA journal_mode=DELETE')
             with db:
                 yield db
         finally:
@@ -537,7 +545,7 @@ class BusinessJournal:
 
     def view(self, *, limit: int = 100) -> dict:
         safe = max(1, min(limit, 100))
-        with self._db() as db:
+        with self._db(read_only=True) as db:
             actions = [dict(r) for r in db.execute("SELECT * FROM actions ORDER BY updated_at DESC LIMIT ?", (safe,))]
             approvals = [dict(r) for r in db.execute("SELECT * FROM approvals ORDER BY issued_at DESC LIMIT ?", (safe,))]
             totals = {r["state"]: r["n"] for r in db.execute(
@@ -546,18 +554,30 @@ class BusinessJournal:
             last_good = db.execute("SELECT completed_at FROM runner_runs WHERE status='success' "
                                    "ORDER BY completed_at DESC LIMIT 1").fetchone()
             pending = db.execute("SELECT COUNT(*) AS n FROM scheduled WHERE state='pending'").fetchone()["n"]
+            counts=[dict(r) for r in db.execute('SELECT ownership,state,COUNT(*) AS n FROM actions GROUP BY ownership,state')]
+        scopes={key:0 for key in ('REAL CURRENT','TEST_ONLY','HISTORICAL','RESOLVED')}
+        exceptions={key:0 for key in scopes};waiting={key:0 for key in scopes}
+        for row in counts:
+            scope=attention_scope(row);scopes[scope]+=row['n']
+            exceptions[scope]+=row['n'] if row['state'] in {'reconcile','stale','failed','deferred'} else 0
+            waiting[scope]+=row['n'] if row['state']=='approval_required' else 0
+        for row in actions:row['attention_scope']=attention_scope(row)
         today = datetime.now(TORONTO).date()
         # SQLite string date is UTC; filter the bounded local-day interval precisely.
         start = datetime.combine(today, datetime.min.time(), tzinfo=TORONTO).astimezone(timezone.utc).isoformat()
-        with self._db() as db:
+        with self._db(read_only=True) as db:
             today_count = db.execute("SELECT COUNT(*) AS n FROM actions WHERE state='succeeded' "
-                "AND risk!='R0' AND updated_at>=?", (start,)).fetchone()["n"]
+                "AND ownership='REAL' AND risk!='R0' AND updated_at>=?", (start,)).fetchone()["n"]
         summary = {"auto_actions_today": today_count,
-                   "waiting_approval": totals.get("approval_required", 0),
-                   "exceptions": sum(totals.get(x, 0) for x in ("reconcile", "stale", "failed", "deferred")),
+                   "waiting_approval": waiting['REAL CURRENT'],
+                   "exceptions": exceptions['REAL CURRENT'],
+                   "test_only_exceptions": exceptions['TEST_ONLY'],
+                   "historical_exceptions": exceptions['HISTORICAL'],
+                   "test_only_approvals": waiting['TEST_ONLY'],
                    "denied": totals.get("denied", 0),
                    "unresolved": totals.get("reconcile", 0) + totals.get("failed", 0)}
         return {"summary": summary, "actions": actions, "approvals": approvals,
+                'attention_scopes':scopes,'exceptions_by_scope':exceptions,'approvals_by_scope':waiting,
                 "runner": dict(runner) if runner else None,
                 "last_successful_run": last_good["completed_at"] if last_good else None,
                 "scheduled_pending": pending}
@@ -697,7 +717,7 @@ def render_dashboard(view: dict, *, section: str) -> str:
         recovery = ("Reconcile exact provider state; do not retry." if x["state"] == "reconcile" else
                     "Review the changed target before proposing a new action." if x["state"] == "stale" else
                     "Human review is required before any external effect." if x["state"] == "approval_required" else "")
-        cards.append(f"<article><b>{h(x['action_type'])}</b> · {h(x['state'].replace('_',' ').upper())} · {h(x['risk'])}"
+        cards.append(f"<article><b>{h(x['action_type'])}</b> · {h(x['state'].replace('_',' ').upper())} · {h(x['risk'])} · {h(x.get('attention_scope',attention_scope(x)))}"
                      f"<p>{h(x['target_module'])} {h(x['target_id'])} · {h(reason)}</p>"
                      f"<p>{effect_line or 'Exact effect bound by payload hash'}{expiry}</p>"
                      f"<p>{h(recovery)}</p>"

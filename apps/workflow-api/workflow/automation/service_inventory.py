@@ -199,6 +199,6 @@ def render_recurring_view(view):
             "<style>body{font:16px/1.45 system-ui;max-width:1100px;margin:2rem auto;padding:0 1rem;color:#182536}"
             "article{border:1px solid #ccd;border-radius:.5rem;padding:.8rem 1rem;margin:1rem 0}</style>"
             f"<h1>Recurring services · {h(view['scope'].upper())}</h1>"
-            f"<p>Fresh CRM read {h(view['read_at'])}. Montreal business dates. {h(note)}</p>"
+            f"<p>CRM projection observed {h(view['read_at'])}. Montreal business dates. {h(note)}</p>"
             f"<p>{view['active_count']} active · MRR CAD {h(view['mrr_cad'])} · ARR CAD {h(view['arr_cad'])}</p>"
             + "".join(lines) + "</html>")

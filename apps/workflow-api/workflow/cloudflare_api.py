@@ -54,6 +54,8 @@ class CloudflareApiClient:
             },
             timeout=httpx.Timeout(float(self.settings.timeout_seconds), connect=20.0),
         )
+        from .automation.provider_usage import record_response
+        record_response('cloudflare', method, path, response.status_code)
         try:
             data: Any = response.json()
         except json.JSONDecodeError:

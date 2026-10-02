@@ -12,6 +12,15 @@ from workflow.zoho_oauth import ZohoOAuthManager
 
 
 class ZohoSharedCacheTests(unittest.TestCase):
+    def test_stale_401_cannot_invalidate_newer_token_from_another_process(self):
+        manager=ZohoOAuthManager(self.settings)
+        manager._write_cache({'binding':'fixture','access_token':'newer','access_token_expires_at':time.time()+3500})
+        manager._access_token='old';manager.invalidate_access_token('old')
+        self.assertEqual(json.loads(self.cache.read_text())['access_token'],'newer')
+        manager.invalidate_access_token('newer')
+        self.assertNotIn('access_token',json.loads(self.cache.read_text()))
+        self.assertEqual(json.loads(self.path.read_text())['refresh_token'],'fixture-refresh')
+
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)

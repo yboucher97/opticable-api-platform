@@ -91,7 +91,10 @@ class GoogleApiClient:
         if body is not None and normalized_method not in {"GET", "DELETE"}:
             request_kwargs["json"] = body
 
+        from .automation.provider_usage import record_call, record_response
+        record_call('google', normalized_method, clean_path)
         response = httpx.request(normalized_method, url, **request_kwargs)
+        record_response('google', normalized_method, clean_path, response.status_code)
         content_type = response.headers.get("content-type", "")
         data: Any
         if "json" in content_type.lower():

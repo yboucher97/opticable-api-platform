@@ -11,34 +11,77 @@ from threading import Lock
 from time import monotonic
 
 CURRENT = ContextVar('optibrain_provider_usage',default=None)
-KINDS = ('crm_get','crm_write','mail_get','mail_mutation','other_zoho','cloudflare','github','oauth_refresh')
+KINDS = ('crm_get','crm_write','mail_get','mail_mutation','forms_get','forms_mutation',
+         'sign_get','sign_mutation','books_get','books_write','other_zoho',
+         'cloudflare','github','r2','google','oauth_refresh')
 LOG = logging.getLogger(__name__)
+
+def call_kind(provider,method,path=''):
+    method=method.upper()
+    if provider=='zohoapis' and path.startswith('/crm/'):
+        kind='crm_get' if method=='GET' else 'crm_write'
+    elif provider=='zohoapis' and path.startswith('/books/'):
+        kind='books_get' if method=='GET' else 'books_write'
+    elif provider=='mail':kind='mail_get' if method=='GET' else 'mail_mutation'
+    elif provider in {'forms','sign'}:kind=provider+('_get' if method=='GET' else '_mutation')
+    elif provider in {'cloudflare','github','r2','google','oauth_refresh'}:kind=provider
+    else:kind='other_zoho'
+    return kind
 
 def record_call(provider,method,path=''):
     scope=CURRENT.get()
     if scope is None:return
-    if provider=='zohoapis' and path.startswith('/crm/'):
-        kind='crm_get' if method=='GET' else 'crm_write'
-    elif provider=='mail':kind='mail_get' if method=='GET' else 'mail_mutation'
-    elif provider in {'cloudflare','github','oauth_refresh'}:kind=provider
-    else:kind='other_zoho'
-    with scope.lock:scope.counts[kind]+=1
+    kind=call_kind(provider,method,path)
+    with scope.lock:
+        scope.counts[kind]+=1
+        scope.methods[kind+('::read' if method.upper() in {'GET','HEAD'} else '::write')]+=1
+        if provider=='mail' and path.endswith('/content'):scope.details['mail_content_get']+=1
+        if provider=='zohoapis' and path.endswith('/actions/watch'):scope.details['crm_watch_get']+=1
+
+def record_response(provider,method,path,status):
+    scope=CURRENT.get()
+    if scope is None:return
+    with scope.lock:
+        key=call_kind(provider,method,path)
+        scope.outcomes[key+('::ok' if 200<=status<300 or status==304 else '::failed')]+=1
+
+def mail_observation_failed(count):
+    scope=CURRENT.get()
+    if scope is not None:
+        with scope.lock:scope.details['mail_observation_failed']+=count
+
+def measured(db_path,job):
+    """Account authenticated route work; rejected identities make no calls."""
+    from functools import wraps
+    import inspect
+    def decorate(fn):
+        @wraps(fn)
+        async def route(*args,**kwargs):
+            with ProviderUsage(db_path,job):
+                return await fn(*args,**kwargs)
+        route.__signature__=inspect.signature(fn,eval_str=True)
+        return route
+    return decorate
 
 class ProviderUsage:
-    def __init__(self,db_path,job,*,runs_per_day=0,soft_budget=20):
+    def __init__(self,db_path,job,*,runs_per_day=0,soft_budget=20,persist_empty=True):
         if not re.fullmatch(r'[A-Za-z0-9_.:-]{1,100}',job):raise ValueError('Invalid metric job name')
         self.db_path,self.job,self.runs_per_day,self.soft_budget=db_path,job,runs_per_day,soft_budget
-        self.counts=Counter();self.lock=Lock();self.started=monotonic();self.summary=None
+        self.persist_empty=persist_empty
+        self.counts=Counter();self.methods=Counter();self.details=Counter();self.outcomes=Counter()
+        self.lock=Lock();self.started=monotonic();self.summary=None
     def __enter__(self):
         self.token=CURRENT.set(self);return self
     def __exit__(self,kind,value,tb):
         CURRENT.reset(self.token)
         counts={k:self.counts[k] for k in KINDS};total=sum(counts.values())
-        self.summary={'job':self.job,'status':'failed' if kind else 'success','calls':counts,
+        self.summary={'schema':2,'job':self.job,'status':'failed' if kind or self.details['mail_observation_failed'] or any(k.endswith('::failed') for k in self.outcomes) else 'success','calls':counts,
+            'calls_by_method':dict(self.methods),'details':dict(self.details),'outcomes':dict(self.outcomes),
             'calls_run':total,'calls_hour_estimate':total*self.runs_per_day/24,
             'calls_day_estimate':total*self.runs_per_day,'soft_budget':self.soft_budget,
             'budget_exceeded':total>self.soft_budget,'duration_ms':int((monotonic()-self.started)*1000)}
         (LOG.warning if self.summary['budget_exceeded'] else LOG.info)('provider_usage %s',json.dumps(self.summary,sort_keys=True))
+        if self.db_path is None or not total and not self.persist_empty:return False
         try:
             with sqlite3.connect(self.db_path,timeout=0.5) as db:
                 db.execute('CREATE TABLE IF NOT EXISTS provider_usage (id INTEGER PRIMARY KEY, job TEXT NOT NULL, recorded_at TEXT NOT NULL, summary_json TEXT NOT NULL)')

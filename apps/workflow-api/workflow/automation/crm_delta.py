@@ -31,7 +31,7 @@ class CrmLeadDeltaAdapter:
             raise SyncFailure("invalid_cursor")
         try:
             result = self.client.request("zohoapis", "GET", "/crm/v8/Leads",
-                headers={"If-Modified-Since": (before - timedelta(seconds=120)).isoformat()},
+                headers={"If-Modified-Since": (before - timedelta(seconds=120)).isoformat(timespec='seconds')},
                 query={"fields": "id,Modified_Time", "per_page": limit, "page": 1,
                        "sort_by": "Modified_Time", "sort_order": "asc"})
         except Exception as exc:

@@ -52,6 +52,10 @@ _PINNED_SOURCES = frozenset({
     "workflow/automation/providers/outbound_mail.py",
     "workflow/automation/mutation_control.py", "workflow/automation/remote_effects.py",
     "workflow/automation/provider_usage.py",
+    "workflow/automation/today.py", "workflow/automation/readiness.py",
+    "workflow/automation/read_inventory_cache.py", "workflow/automation/mail_observation_cache.py",
+    "workflow/automation/customer_lifecycle.py", "workflow/automation/operations.py",
+    "workflow/automation/providers/lifecycle_mailbox.py",
     "workflow/zoho_gateway.py", "workflow/google_api.py", "workflow/cloudflare_api.py", "workflow/github_api.py",
 })
 
@@ -142,7 +146,7 @@ def verify_source_hashes(expected: dict, *, root: Path) -> None:
 
 
 def maybe_install_phase7(app, *, client, store, engine, api_version: str,
-                         manifest_path: Path = MANIFEST):
+                         manifest_path: Path = MANIFEST, readiness=None):
     if os.environ.get("OPTIBRAIN_PHASE7_REGISTRATION") is None:
         return {"registered": False, "create": False, "crm": False, "outbound": False}
     if api_version != "1.11.0":
@@ -193,7 +197,7 @@ def maybe_install_phase7(app, *, client, store, engine, api_version: str,
         app, verifier=verifier, client=client, store=store,
         account_id=manifest["mailbox_account_id"], from_address=manifest["from_address"],
         allowed_origin=manifest["allowed_origin"],
-        consume_callback=crm_callback, outbound_consume_callback=outbound_callback)
+        consume_callback=crm_callback, outbound_consume_callback=outbound_callback,readiness=readiness)
     install_phase7_create_routes(
         app, verifier=verifier, client=client, store=store,
         allowed_origin=manifest["allowed_origin"], consume_callback=create_callback)

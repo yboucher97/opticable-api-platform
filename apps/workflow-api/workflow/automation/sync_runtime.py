@@ -69,10 +69,13 @@ def sync_one_due(store: AutomationStore, jobs: list[SyncJob], access_token: Call
             adapter = CrmLeadDeltaAdapter(crm_client, job.source_account)
         else:
             adapter = GoogleDeltaAdapter(job.provider, job.source_account, job.stream, access_token)
-        sync.cycle(job.provider, job.source_account, job.stream,
-                   adapter,
-                   mode=job.mode, page_limit=job.page_limit, max_pages=1,
-                   poll_interval=job.poll_interval_seconds)
+        from .provider_usage import ProviderUsage
+        with ProviderUsage(store.db_path,'delta:'+job.provider+':'+job.stream,
+                           runs_per_day=86400/job.poll_interval_seconds,soft_budget=3):
+            sync.cycle(job.provider, job.source_account, job.stream,
+                       adapter,
+                       mode=job.mode, page_limit=job.page_limit, max_pages=1,
+                       poll_interval=job.poll_interval_seconds)
 
 
 class DeltaWorker:
