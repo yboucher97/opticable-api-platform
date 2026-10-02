@@ -18,6 +18,7 @@ def module(name,path):
 bootstrap=module('phase15_bootstrap','ops/phase15/bootstrap.py')
 queue=module('phase15_queue','ops/phase15/queue_metrics.py')
 runtime=module('phase15_runtime','ops/phase14/runtime_snapshot.py')
+restore=module('phase15_restore_drill','ops/backup/optibrain-restore-drill.py')
 NOW=datetime(2026,10,2,tzinfo=timezone.utc)
 
 
@@ -43,11 +44,25 @@ class RebuildSafetyTests(unittest.TestCase):
     def test_nonroot_prepare_refused(self):
         with patch.object(bootstrap.os,'geteuid',return_value=1234):
             with self.assertRaisesRegex(ValueError,'Root prepare'):bootstrap.prepare(Path('/'))
+    def test_prepare_refuses_untrusted_helper_parents_before_mutation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);(root/'etc').mkdir();(root/'etc/os-release').write_text('ID=ubuntu\nVERSION_ID="24.04"\n')
+            (root/'etc/optibrain-rebuild-target').touch();(root/'usr/local/lib').mkdir(parents=True)
+            before=sorted(root.rglob('*'))
+            with patch.object(bootstrap.os,'geteuid',return_value=0),patch.object(bootstrap.subprocess,'run') as command:
+                with self.assertRaisesRegex(ValueError,'Root helper parent ownership'):bootstrap.prepare(root)
+                command.assert_not_called()
+            self.assertEqual(before,sorted(root.rglob('*')))
     def test_bounded_journal_is_not_application_log_warning(self):
         self.assertEqual(runtime.growth_state(0,0,25*1024**2,512*1024**2),'OK')
         self.assertEqual(runtime.growth_state(0,0,65*1024**2,0),'DEGRADED')
         self.assertEqual(runtime.growth_state(0,0,0,641*1024**2),'ACTION REQUIRED')
         self.assertEqual(runtime.growth_state(26*1024**3,0,0,0),'ACTION REQUIRED')
+    def test_only_known_deny_masks_are_recoverable(self):
+        for name in [n+'.timer' for n in bootstrap.TIMERS]+list(bootstrap.RETIRED)+['opticable-phase12-test-runner.service']:
+            self.assertTrue(restore.safe_unit_mask(name))
+        for name in ('../../etc/passwd','ssh.service','opticable-workflow-api.service','opticable-unknown.timer',False):
+            self.assertFalse(restore.safe_unit_mask(name))
 
 
 class QueueObservationTests(unittest.TestCase):

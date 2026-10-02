@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 readonly BACKUP_FORMAT_VERSION="1"
-readonly SCRIPT_VERSION="1.0.3"
+readonly SCRIPT_VERSION="1.0.4"
 readonly REPO_DEFAULT="/opt/opticable-api-platform"
 readonly DEST_DEFAULT="/var/backups/optibrain"
 readonly CONFIG_DEFAULT="/etc/optibrain/backup.conf"
@@ -185,12 +185,14 @@ EOF
 copy_if_present() {
   local source="$1" target="$2"
   [[ -e "${source}" ]] || return 0
-  if [[ -L "${source}" && "${source}" == /etc/systemd/system/optibrain-agent-* && "$(readlink "${source}")" == /dev/null ]]; then
-    # Encode retired unit masks as regular metadata; never extract an absolute
-    # symlink from an archive. Recovery explicitly replays these masks.
+  if [[ -L "${source}" && ( "${source}" == /etc/systemd/system/optibrain-* || "${source}" == /etc/systemd/system/opticable-* ) && "$(readlink "${source}")" == /dev/null ]]; then
+    # Encode retired AND fresh-recovery unit masks as regular metadata; never
+    # extract an absolute symlink. These are denial state, never enablement.
     mkdir -p "${staging}/system"
     python3 - "${staging}/system/systemd-masks.json" "$(basename "${source}")" <<'PY'
-import json,pathlib,sys
+import json,pathlib,re,sys
+if not re.fullmatch(r'optibrain-agent-(dispatch|status|usage)\.(service|timer)|(?:optibrain-backup|optibrain-phase2a-upload|opticable-phase9-intake-receipts|opticable-phase10-service-events|opticable-phase12-test-runner)\.timer|opticable-phase12-test-runner\.service',sys.argv[2]):
+    raise SystemExit('unsupported masked application unit')
 p=pathlib.Path(sys.argv[1]);units=json.loads(p.read_text()) if p.exists() else []
 p.write_text(json.dumps(sorted(set(units+[sys.argv[2]]))))
 PY
@@ -329,7 +331,7 @@ files = []
 for path in sorted(p for p in root.rglob("*") if p.is_file() and p != root / "manifest.json"):
     files.append({"path": path.relative_to(root).as_posix(), "size": path.stat().st_size, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
 manifest = {
-    "backup_format_version": "1", "backup_script_version": "1.0.2", "timestamp": timestamp,
+    "backup_format_version": "1", "backup_script_version": "1.0.4", "timestamp": timestamp,
     "hostname": socket.getfqdn(), "production_git_sha": git_sha, "application_version": app_version,
     "included_components": ["source_release", "sqlite_database", "persistent_state", "generated_operational_state", "etc_configuration", "systemd_units", "caddy_configuration", "credential_metadata"],
     "database_integrity": pathlib.Path(sqlite_result_path).read_text(encoding="utf-8"),

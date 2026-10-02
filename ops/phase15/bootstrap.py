@@ -60,6 +60,15 @@ def ids(root):
     return passwd, groups
 
 
+def trusted_helper_parents(root):
+    for name in ('/usr','/usr/local','/usr/local/lib','/usr/local/sbin'):
+        p=target_path(root,name)
+        if p.exists():
+            info=p.stat()
+            require(p.is_dir() and info.st_uid==0 and not info.st_mode&0o022,
+                    'Root helper parent ownership/mode unsafe; extract packages without archived owners')
+
+
 def check(root):
     missing = []
     for command in REQUIRED:
@@ -78,6 +87,7 @@ def prepare(root):
     require(not (root/'var/lib/optibrain/releases/current.json').exists(),'Existing production release; prepare forbidden')
     require(not (root/'etc/optibrain').exists(),'Existing control configuration; prepare forbidden')
     require(not (root/'var/lib/opticable-workflow-api/output/automation').exists(),'Existing journals; prepare forbidden')
+    trusted_helper_parents(root)
     pw, groups = ids(root)
     for name in USERS:
         if name not in pw:
@@ -153,6 +163,7 @@ def prepare(root):
 
 
 def verify(root):
+    trusted_helper_parents(root)
     policy=json.loads((root/'etc/optibrain/mutation-control.json').read_text())
     pw,groups=ids(root)
     p=root/'etc/optibrain/mutation-control.json';info=p.lstat()
