@@ -1,4 +1,4 @@
-> Current authority: [Phase 13 final remediation report](phase13-remediation-final-report.md). Exact deployed SHA is the root deployment receipt: `sudo cat /var/lib/optibrain/phase13-remediation/deployment.json`. Historical phase percentages are not readiness evidence.
+> Current authority: [Phase 13 final closure — PASS / COMPLETE](phase13-final-closure.md) and [remediation provenance](phase13-remediation-final-report.md). Exact deployed SHA is the root deployment receipt: `sudo cat /var/lib/optibrain/phase13-remediation/deployment.json`. Historical phase percentages are not readiness evidence.
 
 # OptiBrain architecture blueprint
 
@@ -10,7 +10,7 @@ OptiBrain connects business intake, CRM identity, sales assistance, service life
 
 The original core was ee7629f7e7954e1ee782c6481d4aaef37349d10f. The first P0 remediation main/deployed release was 852e5f7c815c90e56e701436f73ee4133f51a673 (PR89); the completion release includes this blueprint. API remains 1.11.0. Production, local main and remote main are verified against the root exact-SHA deployment receipt, rather than a hardcoded historical report. The independent connector was emergency-fixed in its own repository, PRs 30–32, final merge at aa1e084b06184df73847639700a8e540bd433293.
 
-Persistent Codex development autonomy is retired. Application read/reconciliation/backup timers continue. Only one exact central registered TEST_ONLY follow-up Task executor can obtain provider-write authority; both root and runner write switches currently remain OFF. Real customer sends and financial writes have no audit authorization. Native Zoho Forms ingestion is a separate provider-managed producer; the universal claim that every automatic provider write is OFF is not proven.
+Persistent Codex development autonomy is retired. Application read/reconciliation/backup timers continue. Only one exact central registered TEST_ONLY follow-up Task executor can obtain provider-write authority; both root and runner write switches currently remain OFF. Real customer sends and financial writes have no audit authorization. Native Zoho Forms is a separate provider-managed producer. Both exact French/English native CRM Add/Update/Upsert integrations are DISABLED per authoritative owner-admin UI evidence (MANUAL-01 CLOSED — PASS); supported API state readback is unavailable. Fallback enrichment remains OFF. Phase 13 is COMPLETE; readiness A for a future manually initiated Phase 14. REAL_CANARY_ALLOWED stays FALSE.
 
 ## Data and control flows
 
@@ -18,7 +18,8 @@ Persistent Codex development autonomy is retired. Application read/reconciliatio
 flowchart TD
   AI[ai.opticable.ca public intake] --> EDGE[connect.opticable.ca connector]
   WEB[Main website FR / EN] --> FORMS[Native Zoho Forms]
-  FORMS --> CRM[Zoho CRM business records]
+  CRM[Zoho CRM business records]
+  FORMS -. Native CRM Add/Update/Upsert DISABLED .-> CRM
   FORMS --> MAIL[Zoho Mail notifications and threads]
   EDGE --> KV[Connector KV receipts]
   EDGE -. Phase 13 provider writes blocked .-> CRM
@@ -175,9 +176,9 @@ Journals, execution-health endpoints, systemd results and GitHub health checks e
 
 Local backup1.0.2 captures source identity, online SQLite snapshots, application/root protection/crosswalk/journal/document state, /etc configuration, custom units/drop-ins, six retirement masks as explicit metadata, installed helpers and SSH recovery identity. It excludes encrypted-cache recursion. Archives are private, checksummed and verified. The first deployed remediation generation20261001T202728Z restored1,329 files,1,516 metadata entries and eight databases with six masks, all integrity checks PASS. Completion release receives a fresh generation; its exact ID/hashes are in the final receipt and `/var/lib/optibrain/phase2a/state.json`.
 
-AGE ciphertext was independently downloaded from R2 and matched its hash. A temporary-key encrypt→upload→download→decrypt→restore roundtrip passed and the temporary private key/plaintext were removed. Restored source/config/state booted the actual unprivileged API with fresh dependencies inside isolated mount/network/PID namespaces, localhost only, no provider network, all writers OFF; health200/auth401/legacy403. The real owner-held offline identity was unavailable, so decryption for that recipient remains MANUAL-02. New OS installation, public DNS/TLS cutover and real provider OAuth reconnect were not executed; RTO is not guaranteed.
+AGE ciphertext was independently downloaded from R2 and matched its hash. A temporary-key encrypt→upload→download→decrypt→restore roundtrip passed and the temporary private key/plaintext were removed. Restored source/config/state booted the actual unprivileged API with fresh dependencies inside isolated mount/network/PID namespaces, localhost only, no provider network, all writers OFF; health200/auth401/legacy403. MANUAL-02 is now CLOSED — PASS: the existing owner-held AGE identity decrypted generation `20261001T202728Z` on the trusted Windows recovery computer, matching ciphertext/recipient/plaintext hashes with AGE and archive-list exits 0. Exact off-host ciphertext retrieval/integrity, owner-held key decryption, plaintext integrity and archive readability are PROVEN. The key remains offline; no private identity or owner plaintext was received. See [exact non-secret closure evidence](phase13-final-closure.md). New OS installation, public DNS/TLS cutover and real provider OAuth reconnect were not executed; RTO is not guaranteed.
 
-Nominal local-state RPO is daily. Off-host effect claims independently protect the admitted Task against backup-gap replay. Retention says seven generations, but preserve-existing disables pruning and encrypted caches accumulate; bounded retention/alerts are P1. On restore, keep development masks and all writers OFF, restore trusted controls/manifests/registries before traffic, preserve rotated credentials, and reconcile provider effects after the recovered generation before selective read/backup timer restart. The native Forms producer needs owner containment independently of restoring Python code. Cloudflare/GitHub versions/bindings and offline key custody must be recovered independently of the core Git bundle.
+Nominal local-state RPO is daily. Off-host effect claims independently protect the admitted Task against backup-gap replay. Retention says seven generations, but preserve-existing disables pruning and encrypted caches accumulate; bounded retention/alerts are P1. On restore, keep development masks and all writers OFF, restore trusted controls/manifests/registries before traffic, preserve rotated credentials, and reconcile provider effects after the recovered generation before selective read/backup timer restart. The native Forms producer remains externally disabled under owner-admin control; independently recheck its configuration after disaster recovery because restoring Python code cannot enforce that external state. Cloudflare/GitHub versions/bindings and offline key custody must be recovered independently of the core Git bundle.
 
 ## Future direction
 

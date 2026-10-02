@@ -1,6 +1,8 @@
 # Phase 13 independent audit and P0 remediation — final report
 
-**PASS WITH REQUIRED REMEDIATION. Technical remediation COMPLETE; two owner-only P0 closure checks remain. Phase 14 has not begun.**
+**FINAL CLOSURE: PASS. PHASE 13 COMPLETE. MANUAL-01 CLOSED — PASS; MANUAL-02 CLOSED — PASS. Readiness A — READY FOR PHASE 14 OPTIMIZATION in a future manually initiated mission. Phase 14 has not begun; REAL_CANARY_ALLOWED remains FALSE.**
+
+[Final closure](phase13-final-closure.md) and [machine-readable verification](phase13-closure-evidence/verification.json) supersede pending gate/readiness statements in the historical remediation narrative below. The original technical proof and regression counts remain historical evidence, not new closure test runs. Current P0 coverage is CLOSED, including exact Test qualification/forbidden real-canary containment; no real executor is authorized. Verification/main/production at closure start was c30acd6; final documentation-release SHA/equality is independently recorded in the root final closure/deployment receipts.
 
 The system is a coherent read/assistance platform with a narrowly controlled Test executor. Its historical claim of universal autonomy safety was incorrect. Phase 13 closed or forbade the active application bypasses, rotated the exposed credentials, recovered provider effects after local state loss, and substantially proved application recovery. It does not authorize real business automation.
 
@@ -42,22 +44,22 @@ At interruption the final execution-context/R2-lock-code changes and completion 
 
 ## Executive verdict and domain scores
 
-**Overall readiness: B — ready for a limited real canary only after the specific outstanding P0 owner checks and action-specific gates. This is a conditional architecture classification, not canary authorization. Real automation safe/authorized today: NO.**
+**Final readiness: A — READY FOR PHASE 14 OPTIMIZATION in a future manually initiated mission. All current Phase 13 P0 gates are CLOSED. Real business automation remains forbidden; a future limited real canary requires separate exact human authorization and action-specific qualification. REAL_CANARY_ALLOWED remains FALSE.**
 
 | Domain | Score | Material limitation |
 |---|---|---|
 | Architecture | ACCEPTABLE | Clear provider and local ownership; phase registries and legacy representations need consolidation |
 | Security | ACCEPTABLE | Exposed credentials rotated; authentication fails closed; legacy routes intrinsically denied; human R3 Access flow unproven and every R3 writer forbidden |
 | Data integrity | ACCEPTABLE | Protected versions/classification and sampled chains pass; provider-neutral identity/history guarantees incomplete |
-| CRM safety | ACCEPTABLE within contained application | Only one exact central Test Task transport; native Forms remains a separate owner-only containment check |
+| CRM safety | ACCEPTABLE within contained application | Only one exact central Test Task transport, killed; native Forms disabled under authoritative owner-admin evidence |
 | Identity | ACCEPTABLE for sampled Lab chains | 15 unique persistent crosswalk entries; 48-bit provider-derived IDs are not provider-neutral |
 | Sales | ACCEPTABLE for reads | Qualification/state/scenarios confirmed; 11 live Leads lack critical project facts |
 | Attribution | NEEDS WORK | Existing first/latest/history/relationship continuity passes; source namespaces and provider latest-field semantics differ |
 | Lifecycle | ACCEPTABLE for reads | Recurring/dormancy/UNKNOWN-revenue rules pass; no verified actionable real service dates/revenue |
 | Operations | NEEDS WORK | Three provider-backed Lab chains; live project projection intentionally empty; JSON registry owns project state |
 | Autonomy | BLOCKED for real activity | Real transport forbidden; only one Test executor admitted; future actions need exact real ownership/authorization and provider recovery proof |
-| Recovery | NEEDS WORK | Eight DBs, masks/config/source, fresh dependencies and isolated restored API boot pass; actual offline owner key proof pending; new OS/DNS/provider reconnect not executed |
-| Backups | ACCEPTABLE with required owner proof | Local and off-host hashes/coverage pass; retention growth needs bounded policy |
+| Recovery | ACCEPTABLE for Phase 13 recovery gate | Exact existing owner-key decrypt/hash/archive proof and isolated application restore/boot pass; new OS/DNS/provider reconnect remain maturity work |
+| Backups | ACCEPTABLE; owner proof CLOSED — PASS | Exact generation20261001T202728Z decrypt/hash/readability proven; retention growth needs bounded policy |
 | Monitoring | NEEDS WORK | Health, journals and unit status exist; consolidated alert/exception ownership incomplete |
 | Performance | NEEDS WORK | Duplicate business schedulers removed; repeated receipt retrieval/full scans/N+1 remain |
 | Documentation | ACCEPTABLE | Authoritative blueprint/control/timer/runbook updated; older phase reports retained as historical evidence |
@@ -81,7 +83,7 @@ At interruption the final execution-context/R2-lock-code changes and completion 
 | Legacy Mail/Sign bypass | CLOSED BY FORBIDDANCE: workflows disabled in source/root override, every Mail/Sign write denied before OAuth; old job routes intrinsically403 | No send/reply/draft/contract writer may be reopened through booleans/shared-key authority |
 | PDF/WorkDrive/legacy infrastructure writes | CLOSED BY FORBIDDANCE: direct mutators raise before transport; flags OFF; legacy GET/POST jobs403, Omada health-only | Canonical ownership and central executor required for any future reuse |
 | Worker retirement | CLOSED: six masked service/timer units, originals archived, absent root authorization; no cron/controller mailers | Never restore/unmask obsolete development autonomy from backups |
-| Universal application write kill / central coverage | CLOSED FOR ACTIVE APPLICATION: fixed root-owned control, missing/corrupt/substituted control denies; exact context consumed before OAuth/rechecked before HTTP; independent lower firewall | Native Forms is outside this boundary; MANUAL-01 BLOCKS P0 CLOSURE |
+| Universal application write kill / central coverage | CLOSED FOR ACTIVE APPLICATION: fixed root-owned control, missing/corrupt/substituted control denies; exact context consumed before OAuth/rechecked before HTTP; independent lower firewall | Native Forms is outside this boundary; MANUAL-01 now CLOSED — PASS under exact owner-admin evidence |
 | State-loss idempotency / stale recovery | CLOSED FOR ADMITTED ACTION: atomic locked R2 claim before Task create, exact marker/target/hash readback, off-host result; empty local journal recovered same Task with zero second create | Every new action class must independently meet this contract; never infer coverage for disabled creates/sends/onboarding |
 | Immutable execution evidence | CLOSED FOR NEW CENTRAL ACTIONS: full immutable envelope, append-only hash-chained history, run/trigger before attempted transport, provider intent/response/reconciliation | Old histories cannot be retroactively completed; preserve their incomplete-history classification |
 | Approval kill semantics | CLOSED BY REVALIDATION AND FORBIDDANCE: policy checked before one-use consume; binding/expiry/stale/replay tests; R3 transport forbidden | Real interactive authenticated human approval remains a future gate, DOES NOT BLOCK current containment |
@@ -90,7 +92,7 @@ At interruption the final execution-context/R2-lock-code changes and completion 
 | Connector plaintext bindings | CLOSED: key and client secret migrated to `secret_text`, health200 | Provider secrets and scopes require normal private recovery custody |
 | Scheduler containment | CLOSED: root runner kill OFF/180s/flock/4 actions/2 write ceiling/TEST_ONLY; reconciliation before kill. Three duplicate GitHub business schedules disabled remotely and cron removed | Read-only collector/service jobs still have unbounded service timeouts; P1 |
 | Backup coverage | CLOSED: all phase root registries/journals/documents/online DBs/config/drop-ins/helpers/SSH and six mask metadata included | Retention/interprocess lock improvements P1 |
-| Fresh recovery / replacement host | SUBSTANTIALLY PROVEN: actual encrypted R2 roundtrip with temporary key, current archive hash/download, eight DB integrity restores, masks/config/source, fresh dependencies, isolated actual-service-user API boot | Actual owner-held AGE identity unavailable: MANUAL-02 BLOCKS P0 CLOSURE; no full new OS/DNS/provider cutover or guaranteed RTO |
+| Fresh recovery / replacement host | SUBSTANTIALLY PROVEN: actual encrypted R2 roundtrip with temporary key, current archive hash/download, eight DB integrity restores, masks/config/source, fresh dependencies, isolated actual-service-user API boot | Actual existing owner-held AGE identity decryption now PROVEN for20261001T202728Z: MANUAL-02 CLOSED — PASS; no full new OS/DNS/provider cutover or guaranteed RTO |
 | Active test safety failures | CLOSED: clean baseline783 passed; historical audit failures not reproduced; Root fixture failures traced to privilege assumptions and validator runs as checkout owner, without skips | Final exact-head full CI plus completion focused tests must remain successful |
 | Durable deployment/config state | CLOSED: root manual exact-SHA/CI/main/rollback/immutable-venv gate, source manifest rebind, guarded restart/health, persisted configuration and helper backup | Later release requires a new root exact-SHA authorization; deployment grants no business authority |
 
@@ -232,6 +234,6 @@ Focused testing covered transport denial before OAuth, lower-guard bypass preven
 - [Backlog / deprecation / real-canary gate](phase14-optimization-backlog.md)
 - Sanitized committed evidence: `docs/phase13-remediation-evidence/`; private complete evidence `/home/optibrain/phase13-remediation-evidence/` and `/var/lib/optibrain/phase13-remediation/`.
 
-**Recommended next manual mission: Phase13 closure verification after the two owner actions.** Objective: independently confirm native Forms mutation OFF and actual owner-recipient decryption, update the remaining P0 status and action-specific readiness without enabling a canary. Why: these are externally enforced proof gaps; no further API retries can resolve them. Expected real/protected mutations0. Human authorization requiredYES.
+**Current next recommended manual mission: Phase14 optimization, simplification and maintainability.** Final Phase13 closure verification is complete; the following paragraph records the historical pre-closure recommendation. Objective: independently confirm native Forms mutation OFF and actual owner-recipient decryption, update the remaining P0 status and action-specific readiness without enabling a canary. Why: these are externally enforced proof gaps; no further API retries can resolve them. Expected real/protected mutations0. Human authorization requiredYES.
 
-Phase13 technical remediation is complete when the final receipt confirms exact-main deployment/health/tests/fresh backup and safety flags. No unresolved critical risk is concealed. Remaining owner-only P0 requirements are explicit; all independent technical work is completed. **STOP. No Phase14 or real canary begins.**
+Phase13 technical remediation is complete when the final receipt confirms exact-main deployment/health/tests/fresh backup and safety flags. No unresolved critical risk is concealed. Both remaining owner-only P0 requirements are now CLOSED — PASS; all independent closure work is recorded in the final closure evidence. **STOP. No Phase14 or real canary begins.**
