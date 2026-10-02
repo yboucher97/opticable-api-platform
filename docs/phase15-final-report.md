@@ -85,6 +85,6 @@ Could OptiBrain be safely rebuilt without historical chats? **YES**. Without OVH
 
 Rebuildability **STRONG**; documentation **STRONG**; onboarding **STRONG**; recovery **ACCEPTABLE** (contained recovery proved, real cutover/new VM not tested); operator usability **STRONG**; deployment reproducibility **STRONG**; configuration clarity **STRONG**.
 
-P1: **NONE**. P2: investigate129 retained dead-letter deliveries without blind replay; owner record of registrar identity; separately authorized replacement-VM/DNS/TLS/provider reconnect drill if stronger full-incident RTO evidence is desired. P3: optional integrations DEFERRED — NON-CRITICAL; retain dirty/unmerged historical worktrees for deliberate later review.
+P1: **NONE**. P2: investigate129 retained dead-letter deliveries without blind replay; owner record of registrar identity; separately authorized replacement-VM/DNS/TLS/provider reconnect drill if stronger full-incident RTO evidence is desired. P3: optional integrations and legacy standalone admin publishers DEFERRED — NON-CRITICAL (current Git/root-gate publishing remains canonical); retain dirty/unmerged historical worktrees for deliberate later review.
 
 **NEXT RECOMMENDED MANUAL MISSION:3 — next business-workflow development phase**, beginning with bounded delivery/exception reconciliation before considering a real canary. Do not automatically start it. Phase15 stops here; real automation/canary stay OFF.

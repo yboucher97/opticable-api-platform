@@ -1,6 +1,6 @@
 # Canonical deployment guide
 
-AUTHORITATIVE CURRENT. One application deployment gate: `/usr/local/sbin/opticable-api-deploy-root EXACT_40_HEX_SHA`, reviewed source [manual-guarded-release.py](../deploy/manual-guarded-release.py). The restricted SSH `deploy SHA` wrapper requests the same gate. Checkout installers and old phase release helpers refuse direct deployment; they are historical fixtures.
+AUTHORITATIVE CURRENT. One application deployment gate: `/usr/local/sbin/opticable-api-deploy-root EXACT_40_HEX_SHA`, reviewed source [manual-guarded-release.py](../deploy/manual-guarded-release.py). The restricted SSH `deploy SHA` wrapper requests the same gate. Checkout installers and old phase release helpers refuse direct deployment; they are historical fixtures. Publish the runbook through reviewed Git and this gate; legacy standalone admin publishers are noncritical deferred compatibility paths, never an alternative deployment procedure.
 
 ## Release transaction
 

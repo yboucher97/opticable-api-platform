@@ -39,7 +39,7 @@ Containment: separate mount/PID/network namespaces and private IPC/shared memory
 7. Fresh timer masks produced unrestorable absolute symlinks in new archives: backup1.0.4 encodes only known denial masks as metadata; strict validator preserves bounded masks and rejects unknown/traversal names; actual round trip passed.
 8. Contained test fixtures needed normal `/proc`, private1777 `/dev/shm`, and a separate engineering checkout for historical production-path fixtures: repeatable namespace instructions added. Initial probe errors were corrected without weakening assertions.
 9. API probe launcher needed `/usr/sbin/runuser`; missing configured auth correctly returns503, so the probe now recognizes denial instead of calling it open. Actual401/403/503 checks remain strict.
-10. The constrained runbook publisher requires its exact original title and0440 trust digest; preserved the title/digest contract after rewriting content.
+10. The runbook title/digest format is preserved. Legacy standalone admin publishers additionally require obsolete0700 config/staging incompatible with the current service-readable root0755 directory; documented DEFERRED — NON-CRITICAL. Current publishing/rebuild uses Git + the guarded root gate, so no operation depends on those publishers.
 11. Two-timer admin scheduler command was mistaken for full coverage: exact five-timer command now appears in onboarding/operator/runbook.
 
 Zero undocumented P0/P1 dependencies remain. Human-only AGE/MFA/provider ownership/native Forms settings and domain registration ownership are explicit. Registrar identity detail is a documented P2 external dependency; optional peripheral integrations remain DEFERRED — NON-CRITICAL.
