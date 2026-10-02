@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 6 Gate G engineering and recovery supplement
 
 Status: engineering candidate only; production release BLOCKED pending the prerequisites below. This non-privileged supplement preserves the root-owned master runbook unchanged. It supersedes earlier Phase 6 preparation proposals that assumed main-first deployment or used the normal SSH deploy command for baseline rollback. No deployment, privilege installation, tag creation, environment change or real provider action has occurred.

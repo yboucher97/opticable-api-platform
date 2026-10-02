@@ -1,3 +1,5 @@
+> SUPERSEDED — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_DEPLOYMENT_GUIDE.md).
+
 # Phase 14 deprecations and preservation
 
 Reconnaissance commit `1a13a8d41684bb8d40620c829a4e9bda6554ab6a` is an ancestor of implementation. Its six docs and fifteen evidence files remain in Git; promoted onboarding has its original version in that commit. No bad nested paths or blind merge were introduced.

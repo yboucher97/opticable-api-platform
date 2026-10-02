@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # OptiBrain Phase 6 — Sales Autonomy v1
 
 Status: engineering contract created 2026-09-28. No production change is authorized by this document.

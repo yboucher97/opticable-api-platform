@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](../../docs/OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 5 campaign tools
 
 Use only the clean `hardening/phase5-business-autonomy-v1` worktree and the exact Phase 4 production baseline `209aac07160e1376381faebd86fb38a18f92582a`.

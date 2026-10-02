@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](../../docs/OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Omada Site Creator
 
 `Omada Site Creator` is a local helper app for **Omada Essentials / Omada Cloud** environments where the official northbound API is not available for the current tenant tier.

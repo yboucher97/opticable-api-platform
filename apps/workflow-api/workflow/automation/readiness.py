@@ -131,7 +131,35 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
         deployed_sha = None
         rows.extend(signal(name,'UNKNOWN','Runtime sample absent or stale') for name in
                     ('Timers','Backup','Off-host backup','Disk','DB health','Growth','Safety flags','Deployment'))
-    rows.append(signal('Cloudflare queue depth','UNKNOWN','Remote queue depth has not been independently measured'))
+    rows.append(queue_depth_signal(now))
     state = max((r['state'] for r in rows), key=STATES.index)
     return {'schema':1,'state':state,'read_only':True,'captured_at':now.isoformat(),
             'deployment_sha':deployed_sha,'signals':rows}
+
+
+def queue_depth_signal(now, path=Path('/run/optibrain-readiness/queue-depth.json')):
+    try:
+        value = json.loads(Path(path).read_text())
+        age = age_seconds(value.get('captured_at'), now)
+        queues = value['queues']
+        if (value.get('schema') != 1 or value.get('status') != 'measured'
+                or age is None or age > 5400 or set(queues) !=
+                {'opticable-business-events', 'opticable-business-events-dlq'}):
+            raise ValueError('Queue observation unavailable or stale')
+        counts = [queues[name]['backlog_count'] for name in queues]
+        if any(type(n) is not int or n < 0 for n in counts):
+            raise ValueError('Invalid queue count')
+        oldest = queues['opticable-business-events']['oldest_message_timestamp_ms']
+        if type(oldest) is not int or oldest < 0 or oldest > int(now.timestamp()*1000):
+            raise ValueError('Invalid oldest message timestamp')
+        active = queues['opticable-business-events']['backlog_count']
+        stalled = bool(active and oldest and now.timestamp()*1000-oldest > 1800000)
+        dlq = queues['opticable-business-events-dlq']['backlog_count']
+        state = 'ACTION REQUIRED' if dlq or stalled else 'DEGRADED' if active > 100 else 'OK'
+        return signal('Cloudflare queue depth',state,
+                      'Dead-letter or stalled delivery needs reconciliation' if dlq or stalled else
+                      'Approximate read-only queue backlog measured',at=value['captured_at'],
+                      approximate=True,age_seconds=age,queues=queues)
+    except (OSError,ValueError,TypeError,KeyError):
+        return signal('Cloudflare queue depth','UNKNOWN',
+                      'Queue metrics unavailable or stale; inspect the read-only sampler')

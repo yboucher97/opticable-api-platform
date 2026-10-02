@@ -1,58 +1,41 @@
-# Opticable Automation Master Runbook
+# Opticable automation master runbook
 
-Current operating contract for Phase 14, API 1.12.0. Last updated 2026-10-02 America/Toronto. Read [Codex onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) for orientation and [the documentation index](README.md) for historical/audit references. The previous runbook is preserved byte-for-byte in [Phase 13 history](history/phase13-OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md).
+AUTHORITATIVE CURRENT. API `1.12.0`. This is the operating contract; [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) establishes precedence. [Operator](OPTIBRAIN_OPERATOR_GUIDE.md), [deployment](OPTIBRAIN_DEPLOYMENT_GUIDE.md) and [recovery](OPTIBRAIN_RECOVERY_GUIDE.md) are the only current procedures for those tasks. Historical phase instructions cannot override them.
 
-## Authority and non-negotiable state
+## Standing safety state
 
-The current user mission defines engineering authority. Root-private live policy and independently checked receipts define operational state. A branch, old phase guide, enabled workflow or issued approval is never business-write authority.
+123 protected records READ ONLY; protected mutations/customer sends/Books writes 0. Real and TEST automatic business writes OFF. `REAL_CANARY_ALLOWED=false`. Persistent development worker OFF; six retired units masked/inactive. Native French/English Forms CRM integrations DISABLED under owner-admin confirmation; supported APIs cannot read that native setting. Fallback enrichment OFF. Connector/Omada/PDF/WorkDrive/legacy Mail/Sign contained; Books write transport denied. Root kill, fail-closed auth, exact ownership, immutable execution evidence, state-loss/stale-journal reconciliation and independent off-host claims are mandatory.
 
-Protected baseline: 123 records, unchanged. Protected mutations/customer sends/Books writes: 0. Real automatic writes OFF; TEST automatic writes OFF; REAL_CANARY_ALLOWED FALSE. Native Forms CRM Add/Update/Upsert DISABLED under the Phase 13 owner-UI closure; fallback enrichment OFF. Connector, Omada, PDF/WorkDrive, legacy Mail/Sign remain contained. Books POST/PUT/PATCH/DELETE denied. Auth fail-closed; universal kill, immutable journal and off-host duplicate protection mandatory. Owner AGE identity remains offline. Persistent Codex development worker OFF; six retired units MASKED/INACTIVE. Manual Codex sudo/root preserved.
+The current manual mission defines engineering scope. Workflow enabled state, an old approval, a successful API response or credential scope never grants provider-write authority. No current document authorizes a real canary or customer action. [Safety controls](OPTIBRAIN-SAFETY-INVARIANTS.md) apply to every host.
 
-Forbidden: protected data changes/deletes, Lead conversion, customer email/SMS/calls, invoices/payments/credits/Books changes, broad real business automation, real canary or retired development worker activation. A future limited canary needs a new manually initiated mission; never begin it from a recommendation.
+## Inspect and operate
 
-## Canonical services and daily owner view
-
-[Runtime matrix](phase14-runtime-matrix.md) defines three app services, Caddy, five timers and external schedules. [State matrix](phase14-state-store-matrix.md) defines five active DBs, three archived historical stores and root registries/claims. Owner Today: `https://approvals.opticable.ca/v1/operator/today`. It contains read-only attention, dated sources and links into existing views. Test/historical/resolved action evidence is separated from REAL CURRENT urgency. Technical status is `/v1/operator/system-health`; do not put OAuth or scheduler internals into business cards.
+Owner home: **https://optibrain.opticable.ca/v1/operator/today**. Use the owner’s Access login. Business cards lead into sales/follow-ups/quote review/projects/maintenance/approvals/exceptions. Technical health is `/v1/operator/system-health`. Private/no-store responses and source timestamps remain mandatory.
 
 ```bash
 curl -fsS http://127.0.0.1:8100/v1/system/health
-sudo optibrain-admin scheduler
+sudo optibrain-admin scheduler  # backup/upload pair only
+sudo systemctl list-timers --all optibrain-backup.timer optibrain-phase2a-upload.timer opticable-phase9-intake-receipts.timer opticable-phase10-service-events.timer opticable-phase12-test-runner.timer --no-pager
 sudo optibrain-admin capacity
 sudo optibrain-admin verify-latest
 sudo cat /run/optibrain-readiness/status.json
+sudo cat /run/optibrain-readiness/queue-depth.json
 sudo cat /var/lib/optibrain/releases/current.json
+sudo cat /etc/optibrain/mutation-control.json
 ```
 
-The authenticated `/v1/system/readiness` endpoint is provider-free. It exposes API/auth, provider read observations, delta, native watch, queue/exceptions, timers, backups, off-host proof, disk/DB/log growth, safety and deployment. UNKNOWN is not a fabricated green result. Remote queue depth is presently unmeasured. Alert on ACTION REQUIRED; repeated budget or capacity excess is WARNING, single rollout/unknown facts are INFO. Existing GitHub health incidents are updated only when their failure set changes.
+[Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) lists services/timers, locks and ports. [State](OPTIBRAIN_STATE_CONTRACT.md) lists five active DBs, three archives and root registries. The root read-only inspector in onboarding privately authenticates readiness and independently compares protected record versions; it logs no credential/customer values.
 
-## Provider reconciliation
+API liveness, business attention, provider reads, backup freshness, auth/safety and infrastructure are separate readiness dimensions. Missing samples remain UNKNOWN. The GET-only queue sampler observes active/dead-letter backlog without consuming messages. Dead-letter backlog requires engineering reconciliation; **never replay/purge it to make health green**. Diagnostic log rotation does not prune business evidence.
 
-Inspect current credential binding, successful reads, saved cursors and immutable evidence before rotation. Never print environments or credentials. Root-owned installed `phase14` tooling supports a probe and an explicitly committed local observer reconciliation. Leads previously stayed failed after an auth error because failed checkpoints do not auto-resume. Phase 14 proved the same cursor readable, cleared that one failed revision without moving the cursor and allowed the read worker to resume. No provider mutation was used.
+## Changes and incidents
 
-The native watch's requested local expiry differed from readback by one hour; rotation readback had omitted exact expiry verification. Existing token/destination/events matched. Phase 14 adopted the provider's exact UTC expiry locally and appended new verification evidence. The provider-side normalization mechanism and original expired/revoked-token cause are not proven. No new credential/channel or rotation was needed. Watch renewal is not authorized by a green status or this procedure.
+Use one focused validation path; full fake-provider regression once at the final executable release candidate, then exact-head PR/main CI. Deploy through the installed root-owned guarded gate only. The deployment guide specifies authorization receipt, immutable dependencies, rollback backup and independent post-release checks. Root-approved runbook digest repinning must preserve the previous digest; changing prose does not silently repin installed trust.
 
-## Backup and retention
+For process failure restart only the affected contained service after checking state. For code regression roll back code/config/venv, preserving journals and credential rotations. For state loss/full host loss follow recovery; never restore old journals into an active writer or restore a VM snapshot as an ordinary deploy rollback.
 
-Online backup snapshots all five active and three historical DBs plus current root configuration/source/masks. Backup remains root-required and uses a destination lock. The uploader uses AGE's public recipient, immutable create-only R2 objects and full downloaded-byte hash verification. Owner-held private identity stays offline. Owner proof generation `20261001T202728Z` is held indefinitely.
+Provider reconnect starts with read observations, token binding, saved cursors, native notification verification and immutable effect evidence. Distinguish 401 from 403/throttle/outage; do not replace a token or move a cursor just to clear a status. Native-channel renewal and credential rotation need their own exact incident scope. No automatic failover enables the connector’s writers.
 
-Use [retention policy](phase14-retention-policy.md). The installed local tool defaults to dry run; it keeps all exact recovery/audit holds, seven newest plaintext generations, two recent verified ciphertext generations and the owner ciphertext. Failed/uncertain upload state never becomes disposable. No R2 deletion is implemented. Verify the concrete deterministic report and dependencies before `--execute`; execution replans/hashes every candidate under the uploader lock. Do not automatically prune immutable receipts/actions/provider reconciliation evidence.
+## Backup stewardship
 
-```bash
-sudo python3 /usr/local/lib/optibrain/phase14-retention.py --output /var/lib/optibrain/phase14/retention/dry-run.json
-# After inspecting that exact report and confirming its recovery/hold evidence:
-sudo python3 /usr/local/lib/optibrain/phase14-retention.py --execute /var/lib/optibrain/phase14/retention/dry-run.json --output /var/lib/optibrain/phase14/retention/execution.json
-```
-
-## Release and rollback
-
-[Deployment README](../deploy/README.md) is the sole application release procedure. Validate focused changes, then one complete local release regression and exact-head CI. Merge only validated work. Root-review an exact-SHA authorization with tests/CI/verified rollback archive and immutable dependency environment. The installed `/usr/local/sbin/opticable-api-deploy-root SHA` is canonical. No checkout install script is release authority. A new-OS rebuild uses [recovery](phase14-recovery-runbook.md); old installers deliberately refuse execution.
-
-The gate pins candidate source/version with all execution pins cleared, restarts only the API, checks service/timer/DB health and closed safety, and writes schema-1 receipts under `/var/lib/optibrain/releases`. The compatibility pointer `/var/lib/optibrain/phase13-remediation/deployment.json` uses the same format. On failure it restores previous code/environment/registration/venv, retains journals and emits rollback evidence. Do not restore old databases as an ordinary code rollback. Native-watch verification and failed-delta reconciliation require separate read-only inspection after restart.
-
-Root authorization for this runbook's digest comes from the manually initiated Phase 14 mission. Preserve the previous root digest and source before explicit repinning; do not silently repin on routine document edits. Never update admin/helper policy or owner recovery material from an unreviewed mutable checkout.
-
-## Recovery evidence limits
-
-[Phase 13 closure](phase13-final-closure.md) proves owner offline decryption/hash/archive readability and prior isolated source/config/eight-DB/mask/application restore. Full replacement OS, live provider reconnect, DNS/TLS cutover and guaranteed RTO remain unproven. Phase 14 improves procedures/tooling without claiming another recovery drill. Recovery always starts with writers OFF, dev units masked, preserved claims/journals and expired old execution/approval authority.
-
-Owner entry: https://optibrain.opticable.ca/v1/operator/today. The existing Cloudflare Access app now protects the operator prefix on this proxied hostname with its unchanged audience, owner/service policies and IdPs; API owner JWT/allowlist checks remain independent. The origin IP and zone TLS setting are unchanged. Source/Access/DNS routing receipts are retained in private Phase14 evidence. Approval POST origin remains its historical root constraint; this read-only home does not extend mutation authority.
+Local `/var/backups/optibrain` contains online SQLite/state/config/source archives. `/var/lib/optibrain/phase2a` records public-recipient encryption, create-only R2 upload and independently downloaded byte hashes. Preserve every golden/recovery/audit hold and locked `business-effects/v1/` claim. Root retention tooling is dry-run first, local only: seven newest plaintext generations plus holds; two recent verified ciphertexts plus owner/golden holds. Failed/ambiguous uploads are retained. No R2 deletion is authorized. See recovery for exact golden references and offline AGE custody.

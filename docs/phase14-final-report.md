@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 14 implementation and release report
 
 The implementation evidence and operating contracts are complete. Production certification is the post-deployment `/var/lib/optibrain/phase14/final-verification.json` and generated `/var/lib/optibrain/phase14/phase14-final-report.md`, copied to the owner's private implementation-evidence directory. These carry the exact final production/local-main/remote-main SHA, final tests/CI/runtime results and PASS/PARTIAL/BLOCKED outcome. A source document cannot contain its own Git commit hash; the schema-1 release receipt is the canonical exact identity.

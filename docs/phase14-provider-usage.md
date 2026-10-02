@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 14 provider usage and performance
 
 Counters record actual transport attempts, methods, final response outcome and retries. They omit URLs, resource IDs, payloads and credentials. Schema-2 observations cover CRM reads/writes, Mail reads/mutations, Forms and Sign separately, Books reads/writes, Cloudflare, GitHub/auth exchange, OAuth refresh, Google and R2. Scopes identify workflows, delta streams, native/drift observers, local timers, operator views and route templates. R2 uploader counts actual SDK sends including retries in private bounded JSONL; exact release GitHub CI read is in the release receipt. Remote-effect SDK reads/claims also use the active job scope. Unsent denied mutations count zero.

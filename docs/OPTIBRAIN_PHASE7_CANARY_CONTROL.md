@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # OptiBrain Phase 7 — controlled single-Lead canary preparation
 
 Status: engineering preparation only. No real CRM mutation or customer send is

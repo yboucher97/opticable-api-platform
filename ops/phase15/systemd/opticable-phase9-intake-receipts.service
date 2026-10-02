@@ -1,0 +1,27 @@
+# Current reviewed runtime reconstruction; nothing is enabled by bootstrap.
+# /etc/systemd/system/opticable-phase9-intake-receipts.service
+[Unit]
+Description=Collect OptiBrain lead intake receipts from Zoho Forms Mail and public connector
+After=network-online.target opticable-workflow-api.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+TimeoutStartSec=300
+User=opticable-workflow-api
+Group=opticable-workflow-api
+WorkingDirectory=/opt/opticable-api-platform/apps/workflow-api
+EnvironmentFile=/etc/opticable-workflow-api.env
+EnvironmentFile=/etc/optibrain/phase9-receipt-export.env
+EnvironmentFile=-/etc/optibrain/phase9-form-enrichment.env
+ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python /opt/opticable-api-platform/ops/phase9/collect_form_receipts.py
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/opticable-workflow-api/output/automation /var/lib/opticable-api-platform/shared/zoho-oauth.json
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

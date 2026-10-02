@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # OptiBrain Phase 6 engineering record
 
 This record is append-only engineering evidence for Phase 6. It is not the privileged root-owned production recovery runbook. The root runbook remains protected during branch engineering and is synchronized only through a separately reviewed deployment/recovery procedure.

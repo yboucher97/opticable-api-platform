@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 14 runtime and execution inventory
 
 **READ-ONLY reconnaissance. Source/production/main: `4bc1beec112c55b161c3025529733d0f0b1213b3`; API 1.11.0.** Capture window: 2026-10-02 UTC / 2026-10-01 America/Toronto. This is a before-state, not implementation or permission to activate writers.

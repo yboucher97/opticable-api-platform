@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 2B consolidated root bootstrap proposal
 
 Status: corrected recovery package for a partially installed bootstrap. The

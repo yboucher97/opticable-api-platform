@@ -1,3 +1,5 @@
+> SUPERSEDED — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_RECOVERY_GUIDE.md).
+
 # Phase 14 recovery procedure and evidence limits
 
 Use the current master runbook, release receipt, state contracts and root backup policies. These procedures improve readiness; they do not constitute a new live recovery proof.

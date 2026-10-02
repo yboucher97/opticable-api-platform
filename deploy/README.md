@@ -1,16 +1,3 @@
-# Canonical OptiBrain deployment
+# Deployment entry point
 
-The sole current application release gate is root-owned `/usr/local/sbin/opticable-api-deploy-root`, sourced from `manual-guarded-release.py`. The restricted SSH command `deploy <40-hex-SHA>` requests this same gate. CI success alone grants no root authority or business writes.
-
-1. Work on a clean implementation branch. Preserve evidence/history. Run focused checks after bounded changes, then one complete local release regression with zero failures/errors/skips/blocked network attempts.
-2. Create a PR, obtain successful exact-head CI and merge validated work. Confirm remote main and the final main CI SHA. Local/remote/production must converge on that exact commit.
-3. In the authorized manual root session, verify a fresh local backup/checksum and independently retained off-host/owner recovery coverage. Prepare `/opt/optibrain-releases/SHA/venv` as root-owned immutable dependencies. Reuse only when requirements are identical to a validated retained release; otherwise test a new isolated environment.
-4. Root-review `/etc/optibrain/manual-release-authorization.json` (mode600) with candidate/baseline SHA, expiry, exact main CI run ID, passed full validation receipt (tests/subtests/failures/errors/skips/network attempts), rollback archive path and SHA256. This mission already authorizes the concrete engineering release; do not invent a second routine permission flow.
-5. Invoke `sudo /usr/local/sbin/opticable-api-deploy-root EXACT_SHA`. It validates private authority, fixed-repository main CI, remote identity/ancestry, clean production, backup hash, immutable venv and closed safety flags. It extracts source/version as data, clears execution pins, switches/restarts only the API and checks version/service/timer/DB health.
-6. Independently verify protected123unchanged, provider reads/delta/native watch, backup/off-host proof, all safety/containment flags and exact production/local-main/remote-main equality. Save final-verification evidence. A regression causes automatic code/config/venv rollback without replaying a stale DB.
-
-Machine receipt schema1/type`optibrain.release`: SHA, API version, tests, migration state, service health, timer health, safety flags, rollback SHA/archive/hash and UTC timestamp. `/var/lib/optibrain/releases/SHA.json` is release history; `current.json` the current pointer; `/var/lib/optibrain/phase13-remediation/deployment.json` a compatibility pointer using the same format. No receipt records secret values.
-
-`bootstrap-deploy-user.sh` installs the canonical gate and restricted SSH identity from a complete reviewed bundle; it is a privileged one-time setup, not a routine app deploy. Existing key/policy were retained in Phase14. Never fetch-and-run mutable code as root or install dependencies into the live venv.
-
-DEPRECATED direct entrypoints: `production-root-command.sh`, `update-production.sh`, root/workflow `install.sh`, `phase6-release-loader.py`. They refuse execution and retain their old source for security fixtures/history. They must never overwrite the canonical installed gate. [Current recovery](../docs/phase14-recovery-runbook.md) covers new-OS planning; complete replacement OS and DNS/TLS cutover are not claimed proven.
+SUPERSEDED PROCEDURE — use the single [current deployment guide](../docs/OPTIBRAIN_DEPLOYMENT_GUIDE.md). Canonical installed gate: `/usr/local/sbin/opticable-api-deploy-root EXACT_SHA`. Old installers/release entrypoints are historical denial fixtures, not instructions.

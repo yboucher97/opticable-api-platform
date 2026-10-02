@@ -1,0 +1,13 @@
+# Current reviewed runtime reconstruction; nothing is enabled by bootstrap.
+# /etc/systemd/system/opticable-phase9-intake-receipts.timer
+[Unit]
+Description=Poll active OptiBrain lead intake receipts every five minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=30s
+Unit=opticable-phase9-intake-receipts.service
+
+[Install]
+WantedBy=timers.target

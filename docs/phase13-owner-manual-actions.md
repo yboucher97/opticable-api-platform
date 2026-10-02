@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Manual actions required from owner
 
 **Current status: both actions CLOSED — PASS.** [Final closure](phase13-final-closure.md) records the exact forms, all three non-secret recovery hashes, AGE exit0/archive-list exit0, independent manifest/off-host consistency and evidence limits. Owner key remains offline. The steps below are retained recovery/administration procedures; they are not new pending requests. No real canary or Phase14 is authorized by completing them.

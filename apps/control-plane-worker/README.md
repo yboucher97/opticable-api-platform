@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](../../docs/OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Opticable Durable Control Plane
 
 This Worker is the durable edge orchestration layer for Opticable.

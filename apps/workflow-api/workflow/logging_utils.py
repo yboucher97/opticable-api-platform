@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 from .utils import ensure_directory
@@ -15,7 +16,12 @@ def configure_logging(log_dir: Path) -> logging.Logger:
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 
-    file_handler = logging.FileHandler(log_dir / "site_workflow.log", encoding="utf-8")
+    # Diagnostic logs are expendable; durable action/reconciliation evidence is
+    # kept in separate journals. Bound this file even between host rotations.
+    file_handler = RotatingFileHandler(
+        log_dir / "site_workflow.log", maxBytes=5 * 1024 * 1024,
+        backupCount=4, encoding="utf-8",
+    )
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 

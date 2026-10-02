@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 14 code, flags, tests and documentation inventory
 
 Source: `4bc1beec112c55b161c3025529733d0f0b1213b3`. [Static inventory](phase14-evidence/source-map.json) records routes, environment references, manual entry points, tests and all 71 existing files under `docs/`; [deprecation references](phase14-evidence/deprecation-references.json) records per-candidate file/line/category matches across tracked code plus live systemd, cron, sudoers and installed helpers. Absence of a static reference does not prove no external/manual/recovery use.

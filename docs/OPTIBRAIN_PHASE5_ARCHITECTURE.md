@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 5 business autonomy architecture
 
 Authoritative scope: [Phase 5 campaign](OPTIBRAIN_PHASE5_AUTONOMY_CAMPAIGN.md). Starting production commit: `209aac07160e1376381faebd86fb38a18f92582a`, API `1.9.0`, automation schema `2`. Candidate API: `1.10.0`; no database migration.

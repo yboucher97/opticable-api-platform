@@ -1,50 +1,32 @@
-# OptiBrain architecture blueprint
+# OptiBrain architecture
 
-Current API contract: `1.12.0`. Current implementation contracts are in this document and the [master runbook](OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md). The deployed identity and certification are the root release receipt and final-verification artifact. [Phase 13 architecture](history/phase13-OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md) is retained as historical evidence.
-
-OptiBrain observes intake, sales, installed services and work requiring owner review. CRM owns business records; OptiBrain owns local chronology and immutable execution evidence. Current production is read-only for real business. Customer sends, protected mutations and Books writes remain zero.
+AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; API contract `1.12.0`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
 
 ```mermaid
 flowchart TD
-  Z[Zoho CRM / Mail / Sign read APIs] --> G[Guarded provider clients and shared OAuth cache]
-  G --> O[Read observers and authenticated operator views]
-  CF[Cloudflare cron / queues / durable Workflow] --> E[Authenticated deduplicated event intake]
-  C[Contained connector receipt export] --> R[Immutable receipt chronology]
-  E --> J[Core event / run / desired-state journal]
-  R --> T[Today / Sales / Lifecycle / Recurring / Projects]
-  O --> T
-  S[Rebuildable display and Mail metadata caches] --> T
-  P[Root ownership / protected baselines / universal kill] --> A[Immutable business action evidence]
-  A --> RR[Root TEST reconciliation runner]
-  RR --> X[Independent off-host effect claim fence]
-  X -. closed business transport .-> Z
-  J --> B[Online local backup]
-  A --> B
-  P --> B
-  B --> AGE[Public-key AGE encryption / create-only R2 upload / full hash readback]
-  AGE --> OWNER[Owner-held offline recovery identity]
+  CRM[Zoho CRM business source of record] --> READ[Guarded read observers]
+  MS[Mail and Sign observations] --> READ
+  CF[Cloudflare cron / queues / durable Workflow] --> IN[Authenticated deduplicated intake]
+  CN[Contained connector receipt export] --> IN
+  IN --> DB[Five separate SQLite journals]
+  READ --> DB
+  DB --> OWNER[Owner Today and review views]
+  POLICY[Root policy / baseline / ownership fence] --> ACTION[Immutable actions / approvals / exceptions]
+  ACTION --> CLAIM[Create-only off-host effect claims]
+  CLAIM -. business transport OFF .-> CRM
+  DB --> BACKUP[Online backup / public-recipient AGE / immutable R2 / full-byte readback]
+  POLICY --> BACKUP
+  BACKUP --> KEY[Owner offline private identity]
 ```
 
-## Runtime boundaries
+CRM owns Lead, Contact, Account, Service Location, Service, Deal, Installation, Case and Task records. OptiBrain retains receipt lineage, internal crosswalks, saved cursors, action/approval envelopes and independent effect evidence. Display caches never authorize effects. No real business writer is currently enabled.
 
-FastAPI is unprivileged. Caddy terminates TLS and contains legacy routes. PDF and Omada services retain local/supporting health responsibilities, with consequential provider/public job paths denied. Three root oneshots remain: backup, uploader and TEST runner. Root is necessary for backup metadata/private source access; uploader/runner identities remain bounded because their private recovery/claim boundaries would otherwise need redesign. Runner capabilities and policy write paths are reduced. Manual owner/Codex sudo is unchanged.
+Caddy terminates origin TLS and denies legacy consequential routes before proxying to loopback services. Cloudflare Access additionally protects the operator prefix; origin independently verifies JWT audience, issuer and human allowlist. The shared API key authenticates technical endpoints and never substitutes for a human approval identity. Provider scope is capability, not runtime authorization.
 
-Five timers have distinct responsibilities. Cloudflare observes and delivers; local receipt/service timers collect different durable facts; native watch and delta are independent read fallback paths; GitHub monitors health. None grants real automation authority. Three disabled GitHub business workflows remain disabled. No preview Worker, queue or unknown consumer was deleted to make topology look smaller.
+Core OAuth uses `/var/lib/opticable-api-platform/shared/zoho-oauth.json`, a locked credential-bound access cache and one specific read-only 401 refresh/retry. The contained connector owns separate Cloudflare KV OAuth state. CRM/Mail reads are operational dependencies; optional Gmail/Calendar/Ads/Meta/LinkedIn/Desk/analytics are **DEFERRED — NON-CRITICAL**. Books transport rejects writes independent of scope. OVH direct core transport rejects non-GET; gateway mutation tooling additionally requires human confirmation/reason/audit and is outside automatic business authority.
 
-## Safety and data contracts
+Read-only receipt and service observers, native watch/delta and edge delivery have different scopes. Root TEST runner reconciles retained evidence before considering its disabled write gates; three root oneshots are required for private backup/upload/ownership boundaries. No persistent engineering worker exists. Rebuild defaults stop all application schedulers as well as writers.
 
-The central root mutation policy, family gate, exact action payload/target/version, TEST_ONLY marker plus registry ownership, immutable journal envelope and off-host claim all apply conjunctively. A successful HTTP response or display snapshot cannot replace fresh mutation preconditions. Ambiguous transport reconciles; a missing or stale local journal cannot obtain a second off-host claim. Books writes remain independently denied. Protected baseline identity takes precedence over synthetic markers.
+Mail metadata/body cache avoids unchanged content GETs without replacing immutable events. CRM service projections and Today caches are rebuildable display state with source timestamps. Readiness is provider-free and combines durable provider observations with bounded local and GET-only queue samples. A measured queue backlog does not authorize replay.
 
-Five SQLite stores remain separate: core orchestration, Forms/connector receipts, canonical intake, service occurrences/display inventory and business action evidence. Three historical DBs are archived in place for recovery compatibility, never current mutation authority. Mail metadata/checkpoints and CRM display snapshots are expendable, backed up incidentally but not ownership evidence. See [state contracts](phase14-state-store-matrix.md).
-
-## Read efficiency and visibility
-
-Mail first completes bounded one-based metadata pagination at a fixed cutoff, checks committed event identity and a durable metadata/body cache, then retrieves content only when unseen, changed or expired. Normal scans overlap two days; daily audits cover seven days. Gaps beyond seven days and incomplete/overlapping pages fail closed without advancing the successful checkpoint. A known changed body creates an exception, never replacement of immutable evidence.
-
-Lifecycle and recurring use one complete five-module projection, observed within five minutes and audited daily for deletions. Project detail restricts dependency batches to the requested registered project. Lab receipt/intake chronology uses bounded grouped local queries. Today has a live-only 60-second process display cache; failures are not cached, source timestamps stay intact and every browser response remains private/no-store.
-
-Readiness combines durable provider observations/checkpoints, queue state, native verification and a root local sampler. It performs no provider read or repair. A 200 liveness response can coexist with ACTION REQUIRED readiness. Unknown remote queue depth remains explicit. Repeated provider-call excess, stale success times, disk/staging/DB/log thresholds are bounded warnings; they do not stop safe reconciliation or grant authority.
-
-## Release and recovery
-
-One root-owned release gate validates main CI, exact SHA, ancestry, rollback backup, immutable venv and closed safety state. It extracts pins/version as data, restarts the API, checks service/timer/DB health and records one schema-1 receipt. Rollback changes code/config/venv; it preserves journals and never replays a stale DB. Historical installers refuse execution. [Recovery maturity](phase14-recovery-runbook.md) distinguishes proven local/off-host/owner decryption evidence from untested OS replacement, reconnect and DNS/TLS cutover.
+Code rollback preserves DBs/claims; disaster restore starts isolated with writers off and reconciles effects newer than the backup. The clean rebuild uses fresh packages, current repository definitions, named identities and the verified golden archive. The snapshot is fast whole-VM rollback insurance; it is not required by reconstruction. Evidence and remaining proof limits are in [rebuild evidence](phase15-rebuild-evidence.md).

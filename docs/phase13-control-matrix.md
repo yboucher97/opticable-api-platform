@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 13 authoritative mutation/control matrix
 
 Current disposition after P0 remediation, 2026-10-01. Read [the final report](phase13-remediation-final-report.md). Inventory includes dynamic/direct provider transports, create/update/convert/merge and POST/PUT/PATCH/DELETE, not just conveniently named executors. Native Forms is a separate external producer. Raw call sites remain in phase13-evidence/mutation-call-sites.json and Git history.

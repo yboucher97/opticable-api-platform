@@ -1,0 +1,13 @@
+# Current reviewed runtime reconstruction; nothing is enabled by bootstrap.
+# /etc/systemd/system/opticable-phase12-test-runner.timer
+[Unit]
+Description=Every 30 minutes evaluate bounded OptiBrain TEST_ONLY business actions
+
+[Timer]
+OnCalendar=*:0/30
+Persistent=yes
+RandomizedDelaySec=120
+Unit=opticable-phase12-test-runner.service
+
+[Install]
+WantedBy=timers.target

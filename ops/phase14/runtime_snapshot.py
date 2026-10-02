@@ -37,6 +37,18 @@ def size(path):
     return sum(p.stat().st_size for p in Path(path).rglob('*') if p.is_file() and not p.is_symlink())
 
 
+def growth_state(staging, db_bytes, application_logs, system_journal):
+    # Journald's 512 MiB cap applies to allocated journal space; allow bounded
+    # active-file overhead. Do not classify normal system retention as app growth.
+    if (staging > 25*1024**3 or db_bytes > 512*1024**2
+            or application_logs > 128*1024**2 or system_journal > 640*1024**2):
+        return 'ACTION REQUIRED'
+    if (staging > 15*1024**3 or db_bytes > 128*1024**2
+            or application_logs > 64*1024**2 or system_journal > 576*1024**2):
+        return 'DEGRADED'
+    return 'OK'
+
+
 def collect(now=None):
     now=now or datetime.now(timezone.utc)
     signals=[]
@@ -79,10 +91,12 @@ def collect(now=None):
         except (OSError,sqlite3.Error):db_errors.append(name)
     add('DB health','ACTION REQUIRED' if db_errors else 'OK','SQLite check failed' if db_errors else 'Five active SQLite stores pass quick_check',checked=5,failed=len(db_errors),bytes=db_bytes)
     staging=size('/var/backups/optibrain')+size('/var/lib/optibrain/phase2a')
-    logs=size('/var/lib/opticable-workflow-api/output/logs')+size('/var/log/journal')
-    add('Growth','ACTION REQUIRED' if staging>25*1024**3 or db_bytes>512*1024**2 or logs>512*1024**2 else
-        'DEGRADED' if staging>15*1024**3 or db_bytes>128*1024**2 or logs>128*1024**2 else 'OK',
-        'Storage thresholds sampled',backup_staging_bytes=staging,db_bytes=db_bytes,log_bytes=logs)
+    app_logs=size('/var/lib/opticable-workflow-api/output/logs')
+    journal=size('/var/log/journal')
+    add('Growth',growth_state(staging,db_bytes,app_logs,journal),
+        'Backup, database, application logs and bounded system journal sampled',
+        backup_staging_bytes=staging,db_bytes=db_bytes,log_bytes=app_logs+journal,
+        application_log_bytes=app_logs,system_journal_bytes=journal)
     control=json.loads(Path('/etc/optibrain/mutation-control.json').read_text())
     env=dict(l.split('=',1) for l in Path('/etc/optibrain/phase12-runner.env').read_text().splitlines() if '=' in l and not l.startswith('#'))
     closed=control.get('test_writes_enabled') is False and control.get('real_canary_allowed') is False and env.get('OPTIBRAIN_BUSINESS_AUTO_WRITES')=='0' and not Path('/etc/optibrain/authorize-persistent-codex-development').exists()

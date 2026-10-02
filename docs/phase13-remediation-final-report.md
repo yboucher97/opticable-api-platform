@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 13 independent audit and P0 remediation — final report
 
 **FINAL CLOSURE: PASS. PHASE 13 COMPLETE. MANUAL-01 CLOSED — PASS; MANUAL-02 CLOSED — PASS. Readiness A — READY FOR PHASE 14 OPTIMIZATION in a future manually initiated mission. Phase 14 has not begun; REAL_CANARY_ALLOWED remains FALSE.**

@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 13 manual P0 remediation
 
 This follows the independent audit on 2026-10-01. The owner pre-authorized technical remediation, provider configuration changes, exact TEST_ONLY proof, guarded merging/deployment and non-destructive recovery. Real customer/prospect sends, protected-record changes, financial writes, real canaries and broad real automation remain forbidden. Phase 14 has not begun.

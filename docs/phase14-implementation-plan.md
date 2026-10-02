@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 14 implementation order — preparation only
 
 Input: [reconnaissance](phase14-reconnaissance.md) and its linked runtime/state/code evidence at production `4bc1beec112c55b161c3025529733d0f0b1213b3`. **No implementation is authorized by this document itself.** The next mission requires a new user instruction. Real/protected writes, sends, Books writes and real canaries remain 0; persistent development worker staysOFF.

@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 13 final closure verification
 
 **PHASE 13 FINAL CLOSURE: PASS. PHASE 13: COMPLETE. Readiness: A — READY FOR PHASE 14 OPTIMIZATION.**

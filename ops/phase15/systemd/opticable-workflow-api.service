@@ -1,0 +1,45 @@
+# Current reviewed runtime reconstruction; nothing is enabled by bootstrap.
+# /etc/systemd/system/opticable-workflow-api.service
+[Unit]
+Description=Site And Password Workflow
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=opticable-workflow-api
+Group=opticable-workflow-api
+WorkingDirectory=/opt/opticable-api-platform/apps/workflow-api
+EnvironmentFile=/etc/opticable-workflow-api.env
+Environment=PATH=/opt/opticable-api-platform/apps/workflow-api/.venv/bin
+ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/uvicorn workflow.api:app --host 127.0.0.1 --port 8100
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+# /etc/systemd/system/opticable-workflow-api.service.d/phase13-hardening.conf
+[Service]
+Environment=PATH=/opt/opticable-api-platform/apps/workflow-api/.venv/bin:/usr/bin:/bin
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/opticable-workflow-api /var/lib/opticable-api-platform/shared
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+UMask=0077
+
+# /etc/systemd/system/opticable-workflow-api.service.d/phase13-safety.conf
+[Service]
+Environment=OPTICABLE_AUTOMATION_WORKFLOWS_DIR=/etc/optibrain/phase13-observe-workflows
+
+# Phase 13: legacy OAuth URL keys were observed in the access journal.
+# Business audit records and system/service failure journals remain active.
+ExecStart=
+ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/uvicorn workflow.api:app --host 127.0.0.1 --port 8100 --no-access-log

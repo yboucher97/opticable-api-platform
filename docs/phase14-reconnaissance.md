@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 14 reconnaissance — authoritative optimization map
 
 **PHASE 14 RECONNAISSANCE: PASS (bounded preparation, with explicit UNKNOWNs).** No implementation, migration, deployment, automation enablement, canary, customer contact or recovery drill was performed. Evidence is a point-in-time snapshot, not permanent runtime state.

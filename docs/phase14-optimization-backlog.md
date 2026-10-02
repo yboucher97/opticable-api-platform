@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # Phase 13 remediation and Phase 14 backlog
 
 Phase13 final closure is PASS / COMPLETE; [both owner gates are CLOSED — PASS](phase13-final-closure.md). The next recommended manual mission is **Phase14 optimization, simplification and maintainability**, with a new human-issued instruction. No Phase14 work has begun in this closure mission. Every next mission retains real/protected mutations 0 unless the owner separately authorizes an exact canary.

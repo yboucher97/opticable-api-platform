@@ -1,3 +1,5 @@
+> HISTORICAL — retained for past decisions/evidence; **do not use as current deployment or configuration instructions**. Current authority: [current guide](OPTIBRAIN_CODEX_ONBOARDING.md).
+
 # OptiBrain Phase 4 event platform
 
 Candidate API version: **1.9.0**. SQLite schema version: **2**.
