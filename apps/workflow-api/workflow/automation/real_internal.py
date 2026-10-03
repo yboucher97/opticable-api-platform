@@ -794,5 +794,13 @@ def run(*,dry_run=False):
         engine.attention('business-observation','Recurring Service observation',
             'Current recurring billing evidence is unavailable or incomplete',
             'Engineer reviews native read evidence; existing internal scopes continue')
+    try:
+        from .sales_observation_runtime import observe as observe_sales
+        observe_sales(engine,settings)
+        engine.state['attention'].pop('sales-observation',None)
+    except (ValueError,OSError,KeyError,TypeError):
+        engine.attention('sales-observation','Sales observations unavailable',
+            'Apollo collision evidence is unavailable; new outreach remains held',
+            'Review provider read access; existing lifecycle scopes continue')
     engine.save()
     return engine.publish()

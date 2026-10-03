@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "phase26": "PASS",
+  "gate": "bounded provider discovery and shadow integration",
+  "contacts": 1371,
+  "accounts": 55,
+  "sequences": 4,
+  "active_sequences": 3,
+  "inactive_sequences": 1,
+  "active_membership_contacts": 1069,
+  "active_or_paused_contacts": 1196,
+  "exact_crm_email_overlap": 45,
+  "unsubscribed_contacts": 5,
+  "suppressed_or_unverified_contacts": 21,
+  "replied_message_sample": 13,
+  "positive_reply_provider_class": 1,
+  "public_tender_signals": 2,
+  "public_permit_signals": 2,
+  "new_cold_sends": 0,
+  "provider_mutations": 0,
+  "credits_used": 0,
+  "clay": "DEFERRED \u2014 NON-CRITICAL: no callable connection; credit/fallback rule tested",
+  "claude_history": "UNAVAILABLE \u2014 not claimed",
+  "protected_before": {
+    "unchanged": 123,
+    "mutations": 0
+  },
+  "evidence_root": "/var/lib/optibrain/phase26-27",
+  "automatically_continue": "phase27",
+  "production_deployment": "PENDING FINAL RELEASE"
+}

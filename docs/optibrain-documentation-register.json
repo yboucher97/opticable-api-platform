@@ -24,8 +24,8 @@
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
     "SECURITY / CONTROL": 1,
-    "AUTHORITATIVE CURRENT": 20,
-    "AUDIT EVIDENCE": 89,
+    "AUTHORITATIVE CURRENT": 22,
+    "AUDIT EVIDENCE": 95,
     "RECOVERY": 1
   },
   "documents": [
@@ -1197,6 +1197,62 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/CURRENT_CLAUDE_APOLLO_FLOW.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current read-only coexistence/sales contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current read-only coexistence/sales contract"
+    },
+    {
+      "path": "docs/PHASE26_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
+    },
+    {
+      "path": "docs/PHASE26_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
+    },
+    {
+      "path": "docs/PHASE27_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
+    },
+    {
+      "path": "docs/PHASE27_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
+    },
+    {
+      "path": "docs/phase26-27-final-report.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
+    },
+    {
+      "path": "docs/phase26-27-message-comparison.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
     }
   ]
 }

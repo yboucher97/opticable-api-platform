@@ -128,7 +128,57 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         return build_today(sources['sales'],sources['lifecycle'],sources['operations'],
                            business_journal.view(),system_health(),now=instant,unavailable=unavailable,internal=read_internal_attention(instant),
                            communications=read_internal_attention(instant,Path('/run/optibrain-readiness/customer-communications.json')),
-                           recurring=read_internal_attention(instant,Path('/run/optibrain-readiness/recurring.json')))
+                           recurring=read_internal_attention(instant,Path('/run/optibrain-readiness/recurring.json')),
+                           sales_intelligence=read_internal_attention(instant,Path('/run/optibrain-readiness/sales-intelligence.json')))
+
+    def sales_snapshot():
+        view=read_internal_attention(now(),Path('/run/optibrain-readiness/sales-intelligence.json'))
+        if not view:raise HTTPException(status_code=503,detail='Sales observation unavailable; no clear-to-contact decision')
+        return view
+
+    @app.get('/v1/operator/sales',response_class=HTMLResponse,tags=['operator'])
+    async def today_sales(cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        identity(cf_access_jwt_assertion)
+        from .automation.sales_intelligence import render_sales
+        from .automation.sales_feedback import SalesFeedback
+        view=sales_snapshot()
+        feedback=SalesFeedback(Path(store.db_path).with_name('phase12-autonomy.db')).latest()
+        view['rows']=[r for r in view.get('rows',[]) if feedback.get(r['key'],{}).get('choice') not in {'DO NOT CONTACT','BAD FIT','NOT NOW','BAD TRIGGER'}]
+        return HTMLResponse(render_sales(view),headers=private_headers)
+
+    def sales_candidate(candidate):
+        if not re.fullmatch('[0-9a-f]{64}',candidate):raise HTTPException(status_code=404,detail='Candidate unavailable')
+        row=next((r for r in sales_snapshot().get('rows',[]) if r['key']==candidate),None)
+        if not row:raise HTTPException(status_code=409,detail='Fresh displayed candidate required')
+        return row
+
+    @app.get('/v1/operator/sales/review/{candidate}',response_class=HTMLResponse,tags=['operator'])
+    async def review_sales(candidate: str,cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        identity(cf_access_jwt_assertion);row=sales_candidate(candidate)
+        from .automation.sales_intelligence import FEEDBACK
+        h=lambda v:escape(str(v),quote=True)
+        body="<!doctype html><html><head><meta charset='utf-8'><title>Sales review</title></head><body>"+f"<h1>{h(row['title'])}</h1><p>{h(row['why'])}</p><p>This records an OptiBrain review choice. Existing Apollo outreach stays controlled in Apollo; manage its suppression there.</p>"+f"<form method='post' action='/v1/operator/sales/review/{candidate}'><input type='hidden' name='version' value='{row['version']}'><label>Review <select name='choice'>"+''.join(f"<option>{h(c)}</option>" for c in sorted(FEEDBACK))+"</select></label><button>Save review</button></form><p><a href='/v1/operator/sales'>Today Sales</a></p></body></html>"
+        return HTMLResponse(body,headers={**private_headers,'Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'"})
+
+    @app.post('/v1/operator/sales/review/{candidate}',response_class=HTMLResponse,tags=['operator'])
+    async def save_sales_review(candidate: str,request: Request,cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        person=identity(cf_access_jwt_assertion)
+        if request.headers.get('origin')!=origin or request.headers.get('sec-fetch-site') not in {None,'same-origin','none'}:
+            raise HTTPException(status_code=403,detail='same-origin review required')
+        if request.headers.get('content-type','').split(';')[0]!='application/x-www-form-urlencoded':
+            raise HTTPException(status_code=415,detail='Bounded review form required')
+        from urllib.parse import parse_qs
+        body=b''
+        async for chunk in request.stream():
+            body+=chunk
+            if len(body)>512:raise HTTPException(status_code=413,detail='Review form too large')
+        try:
+            fields=parse_qs(body.decode('ascii'),strict_parsing=True,max_num_fields=2)
+            if set(fields)!={'version','choice'} or any(len(v)!=1 for v in fields.values()):raise ValueError('Exact review required')
+            from .automation.sales_feedback import SalesFeedback
+            SalesFeedback(Path(store.db_path).with_name('phase12-autonomy.db')).record(sales_candidate(candidate),fields['version'][0],fields['choice'][0],person.actor,now())
+        except (ValueError,UnicodeError):raise HTTPException(status_code=409,detail='Fresh exact shadow review required')
+        return HTMLResponse("<p>Review recorded. Apollo unchanged; no outreach enabled.</p><a href='/v1/operator/sales'>Today Sales</a>",headers=private_headers)
 
     @app.get('/v1/operator',response_class=HTMLResponse,tags=['operator'])
     @app.get('/v1/operator/today',response_class=HTMLResponse,tags=['operator'])

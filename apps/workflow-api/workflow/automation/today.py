@@ -16,8 +16,8 @@ from .sales_queue import build_sales_queue
 from .sales_operator_view import CONTROLLED_LEAD_ID
 
 CATEGORIES=('Leads needing response','Follow-ups due','Quote-ready opportunities',
-            'Projects and install work','Maintenance and renewal','Exceptions','Approvals')
-LINKS={'sales':'/v1/operator/phase8/sales-queue','lifecycle':'/v1/operator/phase10/customer-lifecycle',
+            'Projects and install work','Maintenance and renewal','Sales research','Exceptions','Approvals')
+LINKS={'sales':'/v1/operator/phase8/sales-queue','today sales':'/v1/operator/sales','lifecycle':'/v1/operator/phase10/customer-lifecycle',
        'business overview':'/v1/operator/business','recurring':'/v1/operator/recurring','marketing sources':'/v1/operator/marketing','operations':'/v1/operator/phase11/operations',
        'exceptions':'/v1/operator/phase12/exceptions','approvals':'/v1/operator/phase12/approvals',
        'health':'/v1/operator/system-health','test':'/v1/operator/phase12/autonomy'}
@@ -55,7 +55,7 @@ def read_internal_attention(now,path=None):
         return value
     except (OSError,ValueError,KeyError,TypeError):return None
 
-def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None,communications=None,recurring=None):
+def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None,communications=None,recurring=None,sales_intelligence=None):
     now=now or datetime.now(timezone.utc)
     sections={name:[] for name in CATEGORIES}
     def add(category,context,why,next_action,source,link,*,priority='MEDIUM',due=None,freshness=None):
@@ -77,7 +77,13 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
         elif row.get('quote')=='READY FOR QUOTE':category='Quote-ready opportunities'
         elif row.get('priority')!='LOW' and row.get('followup')!='WAIT':category='Leads needing response'
         else:continue
-        add(category,context,row.get('reason'),row.get('action'),'CRM and verified Mail evidence',link,**details)
+        guard=(sales_intelligence or {}).get('lead_guards',{}).get(identity,{})
+        if guard.get('outreach_owner')=='CLAUDE_APOLLO':
+            add(category,context,'Already owned by Claude/Apollo; coordinate existing outreach',
+                'Review the existing Apollo conversation before any follow-up','Apollo and CRM identity evidence',LINKS['today sales'],**details)
+        elif guard.get('suppressed'):
+            add(category,context,'Sales contact is suppressed','Review suppression; no outreach','Apollo suppression evidence',LINKS['sales'],**details)
+        else:add(category,context,row.get('reason'),row.get('action'),'CRM and verified Mail evidence',link,**details)
     for row in lifecycle.get('rows',[]):
         if row.get('test_only'):continue
         if row.get('maintenance_due') or row.get('renewal_due'):
@@ -130,6 +136,13 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
             link='https://crm.zoho.com/crm/org763070937/tab/'+module+'/'+identity if module in {'Services','Service_Locations','Accounts'} and identity.isdecimal() else LINKS['recurring']
             add('Maintenance and renewal',row.get('context'),row.get('why'),row.get('next_action'),
                 'Native CRM and Books recurring observations',link,priority=row.get('priority','MEDIUM'),freshness=recurring.get('observed_at'))
+    if sales_intelligence:
+        if sales_intelligence.get('scope')!='live' or sales_intelligence.get('read_only') is not True:raise ValueError('Sales projection must be read-only live evidence')
+        for row in sales_intelligence.get('rows',[]):
+            if row.get('kind') not in {'apollo_reply','trigger'}:continue
+            add('Leads needing response' if row['kind']=='apollo_reply' else 'Sales research',
+                row['title'],row['why'],row['action'],'Apollo reply / public project evidence',LINKS['today sales'],
+                priority='HIGH' if row['kind']=='apollo_reply' else 'MEDIUM',freshness=sales_intelligence.get('observed_at'))
     for name in unavailable:
         signals.append(dict(name=name,state='ACTION REQUIRED',reason='Current business evidence unavailable; open its source view'))
     order={'HIGH':0,'MEDIUM':1,'LOW':2}
