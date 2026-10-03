@@ -2,7 +2,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 from . import lifecycle_control as lc
-from .business_observation import NativeReader, collect_recurring, collect_marketing, collect_business
+from .business_observation import NativeReader, collect_recurring, collect_marketing, collect_business, enrich_finance
 from .business_intelligence import project_source
 from .recurring_lifecycle import build_recurring
 from .marketing_attribution import build_marketing
@@ -15,7 +15,7 @@ def observe(engine, *, now=None):
     from .real_internal import atomic
     now = now or datetime.now(timezone.utc)
     if now.tzinfo is None: raise ValueError('Aware observation time required')
-    saved = ROOT/'business-observation.json';value = None
+    saved = ROOT/'business-observation.json';value = None;old = {}
     if saved.exists():
         old = lc.trusted_json(saved, 16777216)
         at = datetime.fromisoformat(old['observed_at'])
@@ -25,19 +25,36 @@ def observe(engine, *, now=None):
         try:
             snapshot = collect_recurring(reader)
             links = lc.trusted_json(ROOT/'recurring-links.json', 262144) if (ROOT/'recurring-links.json').exists() else {}
+            snapshot['recurring_reviews'] = links
+            registry = lc.trusted_json(ROOT/'finance-links.json', 262144) if (ROOT/'finance-links.json').exists() else {'schema':1,'records':{}}
+            if registry.get('schema')!=1 or not isinstance(registry.get('records'),dict):raise ValueError('Invalid owner finance evidence')
+            snapshot['finance_reviews'] = registry['records']
+            snapshot['accepted_work'] = {k:{f:v[f] for f in ('accepted','accepted_estimate_id','service_ids') if f in v} for k,v in getattr(engine,'state',{}).get('deals',{}).items()}
             recurring = build_recurring(snapshot, now=now, reviewed_links=links)
             marketing = None
             try:
                 complete = collect_marketing(reader, snapshot)
-                marketing = build_marketing(complete, recurring_links=links)
-                snapshot = complete
                 snapshot = collect_business(reader,complete)
+                snapshot = enrich_finance(reader,snapshot,previous=old.get('snapshot',{}))
+                from .measurement import populations
+                from .finance_links import recurring_reviews
+                verified_links=recurring_reviews(populations(snapshot)[0])
+                snapshot['recurring_reviews']=verified_links
+                recurring=build_recurring(snapshot,now=now,reviewed_links=verified_links)
+                marketing = build_marketing(snapshot, recurring_links=verified_links)
             except (ValueError, KeyError, TypeError):
                 pass  # Keep the verified recurring view; do not retry 100+ GETs every cycle.
             value = {'schema': 3, 'observed_at': now.isoformat(), 'snapshot': snapshot, 'recurring': recurring, 'marketing': marketing}
             if not engine.dry_run:atomic(saved,value)
         finally:engine.reads += reader.reads
     recurring = {**value['recurring'], 'at': now.isoformat(), 'observed_at': value['observed_at']}
+    status=ROOT/'measurement-status.json'
+    if status.exists():
+        health=lc.trusted_json(status,16384)
+        states=health.get('states',{})
+        if set(states)!={'forms','ga4','google_ads','offline_conversions'} or not all(v in {'HEALTHY','PARTIAL','ISSUE','OFF','READY','ACTIVE'} for v in states.values()):
+            raise ValueError('Invalid reviewed measurement health')
+        value['snapshot']['measurement_health']=states
     if not engine.dry_run:
         atomic(DISPLAY,recurring,0o644)
         # Display contains aggregates only. Native identifiers/outcome plans and

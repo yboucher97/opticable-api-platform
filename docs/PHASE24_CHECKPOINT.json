@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "phase24": "PASS",
+  "gate": "Bounded forward-linkage architecture; historical coverage remains partial",
+  "forward": {
+    "estimate_deal": "Native Potential_Name / Books zcrm_potential_id observed; CRM Deal \u2192 Finance \u2192 New Estimate canonical",
+    "invoice_deal": "Native direct Deal, Invoice estimate_id or Estimate invoice_ids; customer cross-validation required",
+    "site_services": "Exact Deal Site and original Service links / current accepted-work Service IDs validated",
+    "recurring_service": "Native generated Invoice chain or explicit owner-confirmed Service/Site receipt; never a name/amount match",
+    "natural_new_transactions": 0,
+    "live_coverage_percentage": null,
+    "test_scenarios": {
+      "A": "PASS",
+      "B": "PASS",
+      "C": "PASS",
+      "D": "PASS",
+      "E": "PASS"
+    }
+  },
+  "historical": {
+    "leads": {
+      "total": 13,
+      "fully_attributed": 0,
+      "unattributed": 13
+    },
+    "contacts": {
+      "total": 45,
+      "fully_attributed": 0,
+      "unattributed": 45
+    },
+    "accounts": {
+      "total": 41,
+      "fully_attributed": 0,
+      "unattributed": 41
+    },
+    "deals": {
+      "total": 1,
+      "fully_attributed": 0,
+      "unattributed": 1
+    },
+    "sites": {
+      "total": 12,
+      "fully_attributed": 0,
+      "unattributed": 12
+    },
+    "services": {
+      "total": 12,
+      "fully_attributed": 0,
+      "unattributed": 12
+    },
+    "estimates": {
+      "total": 87,
+      "classifications": {
+        "LINKABLE WITH SAFE EXISTING ID": 86,
+        "DETERMINISTICALLY LINKED": 1
+      },
+      "relationship_classifications": {
+        "UNLINKED": 86,
+        "NATIVE PROVEN": 1
+      },
+      "account_linked": 87,
+      "deal_linked": 1,
+      "fully_attributed": 0,
+      "protected_account_references": 87
+    },
+    "invoices": {
+      "total": 120,
+      "classifications": {
+        "LINKABLE WITH SAFE EXISTING ID": 120
+      },
+      "relationship_classifications": {
+        "UNLINKED": 120
+      },
+      "account_linked": 120,
+      "deal_linked": 0,
+      "fully_attributed": 0,
+      "protected_account_references": 120
+    },
+    "recurring_profiles": {
+      "total": 23,
+      "service_linked": 0,
+      "unlinked": 23
+    }
+  },
+  "owner_attention_rows": 229,
+  "owner_review_groups": 37,
+  "protected_unchanged": 123,
+  "provider_writes": 0,
+  "financial_writes": 0,
+  "focused_tests": 84,
+  "unresolved": "23 recurring mappings,86 Estimate Deal links,120 Invoice Deal links; no owner confirmations invented",
+  "owner_queue": "/var/lib/optibrain/phase24-25/owner-assistance-batch.md",
+  "critical_defects": 0,
+  "final_candidate_regression": {
+    "tests": 1255,
+    "subtests": 1172,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "blocked_network_attempts": 0,
+    "passed": true
+  }
+}

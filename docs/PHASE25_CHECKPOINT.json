@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "phase25": "BLOCKED",
+  "engineering_safe_to_deploy": true,
+  "uploads_left_off": true,
+  "critical_path": "HUMAN \u2014 refresh native Google grant, enable Data Manager access and verify an enabled secondary import destination; then provider validation-only test",
+  "forms": {
+    "french": "PASS \u2014 existing provider receipt reused",
+    "english": "PARTIAL \u2014 exact owner action batched",
+    "campaign_continuity": "PARTIAL"
+  },
+  "web_assets": "Unchanged SHA256 main and AI live scripts; capture/consent proofs reused",
+  "ga4": "PARTIAL \u2014 actual Windsor event/stream read; native authorization HTTP400",
+  "google_ads": {
+    "account": "680-849-1878",
+    "observed_action": "Contact Us \u2014 REMOVED/WEBPAGE_CODELESS/secondary",
+    "upload_destination": "UNPROVEN"
+  },
+  "offline_conversions": {
+    "state": "OFF",
+    "engine": "Focused offline validation passed; native provider validation pending",
+    "real_uploads": 0,
+    "test_uploads": 0,
+    "duplicate_uploads": 0,
+    "pii_uploads": 0
+  },
+  "protected_before": {
+    "records": 123,
+    "modified": 0
+  },
+  "advertising_strategy_mutations": 0,
+  "financial_writes": 0,
+  "focused_validation": {
+    "tests": 141,
+    "subtests": 71,
+    "failures": 0,
+    "offline_network_attempts": 0
+  },
+  "existing_authority_changes": 0,
+  "final_candidate_regression": {
+    "tests": 1255,
+    "subtests": 1172,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "blocked_network_attempts": 0,
+    "passed": true
+  }
+}

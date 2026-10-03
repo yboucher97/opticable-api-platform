@@ -971,6 +971,61 @@
       "verified": "Root regular file, no writable group/world, owner JWT before read, bounded period calculation and native totals reconciliation",
       "backed_up": "NO \u2014 expendable /run display; private native cache backed up",
       "purpose": "Owner-only Business Overview/CSV without raw PII, click IDs or write authority"
+    },
+    {
+      "location": "/etc/optibrain/conversion-export-control.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "Reviewed root provider/owner evidence; never service-writable",
+      "deployed": "Manual reviewed exact-release root tooling",
+      "restored": "Existing application archive/root state; revalidate parents and force export OFF",
+      "verified": "Root owner/mode; exact source/receipt hashes; native IDs and source state",
+      "backed_up": "Application archive; encrypted off-host R2",
+      "purpose": "Independent root OFF conversion kill/destination/source policy; restore OFF, never stale authorization"
+    },
+    {
+      "location": "/var/lib/optibrain/conversion-export",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "Reviewed root provider/owner evidence; never service-writable",
+      "deployed": "Manual reviewed exact-release root tooling",
+      "restored": "Existing application archive/root state; revalidate parents and force export OFF",
+      "verified": "Root owner/mode; exact source/receipt hashes; native IDs and source state",
+      "backed_up": "Application archive; encrypted off-host R2",
+      "purpose": "Immutable independent outcome/source/validation/diagnostic evidence; no automatic source event fabrication"
+    },
+    {
+      "location": "/var/lib/optibrain/lifecycle/finance-links.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "Reviewed root provider/owner evidence; never service-writable",
+      "deployed": "Manual reviewed exact-release root tooling",
+      "restored": "Existing application archive/root state; revalidate parents and force export OFF",
+      "verified": "Root owner/mode; exact source/receipt hashes; native IDs and source state",
+      "backed_up": "Application archive; encrypted off-host R2",
+      "purpose": "Explicit owner Finance/profile mapping choices, validated against native customer/Account/Deal/Site/Service"
+    },
+    {
+      "location": "/var/lib/optibrain/lifecycle/finance-link-confirmations",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "Reviewed root provider/owner evidence; never service-writable",
+      "deployed": "Manual reviewed exact-release root tooling",
+      "restored": "Existing application archive/root state; revalidate parents and force export OFF",
+      "verified": "Root owner/mode; exact source/receipt hashes; native IDs and source state",
+      "backed_up": "Application archive; encrypted off-host R2",
+      "purpose": "Immutable owner confirmation actor/time/source receipts"
+    },
+    {
+      "location": "/var/lib/optibrain/lifecycle/measurement-status.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "Reviewed root provider/owner evidence; never service-writable",
+      "deployed": "Manual reviewed exact-release root tooling",
+      "restored": "Existing application archive/root state; revalidate parents and force export OFF",
+      "verified": "Root owner/mode; exact source/receipt hashes; native IDs and source state",
+      "backed_up": "Application archive; encrypted off-host R2",
+      "purpose": "Reviewed non-authoritative provider measurement display states"
     }
   ],
   "environment_key_references": [

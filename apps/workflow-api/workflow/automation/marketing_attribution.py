@@ -57,6 +57,9 @@ def conversion_plan(record, kind, *, destination=None, consent=None):
 
 
 def build_marketing(snapshot, *, recurring_links=None):
+    from .measurement import populations
+    from .finance_links import resolve_finance
+    link_rows=populations(snapshot)[0]
     collections = {k: index(snapshot.get(k, [])) for k in
         ('accounts', 'contacts', 'leads', 'deals', 'sites', 'services', 'finance_estimates', 'finance_invoices')}
     accounts, contacts, leads, deals = (collections[k] for k in ('accounts', 'contacts', 'leads', 'deals'))
@@ -85,6 +88,11 @@ def build_marketing(snapshot, *, recurring_links=None):
     test_customers = {i for i, r in customers.items() if synthetic(r) or identity(r.get('zcrm_account_id')) in excluded['accounts']}
     profiles = index(snapshot.get('profiles', []), 'recurring_invoice_id')
     test_profiles = {i for i, r in profiles.items() if synthetic(r) or identity(r.get('customer_id')) in test_customers}
+    # Use the same fixed-point/native-descendant population as financial reports.
+    # Keep the original exclusion diagnostics; filtering is not evidence of zero TEST traffic.
+    collections={k:link_rows[k] for k in collections}
+    accounts,contacts,leads,deals=(collections[k] for k in ('accounts','contacts','leads','deals'))
+    customers=link_rows['customers'];profiles=link_rows['profiles']
     recurring = {}
     for pid, profile in profiles.items():
         if pid in test_profiles: continue
@@ -124,8 +132,12 @@ def build_marketing(snapshot, *, recurring_links=None):
     for eid, row in collections['finance_estimates'].items():
         aid = identity(row.get('Account_Name'));did = identity(row.get('Potential_Name'))
         if eid in excluded['finance_estimates'] or aid in excluded['accounts'] or did in excluded['deals']: continue
-        books = snapshot.get('books_estimate_index', {}).get(identity(row.get('Estimate_ID')))
+        books = link_rows['estimates'].get(identity(row.get('Estimate_ID')))
         if books and (synthetic(books) or identity(books.get('customer_id')) in test_customers):continue
+        resolved=resolve_finance(books,'estimates',link_rows) if books else None
+        if resolved and resolved['conflict']:
+            problems['Estimate Deal association conflicts']+=1;continue
+        did=resolved['deal_id'] if resolved else did
         deal = canonical_deal(did, aid)
         if not deal: problems['Estimate has no verified Deal association'] += 1
         g = group(deal or {});g['estimates'] += 1
@@ -142,7 +154,7 @@ def build_marketing(snapshot, *, recurring_links=None):
     native_finance = defaultdict(list)
     for fid, row in collections['finance_invoices'].items():
         native_finance[identity(row.get('Invoice_ID'))].append((fid, row))
-    invoices = index(snapshot.get('books_invoices', []), 'invoice_id')
+    invoices = link_rows['invoices']
     for iid, invoice in invoices.items():
         cid = identity(invoice.get('customer_id'));pid = identity(invoice.get('recurring_invoice_id'))
         if synthetic(invoice) or cid in test_customers or pid in test_profiles: continue
@@ -161,6 +173,10 @@ def build_marketing(snapshot, *, recurring_links=None):
         if finance.get('Potential_Name') and invoice.get('zcrm_potential_id') and identity(invoice['zcrm_potential_id']) != identity(finance['Potential_Name']):
             problems['Invoice Deal association conflicts'] += 1;continue
         if did in excluded['deals']: continue
+        resolved=resolve_finance(invoice,'invoices',link_rows)
+        if resolved['conflict']:
+            problems['Invoice Deal association conflicts']+=1;continue
+        did=resolved['deal_id']
         deal = canonical_deal(did, aid)
         link = recurring.get(pid)
         if link and link['customer_id'] == cid and link['account_id'] == aid:

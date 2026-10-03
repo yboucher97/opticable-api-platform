@@ -10,7 +10,7 @@ NOW=datetime(2026,10,3,tzinfo=timezone.utc)
 
 class ObservationRuntimeTests(unittest.TestCase):
     def setUp(self):
-        for target,value in [('collect_business',{}),('project_source',{})]:
+        for target,value in [('collect_business',{}),('enrich_finance',{}),('project_source',{})]:
             patcher=patch.object(runtime,target,return_value=value);patcher.start();self.addCleanup(patcher.stop)
         patcher=patch('grp.getgrnam',return_value=SimpleNamespace(gr_gid=1001));patcher.start();self.addCleanup(patcher.stop)
         for target in ('os.chown','os.chmod'):
