@@ -12,6 +12,7 @@ class ObservationRuntimeTests(unittest.TestCase):
     def setUp(self):
         for target,value in [('collect_business',{}),('project_source',{})]:
             patcher=patch.object(runtime,target,return_value=value);patcher.start();self.addCleanup(patcher.stop)
+        patcher=patch('grp.getgrnam',return_value=SimpleNamespace(gr_gid=1001));patcher.start();self.addCleanup(patcher.stop)
         for target in ('os.chown','os.chmod'):
             patcher=patch(target);patcher.start();self.addCleanup(patcher.stop)
     def engine(self, dry=True):return SimpleNamespace(client=object(),reads=6,dry_run=dry)
