@@ -9,6 +9,7 @@ ConditionPathExists=/etc/optibrain/lifecycle-runtime.json
 Type=oneshot
 User=root
 Group=root
+SupplementaryGroups=opticable-workflow-api
 EnvironmentFile=/etc/opticable-workflow-api.env
 ExecStart=/usr/bin/python3 -I -B /usr/local/lib/optibrain/lifecycle_runner.py --once
 TimeoutStartSec=300
