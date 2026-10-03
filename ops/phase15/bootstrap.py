@@ -14,7 +14,8 @@ REPO = Path(__file__).resolve().parents[2]
 USERS = ('optibrain', 'opticable-workflow-api', 'opticable-password-pdf', 'opticable-omada-site')
 APP = ('opticable-workflow-api', 'opticable-password-pdf', 'opticable-omada-site')
 TIMERS = ('optibrain-backup','optibrain-phase2a-upload','opticable-phase9-intake-receipts',
-          'opticable-phase10-service-events','opticable-phase12-test-runner','opticable-lifecycle-internal')
+          'opticable-phase10-service-events','opticable-phase12-test-runner','opticable-lifecycle-internal',
+          'opticable-customer-communications')
 RETIRED = tuple(f'optibrain-agent-{n}.{k}' for n in ('dispatch','status','usage') for k in ('service','timer'))
 SAFETY = {
     'OPTICABLE_AUTOMATION_ENABLED':'false', 'OPTIBRAIN_CRM_DRIFT_ENABLED':'false',
@@ -39,7 +40,8 @@ HELPERS = {'/usr/local/sbin/opticable-api-deploy-root':'deploy/manual-guarded-re
     '/usr/local/lib/optibrain/phase14-runtime-snapshot.py':'ops/phase14/runtime_snapshot.py',
     '/usr/local/lib/optibrain/phase14-retention.py':'ops/phase14/retention.py',
     '/usr/local/lib/optibrain/queue-metrics.py':'ops/phase15/queue_metrics.py',
-    '/usr/local/lib/optibrain/lifecycle_runner.py':'ops/phase16_17/lifecycle_runner.py'}
+    '/usr/local/lib/optibrain/lifecycle_runner.py':'ops/phase16_17/lifecycle_runner.py',
+    '/usr/local/lib/optibrain/customer_runner.py':'ops/phase18_19/customer_runner.py'}
 
 
 def require(condition, message):
@@ -126,6 +128,8 @@ def prepare(root):
     policy=dict(schema=1,test_writes_enabled=False,allowed_actions=['crm.task.create'],real_canary_allowed=False)
     write(root,'/etc/optibrain/mutation-control.json',json.dumps(policy,indent=2)+'\n',0o640)
     os.chown(root/'etc/optibrain/mutation-control.json',0,groups[APP[0]])
+    write(root,'/etc/optibrain/customer-communication-control.json',
+          json.dumps({'schema':1,'external_enabled':False,'test_enabled':False})+'\n')
     for name in APP:
         write(root,'/etc/'+name+'.env','')
     write(root,'/etc/optibrain/phase12-runner.env','OPTIBRAIN_BUSINESS_AUTO_WRITES=0\nOPTIBRAIN_AUTO_TEST_TASK=0\n')
@@ -136,7 +140,8 @@ def prepare(root):
     for name in APP+TIMERS[2:]:
         write(root,'/etc/systemd/system/'+name+'.service.d/99-rebuild-safety.conf',
               '[Service]\nEnvironmentFile=/etc/optibrain/rebuild-safety.env\n',0o644)
-    for name in [n+'.timer' for n in TIMERS]+['opticable-phase12-test-runner.service']+list(RETIRED):
+    for name in [n+'.timer' for n in TIMERS]+['opticable-phase12-test-runner.service',
+            'opticable-lifecycle-internal.service','opticable-customer-communications.service']+list(RETIRED):
         p=target_path(root,'/etc/systemd/system/'+name)
         if p.is_file():
             saved=p.with_suffix(p.suffix+'.rebuild-disabled');p.rename(saved)
@@ -181,10 +186,13 @@ def verify(root):
     pw,groups=ids(root)
     p=root/'etc/optibrain/mutation-control.json';info=p.lstat()
     flags=dict(r.split('=',1) for r in (root/'etc/optibrain/rebuild-safety.env').read_text().splitlines())
-    masks=[n+'.timer' for n in TIMERS]+['opticable-phase12-test-runner.service','opticable-lifecycle-internal.service']+list(RETIRED)
+    masks=[n+'.timer' for n in TIMERS]+['opticable-phase12-test-runner.service','opticable-lifecycle-internal.service',
+        'opticable-customer-communications.service']+list(RETIRED)
     require(all((root/'etc/systemd/system'/n).is_symlink() and os.readlink(root/'etc/systemd/system'/n)=='/dev/null'
                 for n in masks),'Recovery timers or retired units unmasked')
     require(policy['test_writes_enabled'] is False and policy['real_canary_allowed'] is False,'Writers enabled')
+    customer=json.loads((root/'etc/optibrain/customer-communication-control.json').read_text())
+    require(customer.get('external_enabled') is False and customer.get('test_enabled') is False,'Customer sends enabled')
     require(info.st_uid==0 and not info.st_mode&0o022 and stat.S_ISREG(info.st_mode),'Untrusted safety policy')
     require(all(flags.get(k)==v for k,v in SAFETY.items()),'Recovery flags changed')
     require(all(n in pw and n in groups for n in USERS),'Service identity missing')

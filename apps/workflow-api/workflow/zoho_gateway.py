@@ -279,13 +279,14 @@ class ZohoGatewayClient:
         require_authority(self, service, normalized_method, path, body, headers)
         from .automation.mutation_control import require_business_transport, record_business_response
         from .automation.lifecycle_control import GRANT
-        if mutation and (query or content_type != 'application/json') and GRANT.get() is None:
+        from .automation.customer_send_control import GRANT as CUSTOMER_GRANT
+        if mutation and (query or content_type != 'application/json') and GRANT.get() is None and CUSTOMER_GRANT.get() is None:
             raise ValueError('Mutation query parameters and alternate encodings are forbidden')
         require_business_transport(self, service, normalized_method, path, body, headers,
                                    content_type=content_type,query=query)
 
         def standby() -> dict[str, Any]:
-            if mutation and GRANT.get() is not None:
+            if mutation and (GRANT.get() is not None or CUSTOMER_GRANT.get() is not None):
                 raise ZohoGatewayError('Scoped lifecycle mutations require the verified direct provider path.')
             verify_transport_authority(self, service, normalized_method, path, body, headers)
             require_business_transport(self, service, normalized_method, path, body, headers, recheck=True,

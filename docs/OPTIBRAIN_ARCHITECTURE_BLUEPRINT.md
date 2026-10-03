@@ -1,6 +1,6 @@
 # OptiBrain architecture
 
-AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; Current API contract: `1.13.0`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
+AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; Current API contract: `1.14.0`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
 
 ```mermaid
 flowchart TD
@@ -15,12 +15,15 @@ flowchart TD
   ACTION --> CLAIM[Create-only off-host effect claims]
   CLAIM --> SCOPED[Root scoped new-record internal runner]
   SCOPED --> CRM
+  SENDPOLICY[Separate root customer policy / TEST checkpoint] --> SEND[Exact operational Mail families]
+  CLAIM --> SEND
+  SEND --> MAIL[Zoho Mail / independent Sent reconciliation]
   DB --> BACKUP[Online backup / public-recipient AGE / immutable R2 / full-byte readback]
   POLICY --> BACKUP
   BACKUP --> KEY[Owner offline private identity]
 ```
 
-CRM owns Lead, Contact, Account, Service Location, Service, Deal, Installation, Case and Task records. OptiBrain retains receipt lineage, internal crosswalks, saved cursors, action/approval envelopes and independent effect evidence. Display caches never authorize effects. Only individually scoped internal actions on new post-activation intake records may write; inspect the current root policy. Customer-facing and financial writes remain disabled.
+CRM owns Lead, Contact, Account, Service Location, Service, Deal, Installation, Case and Task records. OptiBrain retains receipt lineage, internal crosswalks, saved cursors, action/approval envelopes and independent effect evidence. Display caches never authorize effects. Individual internal scopes cover eligible post-activation work; a distinct root policy gates four proved customer email families. Financial writes remain disabled. [Communications](OPTIBRAIN_CUSTOMER_COMMUNICATION_CONTRACT.md) specifies recipient/association/language proofs, suppression and the customer-only kill.
 
 Caddy terminates origin TLS and denies legacy consequential routes before proxying to loopback services. Cloudflare Access additionally protects the operator prefix; origin independently verifies JWT audience, issuer and human allowlist. The shared API key authenticates technical endpoints and never substitutes for a human approval identity. Provider scope is capability, not runtime authorization.
 
@@ -33,3 +36,5 @@ Mail metadata/body cache avoids unchanged content GETs without replacing immutab
 Code rollback preserves DBs/claims; disaster restore starts isolated with writers off and reconciles effects newer than the backup. The clean rebuild uses fresh packages, current repository definitions, named identities and the verified golden archive. The snapshot is fast whole-VM rollback insurance; it is not required by reconstruction. Evidence and remaining proof limits are in [rebuild evidence](phase15-rebuild-evidence.md).
 
 CRM is the main business cockpit. Native Finance Estimates/Invoices backed by Books are the only transaction model; native CRM Quotes/Invoices remain hidden. One Deal normally covers one Site. [Finance contract](OPTIBRAIN_FINANCE_INTEGRATION_CONTRACT.md) and [scope](OPTIBRAIN_REAL_AUTOMATION_SCOPE.md) define current relationships and authority.
+
+Services are durable installed systems; additional accepted work and return visits reuse them without reparenting their original Deal. Installation-to-Service joins plus root visit lineage retain the current work's Account/Contact/Deal/Site context. Owner scheduling/completion is verified against native timelines. Completion activates only mutable new Services; existing Active references remain read-only. Finance observation derives invoice/payment attention without writes. Support context is prepared, while automatic Case creation remains unarmed without a deterministic producer.

@@ -15,6 +15,7 @@ import shlex
 import unicodedata
 
 from . import lifecycle_control as lc
+from . import operational_lifecycle as operations
 from .lifecycle import (ATTR_FIELDS, OWNER, SITE_FIELDS, accepted_plan, attribution,
     aware, digest, email_or_empty, finance_relationship, next_followup,
     plan_intake, site_fields, site_match, verify_receipt)
@@ -73,16 +74,21 @@ def folded(value):
     return re.sub(r'[^a-z0-9]','',value)
 
 def safe_site_match(sites,account_id,address):
-    match=site_match(sites,account_id,address)
-    if match['decision']!='CREATE':return match
-    # Potential formatting collisions require review, never fuzzy merging.
-    postal=folded(address.get('postal_code'));number=re.findall(r'\d+',str(address.get('street','')))
-    for row in sites:
-        if str((row.get('Linked_Account') or {}).get('id'))!=str(account_id):continue
-        other=re.findall(r'\d+',str(row.get(SITE_FIELDS['street']) or ''))
-        if postal and folded(row.get(SITE_FIELDS['postal_code']))==postal and number and other and number[0]==other[0]:
-            return {'decision':'HUMAN','reason':'Possible address formatting/unit collision; choose site in CRM'}
-    return match
+    return operations.operational_site_match(sites,account_id,address)
+
+def owner_transition_evidence(record,timeline,activation,module,field,desired):
+    """Return the stable native event after the same latest-owner check as intake."""
+    if not human_transition(record,timeline,activation,module,field,desired):return None
+    matching=[]
+    for row in timeline:
+        if (str((row.get('record') or {}).get('id'))!=str(record.get('id'))
+                or ((row.get('record') or {}).get('module') or {}).get('api_name')!=module):continue
+        for change in row.get('field_history',[]):
+            if change.get('api_name')==field:matching.append((aware(row['audited_time']),row,change))
+    at,row,change=max(matching,key=lambda value:value[0])
+    return {'transition_id':digest({'module':module,'record_id':str(record['id']),
+        'timeline_id':row.get('id'),'at':row['audited_time'],'field':field,'change':change}),
+        'occurred_at':at.isoformat(),'native_event':row}
 
 def same(actual,desired):
     if actual is None and desired=='':return True
@@ -164,7 +170,7 @@ class Engine:
         raise HumanAttention('Complete CRM inventory exceeds read bound')
     def record(self,module,identity):
         value=self.get('/crm/v8/'+module+'/'+str(identity)) or {}
-        if len(value.get('data',[]))!=1:raise UnsafeOutcome('Exact provider record unavailable')
+        if len(value.get('data',[]))!=1 or str(value['data'][0].get('id'))!=str(identity):raise UnsafeOutcome('Exact provider record unavailable')
         return value['data'][0]
     def register(self,module,record,*,reference=False,source=None):
         identity=str(record['id'])
@@ -226,7 +232,7 @@ class Engine:
         except Exception as exc:
             self.journal.append(effect,'exception',{'type':type(exc).__name__})
             self.hold('Provider outcome or readback uncertain; no automatic retry',effect)
-    def create(self,key,module,row):
+    def create(self,key,module,row,*,scope=None):
         old=self.state['effects'].get(key)
         if old and old['state']=='verified':return self.record(module,old['provider_id'])
         def verify(data):
@@ -235,8 +241,8 @@ class Engine:
             record=self.record(module,item['details']['id'])
             if any(not same(record.get(k),v) for k,v in row.items()):raise UnsafeOutcome('CRM ignored requested field')
             self.register(module,record);return record
-        return self.call(key,lc.MODULE_SCOPE[module],'/crm/v8/'+module,{'data':[row],'trigger':[],'skip_feature_execution':[{'name':'cadences'}]},verify=verify)
-    def update(self,key,module,record,patch):
+        return self.call(key,scope or lc.MODULE_SCOPE[module],'/crm/v8/'+module,{'data':[row],'trigger':[],'skip_feature_execution':[{'name':'cadences'}]},verify=verify)
+    def update(self,key,module,record,patch,*,scope=None):
         if synthetic(record):raise HumanAttention('Record is now marked TEST; exclude from real automation')
         if all(same(record.get(k),v) for k,v in patch.items()):return record
         old=self.state['effects'].get(key)
@@ -250,7 +256,7 @@ class Engine:
             actual=self.record(module,record['id'])
             if any(not same(actual.get(k),v) for k,v in patch.items()):raise UnsafeOutcome('CRM conditional update readback differs')
             return actual
-        return self.call(key,lc.MODULE_SCOPE[module],'/crm/v8/'+module+'/'+record['id'],
+        return self.call(key,scope or lc.MODULE_SCOPE[module],'/crm/v8/'+module+'/'+record['id'],
             {'data':[{'id':record['id'],**patch}],'trigger':[],'skip_feature_execution':[{'name':'cadences'}]},
             headers={'If-Unmodified-Since':record['Modified_Time']},verify=verify)
     def task(self,key,module,record,subject,description,due=None):
@@ -352,6 +358,11 @@ class Engine:
         sites=self.list('Service_Locations')
         for identity,lineage in self.state['deals'].items():
             deal=self.record('Deals',identity)
+            if (str((deal.get('Account_Name') or {}).get('id'))!=lineage['account_id']
+                    or str((deal.get('Contact_Name') or {}).get('id'))!=lineage['contact_id']):
+                self.attention('site:'+identity,'Service Location needs review','Deal Account or primary Contact changed',
+                    'Reconcile Deal customer in CRM before site preparation',module='Deals',identity=identity)
+                continue
             self.trigger({'kind':'converted_deal','source':lineage['source'],'occurred_at':deal['Created_Time'],'record':deal})
             direct=(deal.get('Service_Location') or {}).get('id')
             if direct:
@@ -395,26 +406,32 @@ class Engine:
         if deal.get('Stage') in {'Closed Lost','Estimate Rejected','Closed Lost to Competition','Closed Won'}:
             raise HumanAttention('Deal is closed; respect owner suppression before preparing more work')
         if not site_id:raise HumanAttention('Choose Service Location on the Deal before acceptance automation')
-        plan=accepted_plan(deal.get('Service_Types'),account_id=lineage['account_id'],deal_id=identity,site_id=site_id)
-        if plan['decision']!='PREPARE_INTERNAL' or any(s['type']=='Other' for s in plan.get('services',[])):
-            raise HumanAttention('Accepted Services require owner-confirmed deterministic catalog mapping')
+        if (lineage.get('accepted') and (lineage.get('accepted_estimate_id',str(observation.get('transaction_id')))!=str(observation.get('transaction_id'))
+                or lineage.get('accepted_service_types',deal.get('Service_Types'))!=deal.get('Service_Types'))):
+            raise HumanAttention('Accepted scope changed after operational preparation; owner reconciles the work in CRM')
+        existing=self.list('Services')
+        durable=operations.durable_service_plan(deal.get('Service_Types'),site_id,existing)
+        if durable['decision']!='PREPARE_INTERNAL':raise HumanAttention(durable['reason'])
+        account=self.record('Accounts',lineage['account_id']);site=self.record('Service_Locations',site_id)
+        contact=self.record('Contacts',lineage['contact_id'])
+        plan=operations.accepted_work_plan(estimate=observation,deal=deal,account=account,
+            contact=contact,site=site,services=existing,protected_ids=self.protected)
+        if plan['decision']!='PREPARE_INTERNAL':raise HumanAttention(plan['reason'])
         if deal.get('Stage') in {'Qualification','Value Proposition','Needs Analysis','Id. Decision Makers','Proposal/Price Quote','Negotiation/Review'}:
             self.update('accepted-stage:'+identity,'Deals',deal,{'Stage':'Contracts In Progress'})
-        existing=self.list('Services');created=[]
+        created=[]
         for s in plan['services']:
-            matches=[r for r in existing if str((r.get('Linked_Service_Location') or {}).get('id'))==site_id and r.get('Service_Type')==s['type']]
-            if len(matches)>1 or matches and str((matches[0].get('Linked_Deal') or {}).get('id'))!=identity:
-                raise HumanAttention('Existing durable Service: review expansion versus reuse in CRM')
-            if matches:
-                service=matches[0]
-                if service.get('Service_Stage') in {'Cancelled','Suspended'}:
-                    raise HumanAttention('Service was suppressed by the owner; review accepted work manually')
-                if service['id'] not in self.ownership['records']:raise HumanAttention('Service has no new-record ownership')
-            else:service=self.create('service:'+identity+':'+s['type'],'Services',{'Name':s['label']+' — '+deal['Deal_Name'],
+            if s['decision']=='REUSE':
+                service=s['record']
+                # A durable system is reused across Deals without replacing its
+                # original Linked_Deal or claiming mutable historical ownership.
+                if service['id'] not in self.ownership['records']:self.register('Services',service,reference=True)
+                elif self.ownership['records'][service['id']].get('module')!='Services':
+                    self.hold('Durable Service has conflicting registered module')
+            else:service=self.create('service:'+identity+':'+s['label'],'Services',{'Name':s['label']+' — '+deal['Deal_Name'],
                 'Linked_Service_Location':{'id':site_id},'Linked_Deal':{'id':identity},'Service_Type':s['type'],'Service_Stage':'Ready for Scheduling'})
             if service:created.append(service)
         if self.dry_run:return
-        account=self.record('Accounts',lineage['account_id']);site=self.record('Service_Locations',site_id)
         activation=lc.trusted_json(ROOT/'activation.json')
         anchor={'id':activation['workdrive_parent']};self.register('WorkDrive',anchor,reference=True)
         parent=account.get('Main_Workdrive_Folder_ID')
@@ -432,7 +449,6 @@ class Engine:
             self.update('wd-account-link:'+account['id'],'Accounts',account,{'Main_Workdrive_Folder_ID':parent,'Main_Workdrive_Folder_URL':'https://workdrive.zoho.com/folder/'+parent})
         if self.ownership['records'][site_id]['ownership']=='REAL_NEW':
             self.update('wd-site-link:'+site_id,'Service_Locations',site,{'Service_Location_Workdrive_Folder_ID':folder['id'],'Service_Location_Workdrive_Folder_URL':'https://workdrive.zoho.com/folder/'+folder['id']})
-        contact=self.record('Contacts',lineage['contact_id'])
         recipient=email_or_empty(contact.get('Email'))
         if not recipient or str((contact.get('Account_Name') or {}).get('id'))!=account['id']:
             raise HumanAttention('Contract contact/recipient requires owner review')
@@ -447,12 +463,26 @@ class Engine:
             'Name':'Service installation','Linked_Installation':{'id':installation['id']},'Linked_Service':{'id':service['id']}})
         self.task('send-contract:'+identity,'Deals',deal,'Send contract manually','Prepared context validated; use Zoho Sign manually. No automatic external send.')
         self.task('schedule:'+identity,'Deals',deal,'Schedule installation','Select date, technician and final access instructions in CRM. No automatic scheduling or confirmation.')
-        lineage.update(service_ids=[s['id'] for s in created],installation_id=installation['id'],contract=contract,accepted=True);self.save()
+        lineage.update(service_ids=[s['id'] for s in created],contract=contract,accepted=True,
+            accepted_estimate_id=str(observation['transaction_id']),accepted_service_types=deal.get('Service_Types'),
+            last_deal_stage=deal.get('Stage'))
+        lineage.setdefault('installation_id',installation['id'])
+        lineage.setdefault('initial_installation_id',installation['id'])
+        lineage.setdefault('visits',{}).setdefault(installation['id'],{'installation_id':installation['id'],
+            'service_ids':[s['id'] for s in created],'deal_id':identity,'parent_installation_id':None})
+        self.save()
     def finance(self):
         if not self.state['deals']:return
         deals=[self.record('Deals',i) for i in self.state['deals']];sites=self.list('Service_Locations');services=self.list('Services')
         for module,kind in [('CustomModule5002','estimate'),('CustomModule5001','invoice')]:
             rows=self.list(module,'id,Account_Name,Potential_Name,'+('Estimate_ID' if kind=='estimate' else 'Invoice_ID'))
+            if kind=='invoice' and not self.dry_run:
+                # Know the complete native linked set before one PAID row can
+                # clear a Deal's billing attention. Missing observations wait.
+                for deal_id,lineage in self.state['deals'].items():
+                    lineage['invoice_native_ids']=sorted({str(row.get('Invoice_ID') or '') for row in rows
+                        if str(((row.get('Potential_Name') or row.get('PotentialName') or {}).get('id'))) == deal_id})
+                self.save()
             for native in rows:
                 # Use the actual native association keys; no inference from customer name.
                 potential=(native.get('Potential_Name') or native.get('PotentialName') or {}).get('id')
@@ -487,8 +517,42 @@ class Engine:
                                 self.update('reply-stop:'+identifier,'Tasks',self.record('Tasks',previous['provider_id']),{'Status':'Completed'})
                         elif aware(due)<=datetime.now(timezone.utc):
                             self.task('quote-followup:'+identifier,'Deals',deal,'Review quote follow-up','Check for customer response and suppression before any manual reminder. OptiBrain sends nothing.',due[:10])
-                elif books.get('balance',0)>0:
-                    self.task('invoice-attention:'+identifier,'Deals',deal,'Review invoice/payment status','Books remains financial truth. Observe balance/due date; all invoice and payment actions are human.',books.get('due_date'))
+                else:self.invoice_progress(native,books,deal,lineage,sites,services)
+    def invoice_progress(self,native,books,deal,lineage,sites,services):
+        plan=operations.invoice_progress_plan(native,books,deals=[deal],sites=sites,services=services,
+            service_ids=lineage.get('service_ids') if lineage.get('accepted') else None,
+            protected_ids=self.protected,now=datetime.now(timezone.utc))
+        if plan['decision']!='OBSERVE':raise HumanAttention(plan['reason'])
+        identifier=plan['transaction_id'];key='invoice:'+identifier
+        if not self.dry_run:
+            lineage.setdefault('invoices',{})[identifier]=plan
+            self.save()
+        if plan['clear_billing_attention']:
+            expected=set(lineage.get('invoice_native_ids') or lineage.get('invoices',{}))
+            complete=(bool(expected) and expected<=set(lineage.get('invoices',{}))
+                and all(lineage['invoices'][i].get('financial_state')=='SATISFIED' for i in expected))
+            task_keys=['task:invoice-attention:'+identifier]
+            if complete:task_keys.append('task:billing:'+deal['id'])
+            for task_key in task_keys:
+                previous=self.state['effects'].get(task_key)
+                if previous and previous['state']=='verified':
+                    task=self.record('Tasks',previous['provider_id'])
+                    if task.get('Status') in {'Not Started','In Progress'}:
+                        self.update('payment-stop:'+identifier+':'+task['id'],'Tasks',task,{'Status':'Completed'})
+            self.state['attention'].pop(key,None)
+            if not self.dry_run:
+                lineage['financial_state']='SATISFIED' if complete else 'OPEN'
+                if complete:lineage['post_sale_eligibility']='Human review of warranty, maintenance and renewal; Books payment observed'
+                self.save()
+        else:
+            if not self.dry_run:lineage['financial_state']='OPEN';self.save()
+            self.attention(key,deal['Deal_Name'],plan['attention'],'Review invoice/payment in Zoho Finance',
+                module='Deals',identity=deal['id'])
+            if plan['financial_state'] in {'PARTIAL','UNPAID'}:
+                self.task('invoice-attention:'+identifier,'Deals',deal,
+                    'Invoice overdue' if plan['attention']=='INVOICE OVERDUE' else 'Review invoice/payment status',
+                    'Books remains financial truth. No payment-demand message, invoice creation or financial mutation.',plan.get('due_date'))
+        return plan
     def reply_observed(self,contact,since):
         from email.utils import getaddresses
         identity=email_or_empty(contact.get('Email'))
@@ -499,29 +563,152 @@ class Engine:
         if not isinstance(rows,list) or len(rows)>=100:raise HumanAttention('Mail reply observation unavailable/incomplete; suppress follow-up')
         return any(identity in {email_or_empty(e) for _,e in getaddresses([str(r.get('fromAddress') or '')])}
                    and datetime.fromtimestamp(int(r['receivedTime'])/1000,timezone.utc)>=aware(since) for r in rows)
+    def visit_context(self,installation,lineage,visit,links):
+        services=[self.record('Services',sid) for sid in visit['service_ids']]
+        site=self.record('Service_Locations',lineage['site_id'])
+        account=self.record('Accounts',lineage['account_id'])
+        contact=self.record('Contacts',lineage['contact_id'])
+        deal=self.record('Deals',visit['deal_id'])
+        context=operations.installation_context(installation,services=services,sites=[site],accounts=[account],
+            deals=[deal],contacts=[contact],links=links,deal_id=visit['deal_id'],protected_ids=self.protected)
+        if context['decision']!='PREPARE_INTERNAL':raise HumanAttention(context['reason'])
+        if set(context['service_ids'])!=set(visit['service_ids']):
+            raise HumanAttention('Installation native Services changed; reconcile its visit lineage in CRM')
+        if any(synthetic(row) for row in [installation,site,account,contact,deal,*services]):
+            raise HumanAttention('Operational context is TEST; exclude it from real automation')
+        return context,services,deal
+    def operational_visit(self,installation,lineage,visit,links):
+        context,services,deal=self.visit_context(installation,lineage,visit,links)
+        identity=installation['id'];status=installation.get('Installation_Status')
+        proof=None;timeline=[]
+        if status in {'Completed','Revisit Required','Failed','Scheduled','In Progress'}:
+            history=self.get('/crm/v8/Installations/'+identity+'/__timeline',{'per_page':200}) or {}
+            if history.get('info',{}).get('more_records'):raise HumanAttention('Installation timeline incomplete')
+            timeline=history.get('__timeline') or []
+            proof=owner_transition_evidence(installation,timeline,self.policy['activated_at'],
+                'Installations','Installation_Status',status)
+            if status in {'Completed','Revisit Required','Scheduled'} and not proof:
+                raise HumanAttention('Change Installation status in the CRM UI; API/workflow progress is not an owner trigger')
+        mutable={s['id'] for s in services if self.ownership['records'].get(s['id'],{}).get('ownership')=='REAL_NEW'
+                 and self.ownership['records'][s['id']].get('module')=='Services'}
+        plan=operations.installation_progress_plan(installation,context,services=services,
+            owner_trigger=bool(proof),completed_at=proof['occurred_at'] if proof else None,
+            mutable_service_ids=mutable,now=datetime.now(timezone.utc))
+        if plan['decision']=='HUMAN':raise HumanAttention(plan['reason'])
+        if status in {'Failed','Revisit Required'} and str(installation.get('Instructions_Notes') or '').startswith('Accepted estimate '):
+            raise HumanAttention('Replace preparation instructions with the actual blocked/return-visit reason in CRM')
+        if not self.dry_run:
+            lineage.setdefault('operational',{})[identity]={'context':context,'plan':plan,
+                'native_version':installation.get('Modified_Time'),'observed_at':datetime.now(timezone.utc).isoformat()}
+            self.save()
+        if status=='Revisit Required':
+            self.trigger({'kind':'installation_return_visit','source':lineage['source'],'occurred_at':proof['occurred_at'],
+                'record':installation,'timeline':timeline,'native_event':proof['native_event'],'context':context})
+            return_plan=operations.return_visit_plan(installation,context,transition_id=proof['transition_id'],
+                known_visits=lineage.get('return_visits',{}),owner_trigger=True)
+            if return_plan['decision']=='HUMAN':raise HumanAttention(return_plan['reason'])
+            if return_plan['decision']=='REUSE' and lineage.get('visits',{}).get(return_plan['record_id'],{}).get('completed_transition_id'):
+                self.state['attention'].pop('operation:'+identity,None)
+                return plan
+            if return_plan['decision']=='PREPARE_INTERNAL':
+                child=self.create('return-visit:'+return_plan['effect_key'],'Installations',return_plan['row'])
+                if self.dry_run:return plan
+                for sid in context['service_ids']:
+                    self.create('return-visit-link:'+return_plan['effect_key']+':'+sid,'Installation_X_Services',
+                        {'Name':'Return visit service','Linked_Installation':{'id':child['id']},'Linked_Service':{'id':sid}})
+                entry={'installation_id':child['id'],'parent_installation_id':identity,
+                    'deal_id':context['deal_id'],'service_ids':context['service_ids'],'transition_id':proof['transition_id']}
+                lineage.setdefault('return_visits',{})[return_plan['effect_key']]=entry
+                lineage.setdefault('visits',{})[child['id']]=entry
+                lineage['completed']=False
+                self.save()
+                self.task('schedule-return:'+return_plan['effect_key'],'Installations',child,
+                    'Schedule return visit',installation['Instructions_Notes'])
+            self.attention('operation:'+identity,installation.get('Name'),'Return visit required: '+plan['reason'],
+                'Schedule return visit in CRM',module='Installations',identity=identity)
+        elif status=='Completed':
+            if visit.get('completed_transition_id')==proof['transition_id']:
+                self.state['attention'].pop('operation:'+identity,None);return plan
+            self.trigger({'kind':'installation_completed','source':lineage['source'],'occurred_at':proof['occurred_at'],
+                'record':installation,'timeline':timeline,'native_event':proof['native_event'],'context':context,'completion_evidence':plan['completion_evidence']})
+            for change in plan['patches']:
+                service=next(row for row in services if row['id']==change['id'])
+                self.update('service-completion:'+plan['effect_key']+':'+service['id'],'Services',service,
+                    {**change['patch'],'Service_Stage':'Active'},scope='crm.service.activate')
+            if self.dry_run:return plan
+            visit.update(completed_transition_id=proof['transition_id'],completed_at=proof['occurred_at'],
+                completion_evidence=plan['completion_evidence'],context=context)
+            lineage['completed']=all(v.get('completed_transition_id') for v in lineage['visits'].values()
+                if not any(r.get('parent_installation_id')==v['installation_id'] for r in lineage['return_visits'].values()))
+            if lineage.get('financial_state')!='SATISFIED' and not lineage.get('invoices'):
+                self.task('billing:'+deal['id'],'Deals',deal,'Create / send invoice in Zoho Finance',
+                    'Work completed. Review scope and create/send the native Finance Invoice. Payments remain Books-owned.')
+            lineage['post_sale_eligibility']='Support / warranty context ready; maintenance and renewal remain human review'
+            self.state['attention'].pop('operation:'+identity,None);self.save()
+            if visit.get('parent_installation_id'):
+                self.state['attention'].pop('operation:'+visit['parent_installation_id'],None);self.save()
+        else:
+            action=plan['attention']
+            if plan.get('access_attention'):action='Confirm site access information'
+            self.attention('operation:'+identity,installation.get('Name'),plan['attention'],action,
+                module='Installations',identity=identity)
+        return plan
     def completions(self):
+        if not any(lineage.get('installation_id') for lineage in self.state['deals'].values()):return
+        links=self.list('Installation_X_Services')
         for identity,lineage in self.state['deals'].items():
-            if not lineage.get('installation_id') or lineage.get('completed'):continue
-            installation=self.record('Installations',lineage['installation_id'])
-            if installation.get('Installation_Status')!='Completed':continue
-            history=self.get('/crm/v8/Installations/'+installation['id']+'/__timeline',{'per_page':200}) or {}
-            if history.get('info',{}).get('more_records') or not human_transition(installation,history.get('__timeline') or [],self.policy['activated_at'],'Installations','Installation_Status','Completed'):
-                self.attention('completion:'+identity,installation['Name'],'Record completion in the CRM UI; API/workflow completion is not a human trigger',module='Installations',identity=installation['id']);continue
-            # Completion is observed, not manufactured; scheduling/execution remain human.
-            self.trigger({'kind':'installation_completed','source':lineage['source'],'occurred_at':installation['Modified_Time'],'record':installation})
-            for sid in lineage.get('service_ids',[]):
-                service=self.record('Services',sid)
-                if service.get('Service_Stage') in {'Cancelled','Suspended'}:raise HumanAttention('Service was suppressed in CRM; review completion manually')
-                self.update('service-active:'+sid,'Services',service,{'Service_Stage':'Active'})
-            if self.dry_run:continue
-            deal=self.record('Deals',identity)
-            self.task('billing:'+identity,'Deals',deal,'Review billing and support handoff','Installation complete. Human invoice creation in Finance; no automatic financial or review message.')
-            lineage.update(completed=True,post_sale_eligibility='Human review required for warranty, maintenance and renewal scope');self.save()
+            if not lineage.get('installation_id'):continue
+            lineage.setdefault('return_visits',{})
+            lineage.setdefault('visits',{}).setdefault(lineage['installation_id'],
+                {'installation_id':lineage['installation_id'],'deal_id':identity,
+                 'service_ids':lineage.get('service_ids',[]),'parent_installation_id':None})
+            for visit_id,visit in list(lineage['visits'].items()):
+                try:
+                    installation=self.record('Installations',visit_id)
+                    self.operational_visit(installation,lineage,visit,links)
+                    self.state['attention'].pop('completion:'+visit_id,None)
+                except HumanAttention as exc:
+                    self.attention('completion:'+visit_id,'Installation needs attention',str(exc),
+                        'Review Installation in CRM',module='Installations',identity=visit_id)
+            self.save()
+    def prepare_support_case(self,source_event_id,issue,context):
+        """Only an independently inspected approved Root support source may call.
+
+        No automatic producer is armed: ordinary email/intake lacks a safe
+        Service identity and emergency determination. Owner review stays in CRM.
+        """
+        if 'crm.case.prepare' not in self.policy['real_scopes']:
+            self.attention('support:'+str(source_event_id),'Support request',
+                'Select the customer, site and Service and determine urgency in CRM',
+                'Prepare linked support Case',module='Deals',identity=context.get('deal_id',''))
+            return {'decision':'HUMAN','reason':'Deterministic support-intake scope is not armed'}
+        if not self.source or self.source.get('kind')!='support_intake' or self.source.get('source_event_id')!=source_event_id:
+            raise HumanAttention('Independent Root-backed support source required')
+        plan=operations.support_case_plan(issue,context,source_event_id=source_event_id,protected_ids=self.protected)
+        if plan['decision']!='PREPARE_INTERNAL':raise HumanAttention(plan['reason'])
+        case=self.create('support-case:'+plan['effect_key'],'Cases',plan['row'],scope='crm.case.prepare')
+        if self.dry_run:return plan
+        self.state.setdefault('support',{})[case['id']]={'source_event_id':source_event_id,
+            'context':plan['support_context'],'effect_key':plan['effect_key']}
+        self.attention('case:'+case['id'],case['Subject'],'Customer support request needs human review',
+            'Review Case in CRM',module='Cases',identity=case['id']);self.save()
+        return case
     def publish(self,error=None):
         rows=[]
+        if aware(self.policy['expires_at'])-datetime.now(timezone.utc)<timedelta(days=7):
+            rows.append({'context':'Review internal automation authorization','why':'Scoped authority expires within seven days',
+                'next_action':'Engineer reviews evidence and deliberately renews scopes; preserve cutoff and claims','priority':'HIGH'})
         for identity,lineage in self.state['deals'].items():
             if lineage.get('accepted') and not lineage.get('completed'):
-                rows.append({'context':'Accepted work','why':'Contract and scheduling need human action','next_action':'Send contract / schedule installation in CRM','module':'Deals','identity':identity,'priority':'MEDIUM'})
+                if lineage.get('last_deal_stage') not in {'Contracts Signed','Contract Signed','Scheduling','Installation','Installation Booked'}:
+                    rows.append({'context':'Contract ready','why':'Accepted work has prepared customer/site/Service context',
+                        'next_action':'Send contract manually in Zoho Sign','module':'Deals','identity':identity,'priority':'MEDIUM'})
+                if not lineage.get('operational'):
+                    rows.append({'context':'Accepted work','why':'Human scheduling is required',
+                        'next_action':'Schedule installation in CRM','module':'Deals','identity':identity,'priority':'MEDIUM'})
+            elif lineage.get('completed') and not lineage.get('invoices') and lineage.get('financial_state')!='SATISFIED':
+                rows.append({'context':'Job completed','why':'Completed visit evidence and Service context are ready',
+                    'next_action':'Create / send invoice in Zoho Finance','module':'Deals','identity':identity,'priority':'MEDIUM'})
         rows.extend(self.state['attention'].values())
         if error:rows.append({'context':'Internal automation paused','why':error,'next_action':'Engineer reconciles before retry','module':'','identity':'','priority':'HIGH'})
         value={'schema':1,'family':FAMILY,'at':datetime.now(timezone.utc).isoformat(),'read_only':True,'scope':'live','state':'HOLD' if (ROOT/'HOLD.json').exists() else 'DRY_RUN' if self.dry_run else 'READY',
@@ -587,11 +774,15 @@ def run(*,dry_run=False):
         receipts=private_receipts()
         if 'zoho_form_fr' in engine.policy['approved_sources']:receipts+=form_receipts(engine)
         for work in (lambda:engine.intakes(receipts),engine.conversions,engine.sites,engine.finance,engine.completions):
-            try:work()
+            try:
+                work()
+                engine.state['attention'].pop('review:'+getattr(work,'__name__','intake'),None)
             except HumanAttention as exc:engine.attention('review:'+getattr(work,'__name__','intake'),'Lifecycle needs review',str(exc))
     except HumanAttention as exc:
         engine.attention('bounded-review','Lifecycle needs review',str(exc));return engine.publish()
     except Exception as exc:
         if not dry_run:atomic(ROOT/'HOLD.json',{'at':datetime.now(timezone.utc).isoformat(),'reason':type(exc).__name__})
         engine.publish('Provider/effect evidence requires engineer review');raise
+    engine.state['attention'].pop('bounded-review',None)
+    engine.save()
     return engine.publish()

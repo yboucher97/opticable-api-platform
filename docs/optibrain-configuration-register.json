@@ -839,6 +839,83 @@
       "verified": "root ownership/mode/source hashes and read-only scope/health evidence",
       "backed_up": "application/infrastructure archive; /run display regenerated",
       "purpose": "root display only; rebuildable; no authority"
+    },
+    {
+      "location": "/etc/optibrain/customer-communication-control.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "Reviewed exact-SHA source, verified Phase18 checkpoint and root activation",
+      "deployed": "Canonical release then reviewed root staging; source hashes verified",
+      "restored": "Preserve evidence/holds; force both send flags OFF, mask service/timer; reconcile before any grant",
+      "verified": "Root file ownership/modes, pinned SHA, native provider readback, immutable remote claims",
+      "backed_up": "Application archive except /run display, which is regenerated",
+      "purpose": "Independent four-family customer send policy; conjunctive external kill, source/checkpoint pins and finite bounds."
+    },
+    {
+      "location": "/etc/optibrain/customer-communications-runtime.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "Reviewed exact-SHA source, verified Phase18 checkpoint and root activation",
+      "deployed": "Canonical release then reviewed root staging; source hashes verified",
+      "restored": "Preserve evidence/holds; force both send flags OFF, mask service/timer; reconcile before any grant",
+      "verified": "Root file ownership/modes, pinned SHA, native provider readback, immutable remote claims",
+      "backed_up": "Application archive except /run display, which is regenerated",
+      "purpose": "Exact immutable SHA source/interpreter pins for root-only sender."
+    },
+    {
+      "location": "/var/lib/optibrain/customer-communications",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "Reviewed exact-SHA source, verified Phase18 checkpoint and root activation",
+      "deployed": "Canonical release then reviewed root staging; source hashes verified",
+      "restored": "Preserve evidence/holds; force both send flags OFF, mask service/timer; reconcile before any grant",
+      "verified": "Root file ownership/modes, pinned SHA, native provider readback, immutable remote claims",
+      "backed_up": "Application archive except /run display, which is regenerated",
+      "purpose": "Immutable proofs, effect IDs/counters/holds and manual suppression; never reset after state loss."
+    },
+    {
+      "location": "/usr/local/lib/optibrain/customer_runner.py",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "Reviewed exact-SHA source, verified Phase18 checkpoint and root activation",
+      "deployed": "Canonical release then reviewed root staging; source hashes verified",
+      "restored": "Preserve evidence/holds; force both send flags OFF, mask service/timer; reconcile before any grant",
+      "verified": "Root file ownership/modes, pinned SHA, native provider readback, immutable remote claims",
+      "backed_up": "Application archive except /run display, which is regenerated",
+      "purpose": "Reviewed installed launcher with independent external-send --stop."
+    },
+    {
+      "location": "/etc/systemd/system/opticable-customer-communications.service",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "Reviewed exact-SHA source, verified Phase18 checkpoint and root activation",
+      "deployed": "Canonical release then reviewed root staging; source hashes verified",
+      "restored": "Preserve evidence/holds; force both send flags OFF, mask service/timer; reconcile before any grant",
+      "verified": "Root file ownership/modes, pinned SHA, native provider readback, immutable remote claims",
+      "backed_up": "Application archive except /run display, which is regenerated",
+      "purpose": "Root pinned bounded Mail observer/sender; no Finance write."
+    },
+    {
+      "location": "/etc/systemd/system/opticable-customer-communications.timer",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "Reviewed exact-SHA source, verified Phase18 checkpoint and root activation",
+      "deployed": "Canonical release then reviewed root staging; source hashes verified",
+      "restored": "Preserve evidence/holds; force both send flags OFF, mask service/timer; reconcile before any grant",
+      "verified": "Root file ownership/modes, pinned SHA, native provider readback, immutable remote claims",
+      "backed_up": "Application archive except /run display, which is regenerated",
+      "purpose": "Five minute independently controlled customer communication schedule."
+    },
+    {
+      "location": "/run/optibrain-readiness/customer-communications.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "Reviewed exact-SHA source, verified Phase18 checkpoint and root activation",
+      "deployed": "Canonical release then reviewed root staging; source hashes verified",
+      "restored": "Preserve evidence/holds; force both send flags OFF, mask service/timer; reconcile before any grant",
+      "verified": "Root file ownership/modes, pinned SHA, native provider readback, immutable remote claims",
+      "backed_up": "Application archive except /run display, which is regenerated",
+      "purpose": "Read-only dated Today attention, never write authority."
     }
   ],
   "environment_key_references": [

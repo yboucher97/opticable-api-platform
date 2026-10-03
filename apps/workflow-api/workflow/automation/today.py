@@ -40,9 +40,9 @@ class TodaySources:
             return value
 
 
-def read_internal_attention(now):
+def read_internal_attention(now,path=None):
     """Root-owned display projection; never grants authority or executes actions."""
-    path=Path('/run/optibrain-readiness/lifecycle.json')
+    path=path or Path('/run/optibrain-readiness/lifecycle.json')
     try:
         fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW)
         with os.fdopen(fd) as f:
@@ -55,7 +55,7 @@ def read_internal_attention(now):
         return value
     except (OSError,ValueError,KeyError,TypeError):return None
 
-def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None):
+def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None,communications=None):
     now=now or datetime.now(timezone.utc)
     sections={name:[] for name in CATEGORIES}
     def add(category,context,why,next_action,source,link,*,priority='MEDIUM',due=None,freshness=None):
@@ -113,6 +113,15 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
             link='https://crm.zoho.com/crm/org763070937/tab/'+module+'/'+identity if module in {'Leads','Deals','Installations','Tasks'} and identity.isdecimal() else LINKS['health']
             add('Exceptions' if row.get('priority')=='HIGH' else 'Projects and install work',row.get('context'),row.get('why'),row.get('next_action'),'Scoped internal lifecycle',link,priority=row.get('priority','MEDIUM'),freshness=internal.get('at'))
         signals.append({'name':'Internal lifecycle','state':'ACTION REQUIRED' if internal.get('state')=='HOLD' else 'OK','reason':internal.get('state','UNKNOWN')})
+    if communications:
+        if communications.get('scope')!='live' or communications.get('read_only') is not True:raise ValueError('Customer projection must be read-only live evidence')
+        for row in communications.get('attention',[]):
+            if row.get('test_only'):continue
+            identity=str(row.get('identity',''))
+            link='https://crm.zoho.com/crm/org763070937/tab/Deals/'+identity if identity.isdecimal() else LINKS['health']
+            add('Exceptions',row.get('context'),row.get('why'),row.get('next_action'),'Customer communication evidence',link,
+                priority=row.get('priority','HIGH'),freshness=communications.get('at'))
+        signals.append({'name':'Customer communications','state':'ACTION REQUIRED' if communications.get('attention') else 'OK','reason':communications.get('state','UNKNOWN')})
     for name in unavailable:
         signals.append(dict(name=name,state='ACTION REQUIRED',reason='Current business evidence unavailable; open its source view'))
     order={'HIGH':0,'MEDIUM':1,'LOW':2}

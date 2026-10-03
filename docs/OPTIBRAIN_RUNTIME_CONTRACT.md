@@ -1,6 +1,6 @@
 # Runtime, network and health contract
 
-AUTHORITATIVE CURRENT. Units/proxy reconstruction source: [ops/phase15](../ops/phase15/). [Configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) defines precedence; [state](OPTIBRAIN_STATE_CONTRACT.md) defines stores. Four long-running services, six application timer/oneshot pairs. Six retired engineering units masked/inactive. Current services/timers are read from systemd, not inferred from Git.
+AUTHORITATIVE CURRENT. Units/proxy reconstruction source: [ops/phase15](../ops/phase15/). [Configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) defines precedence; [state](OPTIBRAIN_STATE_CONTRACT.md) defines stores. Four long-running services, seven application timer/oneshot pairs. Six retired engineering units masked/inactive. Current services/timers are read from systemd, not inferred from Git.
 
 ## Services
 
@@ -68,3 +68,7 @@ Queue backlog: DLQ>0 or active message age>30min = ACTION REQUIRED; active count
 ## Scoped internal lifecycle
 
 `opticable-lifecycle-internal.service` / `.timer`: root, every five minutes after completion (±20s), 300s timeout, no automatic restart. Inputs: private connector export, authenticated French Forms Mail, native CRM UI timeline and Finance/Books GETs. Outputs: individually allowed new-record CRM/WorkDrive effects plus root evidence and read-only Today projection. No Mail/Sign send, Books write, OVH action, price or schedule. Root source is an immutable exact-SHA tree under `/opt/optibrain-releases/SHA/source`; launcher verifies every Python file before import. Fixed root env references use existing provider credentials, never logging values. Root FLOCK; 12 effects/160 reads per cycle and initial 20 new-Lead verification bound. Live mutation policy rechecked before transport; HOLD or stale/missing authority blocks writes. Replacement hosts mask service/timer until recovery/reconciliation and exact scope activation. Canonical definitions live beside the other units; no new listener. Backup root lifecycle evidence/authority, preserve off-host claims. See [scope](OPTIBRAIN_REAL_AUTOMATION_SCOPE.md).
+
+## Customer communications
+
+`opticable-customer-communications.service` / `.timer`: root, every five minutes ±20 seconds, oneshot timeout300s, no restart, separate FLOCK. Reads native CRM/Finance/Books/Mail and root new-record lineage; outputs at most four individually scoped Mail effects per cycle, initially ten per real family until effect review. Native system email history establishes quote cadence; created/view timestamps do not. Sources/interpreter pinned to immutable exact-SHA tree. Inputs reuse existing credentials; no additional port. Root external kill is independent of intake; any missing policy, expired grant, uncertain delivery or failed reconciliation prevents sends. Replacement masks both service/timer, sets customer flags OFF and retains proof/claims/holds. Evidence belongs in the standard root backup. [Communication contract](OPTIBRAIN_CUSTOMER_COMMUNICATION_CONTRACT.md) defines eligibility and suppression.

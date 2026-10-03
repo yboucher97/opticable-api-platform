@@ -126,7 +126,8 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
             except (ValueError,LookupError,OSError,ZohoGatewayError):
                 sources[name]={};unavailable.append(name.title())
         return build_today(sources['sales'],sources['lifecycle'],sources['operations'],
-                           business_journal.view(),system_health(),now=instant,unavailable=unavailable,internal=read_internal_attention(instant))
+                           business_journal.view(),system_health(),now=instant,unavailable=unavailable,internal=read_internal_attention(instant),
+                           communications=read_internal_attention(instant,Path('/run/optibrain-readiness/customer-communications.json')))
 
     @app.get('/v1/operator',response_class=HTMLResponse,tags=['operator'])
     @app.get('/v1/operator/today',response_class=HTMLResponse,tags=['operator'])

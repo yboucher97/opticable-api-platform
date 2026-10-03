@@ -191,7 +191,7 @@ copy_if_present() {
     mkdir -p "${staging}/system"
     python3 - "${staging}/system/systemd-masks.json" "$(basename "${source}")" <<'PY'
 import json,pathlib,re,sys
-if not re.fullmatch(r'optibrain-agent-(dispatch|status|usage)\.(service|timer)|(?:optibrain-backup|optibrain-phase2a-upload|opticable-phase9-intake-receipts|opticable-phase10-service-events|opticable-phase12-test-runner)\.timer|opticable-phase12-test-runner\.service',sys.argv[2]):
+if not re.fullmatch(r'optibrain-agent-(dispatch|status|usage)\.(service|timer)|(?:optibrain-backup|optibrain-phase2a-upload|opticable-phase9-intake-receipts|opticable-phase10-service-events|opticable-phase12-test-runner|opticable-lifecycle-internal|opticable-customer-communications)\.timer|(?:opticable-phase12-test-runner|opticable-lifecycle-internal|opticable-customer-communications)\.service',sys.argv[2]):
     raise SystemExit('unsupported masked application unit')
 p=pathlib.Path(sys.argv[1]);units=json.loads(p.read_text()) if p.exists() else []
 p.write_text(json.dumps(sorted(set(units+[sys.argv[2]]))))

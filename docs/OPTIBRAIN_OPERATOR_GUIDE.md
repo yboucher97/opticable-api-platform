@@ -1,10 +1,10 @@
 # OptiBrain owner/operator guide
 
-AUTHORITATIVE CURRENT. Begin at [Today](https://optibrain.opticable.ca/v1/operator/today) using your normal owner login. OptiBrain currently observes and organizes work; real automatic writes and customer sends are OFF.
+AUTHORITATIVE CURRENT, API 1.14.0. Work mainly in Zoho CRM and review [Today](https://optibrain.opticable.ca/v1/operator/today) using your normal owner login. OptiBrain organizes eligible new work and may send four individually proven operational email families. Broad automation, marketing and financial writes remain OFF. Actual family state is shown by root policy/readiness; READY can mean waiting for naturally eligible work.
 
 ## Daily workflow — OWNER SAFE
 
-Review sales attention and due follow-ups first, then quote-ready items, projects/install work, maintenance/renewals and approvals/exceptions. Each card explains the reason, next action and dated source; open its detail link before acting. Confirm facts in CRM and use your normal business tools for any manual customer action. Today does not send messages or execute cards automatically. TEST_ONLY and historical evidence are separated from real current attention.
+Review new Leads, due follow-ups and quote-ready items, then accepted work, contracts, installations, billing and support. Each card explains the reason, next action and dated source; open its CRM link before acting. Viewing a card does not send anything. A human qualification/schedule/completion change in CRM can trigger its separately authorized family. TEST_ONLY and historical evidence are excluded from current business attention.
 
 Approvals are exact, scoped records, not a general automation switch. An approval can remain visible while transport is disabled. Inspect an exception’s evidence and ownership before requesting a retry. Do not approve, replay or recreate an action merely because a prior response is missing. A provider action may already have happened.
 
@@ -19,27 +19,36 @@ Approvals are exact, scoped records, not a general automation switch. An approva
 
 The former soft log-growth warning counted system-journal retention as application growth. Application diagnostic logs now rotate at 5 MiB × 5 files; journald is capped at 512 MiB/90 days. Separate thresholds and free-disk checks bound risk. Immutable action/receipt/claim evidence is retained separately.
 
-Remote queue depth is now read from Cloudflare’s approximate GET metrics. The first observation found active backlog 0 and dead-letter backlog 129. Those retained failures require engineering inspection before replay; Phase 15 did not consume, purge or replay them. Queue count alone does not identify when or why each delivery failed.
+Remote queue depth is read from Cloudflare’s approximate GET metrics. The retained historical backlog was classified during lifecycle validation; read the latest sampler for current counts. A queue count does not prove content/effects or authorize replay. Never purge or replay a retained item without independent effect reconciliation.
 
 ## Emergency checks — OWNER SAFE with shell access
 
 ```bash
 sudo cat /etc/optibrain/mutation-control.json
+sudo cat /etc/optibrain/customer-communication-control.json
 sudo cat /var/lib/optibrain/releases/current.json
 curl -fsS http://127.0.0.1:8100/v1/system/health
 sudo optibrain-admin scheduler  # backup/upload pair only
-sudo systemctl list-timers --all optibrain-backup.timer optibrain-phase2a-upload.timer opticable-phase9-intake-receipts.timer opticable-phase10-service-events.timer opticable-phase12-test-runner.timer --no-pager
+sudo systemctl list-timers --all optibrain-backup.timer optibrain-phase2a-upload.timer opticable-phase9-intake-receipts.timer opticable-phase10-service-events.timer opticable-phase12-test-runner.timer opticable-lifecycle-internal.timer opticable-customer-communications.timer --no-pager
 sudo optibrain-admin verify-latest
 sudo cat /var/lib/optibrain/phase2a/state.json
 sudo cat /run/optibrain-readiness/status.json
 sudo cat /run/optibrain-readiness/queue-depth.json
 ```
 
-The policy must show `test_writes_enabled:false` and `real_canary_allowed:false`; the receipt must show automatic writers and development worker false. The receipt is deployment evidence: the authenticated inspector in onboarding checks live process/policy state. `state.json` must show `download_hash_verified`, a recent `verified_at` and no newer upload failure; this is stronger than “upload succeeded.” Local verify checks the archive and DBs. Open Today → system health/exceptions to inspect attention.
+The central policy must show `test_writes_enabled:false` and `real_canary_allowed:false`; broad/legacy writers and the development worker stay OFF. Individually approved internal scopes and a separate customer-send policy may be active. The receipt proves the deployed release; live root policies/readiness prove current activation. Backup `state.json` must show `download_hash_verified`, a recent `verified_at` and no newer upload failure. Local verify checks archive and DB integrity. Open Today → system health/exceptions to inspect attention.
+
+Stop **all automatic customer email** while keeping new intake and internal work running:
+
+```bash
+sudo /usr/bin/python3 -I /usr/local/lib/optibrain/customer_runner.py --stop
+```
 
 Emergency stop of application automation, retaining backup/upload:
 
 ```bash
+sudo /usr/bin/python3 -I /usr/local/lib/optibrain/customer_runner.py --stop
+sudo /usr/bin/python3 -I /usr/local/lib/optibrain/lifecycle_runner.py --stop
 sudo systemctl stop opticable-phase9-intake-receipts.timer opticable-phase10-service-events.timer opticable-phase12-test-runner.timer
 sudo systemctl stop opticable-phase9-intake-receipts.service opticable-phase10-service-events.service opticable-phase12-test-runner.service opticable-workflow-api.service
 ```
@@ -61,6 +70,12 @@ Production VPS is `vps-214ba8cd.vps.ovh.ca`, OVH Canada (`ovh-ca`), service `412
 
 New eligible inquiries appear as Leads with identity, service interest, attribution, next follow-up and one internal Task. Review in CRM. Selecting **Pre-Qualified in the CRM UI** is the human qualification trigger; OptiBrain may natively convert and prepare the Deal/relationships. Ambiguous or protected historical matches need human attention. Choose the Deal’s **Service Location** in CRM when address information is insufficient. Design, scope, pricing and Finance Estimate create/send are HUMAN. Create/send from the Deal’s native Finance related list to retain associations. Books remains financial truth; never also create a native CRM Quote/Invoice.
 
-OptiBrain observes sent/accepted Estimates and prepares internal Services, WorkDrive folders, contract context and an unscheduled Installation when deterministic. Complete/defer internal quote Tasks to suppress follow-up. It sends no customer reminder. Send contracts manually; select date/technician/access instructions manually. Record Installation completion in CRM UI; internal service/billing/support attention may follow. Invoice/payment operations remain human. Local contract preparation is context only while the Sign API license is unavailable. See [matrix](OPTIBRAIN_LIFECYCLE_AUTOMATION_MATRIX.md).
+OptiBrain observes sent/accepted Finance Estimates and prepares Services, simple WorkDrive folders, contract context and an unscheduled Installation. Existing installed Services are reused; a new visit does not create another Service. Send contracts manually while Sign API licensing is restricted.
 
-**OWNER SAFE emergency stop:** `sudo /usr/bin/python3 -I /usr/local/lib/optibrain/lifecycle_runner.py --stop` closes scoped writes and disables its timer, preserving data/API/backups. Confirm mutation policy `test_writes_enabled=false`, `real_canary_allowed=false`, no active lifecycle scopes. Engineering reconciles HOLD before any retry; never delete journals or repost a timed-out action. View `sudo systemctl status opticable-lifecycle-internal.timer --no-pager` and `/run/optibrain-readiness/lifecycle.json` for scoped readiness. Broad automation and customer-facing/financial writes remain OFF.
+For an eligible sent Estimate, the graduated quote family can send a first reminder after three business days and a second at least five business days later; it then asks you to follow up. Acceptance, decline, closure, replies, opt-out, bounce, a newer Estimate or suppression stops reminders. Completing the related internal follow-up Task suppresses that Estimate's automatic follow-up. Unknown language/recipient/associations require human attention. See the [communication contract](OPTIBRAIN_CUSTOMER_COMMUNICATION_CONTRACT.md) for precise gates.
+
+Select the Installation date/time, technician and access instructions in CRM. A verified schedule can trigger one confirmation and one reminder; changing the schedule produces an updated appointment. Check Toronto time before confirming. For blocked work or a return visit, enter the actual reason in Instructions Notes. A return visit creates an unscheduled follow-up visit linked to the same Services and preserves the original history.
+
+Record completion in CRM UI with Completion Notes and relevant evidence. OptiBrain activates newly owned Services, records visit context and prepares billing/support attention; an eligible completion message may follow. Create/send the Invoice yourself from Zoho Finance. Books payment observation clears owned attention only when all linked invoices are satisfied; overdue invoices surface internal attention without collection messages. Support requests with unclear site, Service or urgency require your decision. See the [matrix](OPTIBRAIN_LIFECYCLE_AUTOMATION_MATRIX.md).
+
+**OWNER SAFE internal stop:** `sudo /usr/bin/python3 -I /usr/local/lib/optibrain/lifecycle_runner.py --stop` closes internal scoped writes and disables its timer, preserving data/API/backups. Customer email has its separate stop above; invoke both for a full action stop. Engineering reconciles HOLD before any retry; never delete journals or repost a timed-out action. Inspect both scoped timers and `/run/optibrain-readiness/{lifecycle,customer-communications}.json`. Ask engineering to review authorizations at least seven days before their recorded expiry; renewal preserves original eligibility and evidence. Marketing, automatic pricing/scheduling and financial writes remain OFF.

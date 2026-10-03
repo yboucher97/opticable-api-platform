@@ -142,6 +142,13 @@
       "purpose": "Current contract"
     },
     {
+      "path": "docs/OPTIBRAIN_CUSTOMER_COMMUNICATION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current specialist communication contract"
+    },
+    {
       "path": "docs/OPTIBRAIN_DEPLOYMENT_GUIDE.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
@@ -154,6 +161,20 @@
       "current": true,
       "superseded_by": null,
       "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_FINANCE_INTEGRATION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
+    },
+    {
+      "path": "docs/OPTIBRAIN_LIFECYCLE_AUTOMATION_MATRIX.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
     },
     {
       "path": "docs/OPTIBRAIN_OPERATOR_GUIDE.md",
@@ -268,6 +289,13 @@
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
     },
     {
+      "path": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
+    },
+    {
       "path": "docs/OPTIBRAIN_RECOVERY_GUIDE.md",
       "classification": "RECOVERY",
       "current": true,
@@ -289,11 +317,32 @@
       "purpose": "Current contract"
     },
     {
+      "path": "docs/OPTIBRAIN_TEST_LAB_RUNBOOK.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
+    },
+    {
       "path": "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
       "superseded_by": null,
       "purpose": "Current contract"
+    },
+    {
+      "path": "docs/PHASE18_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
+      "purpose": "Bounded provider mission evidence; no execution authority"
+    },
+    {
+      "path": "docs/PHASE18_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
+      "purpose": "Bounded provider mission evidence; no execution authority"
     },
     {
       "path": "docs/README.md",
@@ -912,6 +961,27 @@
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
     },
     {
+      "path": "docs/phase16-checkpoint.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
+      "purpose": "Durable bounded mission evidence; no operational authority"
+    },
+    {
+      "path": "docs/phase16-checkpoint.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
+      "purpose": "Durable bounded mission evidence; no operational authority"
+    },
+    {
+      "path": "docs/phase18-19-validation.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
+      "purpose": "Bounded provider mission evidence; no execution authority"
+    },
+    {
       "path": "docs/phase5/additive-plan-review.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
@@ -1008,48 +1078,6 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
-    },
-    {
-      "path": "docs/OPTIBRAIN_FINANCE_INTEGRATION_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
-    },
-    {
-      "path": "docs/OPTIBRAIN_TEST_LAB_RUNBOOK.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
-    },
-    {
-      "path": "docs/OPTIBRAIN_LIFECYCLE_AUTOMATION_MATRIX.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
-    },
-    {
-      "path": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
-    },
-    {
-      "path": "docs/phase16-checkpoint.md",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
-      "purpose": "Durable bounded mission evidence; no operational authority"
-    },
-    {
-      "path": "docs/phase16-checkpoint.json",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
-      "purpose": "Durable bounded mission evidence; no operational authority"
     }
   ]
 }
