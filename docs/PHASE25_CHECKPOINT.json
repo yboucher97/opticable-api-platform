@@ -1,26 +1,38 @@
 {
   "schema": 1,
-  "phase25": "BLOCKED",
+  "phase25": "PASS",
   "engineering_safe_to_deploy": true,
   "uploads_left_off": true,
-  "critical_path": "HUMAN \u2014 refresh native Google grant, enable Data Manager access and verify an enabled secondary import destination; then provider validation-only test",
+  "critical_path": null,
   "forms": {
     "french": "PASS \u2014 existing provider receipt reused",
     "english": "PARTIAL \u2014 exact owner action batched",
     "campaign_continuity": "PARTIAL"
   },
   "web_assets": "Unchanged SHA256 main and AI live scripts; capture/consent proofs reused",
-  "ga4": "PARTIAL \u2014 actual Windsor event/stream read; native authorization HTTP400",
+  "ga4": "PARTIAL \u2014 native property/stream/key events proven; published container has no GA4 tag and current OAuth user has no GTM account access",
   "google_ads": {
     "account": "680-849-1878",
-    "observed_action": "Contact Us \u2014 REMOVED/WEBPAGE_CODELESS/secondary",
-    "upload_destination": "UNPROVEN"
+    "native_access": "PROVEN \u2014 Explorer enabled; fixed read-only native GAQL succeeded",
+    "currency": "CAD",
+    "time_zone": "America/Toronto",
+    "custom_goals": 0,
+    "destinations": {
+      "qualified_lead": "7795448568",
+      "estimate_accepted": "7795962128",
+      "invoice_paid": "7796070369"
+    },
+    "destination_state": "ENABLED / SECONDARY / UPLOAD_CLICKS",
+    "click_window_days": 90
   },
   "offline_conversions": {
-    "state": "OFF",
-    "engine": "Focused offline validation passed; native provider validation pending",
+    "state": "READY \u2014 WAITING FOR ELIGIBLE NATURAL EVENT",
+    "uploads_enabled": false,
+    "provider_validation_only": "PASS \u2014 3 HTTP200, no warnings,0 executed events",
+    "validation_receipt": "/var/lib/optibrain/conversion-export/validation/native-20261003T152441Z.json",
+    "first_live_verification": "One exact root-reviewed event key per independently enabled family",
     "real_uploads": 0,
-    "test_uploads": 0,
+    "test_events_ingested": 0,
     "duplicate_uploads": 0,
     "pii_uploads": 0
   },
@@ -31,15 +43,27 @@
   "advertising_strategy_mutations": 0,
   "financial_writes": 0,
   "focused_validation": {
-    "tests": 141,
-    "subtests": 71,
+    "tests": 142,
+    "subtests": 77,
     "failures": 0,
     "offline_network_attempts": 0
   },
   "existing_authority_changes": 0,
-  "final_candidate_regression": {
-    "tests": 1255,
-    "subtests": 1172,
+  "gate": "Bounded measurement gate; native export validation PASS, real uploads OFF pending eligible natural event",
+  "protected_after": {
+    "records": 123,
+    "modified": 0,
+    "missing": 0
+  },
+  "owner_cloud_and_consent": "COMPLETED \u2014 native refresh and account/destination reads verified",
+  "noncritical_owner_actions": [
+    "GTM account access/GA4 production tag, consent/domain/filter validation",
+    "English Forms delivery and campaign aliases",
+    "Historical finance mappings"
+  ],
+  "final_release_validation": {
+    "tests": 1259,
+    "subtests": 1178,
     "failures": 0,
     "errors": 0,
     "skipped": 0,

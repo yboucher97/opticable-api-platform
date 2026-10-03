@@ -101,6 +101,8 @@ def build_plan(event,snapshot,control,*,now=None):
     click_at=aware(click.get('captured_at'))
     if not click_at<=at or (now-click_at).total_seconds()>90*86400:raise ValueError('Click outside import window')
     dest=destination(control,kind,now)
+    if dest.get('always_use_default_value') is not False:
+        raise ValueError('Destination must respect the explicit business event value')
     if ck!='gclid' and dest.get('braid_supported') is not True:raise ValueError('BRAID destination prerequisites unproven')
     payload={'transactionId':key,'eventTimestamp':at.isoformat(),'eventSource':'WEB',
         'adIdentifiers':{ck:click[ck]},'consent':{'adUserData':'CONSENT_GRANTED',
@@ -109,6 +111,11 @@ def build_plan(event,snapshot,control,*,now=None):
         if row.get('Lead_Status')!='Pre-Qualified' and row.get('$converted') is not True:
             raise ValueError('Human qualification is not proven')
         if dest.get('value_basis')!='NO_VALUE':raise ValueError('Lead value must not be invented')
+        if not re.fullmatch(r'[A-Z]{3}',str(dest.get('currency_code',''))):
+            raise ValueError('Native destination currency required')
+        # Omission would apply Ads' existing default (currently CAD1). Explicit
+        # zero means no monetary value; it never represents observed revenue.
+        payload.update(conversionValue=0,currency=dest['currency_code'])
     else:
         relation=resolve_finance(row,KINDS[kind],rows)
         if relation['conflict'] or not relation['deal_id']:raise ValueError('Deterministic Finance Deal lineage required')
@@ -188,6 +195,9 @@ class DataManager:
         if live and (control.get('enabled') is not True or validation.get('passed') is not True
             or validation.get('destination_sha256')!=digest(control['destinations'][plan['kind']])):
             raise ValueError('Conversion uploads stopped or unvalidated')
+        dest=control['destinations'][plan['kind']]
+        if live and (dest.get('local_enabled') is not True or dest.get('allowed_event_keys')!=[plan['key']]):
+            raise ValueError('One independently reviewed natural event must be authorized for this family')
         if live and not datetime.now(timezone.utc)<aware(control.get('expires_at')):raise ValueError('Conversion authorization expired')
         return control
     def ingest(self,plan,*,live=False):

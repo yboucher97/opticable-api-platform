@@ -1,9 +1,17 @@
-# Phase25 checkpoint
+# Phase 25 checkpoint
 
-AUDIT EVIDENCE. **BLOCKED — HUMAN provider prerequisite**, not READY waiting for a natural event. Native Google token refresh returns HTTP400; the saved grant lacks Data Manager/Ads authorization and an enabled import destination is unproven. The owner is completing the [single provider action batch](phase25-owner-actions.md). Continue independent safe engineering; uploads remain OFF.
+AUDIT EVIDENCE. **PASS — bounded production measurement gate. Offline export READY — WAITING FOR AN ELIGIBLE NATURAL EVENT; uploads OFF.** No genuine eligible conversion was fabricated. Forms and GA4 remain honestly PARTIAL; their exact noncritical owner actions are batched below.
 
-Live main/AI attribution scripts match their existing validated hashes. Capture/first/last/click/consent test evidence is reused. French native notification routing is proven; English delivery and full Forms campaign continuity remain PARTIAL with exact noncritical owner instructions. GA4 actual aggregate reception is observed, production property/tag configuration remains PARTIAL. Ads680-849-1878 currently exposes a removed secondary Contact Us action through read-only reporting. No bidding, budget, campaign, financial or customer effects were performed.
+Owner completed Cloud API/scopes, browser consent and Explorer approval. Independent token refresh PASS. Native Ads reads confirm account 680-849-1878, CAD/America/Toronto, three enabled secondary UPLOAD_CLICKS destinations, no custom conversion goals,90-day windows and existing enhanced-conversion terms/configuration. No advertising strategy or destination setting was changed by OptiBrain.
 
-The bounded Data Manager engine has separate root authority, exact one-use central transport, TEST/privacy/lineage denial, validation-only mode, one-event live verification, immutable R2 claims, lost-ack HOLD and destination diagnostics. It is engineering-safe to release while disabled. Native validation/arming requires owner authorization and provider response; offline mocks are not that proof. Existing12 internal/4 customer scopes are preserved.
+| Outcome | Destination | Value policy | State |
+|---|---|---|---|
+| Qualified Lead |7795448568| Explicit zero CAD; overrides existing CAD1 default, no invented revenue | READY; uploads OFF |
+| Accepted Estimate |7795962128| Accepted Estimate gross, native currency; separate from paid value | READY; uploads OFF |
+| Fully paid Invoice |7796070369| Fully paid non-recurring unadjusted Invoice gross; not period cash receipts | READY; uploads OFF |
 
-Focused delta:141 tests/71 subtests,0 failures/0 offline network attempts. Protected before:123 unchanged. Final candidate/regression/post-deploy/protected/recovery receipts will supplement this checkpoint; no complete Phase25 PASS is claimed here.
+Google Data Manager validation-only calls returned HTTP200 without warnings for all three destinations. Requests were **not executed**; synthetic identifiers cannot enter the genuine-event exporter. Private receipt: `/var/lib/optibrain/conversion-export/validation/native-20261003T152441Z.json`. Offline tests prove TEST/ancestor exclusion, consent denial, exact event/source/time/destination controls, central one-use transport, lost-ack HOLD, R2 claim fencing and independent STOP. Live verification requires exactly ONE root-reviewed event key per family, separate family enable, and immediate provider reconciliation before any next event.
+
+Native GA4 properties/streams/key events and Ads link are read. Published GTM-NTSPMGJX has no GA4 tag; the consenting account sees no GTM accounts. GA4 remains PARTIAL, not ACTIVE. Current tracking assets, including existing legacy tracking, were preserved. French provider notification proof and unchanged capture/consent hashes are reused; English notification delivery and full Forms campaign continuity remain PARTIAL. See the [single owner action batch](phase25-owner-actions.md).
+
+Existing 12 internal/4 customer scopes, original cutoffs/expiry and evidence are preserved. Protected post-release comparison123/123 unchanged; financial, advertising strategy, customer send and real conversion effects0. Natural Phase17–21 effects are still pending. Final release validation and recovery supplement this checkpoint; no prior phase/rebuild proof was repeated.
