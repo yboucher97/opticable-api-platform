@@ -9,6 +9,7 @@ from datetime import datetime,timezone
 from pathlib import Path
 REPO=Path(__file__).resolve().parents[2]
 sys.dont_write_bytecode=True
+sys.path.insert(0,str(REPO/'apps/workflow-api'))
 sys.path.insert(0,str(REPO/'ops/phase16_17'))
 from inventory import clients
 
@@ -21,11 +22,12 @@ def main():
  settings,_,_=clients(REPO);oauth=GoogleOAuthManager(settings.google_oauth)
  token=oauth.access_token() # Fail here once; never repeat seven rejected refreshes.
  scopes=str((oauth.load_saved_credentials() or {}).get('scope','')).split()
- result={'schema':1,'at':datetime.now(timezone.utc).isoformat(),'read_only':True,'configuration_mutations':0,'granted_scopes':scopes,'native':{}}
+ result={'schema':1,'at':datetime.now(timezone.utc).isoformat(),'read_only':True,'configuration_mutations':0,'granted_scopes':scopes,'native':{},
+  'browser_only':['GA4 internal/developer data filters','cross-domain tag configuration and consent overview']}
  google=GoogleApiClient(oauth)
  reads=[('analytics_admin_v1beta','accountSummaries')]
  for pid in ('530093120','530619880'):
-  reads.extend(('analytics_admin_v1beta','properties/'+pid+suffix) for suffix in ('','/dataStreams','/keyEvents','/dataFilters'))
+  reads.extend(('analytics_admin_v1beta','properties/'+pid+suffix) for suffix in ('','/dataStreams','/keyEvents'))
  reads.append(('tagmanager','accounts'))
  for service,path in reads:
   try:result['native'][service+':'+path]={'state':'PROVEN','response':google.request(service,'GET',path)}

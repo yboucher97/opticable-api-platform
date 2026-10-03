@@ -11,7 +11,8 @@ NOW=datetime(2026,10,3,14,tzinfo=timezone.utc)
 def control():
  d={'account_id':'6808491878','action_id':'123456','type':'UPLOAD_CLICKS','status':'ENABLED',
   'primary_for_goal':False,'used_in_custom_goal':False,'native_verification_receipt':'test-fixture-native-receipt',
-  'verified_at':NOW.isoformat(),'value_basis':'NO_VALUE'}
+  'verified_at':NOW.isoformat(),'value_basis':'NO_VALUE','currency_code':'CAD',
+  'always_use_default_value':False,'default_value':1}
  return {'schema':1,'enabled':False,'eligible_after':'2026-10-03T00:00:00Z','expires_at':'2026-11-03T00:00:00Z',
   'destinations':{'qualified_lead':d,'estimate_accepted':{**d,'value_basis':'ACCEPTED_ESTIMATE_GROSS'},
    'invoice_paid':{**d,'value_basis':'FULLY_PAID_INVOICE_GROSS'}}}
@@ -27,8 +28,18 @@ class ConversionPlanTests(unittest.TestCase):
  def plan(self,e=None,s=None,p=None):return c.build_plan(e or event(),s or fixture(),p or control(),now=NOW)
  def test_qualified_no_invented_money_or_pii(self):
   p=self.plan();payload=p['body']['events'][0]
-  self.assertNotIn('conversionValue',payload);self.assertNotIn('userData',payload)
+  self.assertEqual(payload['conversionValue'],0);self.assertEqual(payload['currency'],'CAD');self.assertNotIn('userData',payload)
   self.assertEqual(payload['eventSource'],'WEB');self.assertTrue(p['body']['validateOnly'])
+ def test_positive_lead_default_is_overridden_with_zero(self):
+  p=control();p['destinations']['qualified_lead']['default_value']=999
+  self.assertEqual(self.plan(p=p)['body']['events'][0]['conversionValue'],0)
+ def test_destination_forcing_default_value_denies_all_outcomes(self):
+  for kind,rid in [('qualified_lead','3'),('estimate_accepted','8'),('invoice_paid','11')]:
+   p=control();p['destinations'][kind]['always_use_default_value']=True
+   with self.subTest(kind=kind),self.assertRaises(ValueError):self.plan(event(kind,rid),p=p)
+ def test_unknown_lead_currency_denied(self):
+  p=control();p['destinations']['qualified_lead'].pop('currency_code')
+  with self.assertRaises(ValueError):self.plan(p=p)
  def test_identity_excludes_timestamp_and_value(self):
   self.assertEqual(c.event_key(event()),c.event_key({**event(),'occurred_at':'2026-10-03T13:00:00Z','value':999}))
  def test_independent_outcomes_have_distinct_identity(self):
@@ -92,6 +103,20 @@ class ConversionPlanTests(unittest.TestCase):
   with patch.object(c,'trusted_control',return_value=control()),patch.object(c,'verify_plan',side_effect=ValueError('different native evidence')):
    with self.assertRaises(ValueError):client.ingest(self.plan(),live=True)
    client.oauth.access_token.assert_not_called()
+ def test_live_family_requires_one_exact_event_and_separate_enable(self):
+  p=control();p['enabled']=True;d=p['destinations']['qualified_lead'];d['local_enabled']=True
+  p['validated_families']={'qualified_lead':{'passed':True,'destination_sha256':c.digest(d)}}
+  client=c.DataManager(Mock())
+  for allowed in ([],['0'*64],['0'*64,'1'*64]):
+   d['allowed_event_keys']=allowed;p['validated_families']['qualified_lead']['destination_sha256']=c.digest(d)
+   with self.subTest(allowed=allowed),patch.object(c,'trusted_control',return_value=p),patch.object(c,'verify_plan'),self.assertRaises(ValueError):
+    client.authorize(self.plan(p=p),live=True)
+  d['allowed_event_keys']=[c.event_key(event())];p['validated_families']['qualified_lead']['destination_sha256']=c.digest(d)
+  with patch.object(c,'trusted_control',return_value=p),patch.object(c,'verify_plan'):
+   self.assertEqual(client.authorize(self.plan(p=p),live=True),p)
+  d['local_enabled']=False;p['validated_families']['qualified_lead']['destination_sha256']=c.digest(d)
+  with patch.object(c,'trusted_control',return_value=p),patch.object(c,'verify_plan'),self.assertRaises(ValueError):
+   client.authorize(self.plan(p=p),live=True)
  def test_central_conversion_grant_is_exact_and_one_use(self):
   client=c.DataManager(Mock());p=self.plan();client.authorize=Mock();body={**p['body'],'validateOnly':False}
   with c.conversion_scope(client,p,live=True,claim={'key':p['key'],'payload_hash':p['payload_hash']}):
