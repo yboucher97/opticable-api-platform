@@ -81,6 +81,8 @@ def bind_profile(profile, customer, services, sites, finance_invoices, generated
         return human('Service/Site Account disagrees with recurring customer')
     if reviewed and identity(site.get('id')) != reviewed['site_id']:
         return human('Reviewed Site differs from native Service location')
+    if reviewed and deals and identity(service.get('Linked_Deal')) not in deals:
+        return human('Reviewed Service conflicts with native recurring Deal evidence')
     return {'decision': 'LINKED', 'profile_id': pid, 'customer_id': cid, 'account_id': account,
             'site_id': identity(site['id']), 'service_id': identity(service['id']),
             'deal_id': identity(service.get('Linked_Deal')), 'proof': 'REVIEWED_NATIVE_IDENTITIES' if reviewed else 'NATIVE_INVOICE_DEAL_SERVICE'}

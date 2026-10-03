@@ -144,3 +144,39 @@ def collect_business(reader, snapshot):
             result[name]=reader.listing('/books/v3/'+path,key);result['optional_reads'][name]='PROVEN'
         except ValueError:result[name]=[];result['optional_reads'][name]='UNAVAILABLE'
     return result
+
+
+def enrich_finance(reader, snapshot, *, previous=None, maximum=8):
+    """Bounded incremental native detail reconciliation; cache exact versions only.
+
+    List responses omit native parent IDs. Missing details remain pending,
+    never guessed. Existing full generated Invoice observations are reused.
+    """
+    from copy import deepcopy
+    if type(maximum) is not int or not 0<=maximum<=8:raise ValueError('Bounded finance detail limit required')
+    result = deepcopy(snapshot); previous = previous or {}; pending = []; verified = 0
+    prior_estimates = previous.get('books_estimate_index', {})
+    prior_invoices = {identity(v.get('invoice_id')):v for v in previous.get('books_invoices', [])}
+    for kind, rows, old, id_field in [
+        ('estimates', list(result.get('books_estimate_index', {}).values()), prior_estimates, 'estimate_id'),
+        ('invoices', result.get('books_invoices', []), prior_invoices, 'invoice_id')]:
+        for row in rows:
+            rid=identity(row.get(id_field));prior=old.get(rid, {})
+            detail_keys = {'zcrm_potential_id', 'invoice_ids'} if kind=='estimates' else {'zcrm_potential_id','estimate_id'}
+            if not detail_keys <= row.keys() and detail_keys <= prior.keys():
+                if row.get('last_modified_time') and row.get('last_modified_time')==prior.get('last_modified_time') and row.get('customer_id')==prior.get('customer_id'):
+                    row.update({**prior, **row})
+            if detail_keys <= row.keys(): verified+=1;continue
+            pending.append((kind,rid,row))
+    pending.sort(key=lambda v: str(v[2].get('last_modified_time') or v[2].get('date') or ''),reverse=True)
+    completed=0
+    for kind,rid,row in pending[:min(maximum, max(0,reader.limit-reader.reads))]:
+        key='estimate' if kind=='estimates' else 'invoice'
+        actual=reader.record('/books/v3/'+kind+'/'+rid,key,key+'_id',rid)
+        if identity(actual.get('customer_id'))!=identity(row.get('customer_id')):
+            raise ValueError('Finance customer changed; reconcile before publishing')
+        row.clear();row.update(actual);completed+=1
+    result['books_estimate_index']={identity(r['estimate_id']):r for r in list(result.get('books_estimate_index',{}).values())}
+    result['finance_detail_coverage']={'verified':verified+completed,'pending':len(pending)-completed,
+        'delta_reads':completed,'maximum_per_cycle':maximum,'native_only':True}
+    return result

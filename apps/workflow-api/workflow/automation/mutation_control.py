@@ -95,6 +95,10 @@ def require_business_transport(client, service, method, path, body, headers=None
     if check_customer_transport(client,service,method,path,body,headers,recheck=recheck,
                                content_type=content_type,query=query):
         return
+    from .conversion_export import check_transport as check_conversion_transport
+    if check_conversion_transport(client,service,method,path,body,headers,recheck=recheck,
+                                  content_type=content_type,query=query):
+        return
     try:
         control = read_control()  # Missing/corrupt/untrusted policy is a denial.
     except (OSError, ValueError, TypeError) as exc:

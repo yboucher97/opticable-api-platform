@@ -47,20 +47,22 @@ def project_source(snapshot):
         'accounts':('id','Account_Name'), 'contacts':('id','Account_Name'),
         'leads':('id','Lead_Status','$converted','Created_Time','First_Source','First_Medium','First_Campaign','Lead_Source'),
         'deals':('id','Deal_Name','Account_Name','Contact_Name','Stage','Amount','Currency','Created_Time','Closing_Date','Service_Location','Next_Step','First_Source','First_Medium','First_Campaign','Lead_Source'),
-        'sites':('id','Linked_Account'), 'services':('id','Linked_Service_Location','Linked_Deal','Service_Type','Service_Stage','Contract_Type','OptiBrain_Renewal_On'),
+        'sites':('id','Name','Linked_Account'), 'services':('id','Name','Linked_Service_Location','Linked_Deal','Service_Type','Service_Stage','Contract_Type','OptiBrain_Renewal_On'),
         'finance_estimates':('id','Estimate_ID','Account_Name','Potential_Name'), 'finance_invoices':('id','Invoice_ID','Account_Name','Potential_Name'),
         'customers':('contact_id','zcrm_account_id','contact_name','currency_code'),
-        'invoices':('invoice_id','customer_id','customer_name','estimate_id','zcrm_potential_id','recurring_invoice_id','date','due_date','status','total','balance','currency_code'),
-        'estimates':('estimate_id','customer_id','date','status','total','currency_code','zcrm_potential_id'),
-        'profiles':('recurring_invoice_id','customer_id','status','start_date','next_invoice_date','recurrence_frequency','repeat_every','sub_total','currency_code','zcrm_potential_id'),
+        'invoices':('invoice_id','customer_id','customer_name','invoice_number','last_modified_time','estimate_id','zcrm_potential_id','recurring_invoice_id','date','due_date','status','total','balance','currency_code'),
+        'estimates':('estimate_id','estimate_number','last_modified_time','invoice_ids','customer_id','date','status','total','currency_code','zcrm_potential_id'),
+        'profiles':('recurring_invoice_id','recurrence_name','customer_id','status','start_date','next_invoice_date','recurrence_frequency','repeat_every','sub_total','currency_code','zcrm_potential_id'),
         'payments':('payment_id','customer_id','date','payment_status','status','bcy_amount','bcy_refunded_amount'),
         'cases':('id','Status','Account_Name','Deal_Name'), 'installations':('id','Installation_Status','Linked_Service','Installation_Date_Time')}
     output={name:[{k:r[k] for k in keys if k in r} for r in rows[name].values()] for name,keys in fields.items()}
     output['books_invoices']=output.pop('invoices');output['books_estimate_index']={r['estimate_id']:r for r in output.pop('estimates')}
     output['generated']={pid:[{'invoice_id':r['invoice_id']} for r in values] for pid,values in snapshot.get('generated',{}).items()}
     output.update(observed_at=snapshot['observed_at'],base_currency=snapshot.get('base_currency'),optional_reads=snapshot.get('optional_reads',{}),
-        cost_population={'rows':len(snapshot.get('expenses',[])), 'native_customer_allocated':sum(bool(r.get('customer_id')) for r in snapshot.get('expenses',[])),
+        finance_reviews=snapshot.get('finance_reviews',{}),recurring_reviews=snapshot.get('recurring_reviews',{}),accepted_work=snapshot.get('accepted_work',{}),
+        finance_detail_coverage=snapshot.get('finance_detail_coverage',{}),cost_population={'rows':len(snapshot.get('expenses',[])), 'native_customer_allocated':sum(bool(r.get('customer_id')) for r in snapshot.get('expenses',[])),
                          'job_cost_completeness':'UNPROVEN'},test_excluded=excluded)
+    output['measurement_health']=snapshot.get('measurement_health',{'forms':'PARTIAL','ga4':'PARTIAL','google_ads':'PARTIAL','offline_conversions':'OFF'})
     return output
 
 
@@ -150,6 +152,8 @@ def build_business(snapshot, *, now=None, period='month', start=None, end=None):
                 'installation_states':dict(Counter(r.get('Installation_Status') or 'Unknown' for r in rows['installations'].values())),
                 'attention':'Use Today for scheduling, access, return visits, billing and renewal actions'}
     lineage=audit_lineage(snapshot)['coverage']
+    from .finance_links import linkage_attention
+    finance_attention=linkage_attention(snapshot, rows)
     return {'schema':1,'scope':'live','read_only':True,'observed_at':snapshot['observed_at'],'timezone':'America/Toronto',
         'period':period,'start':str(first),'end_inclusive':str(last-timedelta(days=1)),
         'sales':{'new_leads':new_leads,'qualified_from_period_leads':qualified,'estimates_created':estimates,'sent_or_later_estimates':sent,
@@ -162,6 +166,9 @@ def build_business(snapshot, *, now=None, period='month', start=None, end=None):
                         'reason':'COST DATA INCOMPLETE: complete direct labour/vendor/item costs and exact Deal/Service allocation unproven'},
         'optional_read_states':snapshot.get('optional_reads',{}),'issues':dict(issues),'test_excluded':snapshot.get('test_excluded',excluded),
         'truth':{'native_counts':'PROVEN','financial_totals':'DERIVED DETERMINISTICALLY','recurring_service_value':'PARTIAL','profitability':'UNKNOWN','advertising_return':'UNKNOWN'},
+        'finance_linkage':{'attention':finance_attention,'detail_coverage':snapshot.get('finance_detail_coverage',{}),'coverage':lineage,
+            'owner_workflow':'CRM Deal → Zoho Finance → New Estimate; convert the same Estimate to Invoice. Choose the Deal’s Service Location in CRM. Books recurring billing remains human-owned.'},
+        'measurement_health':snapshot.get('measurement_health',{'forms':'PARTIAL','ga4':'PARTIAL','google_ads':'PARTIAL','offline_conversions':'OFF'}),
         'spend':None,'roas':None,'financial_writes':False,'advertising_mutations':False,
         'basis':'Gross issued invoice value by issue date; paid Invoice value by issue date/current status; recorded customer payments by payment date/base currency, refunds separate. Outstanding/overdue and pipeline are current snapshot stocks, not period flows. No recognized revenue, bank settlement, net income or forecast claimed.'}
 
@@ -179,6 +186,11 @@ def render_business(view):
         '<p>Source observed '+h(view['observed_at'])+'</p><p>Counts: PROVEN · financial totals: DERIVED DETERMINISTICALLY · recurring Service value: PARTIAL · profitability/advertising return: UNKNOWN</p>',
         "<form method='get'><label>Period <select name='period'>"+''.join("<option value='"+p+"'"+(' selected' if view['period']==p else '')+'>'+h(p.replace('_',' ').title())+'</option>' for p in PERIODS)+"</select></label> <label>From <input type='date' name='start'></label> <label>Through <input type='date' name='end'></label> <button>Show</button></form>",
         "<p><a href='?format=csv&amp;period="+h(view['period'])+'&amp;start='+h(view['start'])+'&amp;end='+h(view['end_inclusive'])+"'>Export these metrics as CSV</a></p>",
+        '<h2>Linkage and measurement</h2><p>'+h(view['finance_linkage']['owner_workflow'])+'</p>'+table(['Family','State'],list(view['measurement_health'].items()))+
+        table(['Relationship','Coverage'],[(k,view['attribution']['coverage'][k]) for k in ('estimates','invoices','recurring_profiles')])+
+        '<details><summary>Finance linkage required ('+str(len(view['finance_linkage']['attention']))+')</summary>'+
+        table(['Kind','Transaction','Date','Amount','Currency','Next action'],[[r[k] for k in ('kind','number','date','amount','currency','reason')] for r in view['finance_linkage']['attention']])+
+        '<p>Review one grouped batch with engineering; candidate records are choices, never automatic guesses. Protected sources remain read-only.</p></details>'+
         '<h2>Sales</h2>'+table(['Metric','Count'],[(k.replace('_',' ').title(),v) for k,v in view['sales'].items() if isinstance(v,int)]),
         table(['Open Deal stage','Count','Value by currency','Missing value','Oldest days'],[[p[k] for k in ('stage','count','value','missing_value','oldest_days')] for p in view['sales']['pipeline']]),
         table(['Deal','Stage','Age days','Next action'],[[d[k] for k in ('name','stage','age_days','next_action')] for d in view['sales']['deals']]),

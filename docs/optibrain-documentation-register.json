@@ -25,7 +25,7 @@
     "HISTORICAL": 48,
     "SECURITY / CONTROL": 1,
     "AUTHORITATIVE CURRENT": 20,
-    "AUDIT EVIDENCE": 84,
+    "AUDIT EVIDENCE": 89,
     "RECOVERY": 1
   },
   "documents": [
@@ -128,6 +128,12 @@
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
     },
     {
+      "path": "docs/OPTIBRAIN_BUSINESS_INTELLIGENCE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Current measurement/reporting contract"
+    },
+    {
       "path": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
@@ -182,6 +188,12 @@
       "current": true,
       "superseded_by": null,
       "purpose": "Current recurring/attribution operational contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Current measurement/reporting contract"
     },
     {
       "path": "docs/OPTIBRAIN_OPERATOR_GUIDE.md",
@@ -385,6 +397,58 @@
       "current": false,
       "superseded_by": null,
       "purpose": "Sanitized phase gate evidence; not deployment or mutation authority"
+    },
+    {
+      "path": "docs/PHASE22_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+    },
+    {
+      "path": "docs/PHASE22_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+    },
+    {
+      "path": "docs/PHASE23_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+    },
+    {
+      "path": "docs/PHASE23_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+    },
+    {
+      "path": "docs/PHASE24_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
+      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
+    },
+    {
+      "path": "docs/PHASE24_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
+      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
+    },
+    {
+      "path": "docs/PHASE25_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
+      "purpose": "Bounded Phase25 provider checkpoint; no runtime authority"
+    },
+    {
+      "path": "docs/PHASE25_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
+      "purpose": "Bounded Phase25 provider checkpoint; no runtime authority"
     },
     {
       "path": "docs/README.md",
@@ -1024,6 +1088,19 @@
       "purpose": "Bounded provider mission evidence; no execution authority"
     },
     {
+      "path": "docs/phase22-provider-observations.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+    },
+    {
+      "path": "docs/phase25-owner-actions.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
+      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
+    },
+    {
       "path": "docs/phase5/additive-plan-review.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
@@ -1120,48 +1197,6 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
-    },
-    {
-      "path": "docs/PHASE22_CHECKPOINT.md",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
-    },
-    {
-      "path": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "purpose": "Current measurement/reporting contract"
-    },
-    {
-      "path": "docs/phase22-provider-observations.json",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
-    },
-    {
-      "path": "docs/PHASE23_CHECKPOINT.md",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
-    },
-    {
-      "path": "docs/PHASE22_CHECKPOINT.json",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
-    },
-    {
-      "path": "docs/PHASE23_CHECKPOINT.json",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
-    },
-    {
-      "path": "docs/OPTIBRAIN_BUSINESS_INTELLIGENCE_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "purpose": "Current measurement/reporting contract"
     }
   ]
 }

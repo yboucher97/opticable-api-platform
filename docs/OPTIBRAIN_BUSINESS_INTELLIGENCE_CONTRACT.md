@@ -2,6 +2,8 @@
 
 AUTHORITATIVE CURRENT. One [Business Overview](https://optibrain.opticable.ca/v1/operator/business), linked from Today, covers Sales, Revenue, Recurring, Operations, Marketing and Attention. CRM remains the operating cockpit; Books remains financial truth. This read-only report grants no decisions or writes. [Measurement](OPTIBRAIN_MEASUREMENT_CONTRACT.md) defines lineage proof; [attribution](OPTIBRAIN_MARKETING_ATTRIBUTION_CONTRACT.md) defines acquisition/privacy.
 
+Finance linkage and measurement health show Account/Deal/recurring coverage and missing-link attention in one expandable batch. Historical partial coverage is distinct from forward workflow readiness. Native/derived/owner-confirmed/ambiguous provenance stays visible; an owner candidate is never a derived relationship. Phase24's complete native-detail source builds the report in approximately160ms with a161KB minimized private projection (one measured run, not a performance guarantee). No extra warehouse or financial authority.
+
 ## Metric meanings
 
 | Measure | Source and basis / truth |
