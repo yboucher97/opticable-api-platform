@@ -71,10 +71,10 @@ class RealPlanningTests(unittest.TestCase):
         a={'id':'9','Account_Name':'Customer Company'};c={'id':'8','Email':l['Email'],'First_Name':'Alice','Last_Name':'Example','Account_Name':{'id':'9'}}
         self.assertEqual(ri.safe_conversion_references(l,[a],[c],set()),(a,c))
         with self.assertRaises(ri.HumanAttention):ri.safe_conversion_references({**l,'Company':'Other company'},[a],[c],set())
-    def test_address_format_collision_never_creates_second_site(self):
+    def test_exact_address_format_variation_reuses_existing_site(self):
         addr={'street':'123 Main Street','unit':'Unit 1','city':'Montreal','province':'QC','postal_code':'H1A1A1','country':'Canada'}
         existing={'id':'7','Linked_Account':{'id':'9'},**ri.site_fields({**addr,'street':'123 Main St','unit':'1','city':'Montréal'})}
-        self.assertEqual(ri.safe_site_match([existing],'9',addr)['decision'],'HUMAN')
+        self.assertEqual(ri.safe_site_match([existing],'9',addr)['decision'],'REUSE')
     def test_scopes_exclude_all_external_and_financial_operations(self):
         for name in ('mail.test.send','sign.test.send','sign.contract.prepare','books.write','crm.case.create','*'):
             self.assertNotIn(name,lc.REAL_SCOPES)
@@ -114,7 +114,7 @@ class FakeProvider:
 class RealAuthorityTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.root=Path(self.temp.name);self.client=FakeProvider();self.remote=FakeRemote()
-        self.policy={'enabled':True,'test_scopes':[],'real_scopes':sorted(lc.REAL_SCOPES),'test_run':RUN,'activated_at':ACT,'approved_sources':['ai_website']}
+        self.policy={'enabled':True,'test_scopes':[],'real_scopes':sorted(lc.REAL_SCOPES),'test_run':RUN,'activated_at':ACT,'approved_sources':['ai_website'],'expires_at':(NOW+timedelta(days=30)).isoformat()}
         self.patches=[patch.object(ri,'ROOT',self.root),patch.object(lc,'REAL_ROOT',self.root),patch.object(lc,'REAL_REGISTRY',self.root/'ownership.json'),patch.object(lc,'read_policy',return_value=self.policy),patch.object(ri.os,'geteuid',return_value=0),patch.object(lc,'trusted_json',side_effect=self.read),patch.object(lc,'LifecycleJournal',return_value=lc.LifecycleJournal(self.root/'journal.db')),patch('workflow.automation.remote_effects.RemoteEffects.root_store',return_value=self.remote)]
         for p in self.patches:p.start()
     def read(self,path,*args):

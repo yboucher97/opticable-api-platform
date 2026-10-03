@@ -45,6 +45,10 @@ def inspect(protected=False, ovh=False):
     scoped=value['policy'].get('lifecycle',{})
     value['internal_scopes']={'enabled':scoped.get('enabled',False),'scopes':scoped.get('real_scopes',[]),
         'activated_at':scoped.get('activated_at'),'expires_at':scoped.get('expires_at')}
+    customer=Path('/etc/optibrain/customer-communication-control.json')
+    if customer.is_file():
+        sends=json.loads(customer.read_text())
+        value['customer_scopes']={k:sends.get(k) for k in ('external_enabled','test_enabled','real_scopes','expires_at','per_family_limit','per_cycle_limit')}
     value['development_authorization'] = Path('/etc/optibrain/authorize-persistent-codex-development').exists()
     value['endpoints'] = {}
     for name, route in [('health','/v1/system/health'), ('readiness','/v1/system/readiness')]:
@@ -55,7 +59,8 @@ def inspect(protected=False, ovh=False):
     units = ('opticable-workflow-api.service','opticable-password-pdf.service','opticable-omada-site.service','caddy.service',
              'optibrain-backup.timer','optibrain-phase2a-upload.timer','opticable-phase9-intake-receipts.timer',
              'opticable-phase10-service-events.timer','opticable-phase12-test-runner.timer',
-             'opticable-lifecycle-internal.timer','opticable-lifecycle-internal.service')
+             'opticable-lifecycle-internal.timer','opticable-lifecycle-internal.service',
+             'opticable-customer-communications.timer','opticable-customer-communications.service')
     units += tuple(f'optibrain-agent-{n}.{k}' for n in ('dispatch','status','usage') for k in ('service','timer'))
     value['units'] = {u: dict(line.split('=',1) for line in run('systemctl','show',u,'-p','ActiveState',
         '-p','UnitFileState','-p','Result','-p','ExecMainStatus').splitlines() if '=' in line) for u in units}

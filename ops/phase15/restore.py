@@ -50,7 +50,7 @@ def restore(archive,expected,root,workspace):
             seen.add(name)
             if name.endswith(('.db-wal','.db-shm')) or '/ms-playwright/' in name or name.endswith('/ms-playwright'):
                 continue  # SQLite online snapshots supersede sidecars; retired browser cache is not runtime state.
-            if (name in {'/etc/optibrain/mutation-control.json','/etc/optibrain/rebuild-safety.env',
+            if (name in {'/etc/optibrain/mutation-control.json','/etc/optibrain/customer-communication-control.json','/etc/optibrain/rebuild-safety.env',
                          '/etc/optibrain/admin-helper.sha256','/etc/optibrain/master-runbook.sha256'}
                     or name=='/etc/optibrain/authorize-persistent-codex-development'
                     or 'authorization' in Path(name).name):

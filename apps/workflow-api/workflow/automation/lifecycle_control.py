@@ -33,7 +33,8 @@ TEST_SCOPES = frozenset(MODULE_SCOPE.values()) | {'crm.lead.convert',
     'sign.contract.prepare', 'sign.test.send', 'mail.test.send','crm.schema.site_lookup','crm.config.test_exclusion','crm.config.workflow_containment','crm.test.cleanup','crm.test.metric_marker'}
 REAL_SCOPES = frozenset({'crm.lead.intake','crm.lead.convert','crm.account.create',
     'crm.contact.create','crm.deal.prepare','crm.site.prepare','crm.service.create',
-    'crm.internal.task','crm.installation.prepare','crm.link.create','workdrive.folder.create'})
+    'crm.internal.task','crm.installation.prepare','crm.link.create','workdrive.folder.create',
+    'crm.service.activate','crm.case.prepare'})
 TRANSPORT_SOURCES = {'automation/lifecycle_control.py','automation/lifecycle.py',
     'automation/remote_effects.py','automation/mutation_control.py',
     'automation/crm_write_boundary.py','zoho_gateway.py'}
@@ -55,9 +56,10 @@ FIELDS = {
      'Service_Location_Address_City','Service_Location_Address_State_Province','Service_Location_Address_Zip_Postal_Code',
      'Service_Location_Address_Country_Region','Service_Location_Address_Street_Address','Service_Location_Address_Flat_House_No_Building_Ap',
      'Service_Location_Workdrive_Folder_ID','Service_Location_Workdrive_Folder_URL'},
- 'Services': {'Name','Linked_Service_Location','Linked_Deal','Service_Stage','OptiBrain_Test','Service_Type'},
+ 'Services': {'Name','Linked_Service_Location','Linked_Deal','Service_Stage','OptiBrain_Test','Service_Type',
+     'OptiBrain_Installed_On','OptiBrain_Last_Service_On'},
  'Installations': {'Name','Linked_Service','Installation_Status','Scheduled_Date','Assigned_To',
-     'Instructions_Notes','Completion_Notes','On_Site_Contact_Name','On_Site_Contact_Phone'},
+     'Instructions_Notes','Completion_Notes','Completion_Proof_Link','On_Site_Contact_Name','On_Site_Contact_Phone'},
  'Tasks': {'Subject','What_Id','$se_module','Who_Id','Status','Due_Date','Description','Owner','Send_Notification_Email'},
  'Cases': {'Subject','Account_Name','Related_To','Deal_Name','Status','Type','Description','Case_Origin'},
  'Installation_X_Services': {'Name','Linked_Installation','Linked_Service'}
@@ -190,7 +192,7 @@ def validate_request(service,method,path,body,headers,content_type,query,*,scope
         if (not item or item.get('run')!=run or (item.get('ownership')!=mode
                 and not (anchor and module=='WorkDrive' and mode=='TEST_ONLY' and item.get('ownership')=='TEST_ANCHOR')
                 and not (reference and mode=='REAL_NEW' and item.get('ownership')=='REAL_REFERENCE'
-                         and module in {'Accounts','Contacts','Service_Locations','WorkDrive'}))
+                         and module in {'Accounts','Contacts','Service_Locations','Services','WorkDrive'}))
                 or module and item.get('module')!=module):
             raise ValueError('Record reference lacks exact lifecycle lineage')
         if mode=='REAL_NEW' and item.get('ownership')=='REAL_NEW':
@@ -225,7 +227,9 @@ def validate_request(service,method,path,body,headers,content_type,query,*,scope
     record=re.fullmatch(r'/crm/v8/([A-Za-z_]+)/?([0-9]{1,30})?',path)
     if service=='zohoapis' and record:
         module,target=record.groups()
-        if module not in MODULE_SCOPE or (scope!=MODULE_SCOPE[module] and not (mode=='TEST_ONLY' and scope=='crm.test.transition')):
+        aliases={'Services':'crm.service.activate','Cases':'crm.case.prepare'}
+        if module not in MODULE_SCOPE or (scope!=MODULE_SCOPE[module] and scope!=aliases.get(module)
+                and not (mode=='TEST_ONLY' and scope=='crm.test.transition')):
             raise ValueError('CRM scope/module mismatch')
         if set(body)-{'data','trigger','skip_feature_execution'} or body.get('trigger')!=[] or len(body.get('data',[]))!=1:
             raise ValueError('CRM mutation must be one trigger-free record')
@@ -252,6 +256,20 @@ def validate_request(service,method,path,body,headers,content_type,query,*,scope
                 if not expected: raise ValueError('Unclassified CRM reference')
                 owned(value['id'],expected)
         if mode=='REAL_NEW':
+            if module=='Installations' and (target or row.get('Installation_Status')!='Requested'):
+                raise ValueError('Installation authority only prepares a new unscheduled visit')
+            if module=='Services' and scope=='crm.service.create' and (target or row.get('Service_Stage')!='Ready for Scheduling'):
+                raise ValueError('Service creation only prepares a new accepted service')
+            if module=='Services' and scope!='crm.service.activate' and (
+                    row.get('Service_Stage')=='Active' or any(k in row for k in ('OptiBrain_Installed_On','OptiBrain_Last_Service_On'))):
+                raise ValueError('Service completion requires its individual activation scope')
+            if module=='Services' and scope=='crm.service.activate':
+                if (not target or not set(row)<={'id','Service_Stage','OptiBrain_Installed_On','OptiBrain_Last_Service_On'}
+                        or row.get('Service_Stage')!='Active'):
+                    raise ValueError('Service activation is a bounded completion update')
+            if module=='Cases' and (scope!='crm.case.prepare' or target or row.get('Status')!='New'
+                    or row.get('Case_Origin') not in {'Web','Email'}):
+                raise ValueError('Real support authority only prepares a new linked Case')
             if any(k in row for k in {'OptiBrain_Test','Amount','Lead_Status','Scheduled_Date','Assigned_To'}):
                 raise ValueError('Real test marking, qualification, pricing and scheduling are human controlled')
             if module in {'Accounts','Contacts'}:
@@ -332,6 +350,16 @@ def check_real_effect(effect,scope,run):
         from .real_internal import human_qualification
         if not human_qualification(source.get('record',{}),source.get('timeline',[]),policy['activated_at']):
             raise ValueError('Conversion needs current owner UI qualification evidence')
+    if scope=='crm.service.activate':
+        from .real_internal import human_transition
+        if not human_transition(source.get('record',{}),source.get('timeline',[]),policy['activated_at'],
+                                'Installations','Installation_Status','Completed'):
+            raise ValueError('Service activation needs owner completion evidence')
+    if source.get('kind')=='installation_return_visit' and scope in {'crm.installation.prepare','crm.link.create','crm.internal.task'}:
+        from .real_internal import human_transition
+        if not human_transition(source.get('record',{}),source.get('timeline',[]),policy['activated_at'],
+                                'Installations','Installation_Status','Revisit Required'):
+            raise ValueError('Return visit preparation needs current owner UI evidence')
 
 @dataclass(frozen=True)
 class LifecycleEffect:

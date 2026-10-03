@@ -1,0 +1,12 @@
+[Unit]
+Description=Bounded operational customer communication observation
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=5min
+RandomizedDelaySec=20s
+Persistent=false
+Unit=opticable-customer-communications.service
+
+[Install]
+WantedBy=timers.target

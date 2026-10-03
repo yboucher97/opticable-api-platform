@@ -1,0 +1,68 @@
+{
+  "at": "2026-10-03T02:22:50.076113+00:00",
+  "automatic_continuation": "PHASE 19",
+  "controlled_recipient": "yboucher@opticable.ca",
+  "duplicate_sends": 0,
+  "eligible_genuine_leads": 0,
+  "evidence_sha256": {
+    "/var/lib/optibrain/customer-communications/state.json": "581331b210105b890cf762a3b45e1d504cf410555b283366a4196bc2d3454a4d",
+    "/var/lib/optibrain/phase18-19/communication-completion-en.json": "23a4e792ba0b5ffa72907dea0af2a6f9c1e1999255a689444bfb0f224daa90b2",
+    "/var/lib/optibrain/phase18-19/communication-completion-fr.json": "fef1bed033d07b26ea5507493bbfbb4a36eeb2eb61f5a630d1096f16385c717e",
+    "/var/lib/optibrain/phase18-19/communication-confirmation-en.json": "b3c37573cc6690f985153b5da772897d37b00ebaf8eb11e066292f3d52948b47",
+    "/var/lib/optibrain/phase18-19/communication-confirmation-fr.json": "4b28c5b8c06883f7a1f09fb56fdea11d864274466799e70c5fe5fb4ac6540c0e",
+    "/var/lib/optibrain/phase18-19/communication-kill-test.json": "e519a31c107bd54e04ee5aa8ebfb7021f5f37a43058780a4b30b868941ade3de",
+    "/var/lib/optibrain/phase18-19/communication-lostack-fr.json": "6ddfef2da149e96a6cbd32babe29ad0dedf21a3b74481426e562dad8b65edac3",
+    "/var/lib/optibrain/phase18-19/communication-quote1-en.json": "d0e6fb4a4d669cc40079156b752cfdb63d863c440375e0e74431b54cd262a93c",
+    "/var/lib/optibrain/phase18-19/communication-quote1-fr.json": "7fb82936fd6ff4527a2b7670cfdbc057c758794a15e65c802f4b95f291c7ef5e",
+    "/var/lib/optibrain/phase18-19/communication-quote2-en.json": "080e013ac864396064662d59fa9b0825400145b614faffd861e1aace0aa2ea7c",
+    "/var/lib/optibrain/phase18-19/communication-quote2-fr.json": "e260d3dc9415684973ad972839d0d25756725e4edfdf11ff2ba87a9792b867e0",
+    "/var/lib/optibrain/phase18-19/communication-reconciliation.json": "ca7ccffc9f4cfc7a9a5571a5506760095c503da90e58c8fb44e881d166593882",
+    "/var/lib/optibrain/phase18-19/communication-reminder-en.json": "0ddba4beaca46676c330193fed447a83f688c765dd6435c91eed717c3b385888",
+    "/var/lib/optibrain/phase18-19/communication-reminder-fr.json": "734b8cbd1f706b1ee05af6d99b01bf53122909fc5e624c817bb3c0e75d61338e",
+    "/var/lib/optibrain/phase18-19/communication-replay.json": "186ec281fba074e690202b9929923ed0dba2d9934967411ed576fb3bfce54356",
+    "/var/lib/optibrain/phase18-19/communication-reschedule-fr.json": "a8515840ce6a5e0a4638bde8cb79f27deae0670d851d8edc247e9640fa7129ed",
+    "/var/lib/optibrain/phase18-19/communication-stops-fr.json": "0fa3afed5c049c3b4292f36ee0e95ad8af265fa7a467210aa98463c4b5f94ad0"
+  },
+  "families": {
+    "customer.appointment.confirmation": {
+      "state": "READY / ARMED AFTER RELEASE",
+      "test_sends": 3
+    },
+    "customer.appointment.reminder": {
+      "state": "READY / ARMED AFTER RELEASE",
+      "test_sends": 2
+    },
+    "customer.completion.message": {
+      "state": "READY / ARMED AFTER RELEASE",
+      "test_sends": 2
+    },
+    "customer.quote.reminder": {
+      "state": "READY / ARMED AFTER RELEASE",
+      "test_sends": 5
+    }
+  },
+  "finance_test_source": "Explicit TEST_STATUS_EQUIVALENT; no Estimate/Invoice created. Native CRM Finance/Books associations and system-send history independently read and validated.",
+  "financial_writes": 0,
+  "first_genuine_phase17_effect": "NOT YET OBSERVED",
+  "kill_denials": 12,
+  "lost_ack": "One provider POST; initial HOLD from mailbox-local date filter; corrected bounded GET-only reconciliation located exactly one Sent message; no resend",
+  "passed_families": [
+    "customer.appointment.confirmation",
+    "customer.appointment.reminder",
+    "customer.completion.message",
+    "customer.quote.reminder"
+  ],
+  "phase18": "PASS",
+  "protected_records": 123,
+  "protected_unchanged": 123,
+  "real_internal_effects": 0,
+  "real_sends": 0,
+  "safety_critical_failures": 0,
+  "schema": 1,
+  "sign": "DEFERRED \u2014 PROVIDER LICENSE; native code12000; contract sends HUMAN",
+  "suppression_checks": 8,
+  "test_provider_sends": 12,
+  "unauthorized_sends": 0,
+  "verified_replays": 12,
+  "wrong_recipient_sends": 0
+}

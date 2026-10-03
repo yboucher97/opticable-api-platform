@@ -91,6 +91,10 @@ def require_business_transport(client, service, method, path, body, headers=None
     if check_transport(client,service,method,path,body,headers,recheck=recheck,
                        content_type=content_type,query=query):
         return
+    from .customer_send_control import check_transport as check_customer_transport
+    if check_customer_transport(client,service,method,path,body,headers,recheck=recheck,
+                               content_type=content_type,query=query):
+        return
     try:
         control = read_control()  # Missing/corrupt/untrusted policy is a denial.
     except (OSError, ValueError, TypeError) as exc:
@@ -118,6 +122,11 @@ def require_business_transport(client, service, method, path, body, headers=None
 
 
 def record_business_response(response):
+    from .customer_send_control import GRANT as CUSTOMER_GRANT
+    customer=CUSTOMER_GRANT.get()
+    if customer and customer['used']:
+        customer['journal'].append(customer['effect'],'provider_response',response)
+        return
     from .lifecycle_control import GRANT
     grant=GRANT.get()
     if grant and grant['used']:
