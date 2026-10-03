@@ -1026,6 +1026,17 @@
       "verified": "Root owner/mode; exact source/receipt hashes; native IDs and source state",
       "backed_up": "Application archive; encrypted off-host R2",
       "purpose": "Reviewed non-authoritative provider measurement display states"
+    },
+    {
+      "location": "/var/lib/optibrain/sales-intelligence; /run/optibrain-readiness/sales-intelligence.json; phase12-autonomy.db.sales_shadow_feedback",
+      "owner": "root observer / verified owner local feedback",
+      "secret": false,
+      "source_of_truth": "Apollo/Zoho/public native records; feedback actor/version append-only evidence",
+      "deployed": "optional existing lifecycle observer; exact reviewed release; root private derived caches",
+      "restored": "rebuild caches by read-only refresh; retain feedback via existing DB backup; cold outreach stays OFF",
+      "verified": "complete bounded Apollo identities, exact provider IDs/emails/domains, root private display modes, focused sales tests",
+      "backed_up": "whole root application state plus existing phase12-autonomy.db online snapshot; display expendable",
+      "purpose": "shadow discovery, contact collision prevention and coordinated owner sales review"
     }
   ],
   "environment_key_references": [

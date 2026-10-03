@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "phase27": "PASS",
+  "engineering_safe_to_deploy": true,
+  "mode": "SHADOW ONLY",
+  "cold_outbound_enabled": false,
+  "provider_writes": 0,
+  "existing_scopes_added": 0,
+  "gate": "focused fake-provider validation + bounded live-data projection; final deployment validation pending",
+  "clay": "DEFERRED \u2014 NON-CRITICAL",
+  "migration_executed": false
+}

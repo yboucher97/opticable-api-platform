@@ -42,3 +42,7 @@ Internal verification bound: 20 new Leads, 12 effects/160 reads per cycle. Custo
 | Ad spend/bids/targeting; prices, schedules, financial transactions | HUMAN |
 
 See [recurring](OPTIBRAIN_RECURRING_SERVICE_CONTRACT.md) and [attribution](OPTIBRAIN_MARKETING_ATTRIBUTION_CONTRACT.md). Existing12 internal and4 Mail scopes/cutoffs/counters remain unchanged.
+
+## Shadow sales observation
+
+[Sales contract](OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md): fixed zero-credit Apollo reads and dated public project research run as an optional display domain of the existing internal observer. Twelve internal/four customer scopes are preserved; **no cold-outbound or Apollo mutation scope exists**. Root rebuildable `/var/lib/optibrain/sales-intelligence` caches feed private0640 `/run/optibrain-readiness/sales-intelligence.json`. Existing `phase12-autonomy.db` adds append-only `sales_shadow_feedback` (actor/version/time), local review only; retain DNC feedback after restore. `sales-intelligence/STOP` stops only this observer. No new DB/service/timer/credential; missing/stale evidence holds contact recommendations. Existing Apollo contacts, sequences, templates, mailboxes and suppression remain provider-owned production state.

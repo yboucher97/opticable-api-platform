@@ -42,3 +42,5 @@ Temporary private staging: extracted archives/package/download/build logs and is
 Current specialist contracts: [lifecycle matrix](OPTIBRAIN_LIFECYCLE_AUTOMATION_MATRIX.md), [Finance](OPTIBRAIN_FINANCE_INTEGRATION_CONTRACT.md), [TEST lab](OPTIBRAIN_TEST_LAB_RUNBOOK.md), [real scope](OPTIBRAIN_REAL_AUTOMATION_SCOPE.md), [communications](OPTIBRAIN_CUSTOMER_COMMUNICATION_CONTRACT.md). Historical phase receipts remain evidence, never deployment or business authority.
 
 Current specialists also include [recurring services](OPTIBRAIN_RECURRING_SERVICE_CONTRACT.md) and [marketing attribution](OPTIBRAIN_MARKETING_ATTRIBUTION_CONTRACT.md). PHASE20/21 checkpoints are sanitized audit evidence, never additional instructions or write authority.
+
+Current specialist references: [sales coexistence contract](OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md), [observed Claude/Apollo flow](CURRENT_CLAUDE_APOLLO_FLOW.md). Phase26/27 checkpoints and reports are audit evidence, not takeover authority.
