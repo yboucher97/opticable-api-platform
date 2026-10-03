@@ -966,7 +966,7 @@
       "owner": "root:opticable-workflow-api0640",
       "secret": false,
       "source_of_truth": "Native CRM/Books GET snapshots; expendable minimized projection, not financial/action authority",
-      "deployed": "Existing reviewed root internal runner publishes hourly source and five-minute display freshness",
+      "deployed": "Existing reviewed root internal runner publishes hourly source and five-minute display freshness;canonical unit SupplementaryGroups=opticable-workflow-api permits private group publication within existing capability bounds",
       "restored": "Regenerate with GET-only observation after reconciliation; do not restore permissions from an arbitrary service-writable cache",
       "verified": "Root regular file, no writable group/world, owner JWT before read, bounded period calculation and native totals reconciliation",
       "backed_up": "NO \u2014 expendable /run display; private native cache backed up",
