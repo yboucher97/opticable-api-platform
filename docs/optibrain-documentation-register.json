@@ -24,8 +24,8 @@
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
     "SECURITY / CONTROL": 1,
-    "AUTHORITATIVE CURRENT": 15,
-    "AUDIT EVIDENCE": 72,
+    "AUTHORITATIVE CURRENT": 18,
+    "AUDIT EVIDENCE": 79,
     "RECOVERY": 1
   },
   "documents": [
@@ -177,6 +177,13 @@
       "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
     },
     {
+      "path": "docs/OPTIBRAIN_MARKETING_ATTRIBUTION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current recurring/attribution operational contract"
+    },
+    {
       "path": "docs/OPTIBRAIN_OPERATOR_GUIDE.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
@@ -303,6 +310,13 @@
       "purpose": "Current contract"
     },
     {
+      "path": "docs/OPTIBRAIN_RECURRING_SERVICE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current recurring/attribution operational contract"
+    },
+    {
       "path": "docs/OPTIBRAIN_RUNTIME_CONTRACT.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
@@ -343,6 +357,34 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
       "purpose": "Bounded provider mission evidence; no execution authority"
+    },
+    {
+      "path": "docs/PHASE20_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": null,
+      "purpose": "Sanitized phase gate evidence; not deployment or mutation authority"
+    },
+    {
+      "path": "docs/PHASE20_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": null,
+      "purpose": "Sanitized phase gate evidence; not deployment or mutation authority"
+    },
+    {
+      "path": "docs/PHASE21_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": null,
+      "purpose": "Sanitized phase gate evidence; not deployment or mutation authority"
+    },
+    {
+      "path": "docs/PHASE21_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": null,
+      "purpose": "Sanitized phase gate evidence; not deployment or mutation authority"
     },
     {
       "path": "docs/README.md",

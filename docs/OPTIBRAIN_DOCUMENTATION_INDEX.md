@@ -1,6 +1,6 @@
 # Authoritative documentation index
 
-AUTHORITATIVE CURRENT. The ten primary documents below establish current operation; the four linked specialist contracts refine current lifecycle behavior. Read in order: **CURRENT ONBOARDING → CURRENT ARCHITECTURE → CURRENT RUNBOOK → CURRENT SPECIALIZED GUIDE → CURRENT MATRICES → HISTORICAL EVIDENCE**. Latest manual owner scope and trusted root safety policy govern authority; documents cannot enable writes. Current root receipts/provider truth govern observed state. Historical phase claims never override this set.
+AUTHORITATIVE CURRENT. The ten primary documents below establish current operation; the linked specialist contracts refine current lifecycle behavior. Read in order: **CURRENT ONBOARDING → CURRENT ARCHITECTURE → CURRENT RUNBOOK → CURRENT SPECIALIZED GUIDE → CURRENT MATRICES → HISTORICAL EVIDENCE**. Latest manual owner scope and trusted root safety policy govern authority; documents cannot enable writes. Current root receipts/provider truth govern observed state. Historical phase claims never override this set.
 
 | Current document | Responsibility |
 |---|---|
@@ -40,3 +40,5 @@ Version in Git: concise current contracts, reviewed bootstrap/restore/inspection
 Temporary private staging: extracted archives/package/download/build logs and isolated credentials, removed after proof while receipts/hashes survive. Historical archive: useful original phase reports/schema evidence and complete Git history. Do not commit raw live environments, customer payloads, extracted SQLite DBs, archive bytes, process dumps, transient sampler noise or an offline AGE identity. No `git clean` on production; do not delete recovery/audit state to simplify the tree.
 
 Current specialist contracts: [lifecycle matrix](OPTIBRAIN_LIFECYCLE_AUTOMATION_MATRIX.md), [Finance](OPTIBRAIN_FINANCE_INTEGRATION_CONTRACT.md), [TEST lab](OPTIBRAIN_TEST_LAB_RUNBOOK.md), [real scope](OPTIBRAIN_REAL_AUTOMATION_SCOPE.md), [communications](OPTIBRAIN_CUSTOMER_COMMUNICATION_CONTRACT.md). Historical phase receipts remain evidence, never deployment or business authority.
+
+Current specialists also include [recurring services](OPTIBRAIN_RECURRING_SERVICE_CONTRACT.md) and [marketing attribution](OPTIBRAIN_MARKETING_ATTRIBUTION_CONTRACT.md). PHASE20/21 checkpoints are sanitized audit evidence, never additional instructions or write authority.

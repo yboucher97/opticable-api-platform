@@ -27,3 +27,18 @@ AUTHORITATIVE CURRENT, API 1.14.0. CRM is the cockpit; Today surfaces attention.
 | Review/maintenance/renewal eligibility | AUTOMATIC internal projection requiring human scope review; customer messages DISABLED |
 
 Internal verification bound: 20 new Leads, 12 effects/160 reads per cycle. Customer send ceilings: 10 per family, 4 per cycle. Families may remain READY while waiting for genuine eligible work; synthetic records are never called real. TEST exclusion uses native filters and root lineage. Generic Other Services require an exact verified business label; an ambiguous existing system requires owner selection. No additional business module or financial system is introduced.
+
+## Recurring lifecycle and measurement
+
+| Activity | Authority |
+|---|---|
+| Books recurring invoices and amount/frequency/cancellation | HUMAN / BOOKS |
+| Recurring billing, generated Invoice/payment-state observations | AUTOMATIC GET ONLY |
+| Renewal/contract review, annual price review, maintenance, retention | AUTOMATIC internal Today attention when supported by explicit data |
+| Review eligibility and upsell signals | AUTOMATIC attention; pursue/send HUMAN |
+| Service cancellation decision | HUMAN; automatic lifecycle attention cleanup, no Books cancellation |
+| Acquisition/Finance lineage, source/campaign/invoiced-value reports | AUTOMATIC GET ONLY |
+| Advertising conversion upload | DISABLED; destination/consent/provider gates pending |
+| Ad spend/bids/targeting; prices, schedules, financial transactions | HUMAN |
+
+See [recurring](OPTIBRAIN_RECURRING_SERVICE_CONTRACT.md) and [attribution](OPTIBRAIN_MARKETING_ATTRIBUTION_CONTRACT.md). Existing12 internal and4 Mail scopes/cutoffs/counters remain unchanged.

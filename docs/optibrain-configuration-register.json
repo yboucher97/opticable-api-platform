@@ -916,6 +916,50 @@
       "verified": "Root file ownership/modes, pinned SHA, native provider readback, immutable remote claims",
       "backed_up": "Application archive except /run display, which is regenerated",
       "purpose": "Read-only dated Today attention, never write authority."
+    },
+    {
+      "location": "/var/lib/optibrain/lifecycle/business-observation.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "independent native CRM/Books reads; explicit owner review for optional link receipt",
+      "deployed": "reviewed exact-source root internal runner",
+      "restored": "restore private evidence; regenerate display; writers remain OFF",
+      "verified": "native IDs, parent association, TEST exclusion, root ownership and freshness",
+      "backed_up": "application archive",
+      "purpose": "rebuildable native recurring/marketing snapshot, private lineage/outcomes"
+    },
+    {
+      "location": "/var/lib/optibrain/lifecycle/recurring-links.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "independent native CRM/Books reads; explicit owner review for optional link receipt",
+      "deployed": "reviewed exact-source root internal runner",
+      "restored": "restore private evidence; regenerate display; writers remain OFF",
+      "verified": "native IDs, parent association, TEST exclusion, root ownership and freshness",
+      "backed_up": "application archive",
+      "purpose": "optional owner-reviewed native financial/Service linkage receipts"
+    },
+    {
+      "location": "/run/optibrain-readiness/recurring.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "independent native CRM/Books reads; explicit owner review for optional link receipt",
+      "deployed": "reviewed exact-source root internal runner",
+      "restored": "restore private evidence; regenerate display; writers remain OFF",
+      "verified": "native IDs, parent association, TEST exclusion, root ownership and freshness",
+      "backed_up": "regenerated from native snapshot",
+      "purpose": "derived recurring attention display"
+    },
+    {
+      "location": "/run/optibrain-readiness/marketing.json",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "independent native CRM/Books reads; explicit owner review for optional link receipt",
+      "deployed": "reviewed exact-source root internal runner",
+      "restored": "restore private evidence; regenerate display; writers remain OFF",
+      "verified": "native IDs, parent association, TEST exclusion, root ownership and freshness",
+      "backed_up": "regenerated from native snapshot",
+      "purpose": "derived sanitized marketing aggregate display"
     }
   ],
   "environment_key_references": [

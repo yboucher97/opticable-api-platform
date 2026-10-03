@@ -57,7 +57,7 @@ class TodayTests(unittest.TestCase):
                 account_id='1',from_address='fixture@example.test',allowed_origin='https://example.test',clock=lambda:NOW)
             http=TestClient(app)
             with patch.object(TodaySources,'read',return_value={'scope':'live'}) as read:
-                for route in ('/v1/operator','/v1/operator/today','/v1/operator/system-health'):
+                for route in ('/v1/operator','/v1/operator/today','/v1/operator/system-health','/v1/operator/recurring','/v1/operator/marketing'):
                     self.assertEqual(http.get(route).status_code,401)
                 read.assert_not_called()
                 for route in ('/v1/operator/today','/v1/operator/system-health'):
