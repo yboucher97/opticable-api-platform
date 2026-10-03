@@ -784,5 +784,15 @@ def run(*,dry_run=False):
         if not dry_run:atomic(ROOT/'HOLD.json',{'at':datetime.now(timezone.utc).isoformat(),'reason':type(exc).__name__})
         engine.publish('Provider/effect evidence requires engineer review');raise
     engine.state['attention'].pop('bounded-review',None)
+    # Observation is a separate display domain. Failure cannot grant writes,
+    # cancel billing, clear claims or stop otherwise healthy intake scopes.
+    try:
+        from .observation_runtime import observe
+        observe(engine)
+        engine.state['attention'].pop('business-observation',None)
+    except (ValueError, OSError, KeyError, TypeError):
+        engine.attention('business-observation','Recurring Service observation',
+            'Current recurring billing evidence is unavailable or incomplete',
+            'Engineer reviews native read evidence; existing internal scopes continue')
     engine.save()
     return engine.publish()

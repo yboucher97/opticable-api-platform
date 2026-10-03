@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "at": "2026-10-03T04:13:48.314415+00:00",
+  "phase21": "PASS",
+  "critical_failures": 0,
+  "scope": "read-only lineage/reporting ready; live measurement prerequisites explicitly incomplete",
+  "scenarios": {
+    "A": "PASS \u2014 deterministic synthetic lifecycle/status equivalent; no financial transaction created",
+    "B": "PASS \u2014 deterministic synthetic lifecycle/status equivalent; no financial transaction created",
+    "C": "PASS \u2014 deterministic synthetic lifecycle/status equivalent; no financial transaction created",
+    "D": "PASS \u2014 deterministic synthetic lifecycle/status equivalent; no financial transaction created",
+    "E": "PASS \u2014 deterministic synthetic lifecycle/status equivalent; no financial transaction created",
+    "F": "PASS \u2014 deterministic synthetic lifecycle/status equivalent; no financial transaction created"
+  },
+  "focused_tests": {
+    "tests": 74,
+    "subtests": 32,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "blocked_network_attempts": 0,
+    "passed": true
+  },
+  "native_delta_gets": 39,
+  "actual_finance_estimates": 87,
+  "actual_finance_invoices": 120,
+  "native_test_attribution_readback": {
+    "leads_with_first_source": 9,
+    "contacts_with_first_source": 2,
+    "deals_with_first_source": 6
+  },
+  "website_capture": "PASS \u2014 published main asset executed in isolated Node VM; no network/PII submission",
+  "main_forms_campaign_persistence": "PARTIAL \u2014 URL forwarding proven; provider hidden-field/notification persistence unproven",
+  "cross_site_first_touch": "PARTIAL \u2014 campaign helper exists; full multi-origin continuity unproven",
+  "french_forms": "PASS \u2014 reuse Phase16 provider notification proof",
+  "english_forms": "PARTIAL \u2014 reuse prior HTTP success; notification delivery unproven",
+  "ga4": "PARTIAL \u2014 AI measurement ID empty; intended property/stream needs owner verification",
+  "google_ads": "PARTIAL \u2014 connected read access, bounded queries returned no usable action/spend rows",
+  "offline_conversions": "BLOCKED \u2014 exact destination and advertising consent unverified; provider-supported Data Manager path documented; uploads OFF",
+  "yellow_pages": "PRESERVED \u2014 no website/tag edits",
+  "genuine_revenue_lineage": "PENDING NATURAL EVENT \u2014 historical86 Estimates/107 non-test Invoices have no verified acquisition Deal",
+  "financial_writes": 0,
+  "advertising_mutations": 0,
+  "conversion_uploads": 0,
+  "unauthorized_sends": 0,
+  "protected_mutations": 0,
+  "runtime_deployment": "pending final combined release",
+  "source_hashes": {
+    "apps/workflow-api/workflow/automation/marketing_attribution.py": "8028e5c908b8ae418ab4738b995dfe28bd3481c61f90c8d62061d06b2089d478",
+    "apps/workflow-api/workflow/automation/business_observation.py": "e665a85a19e8c642497b41c9bd002a99f7cb633c40780a37397e5a759abd0dff",
+    "apps/workflow-api/workflow/automation/observation_runtime.py": "367490de78514d0b5e8c0dec5e780f6330c75432bfd5b689d1855eb03efacd6f"
+  }
+}

@@ -127,7 +127,8 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
                 sources[name]={};unavailable.append(name.title())
         return build_today(sources['sales'],sources['lifecycle'],sources['operations'],
                            business_journal.view(),system_health(),now=instant,unavailable=unavailable,internal=read_internal_attention(instant),
-                           communications=read_internal_attention(instant,Path('/run/optibrain-readiness/customer-communications.json')))
+                           communications=read_internal_attention(instant,Path('/run/optibrain-readiness/customer-communications.json')),
+                           recurring=read_internal_attention(instant,Path('/run/optibrain-readiness/recurring.json')))
 
     @app.get('/v1/operator',response_class=HTMLResponse,tags=['operator'])
     @app.get('/v1/operator/today',response_class=HTMLResponse,tags=['operator'])
@@ -143,6 +144,22 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         identity(cf_access_jwt_assertion)
         view=await run_in_threadpool(system_health)
         return HTMLResponse(render_system_health(view),headers=private_headers)
+
+    @app.get('/v1/operator/recurring',response_class=HTMLResponse,tags=['operator'])
+    async def recurring_business(cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        identity(cf_access_jwt_assertion)
+        from .automation.recurring_lifecycle import render_recurring
+        view=read_internal_attention(now(),Path('/run/optibrain-readiness/recurring.json'))
+        if not view:raise HTTPException(status_code=503,detail='Recurring observations unavailable; no billing decision inferred')
+        return HTMLResponse(render_recurring(view),headers=private_headers)
+
+    @app.get('/v1/operator/marketing',response_class=HTMLResponse,tags=['operator'])
+    async def marketing_business(cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        identity(cf_access_jwt_assertion)
+        from .automation.marketing_attribution import render_marketing
+        view=read_internal_attention(now(),Path('/run/optibrain-readiness/marketing.json'))
+        if not view:raise HTTPException(status_code=503,detail='Marketing observations unavailable; no revenue or spend inferred')
+        return HTMLResponse(render_marketing(view),headers=private_headers)
 
     for section in ("autonomy", "approvals", "exceptions"):
         def install_section(name):

@@ -18,7 +18,7 @@ from .sales_operator_view import CONTROLLED_LEAD_ID
 CATEGORIES=('Leads needing response','Follow-ups due','Quote-ready opportunities',
             'Projects and install work','Maintenance and renewal','Exceptions','Approvals')
 LINKS={'sales':'/v1/operator/phase8/sales-queue','lifecycle':'/v1/operator/phase10/customer-lifecycle',
-       'recurring':'/v1/operator/phase10/recurring-services','operations':'/v1/operator/phase11/operations',
+       'recurring':'/v1/operator/recurring','marketing sources':'/v1/operator/marketing','operations':'/v1/operator/phase11/operations',
        'exceptions':'/v1/operator/phase12/exceptions','approvals':'/v1/operator/phase12/approvals',
        'health':'/v1/operator/system-health','test':'/v1/operator/phase12/autonomy'}
 
@@ -55,7 +55,7 @@ def read_internal_attention(now,path=None):
         return value
     except (OSError,ValueError,KeyError,TypeError):return None
 
-def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None,communications=None):
+def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None,communications=None,recurring=None):
     now=now or datetime.now(timezone.utc)
     sections={name:[] for name in CATEGORIES}
     def add(category,context,why,next_action,source,link,*,priority='MEDIUM',due=None,freshness=None):
@@ -122,6 +122,14 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
             add('Exceptions',row.get('context'),row.get('why'),row.get('next_action'),'Customer communication evidence',link,
                 priority=row.get('priority','HIGH'),freshness=communications.get('at'))
         signals.append({'name':'Customer communications','state':'ACTION REQUIRED' if communications.get('attention') else 'OK','reason':communications.get('state','UNKNOWN')})
+    if recurring:
+        if recurring.get('scope')!='live' or recurring.get('read_only') is not True:raise ValueError('Recurring projection must be read-only live evidence')
+        for row in recurring.get('attention',[]):
+            if row.get('test_only'):continue
+            module=row.get('module');identity=str(row.get('identity',''))
+            link='https://crm.zoho.com/crm/org763070937/tab/'+module+'/'+identity if module in {'Services','Service_Locations','Accounts'} and identity.isdecimal() else LINKS['recurring']
+            add('Maintenance and renewal',row.get('context'),row.get('why'),row.get('next_action'),
+                'Native CRM and Books recurring observations',link,priority=row.get('priority','MEDIUM'),freshness=recurring.get('observed_at'))
     for name in unavailable:
         signals.append(dict(name=name,state='ACTION REQUIRED',reason='Current business evidence unavailable; open its source view'))
     order={'HIGH':0,'MEDIUM':1,'LOW':2}

@@ -1,6 +1,6 @@
 # OptiBrain architecture
 
-AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; Current API contract: `1.14.0`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
+AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; Current API contract: `1.15.0`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
 
 ```mermaid
 flowchart TD
@@ -38,3 +38,5 @@ Code rollback preserves DBs/claims; disaster restore starts isolated with writer
 CRM is the main business cockpit. Native Finance Estimates/Invoices backed by Books are the only transaction model; native CRM Quotes/Invoices remain hidden. One Deal normally covers one Site. [Finance contract](OPTIBRAIN_FINANCE_INTEGRATION_CONTRACT.md) and [scope](OPTIBRAIN_REAL_AUTOMATION_SCOPE.md) define current relationships and authority.
 
 Services are durable installed systems; additional accepted work and return visits reuse them without reparenting their original Deal. Installation-to-Service joins plus root visit lineage retain the current work's Account/Contact/Deal/Site context. Owner scheduling/completion is verified against native timelines. Completion activates only mutable new Services; existing Active references remain read-only. Finance observation derives invoice/payment attention without writes. Support context is prepared, while automatic Case creation remains unarmed without a deterministic producer.
+
+The existing root internal runner now supplies hourly GET-only [recurring lifecycle](OPTIBRAIN_RECURRING_SERVICE_CONTRACT.md) and [marketing/Finance lineage](OPTIBRAIN_MARKETING_ATTRIBUTION_CONTRACT.md) projections. Books retains recurring billing. No new provider-write scope, custom field, module, financial engine or advertising writer is introduced. Missing native linkage remains human attention/unattributed.

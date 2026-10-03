@@ -1,0 +1,39 @@
+# Marketing and financial observation
+
+AUTHORITATIVE CURRENT. CRM is the cockpit; native CRM Finance Estimates/Invoices backed by Books are canonical. [Marketing Sources](https://optibrain.opticable.ca/v1/operator/marketing) reports acquisition and observed invoiced value. It performs no CRM repair, advertising upload or financial mutation.
+
+## Identity and value
+
+`First_*` is immutable original acquisition; `Last_*` is the latest meaningful campaign/referral. Returning inquiries retain append-only receipt history. Source labels use First_Source, then recorded Lead_Source, otherwise UNATTRIBUTED. DIRECT requires actual direct evidence, not missing data. UTMs/click IDs remain diagnostic evidence, never an invented source. Native conversion preserves Lead/Contact/Deal attribution; Account is customer identity, not a second campaign database.
+
+Finance `Estimate_ID` / `Invoice_ID` resolve to Books objects. Native `Account_Name` must agree with Books customer `zcrm_account_id`; `Potential_Name` / `zcrm_potential_id` supplies the Deal. Conflicts are withheld and surfaced. Missing Deal remains unattributed even if only one Deal/customer name/amount looks plausible. No custom financial fields or duplicate quote/invoice records are introduced.
+
+Recurring invoices follow verified profile → Service → original Deal acquisition. They add observed value, never new Leads. The recurring [contract](OPTIBRAIN_RECURRING_SERVICE_CONTRACT.md) forbids transferring older invoices to a profile's current customer. Later Deals retain their own acquisition source. Root-only customer value groups actual invoice observations by native Account and currency; it is not predictive LTV.
+
+Values are **gross non-draft/non-void invoiced value** and **paid Invoice value**, grouped by native currency. They are not recognized revenue, net revenue, margin, actual cash receipts or ARR. `total - balance` is deliberately not called payments: credits/writeoffs can also reduce balance. Refunds/credits are not silently netted. Spend and ROAS remain unavailable until matching verified spend, currency, period and lineage exist. Source/campaign Lead, qualified Lead, Deal, Estimate and accepted Estimate counts share the same view. Snapshot counts are not cohort conversion rates.
+
+TEST markers propagate across Account/Contact/Deal/Site/Service, Finance relations and Books customers before counts/value/outcome plans. Protected records are readable, never enriched. The root collector reads converted and unconverted Leads using [Zoho's records API](https://www.zoho.com/crm/developer/docs/api/v8/get-records.html). Complete bounded pagination, unique IDs, native customer identity and currency are required. Incomplete snapshots do not masquerade as healthy reporting.
+
+## Measurement and privacy
+
+The main site uses consent-controlled GTM `GTM-NTSPMGJX`; its published capture stores first/last, UTMs and gclid/gbraid/wbraid/fbclid/msclkid. The Forms iframe receives the explicit attribution helper's URL context. This proves forwarding, **not** hidden-field persistence or notification-to-intake continuity. French native notification intake is previously provider-proven. English delivery and Forms hidden-field continuity remain PARTIAL; uncontrolled native Forms → CRM writing stays disabled.
+
+AI site posts to `connect.opticable.ca/public/lead`; published code emits `generate_lead` only after HTTP success **and** `ok=true`, and excludes names/email/phone from event parameters. The build's GA4 measurement ID is empty, so no live GA4 success is claimed. Consent keeps advertising storage/user data/personalization denied. Main→AI campaign forwarding exists; full first-touch preservation across both origins and GA4 cross-domain configuration remain unproven. Respect [Google consent controls](https://developers.google.com/tag-platform/security/guides/consent) and [cross-domain configuration](https://support.google.com/analytics/answer/10071811?hl=en).
+
+Root readiness display contains sanitized source/campaign aggregates, not customer IDs, raw URLs, click IDs, emails or phones. Native snapshots/customer value/outcomes remain root-only. No enhanced-conversion PII is exported. Contact-form consent and analytics consent do not establish advertising user-data consent.
+
+Windsor read-only discovery found Ads `680-849-1878`, GA4 properties `530093120` and `530619880`, plus connected Search Console/Meta/LinkedIn/GMB. Bounded metadata/event/spend/action queries returned no usable rows. This is UNAVAILABLE, not zero spend/events or verified conversion configuration. Other-channel expansion is DEFERRED — NON-CRITICAL. Yellow Pages production tracking and website assets are unchanged.
+
+## Offline conversion boundary
+
+Reporting creates deterministic **internal** outcome keys: qualified Lead per Lead; sent/accepted Estimate per native Finance Estimate; won customer per Account; invoiced-value observation per Invoice. Re-observation replaces the same projection, never appends another export. Invoice edits must be reconciled as adjustments before any future export. Recurring invoices are value observations, never additional acquisition conversions.
+
+External conversion uploads remain **OFF**. No provider-write scope exists in this release. Destination conversion action, provider grant, outcome timestamp, click lineage, TEST exclusion and recorded advertising consent must be independently verified first. Current [Google guidance](https://developers.google.com/google-ads/api/docs/conversions/upload-offline) restricts new legacy offline uploads from June15 2026; [Data Manager events](https://developers.google.com/data-manager/api/devguides/events) are the intended new path. Legacy connector upload code remains contained. Internal READY_FOR_REVIEW is not upload authority.
+
+Exact owner/provider steps: choose the intended GA4 property and verify its stream measurement ID; inspect GTM consent-gated tags, duplicate events and Yellow Pages tag; configure AI build measurement ID only after that verification; verify published Forms hidden aliases/UTM tracking preserve the forwarded values and English controlled notification delivery; verify native Finance Deal association when the owner creates a **new** transaction; choose Ads qualified/accepted/value actions and approved Data Manager destination; record valid advertising consent separately. Do not backfill protected history, weaken consent or upload test/historical events to improve the dashboard.
+
+## Runtime and evidence
+
+Existing root internal timer refreshes native observations at most hourly within its total160-read cycle bound. No extra timer or provider writer exists. `/var/lib/optibrain/lifecycle/business-observation.json` caches private snapshots; `/run/optibrain-readiness/marketing.json` publishes aggregate display only. Missing marketing reads preserve independently verified recurring observations and surface engineer attention. Operator route independently requires the human Access JWT and no-store headers. Stop existing internal runner to stop observation; customer-only stop remains independent.
+
+Phase21 native delta proof reused the sealed Phase20 snapshot:39 additional GETs,33 Leads/55 Contacts/22 Deals/87 Estimates/120 Invoices/37 Books customers. After TEST exclusion,86 Estimates lack verified acquisition Deal and107 Invoices lack verified acquisition Deal. These gaps remain visible; genuine Deal-linked revenue evidence is pending a correctly associated new transaction. Financial lifecycle tests use explicit synthetic status fixtures; no test or real financial transaction was created.

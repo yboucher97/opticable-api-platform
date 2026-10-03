@@ -1,6 +1,6 @@
 # OptiBrain owner/operator guide
 
-AUTHORITATIVE CURRENT, API 1.14.0. Work mainly in Zoho CRM and review [Today](https://optibrain.opticable.ca/v1/operator/today) using your normal owner login. OptiBrain organizes eligible new work and may send four individually proven operational email families. Broad automation, marketing and financial writes remain OFF. Actual family state is shown by root policy/readiness; READY can mean waiting for naturally eligible work.
+AUTHORITATIVE CURRENT, API 1.15.0. Work mainly in Zoho CRM and review [Today](https://optibrain.opticable.ca/v1/operator/today) using your normal owner login. OptiBrain organizes eligible new work and may send four individually proven operational email families. Broad automation, marketing and financial writes remain OFF. Actual family state is shown by root policy/readiness; READY can mean waiting for naturally eligible work.
 
 ## Daily workflow — OWNER SAFE
 
@@ -79,3 +79,9 @@ Select the Installation date/time, technician and access instructions in CRM. A 
 Record completion in CRM UI with Completion Notes and relevant evidence. OptiBrain activates newly owned Services, records visit context and prepares billing/support attention; an eligible completion message may follow. Create/send the Invoice yourself from Zoho Finance. Books payment observation clears owned attention only when all linked invoices are satisfied; overdue invoices surface internal attention without collection messages. Support requests with unclear site, Service or urgency require your decision. See the [matrix](OPTIBRAIN_LIFECYCLE_AUTOMATION_MATRIX.md).
 
 **OWNER SAFE internal stop:** `sudo /usr/bin/python3 -I /usr/local/lib/optibrain/lifecycle_runner.py --stop` closes internal scoped writes and disables its timer, preserving data/API/backups. Customer email has its separate stop above; invoke both for a full action stop. Engineering reconciles HOLD before any retry; never delete journals or repost a timed-out action. Inspect both scoped timers and `/run/optibrain-readiness/{lifecycle,customer-communications}.json`. Ask engineering to review authorizations at least seven days before their recorded expiry; renewal preserves original eligibility and evidence. Marketing, automatic pricing/scheduling and financial writes remain OFF.
+
+## Recurring service and marketing attention
+
+Open **Recurring** or **Marketing Sources** from Today. Recurring attention includes renewal, maintenance, annual price review and billing-link gaps. An overdue Invoice never cancels the Service. Review/upsell signals prepare human attention; customer review sends stay OFF. Books alone changes recurring billing. If you end a Service, separately review its Books billing as a human action.
+
+Marketing Sources shows Leads through accepted Estimates and observed invoiced value by acquisition source/campaign. TEST activity is excluded. UNATTRIBUTED means no verified acquisition relationship; do not guess or repair protected history. Paid Invoice value is not a cash-receipt or profitability report. ROAS is unavailable until verified spend and lineage exist. In new Finance transactions use the native Account and Deal associations; no manual ID copying or new custom financial fields is required. [Recurring contract](OPTIBRAIN_RECURRING_SERVICE_CONTRACT.md) and [attribution contract](OPTIBRAIN_MARKETING_ATTRIBUTION_CONTRACT.md) explain evidence limits and owner provider setup.
