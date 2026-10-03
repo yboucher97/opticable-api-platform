@@ -22,6 +22,7 @@ def label(value, fallback='UNATTRIBUTED'):
 
 def acquisition(record):
     return {'source': label(record.get('First_Source') or record.get('Lead_Source')),
+            'medium': label(record.get('First_Medium'), 'Not recorded'),
             'campaign': label(record.get('First_Campaign'), 'Not recorded'),
             'last_source': label(record.get('Last_Source')),
             'last_campaign': label(record.get('Last_Campaign'), 'Not recorded')}
@@ -31,7 +32,7 @@ def outcome(kind, record_id):
     if kind not in {'qualified_lead', 'estimate_sent', 'estimate_accepted', 'customer_won', 'invoice_observed'} or not identity(record_id):
         raise ValueError('Canonical outcome identity required')
     return {'kind': kind, 'key': sha256(('opticable:v1:'+kind+':'+record_id).encode()).hexdigest(),
-            'record_id': record_id, 'external_upload': False}
+            'record_id': record_id, 'provider': 'google_ads', 'version': 1, 'external_upload': False}
 
 
 def conversion_plan(record, kind, *, destination=None, consent=None):
@@ -94,9 +95,9 @@ def build_marketing(snapshot, *, recurring_links=None):
             recurring[pid] = link
     groups = {}; problems = defaultdict(int); outcomes = {}; lifetime = {}
     def group(record):
-        touch = acquisition(record); key = (touch['source'], touch['campaign'])
+        touch = acquisition(record); key = (touch['source'], touch['medium'], touch['campaign'])
         if key not in groups:
-            groups[key] = {'source':touch['source'], 'campaign':touch['campaign'], **{k: 0 for k in ('leads', 'qualified_leads', 'deals', 'estimates', 'accepted_estimates')},
+            groups[key] = {'source':touch['source'], 'medium':touch['medium'], 'campaign':touch['campaign'], **{k: 0 for k in ('leads', 'qualified_leads', 'deals', 'estimates', 'accepted_estimates')},
                 'invoice_value': {}, 'paid_invoice_value': {}, 'recurring_invoice_value': {},
                 'spend': None, 'roas': None}
         return groups[key]
@@ -187,9 +188,9 @@ def build_marketing(snapshot, *, recurring_links=None):
 
 def render_marketing(view):
     h = lambda v: escape(str(v), quote=True)
-    cols = ['source','campaign','leads','qualified_leads','deals','estimates','accepted_estimates',
+    cols = ['source','medium','campaign','leads','qualified_leads','deals','estimates','accepted_estimates',
             'invoice_value','paid_invoice_value','recurring_invoice_value']
-    names = ['Marketing source','Campaign','Leads','Qualified Leads','Deals','Estimates','Accepted Estimates',
+    names = ['Marketing source','Medium','Campaign','Leads','Qualified Leads','Deals','Estimates','Accepted Estimates',
              'Invoiced value','Paid Invoice value','Recurring invoiced value']
     def display(value):
         return ', '.join(currency+' '+amount for currency,amount in sorted(value.items())) if isinstance(value,dict) else value

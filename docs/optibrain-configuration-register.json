@@ -960,6 +960,17 @@
       "verified": "native IDs, parent association, TEST exclusion, root ownership and freshness",
       "backed_up": "regenerated from native snapshot",
       "purpose": "derived sanitized marketing aggregate display"
+    },
+    {
+      "location": "/run/optibrain-readiness/business.json",
+      "owner": "root:opticable-workflow-api0640",
+      "secret": false,
+      "source_of_truth": "Native CRM/Books GET snapshots; expendable minimized projection, not financial/action authority",
+      "deployed": "Existing reviewed root internal runner publishes hourly source and five-minute display freshness",
+      "restored": "Regenerate with GET-only observation after reconciliation; do not restore permissions from an arbitrary service-writable cache",
+      "verified": "Root regular file, no writable group/world, owner JWT before read, bounded period calculation and native totals reconciliation",
+      "backed_up": "NO \u2014 expendable /run display; private native cache backed up",
+      "purpose": "Owner-only Business Overview/CSV without raw PII, click IDs or write authority"
     }
   ],
   "environment_key_references": [

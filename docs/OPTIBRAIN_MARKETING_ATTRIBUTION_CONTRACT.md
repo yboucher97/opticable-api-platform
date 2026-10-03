@@ -22,7 +22,7 @@ AI site posts to `connect.opticable.ca/public/lead`; published code emits `gener
 
 Root readiness display contains sanitized source/campaign aggregates, not customer IDs, raw URLs, click IDs, emails or phones. Native snapshots/customer value/outcomes remain root-only. No enhanced-conversion PII is exported. Contact-form consent and analytics consent do not establish advertising user-data consent.
 
-Windsor read-only discovery found Ads `680-849-1878`, GA4 properties `530093120` and `530619880`, plus connected Search Console/Meta/LinkedIn/GMB. Bounded metadata/event/spend/action queries returned no usable rows. This is UNAVAILABLE, not zero spend/events or verified conversion configuration. Other-channel expansion is DEFERRED — NON-CRITICAL. Yellow Pages production tracking and website assets are unchanged.
+Earlier Phase21 Windsor read-only discovery found Ads `680-849-1878`, GA4 properties `530093120` and `530619880`, plus connected Search Console/Meta/LinkedIn/GMB. Earlier bounded short-period metadata/event/spend/action queries returned no usable rows. Phase22 year-to-date queries returned property/stream IDs, one production generate_lead, a removed Ads action and historical spend; see the [current measurement contract](OPTIBRAIN_MEASUREMENT_CONTRACT.md). This is UNAVAILABLE, not zero spend/events or verified conversion configuration. Other-channel expansion is DEFERRED — NON-CRITICAL. Yellow Pages production tracking and website assets are unchanged.
 
 ## Offline conversion boundary
 

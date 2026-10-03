@@ -1,6 +1,6 @@
 # OptiBrain owner/operator guide
 
-AUTHORITATIVE CURRENT, API 1.15.0. Work mainly in Zoho CRM and review [Today](https://optibrain.opticable.ca/v1/operator/today) using your normal owner login. OptiBrain organizes eligible new work and may send four individually proven operational email families. Broad automation, marketing and financial writes remain OFF. Actual family state is shown by root policy/readiness; READY can mean waiting for naturally eligible work.
+AUTHORITATIVE CURRENT, API 1.16.0. Work mainly in Zoho CRM and review [Today](https://optibrain.opticable.ca/v1/operator/today) using your normal owner login. OptiBrain organizes eligible new work and may send four individually proven operational email families. Broad automation, marketing and financial writes remain OFF. Actual family state is shown by root policy/readiness; READY can mean waiting for naturally eligible work.
 
 ## Daily workflow — OWNER SAFE
 
@@ -85,3 +85,7 @@ Record completion in CRM UI with Completion Notes and relevant evidence. OptiBra
 Open **Recurring** or **Marketing Sources** from Today. Recurring attention includes renewal, maintenance, annual price review and billing-link gaps. An overdue Invoice never cancels the Service. Review/upsell signals prepare human attention; customer review sends stay OFF. Books alone changes recurring billing. If you end a Service, separately review its Books billing as a human action.
 
 Marketing Sources shows Leads through accepted Estimates and observed invoiced value by acquisition source/campaign. TEST activity is excluded. UNATTRIBUTED means no verified acquisition relationship; do not guess or repair protected history. Paid Invoice value is not a cash-receipt or profitability report. ROAS is unavailable until verified spend and lineage exist. In new Finance transactions use the native Account and Deal associations; no manual ID copying or new custom financial fields is required. [Recurring contract](OPTIBRAIN_RECURRING_SERVICE_CONTRACT.md) and [attribution contract](OPTIBRAIN_MARKETING_ATTRIBUTION_CONTRACT.md) explain evidence limits and owner provider setup.
+
+## Business Overview — OWNER SAFE
+
+Open [Business Overview](https://optibrain.opticable.ca/v1/operator/business) from Today. Choose this month/last month/year or a custom Toronto date range; export the same figures as CSV. Review Sales/pipeline, invoiced value, recorded payments, outstanding/overdue, recurring billing, customer value and marketing. Missing pipeline value is unknown. Paid Invoice value and recorded customer payments are different measures; gross invoiced value includes tax. Stock balances/pipeline are current, even with a past period selected. Recurring values are before-tax normalized active Books billing; incomplete Service links stay PARTIAL. UNALLOCATED/UNATTRIBUTED means evidence is missing. Profitability remains COST DATA INCOMPLETE, and ROAS is unavailable without matched spend/source data. Use CRM/Books for action and Today for work priorities. No report changes pricing, billing, scheduling or advertising. [Reporting contract](OPTIBRAIN_BUSINESS_INTELLIGENCE_CONTRACT.md) defines every metric.

@@ -24,8 +24,8 @@
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
     "SECURITY / CONTROL": 1,
-    "AUTHORITATIVE CURRENT": 18,
-    "AUDIT EVIDENCE": 79,
+    "AUTHORITATIVE CURRENT": 20,
+    "AUDIT EVIDENCE": 84,
     "RECOVERY": 1
   },
   "documents": [
@@ -1120,6 +1120,48 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/PHASE22_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Current measurement/reporting contract"
+    },
+    {
+      "path": "docs/phase22-provider-observations.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+    },
+    {
+      "path": "docs/PHASE23_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+    },
+    {
+      "path": "docs/PHASE22_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+    },
+    {
+      "path": "docs/PHASE23_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_BUSINESS_INTELLIGENCE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Current measurement/reporting contract"
     }
   ]
 }

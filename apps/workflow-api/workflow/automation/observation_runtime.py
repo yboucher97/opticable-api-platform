@@ -2,7 +2,8 @@
 from datetime import datetime, timezone
 from pathlib import Path
 from . import lifecycle_control as lc
-from .business_observation import NativeReader, collect_recurring, collect_marketing
+from .business_observation import NativeReader, collect_recurring, collect_marketing, collect_business
+from .business_intelligence import project_source
 from .recurring_lifecycle import build_recurring
 from .marketing_attribution import build_marketing
 
@@ -18,7 +19,7 @@ def observe(engine, *, now=None):
     if saved.exists():
         old = lc.trusted_json(saved, 16777216)
         at = datetime.fromisoformat(old['observed_at'])
-        if old.get('schema') == 2 and at.tzinfo is not None and 0 <= (now-at).total_seconds() < 3600:value = old
+        if old.get('schema') == 3 and at.tzinfo is not None and 0 <= (now-at).total_seconds() < 3600:value = old
     if value is None:
         reader = NativeReader(engine.client, limit=max(0, 160-engine.reads))
         try:
@@ -30,9 +31,10 @@ def observe(engine, *, now=None):
                 complete = collect_marketing(reader, snapshot)
                 marketing = build_marketing(complete, recurring_links=links)
                 snapshot = complete
+                snapshot = collect_business(reader,complete)
             except (ValueError, KeyError, TypeError):
                 pass  # Keep the verified recurring view; do not retry 100+ GETs every cycle.
-            value = {'schema': 2, 'observed_at': now.isoformat(), 'snapshot': snapshot, 'recurring': recurring, 'marketing': marketing}
+            value = {'schema': 3, 'observed_at': now.isoformat(), 'snapshot': snapshot, 'recurring': recurring, 'marketing': marketing}
             if not engine.dry_run:atomic(saved,value)
         finally:engine.reads += reader.reads
     recurring = {**value['recurring'], 'at': now.isoformat(), 'observed_at': value['observed_at']}
@@ -43,5 +45,13 @@ def observe(engine, *, now=None):
         if value['marketing']:
             marketing = {k:v for k,v in value['marketing'].items() if k not in {'outcomes','customer_value'}}
             atomic(Path('/run/optibrain-readiness/marketing.json'),{**marketing, 'at':now.isoformat()},0o644)
+            # Customer/Deal detail is owner-only. The API service group may read
+            # this minimized projection; ordinary host users may not.
+            import grp, os
+            path=Path('/run/optibrain-readiness/business.json')
+            atomic(path,{'schema':1,'scope':'live','read_only':True,'at':now.isoformat(),
+                         'observed_at':value['observed_at'],'snapshot':project_source(value['snapshot'])},0o600)
+            os.chown(path,0,grp.getgrnam('opticable-workflow-api').gr_gid)
+            os.chmod(path,0o640)
     if not value['marketing']:raise ValueError('Marketing observation incomplete; recurring evidence retained')
     return recurring

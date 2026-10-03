@@ -9,6 +9,11 @@ NOW=datetime(2026,10,3,tzinfo=timezone.utc)
 
 
 class ObservationRuntimeTests(unittest.TestCase):
+    def setUp(self):
+        for target,value in [('collect_business',{}),('project_source',{})]:
+            patcher=patch.object(runtime,target,return_value=value);patcher.start();self.addCleanup(patcher.stop)
+        for target in ('os.chown','os.chmod'):
+            patcher=patch(target);patcher.start();self.addCleanup(patcher.stop)
     def engine(self, dry=True):return SimpleNamespace(client=object(),reads=6,dry_run=dry)
     def test_native_read_budget_preserves_existing_bound(self):
         e=self.engine()
@@ -34,5 +39,5 @@ class ObservationRuntimeTests(unittest.TestCase):
              patch.object(runtime,'collect_marketing',return_value={}),patch.object(runtime,'build_marketing',return_value={'groups':[],'outcomes':[{'record_id':'1'}],'customer_value':[{'account_id':'2'}]}), \
              patch('workflow.automation.real_internal.atomic') as atomic:
             reader.return_value.reads=140;runtime.observe(e,now=NOW)
-            public=atomic.call_args_list[-1].args[1]
+            public=next(c.args[1] for c in atomic.call_args_list if c.args[0].name=='marketing.json')
             self.assertNotIn('customer_value',public);self.assertNotIn('outcomes',public)
