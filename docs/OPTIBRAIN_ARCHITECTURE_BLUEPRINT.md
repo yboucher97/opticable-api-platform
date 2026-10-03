@@ -1,6 +1,6 @@
 # OptiBrain architecture
 
-AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; Current API contract: `1.15.0`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
+AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; Current API contract: `1.16.0`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
 
 ```mermaid
 flowchart TD
@@ -40,3 +40,5 @@ CRM is the main business cockpit. Native Finance Estimates/Invoices backed by Bo
 Services are durable installed systems; additional accepted work and return visits reuse them without reparenting their original Deal. Installation-to-Service joins plus root visit lineage retain the current work's Account/Contact/Deal/Site context. Owner scheduling/completion is verified against native timelines. Completion activates only mutable new Services; existing Active references remain read-only. Finance observation derives invoice/payment attention without writes. Support context is prepared, while automatic Case creation remains unarmed without a deterministic producer.
 
 The existing root internal runner now supplies hourly GET-only [recurring lifecycle](OPTIBRAIN_RECURRING_SERVICE_CONTRACT.md) and [marketing/Finance lineage](OPTIBRAIN_MARKETING_ATTRIBUTION_CONTRACT.md) projections. Books retains recurring billing. No new provider-write scope, custom field, module, financial engine or advertising writer is introduced. Missing native linkage remains human attention/unattributed.
+
+One owner-only [Business Overview](OPTIBRAIN_BUSINESS_INTELLIGENCE_CONTRACT.md) calculates Toronto period/pipeline/customer/financial/recurring metrics from a minimized root API-group projection. Native Books payment/expense reads supplement the existing hourly observer. No warehouse/new DB, timer, provider writer or business field. [Measurement contract](OPTIBRAIN_MEASUREMENT_CONTRACT.md) records actual GA4/Ads observations and unresolved lineage/provider setup.

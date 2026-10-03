@@ -161,6 +161,21 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         if not view:raise HTTPException(status_code=503,detail='Marketing observations unavailable; no revenue or spend inferred')
         return HTMLResponse(render_marketing(view),headers=private_headers)
 
+    @app.get('/v1/operator/business',response_class=HTMLResponse,tags=['operator'])
+    async def business_overview(period: str = 'month', start: str | None = None, end: str | None = None,
+                                format: str = 'html', cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        identity(cf_access_jwt_assertion)
+        from .automation.business_intelligence import build_business, render_business, export_csv
+        view=read_internal_attention(now(),Path('/run/optibrain-readiness/business.json'))
+        if not view:raise HTTPException(status_code=503,detail='Business observations unavailable; no financial decision inferred')
+        if format not in {'html','csv'}:raise HTTPException(status_code=422,detail='Supported formats: html, csv')
+        try:report=build_business(view['snapshot'],now=now(),period=period,start=start,end=end)
+        except (ValueError,TypeError,KeyError):raise HTTPException(status_code=422,detail='Invalid report range or incomplete native evidence')
+        if format=='csv':
+            from fastapi.responses import Response
+            return Response(export_csv(report),media_type='text/csv',headers={**private_headers,'Content-Disposition':'attachment; filename="optibrain-business.csv"'})
+        return HTMLResponse(render_business(report),headers=private_headers)
+
     for section in ("autonomy", "approvals", "exceptions"):
         def install_section(name):
             @app.get(f"/v1/operator/phase12/{name}", tags=["operator-phase12"],

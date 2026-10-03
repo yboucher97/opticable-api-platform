@@ -20,6 +20,7 @@ on:
       - "ops/phase16_17/**"
       - "ops/phase18_19/**"
       - "ops/phase20_21/**"
+      - "ops/phase22_23/**"
       - "docs/OPTIBRAIN_*.md"
       - "docs/optibrain-*.json"
       - "ops/phase12/systemd/**"
@@ -48,6 +49,7 @@ on:
       - "ops/phase16_17/**"
       - "ops/phase18_19/**"
       - "ops/phase20_21/**"
+      - "ops/phase22_23/**"
       - "docs/OPTIBRAIN_*.md"
       - "docs/optibrain-*.json"
       - "ops/phase12/systemd/**"
@@ -105,7 +107,7 @@ jobs:
           PYCODE
 
       - name: Compile Python
-        run: python -m compileall -q workflow tests ../../ops/phase6 ../../ops/phase14 ../../deploy/manual-guarded-release.py
+        run: python -m compileall -q workflow tests ../../ops/phase6 ../../ops/phase14 ../../ops/phase22_23 ../../deploy/manual-guarded-release.py
 
       - name: Run automation kernel tests
         run: python -I ../../ops/phase6/validate.py --suite full

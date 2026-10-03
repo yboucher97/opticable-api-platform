@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "read_only": true,
+  "ga4": {
+    "properties": [
+      {
+        "id": "530619880",
+        "measurement_id": "G-GYLGWDS464",
+        "timezone": "America/Toronto",
+        "stream": "14281746924",
+        "name": "Opticable Main Site"
+      },
+      {
+        "id": "530093120",
+        "measurement_id": "G-ZEQXVSZWRL",
+        "timezone": "America/Toronto",
+        "stream": "14233342137",
+        "name": "opticable.ca"
+      }
+    ],
+    "stream_observations": {
+      "status": "done",
+      "job_id": "1eb99da615b68b7196be86a4c01a5d14",
+      "data": [
+        {
+          "account_id": "530619880",
+          "stream_id": "14281746924",
+          "stream_name": "Opticable Main Site",
+          "hostname": "opticable.ca",
+          "event_count": 2173
+        },
+        {
+          "account_id": "530619880",
+          "stream_id": "14281746924",
+          "stream_name": "Opticable Main Site",
+          "hostname": "concept01.opticable.ca",
+          "event_count": 448
+        },
+        {
+          "account_id": "530619880",
+          "stream_id": "14281746924",
+          "stream_name": "Opticable Main Site",
+          "hostname": "127.0.0.1",
+          "event_count": 31
+        },
+        {
+          "account_id": "530619880",
+          "stream_id": "14281746924",
+          "stream_name": "Opticable Main Site",
+          "hostname": "localhost",
+          "event_count": 43
+        },
+        {
+          "account_id": "530619880",
+          "stream_id": "14281746924",
+          "stream_name": "Opticable Main Site",
+          "hostname": "opticable-website-preview.yboucher.workers.dev",
+          "event_count": 27
+        },
+        {
+          "account_id": "530093120",
+          "stream_id": "14233342137",
+          "stream_name": "opticable.ca",
+          "hostname": "opticable.ca",
+          "event_count": 1585
+        },
+        {
+          "account_id": "530093120",
+          "stream_id": "14233342137",
+          "stream_name": "opticable.ca",
+          "hostname": "127.0.0.1",
+          "event_count": 348
+        },
+        {
+          "account_id": "530093120",
+          "stream_id": "14233342137",
+          "stream_name": "opticable.ca",
+          "hostname": "www.googleadservices.com",
+          "event_count": 4
+        }
+      ],
+      "total_rows": 8
+    },
+    "event_observations": {
+      "status": "done",
+      "job_id": "9971125ec5e26fcde8bff9ce2a498b5f",
+      "data": [
+        {
+          "account_id": "530093120",
+          "hostname": "opticable.ca",
+          "event_name": "generate_lead",
+          "event_count": 1,
+          "conversions": 1
+        }
+      ],
+      "total_rows": 1
+    },
+    "production_selection": "UNVERIFIED",
+    "test_traffic": "localhost/127.0.0.1/preview observations present; filter effectiveness unverified",
+    "cross_site": "PARTIAL"
+  },
+  "google_ads": {
+    "account": "680-849-1878",
+    "action": {
+      "id": "7555170877",
+      "name": "Contact Us",
+      "status": "REMOVED",
+      "type": "WEBPAGE_CODELESS",
+      "primary": false
+    },
+    "observed_ytd_spend": {
+      "status": "done",
+      "job_id": "d60b8af326bac52fac850d8ea42a8636",
+      "data": [
+        {
+          "account_id": "680-849-1878",
+          "cost": 251.1257,
+          "currency": "CAD"
+        }
+      ],
+      "total_rows": 1
+    },
+    "qualified_accepted_revenue_actions": "UNVERIFIED",
+    "uploads": false,
+    "mutations": 0
+  },
+  "financial_writes": 0,
+  "advertising_mutations": 0
+}

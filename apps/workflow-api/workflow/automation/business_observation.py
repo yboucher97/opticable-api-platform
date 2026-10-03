@@ -108,7 +108,7 @@ def collect_marketing(reader, recurring):
     snapshot['leads'] = reader.listing('/crm/v8/Leads', 'data',
         fields=fields+',Lead_Status,$converted,$converted_detail', query={'converted':'both'})
     snapshot['contacts'] = reader.crm('Contacts', fields+',Account_Name')
-    snapshot['deals'] = reader.crm('Deals', fields+',Account_Name,Contact_Name,Stage')
+    snapshot['deals'] = reader.crm('Deals', fields+',Account_Name,Contact_Name,Stage,Deal_Name,Amount,Currency,Closing_Date,Modified_Time,Service_Location,Next_Step')
     snapshot['finance_estimates'] = reader.crm('CustomModule5002', 'id,Estimate_ID,Account_Name,Potential_Name')
     books_estimates = reader.listing('/books/v3/estimates', 'estimates')
     snapshot['books_estimate_index'] = index(books_estimates, 'estimate_id')
@@ -127,3 +127,20 @@ def collect_marketing(reader, recurring):
     snapshot['customers'] = list(customers.values())
     snapshot['provider_reads'] = reader.reads
     return snapshot
+
+
+def collect_business(reader, snapshot):
+    """Optional complete bounded reads; unavailable data never becomes zero."""
+    from copy import deepcopy
+    result=deepcopy(snapshot);result['optional_reads']={}
+    try:
+        orgs=reader.get('/books/v3/organizations')['organizations']
+        found=[r for r in orgs if identity(r.get('organization_id'))==ORG]
+        if len(found)!=1:raise ValueError('Canonical Books organization unavailable')
+        result['base_currency']=found[0]['currency_code']
+    except (ValueError, KeyError, TypeError):result['base_currency']=None
+    for name,path,key in [('payments','customerpayments','customerpayments'),('expenses','expenses','expenses')]:
+        try:
+            result[name]=reader.listing('/books/v3/'+path,key);result['optional_reads'][name]='PROVEN'
+        except ValueError:result[name]=[];result['optional_reads'][name]='UNAVAILABLE'
+    return result

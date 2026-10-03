@@ -18,7 +18,7 @@ from .sales_operator_view import CONTROLLED_LEAD_ID
 CATEGORIES=('Leads needing response','Follow-ups due','Quote-ready opportunities',
             'Projects and install work','Maintenance and renewal','Exceptions','Approvals')
 LINKS={'sales':'/v1/operator/phase8/sales-queue','lifecycle':'/v1/operator/phase10/customer-lifecycle',
-       'recurring':'/v1/operator/recurring','marketing sources':'/v1/operator/marketing','operations':'/v1/operator/phase11/operations',
+       'business overview':'/v1/operator/business','recurring':'/v1/operator/recurring','marketing sources':'/v1/operator/marketing','operations':'/v1/operator/phase11/operations',
        'exceptions':'/v1/operator/phase12/exceptions','approvals':'/v1/operator/phase12/approvals',
        'health':'/v1/operator/system-health','test':'/v1/operator/phase12/autonomy'}
 

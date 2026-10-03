@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "phase23": "PASS",
+  "at": "2026-10-03T12:08:41.555368+00:00",
+  "critical_failures": 0,
+  "scope": "owner read-only reporting; margin/attribution coverage limitations explicit",
+  "owner_dashboard": "/v1/operator/business",
+  "timezone": "America/Toronto",
+  "test_exclusion": "PASS",
+  "auth_fail_closed": "PASS",
+  "periods": [
+    "today",
+    "week",
+    "month",
+    "last_month",
+    "quarter",
+    "year",
+    "custom"
+  ],
+  "financial_reconciliation": {
+    "this_month": "PASS",
+    "last_month": "PASS",
+    "year": "PASS",
+    "fresh_invoice_records": 120,
+    "fresh_payment_records": 109,
+    "additional_gets": 2,
+    "financial_detail_samples": 8,
+    "organization_currency": "CAD"
+  },
+  "native_observation_delta_gets": 13,
+  "performance": {
+    "three_report_seconds": 0.41,
+    "projection_bytes": 135170,
+    "provider_reads_per_dashboard": 0,
+    "hourly_total_bound": 160
+  },
+  "profitability": "NOT CURRENTLY MEASURABLE \u2014 242 expenses;0 customer allocation;job/labour/vendor/item completeness unproven",
+  "recurring": "19 active Books profiles; monthly normalized before-tax CAD1037.50 / annual CAD12450.00;Service linkage PARTIAL",
+  "pipeline": "one real Deal;stage Quote Accepted;Amount/currency missing;no fabricated probability/value",
+  "natural_effects": "READY \u2014 PENDING NATURAL EVENT",
+  "new_scopes": 0,
+  "new_databases": 0,
+  "new_warehouse": false,
+  "new_fields": 0,
+  "new_modules": 0,
+  "financial_writes": 0,
+  "advertising_mutations": 0,
+  "protected_mutations": 0,
+  "unauthorized_customer_sends": 0,
+  "final_release": "pending exact-SHA combined release validation",
+  "focused_tests": {
+    "tests": 72,
+    "subtests": 26,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "blocked_network_attempts": 0,
+    "passed": true
+  },
+  "full_regression": {
+    "tests": 1207,
+    "subtests": 1141,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "blocked_network_attempts": 0,
+    "passed": true
+  }
+}
