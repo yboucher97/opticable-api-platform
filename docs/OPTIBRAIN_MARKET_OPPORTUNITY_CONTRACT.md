@@ -15,3 +15,8 @@ Current scores are policy ordering. Search demand/CPC/difficulty/contact coverag
 Completion remediation separates opportunity signal from evidence support. Average position14 at1 impression earns a smaller positional contribution than14 at100 impressions; owner text includes sample/window. A high priority cannot rely on a tiny sample alone. Independent measured demand may corroborate it without relabeling Search Console evidence strong. Fact objects distinguish MEASURED FACT, DERIVED FACT, ESTIMATE, INFERENCE and UNKNOWN; missing metrics remain null, real zero stays zero.
 
 Geographic states include CANADA, QUÉBEC, MONTRÉAL, LAVAL, RIVE-NORD, GREATER MONTRÉAL, QUÉBEC CITY, OTHER CANADA, FOREIGN and UNKNOWN. Seed segments are target hypotheses. Foreign/other-Canada queries are retained for diagnostics and excluded from Québec SEO/paid queues. Canadian impressions do not prove a city/ICP market. Current version/status, actor proof and freshness accompany project signals; unresolved company/contact recommendations stay RESEARCH NEEDED. The current two SEAO buyers are confirmed from native IDs plus their official domains and current public pages, with September30 addenda; their employees still require role verification.
+
+
+## Phase30 trigger evidence links
+
+Existing service/geography market hypotheses link to versioned trigger IDs, source URLs, priority and confidence. The link does not imply measured ICP demand, market volume, installed service scope or ROI. Public facts remain independently inspectable; moderate batch-lag tender proof stays review research. Missing Windsor economics does not stop trigger discovery. No Ads or outbound execution is added. See [trigger policy](OPTIBRAIN_TRIGGER_INTELLIGENCE_CONTRACT.md).

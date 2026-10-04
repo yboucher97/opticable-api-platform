@@ -273,6 +273,7 @@ def render_sales(view):
     for r in view.get('rows', []):
         link=r['link'] if str(r['link']).startswith(('https://app.apollo.io/','https://crm.zoho.com/','https://seao.gouv.qc.ca/','https://donnees.montreal.ca/','/v1/operator/')) else '/v1/operator/sales'
         parts.append(f"<article><h2>{h(r['title'])}</h2><p>{h(r['why'])}</p><p><b>Outreach handled by:</b> {h(r['outreach_owner'])}</p><p><b>Next:</b> {h(r['action'])}</p>"+
+                     (f"<p>SHADOW · {h(r.get('priority_class'))} · {h(r.get('evidence_confidence'))} · {h(r.get('geography'))}<br>{h(r.get('collision_state'))} · {h(r.get('freshness'))} · source version {h(r.get('source_version'))}</p>" if r.get('mode')=='SHADOW' else '')+
                      (f"<p>Likely service: {h(r['fit'])} · {h(r.get('site'))}</p>" if 'fit' in r else '')+
                      f"<p><a href='{h(link)}'>Review source</a> · <a href='/v1/operator/sales/review/{r['key']}'>Record review feedback</a></p></article>")
     parts.append("<p>OptiBrain cold outbound is OFF. Consent, recent Zoho Mail and open complaints require human review before any contact. Discovery source is separate from marketing acquisition.</p></body></html>")

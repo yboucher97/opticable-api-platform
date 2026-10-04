@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "at": "2026-10-04T16:27:23.514574+00:00",
+  "at": "2026-10-04T22:28:30.578101+00:00",
   "release": {
-    "api": "1.21.0",
+    "api": "1.22.0",
     "production_sha_source": "/var/lib/optibrain/releases/current.json",
     "source_pin_semantics": "Historical phase SHAs are unchanged; current exact release is independently recorded in root receipt",
     "production_executable_changed": true
@@ -602,6 +602,27 @@
         "release_receipt": "/var/lib/optibrain/releases/current.json"
       },
       "foundation_delta": "Native FR/EN attribution continuity proven; conversion recovery authority explicit; cached Québec FR/EN economics available and Gate C PASS. Historical Finance and complete native Analytics success reception remain partial. Direct Google Basic access is deferred by owner, non-blocking; continuing Windsor entitlement is monitored, and unavailable current metrics become UNKNOWN / SOURCE UNAVAILABLE."
+    },
+    {
+      "phase": 30,
+      "original_objective": "Trigger-based client acquisition shadow engine",
+      "original_pass_state": "Bounded shadow gate; exact release evidence recorded externally",
+      "api_version": "1.22.0",
+      "historical_final_sha": null,
+      "evidence": "/home/optibrain/phase30-evidence/final-report.json",
+      "current_implementation_state": "Versioned source intake, company/actor/role resolution, evidence confidence, collision/suppression and owner-only review. No provider write executor.",
+      "data_coverage_state": "Multiple public families; bounded municipal/batch coverage. Exact counts in final evidence.",
+      "live_provider_proof": "Official SEAO/municipal structured responses and primary company announcement; collision uses current approved CRM/Apollo caches.",
+      "natural_event_proof": "No new outreach/CRM effect required or caused",
+      "historical_coverage": "Versions preserved; closed tenders historical; unresolved actors remain research",
+      "known_gaps": "Partial stale Laval coverage; no Rive-Nord permit adapter; procurement export addendum lag; unresolved Montréal actors",
+      "current_regressions": "No additional provider-write authority",
+      "later_improvements_available": "Owner-approved isolated trigger-to-outreach pilot after current version/actor verification",
+      "owner_actions": "No new access action required for shadow scope; unresolved research is not a configuration blocker",
+      "provider_blockers": "Google Basic deferred and optional SEO/enrichment sources do not block discovery",
+      "classification": "GREEN",
+      "remediation_priority": "P2",
+      "recommended_action": "KEEP SHADOW; no automatic CRM promotion or outreach"
     }
   ],
   "current_remediation": {
@@ -728,5 +749,22 @@
       },
       "production_executable_changed": false
     }
-  }
+  },
+  "current_release_updates": [
+    {
+      "mission": "PHASE30",
+      "implementation": "Shadow trigger source/version/identity/actor/role/service-fit/why-now/queue and feedback",
+      "classification": "GREEN",
+      "evidence": "/home/optibrain/phase30-evidence/final-report.json",
+      "coverage": "Montréal bounded permits; partial stale Laval permits; official batched SEAO; targeted primary company announcement",
+      "limitations": [
+        "Two prior Montréal actors remain unresolved; research only",
+        "Batch procurement coverage is not real-time addendum certification",
+        "No outreach or automatic CRM promotion",
+        "Optional keyword economics and SEO tools cannot disable trigger research"
+      ],
+      "production_executable_changed": true,
+      "release_status": "Exact production receipt and final Phase30 evidence remain authoritative"
+    }
+  ]
 }

@@ -593,3 +593,8 @@ Implementation: Implemented and usable for the intended bounded scope. Data: See
 **Gap/limit:** This is a scoped review, not a full penetration test. Telemetry privacy and future recovery/export reset are readiness improvements.
 
 Current provider-access clarification: Forms public administration is G PROVIDER-SIDE API LIMITATION, clarified by owner/provider guidance after initial O UNKNOWN diagnosis, despite existing ZohoForms.forms.READ and working US CRM/Mail OAuth. The prior admin probe returns404 HTML, not an OAuth scope error; a CRM-only MCP service does not expose Forms administration (M). Native FR/EN attribution parity stays YELLOW; no broad reauthorization or new OAuth client is justified. GA4 collection/page-view reception is GREEN, while acknowledged inquiry-event/native Forms proof remains separate. Exact owner/provider action: [r1-owner-actions.md](r1-owner-actions.md).
+
+
+## Phase30 — Trigger shadow acquisition
+
+Current implementation: durable versioned trigger/actor/company/role evidence, separate quality and confidence, explicit geography, publication freshness and collision/suppression holds. Complete for the intended shadow scope when current public examples and focused/full fixtures, exact-SHA release and recovery pass. Montréal latest100 and SEAO exports are bounded; Laval publication is stale; primary expansion coverage is one company; Rive-Nord/Québec City continuous feeds remain gaps. No automatic CRM promotion or outbound execution. Source coverage remains PARTIAL independently of the engine gate. See [contract](OPTIBRAIN_TRIGGER_INTELLIGENCE_CONTRACT.md).

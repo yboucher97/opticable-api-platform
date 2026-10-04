@@ -802,3 +802,8 @@ Phases21/22/25 remain YELLOW overall because historical Finance/acquisition cove
 Phase30 is READY for shadow trigger research only. Phase32 is READY for bounded website/local measurement work. Phase33 is READY for shadow Ads intelligence, with durable economics access required before quantitative optimization. Phase34 is READY for bounded read/draft design; Phase37 for bounded owner decision design. None has been started. Current actions: [owner action list](OPTIBRAIN_OWNER_ACTIONS_CURRENT.md).
 
 The Basic-access deferral does not block those bounded roadmap states. Direct access is a durability requirement before relying on native Planner as the permanent quantitative source. Do not attempt brand verification, an access application, a new OAuth client/project, browser automation or restricted Planner retries while deferred. Only resurface the single future owner action under OA4's three conditions; do not repeatedly request it during unrelated phases. This update changes documentation, not production authority, provider configuration, version or recovery.
+
+
+## Phase30 — Trigger-based client acquisition, shadow only
+
+API1.22.0 extends the acquisition evidence layer with durable trigger versions, actors, service fit, why-now, quality/confidence, geography, collision and owner-review state. The intended gate requires safe public examples plus focused/full regression and verified exact deployment/recovery; broader source coverage is partial independently. Existing unresolved Montréal actors remain RESEARCH. Procurement batch dates do not imply real-time addenda, and weak/stale/unmatchable evidence is withheld from Sales. No outreach or CRM promotion is enabled. Future trigger-to-outreach needs separate owner approval; Phase32/33 are not begun.

@@ -46,3 +46,8 @@ Current native CRM/Books/Mail/WorkDrive/Sign/Apollo and Google report/action rea
 ## Simplest quantitative architecture
 
 Use native Search Console for own performance and Ads for actual paid results. Retain the working language/location-aware Google Keyword Planner via Windsor gateway and trusted30-day cache for bounded economics research; avoid unnecessary provider calls. Monitor freshness and source health and preserve explicit volume/CPC/competition provenance. If Windsor becomes unavailable, affected current metrics become UNKNOWN / SOURCE UNAVAILABLE and independent workflows continue. Native Google Basic access is deferred; it is a future durability requirement before relying on direct Planner as the permanent quantitative source. No new paid specialist is required now. Backlinks/AI visibility may justify an optional unique need later. GBP through Windsor is sufficient for current bounded local research.
+
+
+## Phase30 direct structured research
+
+Official public GET-only adapters add latest-version SEAO OCDS catalog/export, Laval CKAN and one bounded primary warehouse announcement. Montréal reuses the already working provider cache. These are DIRECT PUBLIC READ, with source/version/byte/time/cadence controls and raw selected provenance; no browser, private credential fragmentation or provider mutation. Native buyer identity does not prove a CRM/Apollo domain match. Apollo uses its existing saved complete workspace; no new paid enrichment or sequence operation. Google Basic remains DEFERRED BY OWNER; Windsor cached economics is optional supporting evidence.
