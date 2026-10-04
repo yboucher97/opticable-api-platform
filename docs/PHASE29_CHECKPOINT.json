@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "phase29": "PASS",
+  "engineering_safe_to_deploy": true,
+  "release_validation_pending": true,
+  "cold_outbound_enabled": false,
+  "content_publication_enabled": false,
+  "conversion_upload_enabled": false,
+  "financial_writes": 0,
+  "advertising_mutations": 0,
+  "apollo_changes": 0,
+  "tests": {
+    "focused_domain": 65,
+    "focused_domain_subtests": 51,
+    "version_delta": 49,
+    "version_delta_subtests": 21,
+    "failures": 0,
+    "offline_network_attempts": 0
+  },
+  "gate": {
+    "keyword_universe": "PASS \u2014 observed queries plus FR/EN unmeasured seeds",
+    "fr_en": "PASS \u2014 independent phrases and matching-language pages",
+    "service_geography_icp": "PASS \u2014 target hypotheses labeled",
+    "competitor_gap": "PASS \u2014 primary-page overlap; quantitative rank/paid/backlinks unknown",
+    "existing_vs_new_pages": "PASS \u2014 no cross-URL ranking borrowing",
+    "explainability": "PASS \u2014 visible components and missing metrics",
+    "paid_analysis": "PASS \u2014 research recommendations only; CPC unknown",
+    "content_queue": "PASS \u2014 30 briefs;21 improvements/9 candidates",
+    "local_gbp": "PASS \u2014 owner-reviewed real proof recommendations",
+    "repurposing": "PASS \u2014 5 plans /6 unsent asset types each",
+    "future_feedback": "PASS \u2014 exact PROVEN TEST-excluded cohorts; no invented history"
+  },
+  "live_proof": {
+    "urls_analyzed": 135,
+    "crawlable_candidates": 135,
+    "indexed_native_proven": 2,
+    "technical_issues_in_bounded_html_checks": 0,
+    "page_mobile_performance": "UNMEASURED",
+    "search_console_query_page_rows": 267,
+    "google_ads_keyword_rows": 282
+  },
+  "deferred": [
+    "Keyword Planner Basic/Standard access required",
+    "Clay/Semrush/Ahrefs no callable tools",
+    "GA4 empty report / event reception and consent partial",
+    "English Forms and campaign continuity partial",
+    "Neutral competitor ranking/backlinks/paid visibility unavailable"
+  ],
+  "next": "FINAL RELEASE / RECOVERY; STOP AFTER29; PHASE30 HANDOFF ONLY"
+}

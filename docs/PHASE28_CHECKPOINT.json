@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "phase28": "PASS",
+  "at": "2026-10-03T23:21:46.853742+00:00",
+  "release_validation_pending": true,
+  "counts": {
+    "AD_KEYWORD": 282,
+    "COMPANY": 115,
+    "COMPETITOR": 10,
+    "COMPETITOR_PAGE": 10,
+    "ICP": 12,
+    "KEYWORD": 339,
+    "LOCATION": 30,
+    "MARKET_SEGMENT": 15,
+    "OPPORTUNITY": 15,
+    "OUTREACH_STATE": 1361,
+    "PERSON": 1351,
+    "PROJECT": 4,
+    "SERVICE": 15,
+    "SOURCE": 14,
+    "SOURCE_PERFORMANCE": 277,
+    "SUPPRESSION": 21,
+    "TRIGGER": 4
+  },
+  "raw_snapshots": 66,
+  "facts": 7313,
+  "identity_conflicts": 0,
+  "source_health": [
+    {
+      "source": "ahrefs",
+      "state": "BLOCKED",
+      "reason": "Installed plugin, no callable tools in this execution. Prior insufficient-plan limitation remains unverified; one discovery check, no retry/upgrade."
+    },
+    {
+      "source": "apollo",
+      "state": "WORKING",
+      "reason": "Saved workspace reused; outreach ownership and suppressions protected. No enrichment or sequence changes."
+    },
+    {
+      "source": "clay",
+      "state": "BLOCKED",
+      "reason": "BLOCKED IN EXECUTION ENVIRONMENT \u2014 installed plugin, no callable tools; no credits spent."
+    },
+    {
+      "source": "competitors",
+      "state": "PARTIAL",
+      "reason": "Live FR/EN service-search discovery and bounded primary pages; neutral rankings, backlinks and paid visibility unmeasured."
+    },
+    {
+      "source": "crm",
+      "state": "WORKING",
+      "reason": "Existing exact CRM identity cache reused; protected records READ ONLY, no raw research promotion."
+    },
+    {
+      "source": "ga4",
+      "state": "WORKING",
+      "reason": "Native sessions/landing/source/device report; event/consent instrumentation coverage remains separately partial."
+    },
+    {
+      "source": "gbp",
+      "state": "PARTIAL",
+      "reason": "Windsor native GBP daily visibility read; reviews/posts/call attribution partial."
+    },
+    {
+      "source": "google_ads",
+      "state": "WORKING",
+      "reason": "Native account, campaigns, keywords and search-term reads; CAD / Toronto. Historical removed campaigns remain unchanged; missing CPC is unknown."
+    },
+    {
+      "source": "permits",
+      "state": "PARTIAL",
+      "reason": "Montr\u00e9al latest 100 native records reused; two relevant commercial proofs. Laval result is road obstruction, not building intent; no misclassification."
+    },
+    {
+      "source": "registry",
+      "state": "PARTIAL",
+      "reason": "OQLF CC BY 4.0 bounded business/NEQ sample works. REQ bulk CC BY-NC-SA is excluded from commercial acquisition."
+    },
+    {
+      "source": "seao",
+      "state": "PARTIAL",
+      "reason": "Curated native OCDS proof; active deadlines enforced. Latest procurement amendment/requirements still need review."
+    },
+    {
+      "source": "search_console",
+      "state": "WORKING",
+      "reason": "Native bounded query/page and historical reports."
+    },
+    {
+      "source": "semrush",
+      "state": "BLOCKED",
+      "reason": "Installed plugin, no callable tools in this execution. Prior insufficient API units remains unverified; one discovery check, no retry/purchase."
+    },
+    {
+      "source": "windsor",
+      "state": "WORKING",
+      "reason": "Connected source/field discovery and cached first-party fallback. Native Ads avoids duplicate paid collection."
+    }
+  ],
+  "provider_proof": {
+    "google_native": {
+      "search_console": "WORKING",
+      "ga4": "WORKING \u2014 report empty; instrumentation remains partial",
+      "google_ads": "WORKING \u2014 READ ONLY"
+    },
+    "apollo": "existing complete workspace reused",
+    "public": "Montr\u00e9al permits + SEAO + OQLF CC BY 4.0",
+    "competitors": "10 discovered / 7 readable primary pages"
+  },
+  "focused_tests": 43,
+  "subtests": 41,
+  "failures": 0,
+  "protected_baseline": {
+    "records": 123,
+    "unchanged": true,
+    "source": "phase28-29-before.json"
+  },
+  "effects": {
+    "crm_research_promotions": 0,
+    "cold_sends": 0,
+    "apollo_changes": 0,
+    "financial_writes": 0,
+    "advertising_mutations": 0,
+    "conversion_uploads": 0
+  },
+  "deferred": [
+    "Semrush/Ahrefs/Clay no callable tools",
+    "REQ commercial bulk use excluded by licence",
+    "Laval building-permit feed unproven; road obstruction is not a building signal",
+    "GA4 event/consent instrumentation remains partial"
+  ],
+  "next": "PHASE 29"
+}

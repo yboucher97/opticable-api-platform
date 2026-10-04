@@ -1,0 +1,13 @@
+# Content decisions and feedback
+
+AUTHORITATIVE CURRENT. The acquisition owner view exposes a capped prioritized queue and five next actions. One brief per existing page or distinct service/language avoids duplicate plans from query variants. Current queue:30 briefs (21 existing improvements/nine new-page candidates). A candidate is not approved publication or proof of search demand.
+
+Each brief carries title/topic, language, service, ICP/target geography hypothesis, query/theme/intent, source query-page metrics, why/why now, score components/gaps, existing or proposed URL, type, primary site-assessment/Estimate CTA, supporting existing links, potential Ads/outbound use and owner-expertise requirement. Missing economics are null; no real outcome is invented. Service, use-case, technical guide, comparison/FAQ and project proof are available owner content patterns, not an article farm.
+
+People-first content requires actual installation expertise, equipment decisions, owner-confirmed facts, real permitted photos/diagrams and customer questions. Do not invent certifications, client results, prices, project stories or customer permission. Existing page improvements normally outrank duplicate pages. No pages, metadata, GBP/social posts or videos were published during this mission.
+
+Five top ideas each prepare six unsent assets: SEO page/case study → GBP project proof → LinkedIn technical/partner value → Facebook/Instagram installation context → short demonstration video → reusable sales proof. Apollo may later use a reviewed resource under its existing controller; no outreach/template/sequence change is implied. GBP/social recommendations serve trust and proof, not follower-count optimization. Local service/case-study value must be unique before geographic expansion.
+
+Tracking contract: publication → indexing → impressions/clicks/ranking → landing sessions → CTA → Lead → qualified Lead → Deal → Estimate → won → Invoice → paid revenue. Joins require exact content/landing receipt and native CRM/Finance lineage. TEST is excluded; absent observations remain null/unknown. Original acquisition, invoiced value, payment and recurring value remain distinct. Existing Phase25 conversion policy stays READY BUT OFF; this engine never manufactures/uploads a conversion.
+
+Market evidence governs priority with zero outcomes. Verified Opticable cohorts can progressively strengthen future priority under [market policy](OPTIBRAIN_MARKET_OPPORTUNITY_CONTRACT.md). Engineering keeps this a rebuildable recommendation projection; CRM/Books remain the business/financial truth. Owner approves any future content or Ads publication separately.
