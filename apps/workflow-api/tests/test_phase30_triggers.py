@@ -38,6 +38,13 @@ def decision(row, apollo=None, crm=None, **kw):
 
 
 class TriggerPolicyTests(unittest.TestCase):
+    def test_native_procurement_identity_without_matchable_collision_stays_review(self):
+        r,a,c=fixture();r.pop('domain');r.update(source_provider='seao',trigger_type='PUBLIC TENDER',status='OPEN',closing_date=(NOW+timedelta(days=2)).isoformat(),raw={'buyer':{'id':'buyer'}})
+        r['company_identity']={'confidence':'EXACT','native_buyer_id':'buyer','source_url':r['source_url']}
+        d=decision(r,a,c)
+        self.assertEqual(d['company_resolution_status'],'EXACT');self.assertEqual(d['collision']['classification'],'UNKNOWN')
+        self.assertEqual(d['priority_class'],'REVIEW');self.assertFalse(d['sales_review_eligible'])
+
     def test_exact_warehouse_with_native_crm_identity_is_owner_review(self):
         r,a,c = fixture();c['Accounts']=[{'id':'a','Website':'company.test'}]
         r['company_identity']['crm_account_id']='a'
