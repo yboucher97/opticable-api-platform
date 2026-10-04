@@ -28,7 +28,7 @@ Every capability has an explicit definition of complete. Working code, provider 
 | Google Search Console | GREEN | Observed impressions are not total regional search volume; two indexed samples do not prove all135 pages indexed. | P3 / KEEP |
 | GA4 authentication/configuration/read | GREEN | Authentication/read success is separate from current collection. | P3 / KEEP |
 | GA4 production page-view collection | GREEN | Canonical530093120 page-view reception independently proven for main and AI. Historical gap is not backfilled. Standard report propagation/future freshness remain separate. | P2 / KEEP + MONITOR |
-| Website conversion telemetry/privacy | YELLOW | Consent defaults, safe parameter/URL allowlisting and one GA4 destination now pass browser/network tests. Successful AI event is acknowledgement-bound; native iframe success and provider reception of full event set remain unproven. | P1 / FORMS SETUP; THEN NATURAL EVENT PROOF |
+| Website conversion telemetry/privacy | YELLOW | Consent defaults, safe parameter/URL allowlisting and one GA4 destination now pass browser/network tests. Successful AI event is acknowledgement-bound; native iframe success and provider reception of full event set remain unproven. | P2 / NATURAL EVENT PROOF; FORMS SETUP RESOLVED |
 | Google Ads read/account state | GREEN | Recent activity is empty. Auction/competitive coverage is limited; readable account does not mean an active campaign runs. | P3 / KEEP |
 | Keyword market volume/CPC/competition | YELLOW — PROVIDER LIMITATION | Working cached Windsor Québec FR/EN economics supports shadow research. Native Google remains403 Explorer-restricted; Windsor Trial continuity unknown. Missing values remain unknown. | P1 / BASIC CLOUD ACCESS FOR PERMANENT SOURCE |
 | Google business-outcome conversions | GREEN — WAITING FOR NATURAL EVENT | Three configured destinations; uploads OFF. Fresh restore explicitly resets upload authority. No synthetic/genuine upload performed. | P2 / KEEP; NATURAL EVENT + SEPARATE AUTHORIZATION |
@@ -40,7 +40,7 @@ Every capability has an explicit definition of complete. Working code, provider 
 | Ahrefs specialist integration | GREEN — INTENTIONALLY OPTIONAL | No current detailed report proof; no upgrade purchased. Core acquisition does not require this provider. | P3 / KEEP |
 | Windsor marketing gateway | GREEN | Two Keyword Planner gateway reads proven; direct scheduled OptiBrain credential not established. Trial coverage supports current bounded research; no purchase. | P2 / PERMANENT GOOGLE FALLBACK |
 | Acquisition Intelligence store/model | GREEN | Some supported entity types lack provider data. Schema capability is not population coverage; no warehouse or ninth database was created. | P3 / KEEP |
-| SEO/site inventory intelligence | YELLOW | Sample-sensitive position support, numeric sample/window display and geography filtering are fixed. Mobile/performance and market economics remain unmeasured. | P2 / KEEP; LATER MEASURE COVERAGE |
+| SEO/site inventory intelligence | YELLOW | Sample-sensitive position support, numeric sample/window display and geography filtering are fixed. Mobile/performance and broader competitive/keyword coverage remain incomplete; bounded Québec economics are now available. | P2 / KEEP; LATER MEASURE COVERAGE |
 | Content intelligence and repurposing | GREEN | All30 briefs (21 existing/9 new) and5 reuse plans are retained with evidence confidence. Owner expertise and publication approval remain required; no proven ROI claimed. | P2 / KEEP + DOCUMENT |
 | Competitor discovery and gaps | YELLOW | Ranking/share/backlink/authority/paid gap coverage is largely unmeasured; one justified supporting source may help later. | P2 / KEEP + DOCUMENT |
 | Permit/project intelligence | YELLOW | Two permits re-read; public schema has no actor fields. Both remain RESEARCH NEEDED and cannot become target-company sales recommendations. | P2 / RESEARCH ACTORS ONLY WHEN EVIDENCE EXISTS |
@@ -470,7 +470,7 @@ Implementation: Implemented and usable for the intended bounded scope. Data: See
 
 Implementation: YELLOW for this intended scope. Current proof and remaining limits are explicit; synthetic tests do not establish native Forms parity.
 
-**Gap/limit:** Sample-sensitive position support, numeric sample/window display and geography filtering are fixed. Mobile/performance and market economics remain unmeasured.
+**Gap/limit:** Sample-sensitive position support, numeric sample/window display and geography filtering are fixed. Mobile/performance and broader competitive/keyword coverage remain incomplete; bounded Québec economics are now available.
 
 ## Content intelligence and repurposing
 
