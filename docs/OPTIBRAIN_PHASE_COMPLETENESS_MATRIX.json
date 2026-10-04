@@ -618,7 +618,7 @@
     "production_executable_changed": false
   },
   "current_provider_access_diagnosis": {
-    "zoho_forms": "O UNKNOWN: supported administration endpoint/scope not established; prior path404, read grant present, CRM/Mail200; M CRM-only connector",
+    "zoho_forms": "G PROVIDER-SIDE API LIMITATION: public Forms administration API not exposed, clarified by owner/provider guidance after initial O UNKNOWN; shared read grant retained, CRM/Mail200; one-time UI setup/parity proof outstanding; M CRM-only connector",
     "gtm": "J role/admin restriction: accounts.list200 with zero accounts; existing scopes present; optional ownership recovery",
     "reauthorization_justified": false,
     "new_oauth_clients_created": 0,

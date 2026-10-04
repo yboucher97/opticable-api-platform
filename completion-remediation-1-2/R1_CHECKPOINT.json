@@ -22,7 +22,7 @@
     "fr_delivery": "PROVEN reused Phase16 native notification",
     "en_delivery": "UNPROVEN; OWNER ACTION",
     "attribution_parity": "FR/EN prefill, parser, immutable ledger and CRM planning fixtures PASS; native persisted context NOT PROVEN",
-    "external_blocker": "Existing US OAuth grant includes ZohoForms.forms.READ; CRM/Mail HTTP200, prior Forms admin path HTTP404 HTML with both auth schemes. Supported admin endpoint/write scope unknown (O); CRM-only MCP lacks Forms service (M). Owner-saved UI setup timed out without confirmed changes; no new UI write pending diagnosis.",
+    "external_blocker": "Public Forms administration API not exposed (G), established by owner guidance plus Zoho-authored service definition after O UNKNOWN diagnostic. Existing Forms read scope present, CRM/Mail200; no extra scope, client or license needed. One-time UI field/alias/notification setup requires verified saved state and native TEST_ONLY parity proof.",
     "real_english_automation": "EXCLUDED unchanged"
   },
   "focused": {
@@ -41,7 +41,7 @@
     "customer_sends": 0
   },
   "remaining_required_work": [
-    "Provider-supported Forms admin path or explicit UI-only confirmation",
+    "Verified one-time Forms field/alias/notification setup under existing owner session",
     "Native TEST_ONLY FR/EN persisted attribution/delivery proof",
     "Final recovery and operational report"
   ],
