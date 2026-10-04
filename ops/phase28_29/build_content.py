@@ -13,7 +13,11 @@ def main():
     from workflow.automation.acquisition_ingest import ingest
     from workflow.automation.seo_intelligence import enrich
     inputs=json.loads((ROOT/'inputs.json').read_text());inputs['website']=json.loads((EVIDENCE/'website-raw.json').read_text());inputs['market_research']=json.loads((ROOT/'phase29-market-research.json').read_text())
-    (ROOT/'inputs.json').write_text(json.dumps(inputs,ensure_ascii=False));(ROOT/'inputs.json').chmod(0o600)
+    payload=json.dumps({k:v for k,v in inputs.items() if k not in {'apollo','crm'}},ensure_ascii=False,separators=(',',':'))
+    if len(payload.encode())>16777216:raise ValueError('Bounded research assembly exceeds 16 MiB')
+    (ROOT/'inputs.json').write_text(payload);(ROOT/'inputs.json').chmod(0o600)
+    inputs['apollo']=json.loads(Path('/var/lib/optibrain/sales-intelligence/apollo.json').read_text())
+    crm=json.loads(Path('/var/lib/optibrain/sales-intelligence/crm.json').read_text());inputs['crm']=crm['crm'];inputs['crm_at']=crm['at']
     now=datetime.now(timezone.utc);store=AcquisitionStore(ROOT/'lab.sqlite');view=enrich(store,inputs,ingest(store,inputs,now=now),now=now)
     store.prune(now);view.update(store.summary(now));(ROOT/'phase29-lab.json').write_text(json.dumps(view,ensure_ascii=False))
     queue=EVIDENCE/'content-queue.json';queue.write_text(json.dumps(view['content_queue'],indent=2,ensure_ascii=False));queue.chmod(0o600)
