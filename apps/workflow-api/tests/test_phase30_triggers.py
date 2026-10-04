@@ -254,6 +254,8 @@ class PublicSourceTests(unittest.TestCase):
         raw=b'<script>wrong date</script><h1>TricorBraun Opens New Quebec Distribution Warehouse</h1><p>August 10, 2026 new warehouse facility in Laval, Quebec</p>'
         r=expansion(raw,now=NOW);self.assertEqual(r['geography_class'],'LAVAL')
         self.assertEqual(r['publish_date'],'2026-08-10T12:00:00-04:00')
+        from workflow.automation.trigger_intelligence import service_fit
+        fit=service_fit(r);self.assertEqual(fit['basis'],'PROJECT-TYPE INFERENCE');self.assertFalse(fit['scope_confirmed'])
         with self.assertRaises(ValueError):expansion(b'<script>August 10, 2026</script>',now=NOW)
 
     def test_dry_run_and_kill_switch_cannot_call_providers_or_write(self):
