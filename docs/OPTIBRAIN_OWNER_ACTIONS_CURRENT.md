@@ -6,7 +6,7 @@ Only unresolved or conditional upcoming actions are included. Cloud API enables,
 
 **Why:** English central delivery is unproven; both languages need full hidden-field/notification acquisition proof.
 
-**System:** Zoho Forms → RequestaQuote (English) / Formulairedemandedesoumission (French) → Settings → Email Notifications → admin notification: approved recipient soumissions@opticable.ca. Keep native CRM integration writer OFF and customer auto-replies OFF. Add one optional hidden Multi Line field “OptiBrain Acquisition Context”, prefill alias `ob_attribution`, on both forms. Include its value in the admin notification. The prepared URL prefill and strict parser already carry UTMs, click IDs, First/Last, origin and language. [Exact action sheet](r1-owner-actions.md) includes secure sign-in; the account is not yet signed in.
+**System:** Zoho Forms → RequestaQuote (English) / Formulairedemandedesoumission (French) → Settings → Email Notifications → admin notification: approved recipient soumissions@opticable.ca. Keep native CRM integration writer OFF and customer auto-replies OFF. Add one optional hidden Multi Line field “OptiBrain Acquisition Context”, prefill alias `ob_attribution`, on both forms. Include its value in the admin notification. The prepared URL prefill and strict parser already carry UTMs, click IDs, First/Last, origin and language. [Exact action sheet](r1-owner-actions.md) includes API-access diagnosis. The owner saved a Zoho profile, but the setup task timed out; no acquisition field or settings change was confirmed. A supported admin endpoint/scope must be established before another UI write attempt.
 
 **Blocking:** English family cannot graduate until proven; affects Phase32/33.
 
@@ -14,7 +14,7 @@ Only unresolved or conditional upcoming actions are included. Cloud API enables,
 
 **Expected result:** Correct authenticated admin notification reaches central intake and preserves approved acquisition fields.
 
-**Verification:** Later use the established TEST_ONLY route/controlled subject and reconcile Mail receipt→intake→CRM fields. Native controlled TEST_ONLY verification is still pending this external setup. English remains excluded from real automation.
+**Verification:** First obtain the supported provider administration endpoint/specification or explicit UI-only confirmation; do not reauthorize a guessed scope. Then use the established TEST_ONLY route/controlled subject and reconcile Mail receipt→intake→CRM fields. Native controlled TEST_ONLY verification is still pending this external setup. English remains excluded from real automation.
 
 ## OA3: Confirm vendor-supported AI hosting/legal claims before wider publication.
 

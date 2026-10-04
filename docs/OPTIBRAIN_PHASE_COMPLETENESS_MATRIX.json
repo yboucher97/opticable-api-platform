@@ -120,7 +120,7 @@
       "recovery_generation": "20261002T224822Z",
       "evidence": "/var/lib/optibrain/phase16-17/final-report.json",
       "current_implementation_state": "Zoho CRM business architecture: Implemented and usable for the intended bounded scope. WorkDrive: Implemented and usable for the intended bounded scope. Installation/completion/support operations: Implemented and usable for the intended bounded scope.",
-      "data_coverage_state": "Current native reads and prior live TEST conversion/relationship/replay proofs support the canonical flow. Supported GET with application/vnd.api+json returns200; native folder creation/reuse proofs are retained. Phase19 native TEST scenariosA–D and replay evidence remain valid; all current13 Installations and3 Cases are TEST.",
+      "data_coverage_state": "Current native reads and prior live TEST conversion/relationship/replay proofs support the canonical flow. Supported GET with application/vnd.api+json returns200; native folder creation/reuse proofs are retained. Phase19 native TEST scenariosA\u2013D and replay evidence remain valid; all current13 Installations and3 Cases are TEST.",
       "live_provider_proof": "Independent provider evidence is described above; synthetic/mock tests alone are not live proof.",
       "natural_event_proof": "Not required for the original bounded gate",
       "historical_coverage": "Protected baseline unchanged; original historical proof retained",
@@ -161,7 +161,7 @@
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
       "owner_actions": "Current deduplicated owner list applies; natural events must not be manufactured.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
-      "classification": "GREEN — WAITING FOR NATURAL EVENT",
+      "classification": "GREEN \u2014 WAITING FOR NATURAL EVENT",
       "remediation_priority": "P2",
       "recommended_action": "KEEP + DOCUMENT",
       "capability_references": [
@@ -191,7 +191,7 @@
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
       "owner_actions": "Current deduplicated owner list applies; natural events must not be manufactured.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
-      "classification": "GREEN — WAITING FOR NATURAL EVENT",
+      "classification": "GREEN \u2014 WAITING FOR NATURAL EVENT",
       "remediation_priority": "P2",
       "recommended_action": "KEEP + DOCUMENT",
       "capability_references": [
@@ -213,7 +213,7 @@
       "recovery_generation": "20261003T024735Z",
       "evidence": "/var/lib/optibrain/phase18-19/phase18-19-final-report.json",
       "current_implementation_state": "Installation/completion/support operations: Implemented and usable for the intended bounded scope. Forward Finance/Deal/Site/Service lineage: Implemented and usable for the intended bounded scope.",
-      "data_coverage_state": "Phase19 native TEST scenariosA–D and replay evidence remain valid; all current13 Installations and3 Cases are TEST. Native lookup/schema and one historical Estimate/Deal relation are proven; forward derivation/replay fixtures pass.",
+      "data_coverage_state": "Phase19 native TEST scenariosA\u2013D and replay evidence remain valid; all current13 Installations and3 Cases are TEST. Native lookup/schema and one historical Estimate/Deal relation are proven; forward derivation/replay fixtures pass.",
       "live_provider_proof": "Independent provider evidence is described above; synthetic/mock tests alone are not live proof.",
       "natural_event_proof": "First eligible genuine effect remains pending",
       "historical_coverage": "Protected baseline unchanged; original historical proof retained",
@@ -222,7 +222,7 @@
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
       "owner_actions": "Current deduplicated owner list applies; natural events must not be manufactured.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
-      "classification": "GREEN — WAITING FOR NATURAL EVENT",
+      "classification": "GREEN \u2014 WAITING FOR NATURAL EVENT",
       "remediation_priority": "P2",
       "recommended_action": "KEEP + DOCUMENT",
       "capability_references": [
@@ -253,7 +253,7 @@
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
       "owner_actions": "Current deduplicated owner list applies; natural events must not be manufactured.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
-      "classification": "YELLOW — HISTORICAL PARTIAL",
+      "classification": "YELLOW \u2014 HISTORICAL PARTIAL",
       "remediation_priority": "P2",
       "recommended_action": "KEEP + DOCUMENT",
       "capability_references": [
@@ -296,10 +296,10 @@
         "mission": "completion-remediation-1-2",
         "api_target": "1.20.0",
         "ga4_collection": "GREEN",
-        "forms_parity": "YELLOW — OWNER ACTION",
+        "forms_parity": "YELLOW \u2014 OWNER ACTION",
         "evidence_confidence": "GREEN",
         "trigger_target_gate": "GREEN; unresolved actors held",
-        "phase30": "READY — SHADOW RESEARCH ONLY",
+        "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
         "release_receipt": "/var/lib/optibrain/releases/current.json"
       }
     },
@@ -338,10 +338,10 @@
         "mission": "completion-remediation-1-2",
         "api_target": "1.20.0",
         "ga4_collection": "GREEN",
-        "forms_parity": "YELLOW — OWNER ACTION",
+        "forms_parity": "YELLOW \u2014 OWNER ACTION",
         "evidence_confidence": "GREEN",
         "trigger_target_gate": "GREEN; unresolved actors held",
-        "phase30": "READY — SHADOW RESEARCH ONLY",
+        "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
         "release_receipt": "/var/lib/optibrain/releases/current.json"
       }
     },
@@ -399,7 +399,7 @@
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
       "owner_actions": "Current deduplicated owner list applies; natural events must not be manufactured.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
-      "classification": "YELLOW — HISTORICAL PARTIAL",
+      "classification": "YELLOW \u2014 HISTORICAL PARTIAL",
       "remediation_priority": "P2",
       "recommended_action": "KEEP + DOCUMENT",
       "capability_references": [
@@ -443,10 +443,10 @@
         "mission": "completion-remediation-1-2",
         "api_target": "1.20.0",
         "ga4_collection": "GREEN",
-        "forms_parity": "YELLOW — OWNER ACTION",
+        "forms_parity": "YELLOW \u2014 OWNER ACTION",
         "evidence_confidence": "GREEN",
         "trigger_target_gate": "GREEN; unresolved actors held",
-        "phase30": "READY — SHADOW RESEARCH ONLY",
+        "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
         "release_receipt": "/var/lib/optibrain/releases/current.json"
       }
     },
@@ -464,7 +464,7 @@
       "recovery_generation": "20261003T214528Z",
       "evidence": "/var/lib/optibrain/phase26-27/final-report.json",
       "current_implementation_state": "Apollo direct research/production state: Implemented and usable for the intended bounded scope. Claude/Apollo coexistence: Implemented and usable for the intended bounded scope. Permit/project intelligence: Usable bounded implementation; stated gap remains. Clay supplemental enrichment integration: Implemented and usable for the intended bounded scope.",
-      "data_coverage_state": "Four sequence and mailbox/schedule reads succeed;13 template objects and steps/caps/schedules are unchanged by immutable ID. Current Apollo production configuration is unchanged; no enrollment/sending/migration occurs; ownership/collision fixtures pass. Latest100 Montréal evidence records provide two commercial/industrial signals; identity/replay/collision fixtures pass. Installed plugin discovery finds no callable tool/direct access in this environment; no credit consumption.",
+      "data_coverage_state": "Four sequence and mailbox/schedule reads succeed;13 template objects and steps/caps/schedules are unchanged by immutable ID. Current Apollo production configuration is unchanged; no enrollment/sending/migration occurs; ownership/collision fixtures pass. Latest100 Montr\u00e9al evidence records provide two commercial/industrial signals; identity/replay/collision fixtures pass. Installed plugin discovery finds no callable tool/direct access in this environment; no credit consumption.",
       "live_provider_proof": "Independent provider evidence is described above; synthetic/mock tests alone are not live proof.",
       "natural_event_proof": "Not required for the original bounded gate",
       "historical_coverage": "Partial Finance/acquisition history remains unmodified and unguessed",
@@ -549,10 +549,10 @@
         "mission": "completion-remediation-1-2",
         "api_target": "1.20.0",
         "ga4_collection": "GREEN",
-        "forms_parity": "YELLOW — OWNER ACTION",
+        "forms_parity": "YELLOW \u2014 OWNER ACTION",
         "evidence_confidence": "GREEN",
         "trigger_target_gate": "GREEN; unresolved actors held",
-        "phase30": "READY — SHADOW RESEARCH ONLY",
+        "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
         "release_receipt": "/var/lib/optibrain/releases/current.json"
       }
     },
@@ -570,7 +570,7 @@
       "recovery_generation": "20261004T003403Z",
       "evidence": "/var/lib/optibrain/phase28-29/final-report.json",
       "current_implementation_state": "SEO/site inventory intelligence: Usable bounded implementation; stated gap remains. Content intelligence and repurposing: Usable bounded implementation; stated gap remains. Competitor discovery and gaps: Usable bounded implementation; stated gap remains.",
-      "data_coverage_state": "135 crawlable candidates and two indexed proofs; bounded metadata/canonical/hreflang/sitemap audit finds no structural issues. 21 existing improvements,9 new candidates,5 plans×6 assets; dedupe/publication guards pass. Ten discoveries and seven readable primary pages demonstrate service overlap.",
+      "data_coverage_state": "135 crawlable candidates and two indexed proofs; bounded metadata/canonical/hreflang/sitemap audit finds no structural issues. 21 existing improvements,9 new candidates,5 plans\u00d76 assets; dedupe/publication guards pass. Ten discoveries and seven readable primary pages demonstrate service overlap.",
       "live_provider_proof": "Independent provider evidence is described above; synthetic/mock tests alone are not live proof.",
       "natural_event_proof": "First eligible genuine effect remains pending",
       "historical_coverage": "Partial Finance/acquisition history remains unmodified and unguessed",
@@ -591,10 +591,10 @@
         "mission": "completion-remediation-1-2",
         "api_target": "1.20.0",
         "ga4_collection": "GREEN",
-        "forms_parity": "YELLOW — OWNER ACTION",
+        "forms_parity": "YELLOW \u2014 OWNER ACTION",
         "evidence_confidence": "GREEN",
         "trigger_target_gate": "GREEN; unresolved actors held",
-        "phase30": "READY — SHADOW RESEARCH ONLY",
+        "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
         "release_receipt": "/var/lib/optibrain/releases/current.json"
       }
     }
@@ -603,10 +603,10 @@
     "mission": "completion-remediation-1-2",
     "api_target": "1.20.0",
     "ga4_collection": "GREEN",
-    "forms_parity": "YELLOW — OWNER ACTION",
+    "forms_parity": "YELLOW \u2014 OWNER ACTION",
     "evidence_confidence": "GREEN",
     "trigger_target_gate": "GREEN; unresolved actors held",
-    "phase30": "READY — SHADOW RESEARCH ONLY",
+    "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
     "release_receipt": "/var/lib/optibrain/releases/current.json"
   },
   "audit_baseline_release": {
@@ -616,5 +616,12 @@
     "api": "1.19.0",
     "receipt": "/var/lib/optibrain/releases/current.json",
     "production_executable_changed": false
+  },
+  "current_provider_access_diagnosis": {
+    "zoho_forms": "O UNKNOWN: supported administration endpoint/scope not established; prior path404, read grant present, CRM/Mail200; M CRM-only connector",
+    "gtm": "J role/admin restriction: accounts.list200 with zero accounts; existing scopes present; optional ownership recovery",
+    "reauthorization_justified": false,
+    "new_oauth_clients_created": 0,
+    "recurring_browser_dependency": false
   }
 }
