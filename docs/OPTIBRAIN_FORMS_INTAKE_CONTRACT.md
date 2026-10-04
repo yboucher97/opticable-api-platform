@@ -1,0 +1,9 @@
+# Main-site Forms intake
+
+French Formulairedemandedesoumission and English RequestaQuote use authenticated Zoho notification → central immutable receipt → guarded lifecycle planning. Native Forms→CRM writer and respondent auto-replies stay OFF. English real customer automation remains excluded; field setup alone cannot graduate it.
+
+One optional hidden Multi Line field, exact label OptiBrain Acquisition Context, prefill alias ob_attribution, is the minimum provider linkage. It carries schema1, exact fr/en language and existing consented attribution; no customer identity/message is added. Include it in notifications to soumissions@opticable.ca. Do not create one field per UTM. Main URL prefill, immutable ingestion and existing CRM mapping are tested for both languages. Native field persistence and EN notification delivery remain unproven until the signed-in provider setup and bounded controlled replay are reconciled. [Exact owner/provider steps](r1-owner-actions.md).
+
+Existing DKIM/DMARC, native sender/recipient/Message-ID, receive-time validation and idempotent event identity remain mandatory. Unknown fields, duplicate conflicting contexts, >12000 characters, value >2000, wrong language or future touch time fail closed. Acquisition context is client acquisition evidence, not financial/customer mutation authority or proof of advertising consent. First fields are immutable when already present. Supplied click IDs are retained; absent IDs remain absent. msclkid persists in the receipt without adding a CRM field.
+
+FR existing native delivery proof is reused. Test fixtures prove FR/EN full context → receipt → plan, not production customer mutation. Form submission success events must be acknowledged; parent iframe click/resize is insufficient. Google automatic form interactions are disabled to avoid false lead-success counting. Legacy workflow smoke now intercepts central intake, with no canonical sales pollution.

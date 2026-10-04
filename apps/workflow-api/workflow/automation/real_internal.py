@@ -756,7 +756,7 @@ def form_receipts(engine):
         f=receipt['fields'];at=receipt['occurred_at']
         payload={'name':f['name'],'email':receipt['submitted_email'],'phone':f['phone'],'company':f['company'],
             'service':f.get('service',''),'message':f.get('notes',''),'consent':True,
-            'attribution':{prefix+k:v for prefix in ('first_','last_') for k,v in {'source':'zoho_form','site':'https://opticable.ca','touch_time':at}.items()}}
+            'attribution':receipt.get('attribution') or {prefix+k:v for prefix in ('first_','last_') for k,v in {'source':'zoho_form','site':'https://opticable.ca','touch_time':at}.items()}}
         rows.append({'schema':1,'source':'zoho_form_fr','origin':'https://opticable.ca','inquiry_id':receipt['event_id'],
             'submitted_email':receipt['submitted_email'],'occurred_at':at,'request':payload,'payload_hash':digest(payload),
             'request_hash':receipt['raw_hash'],'origin_site':'https://opticable.ca','origin_path':'/fr/contact/','provider_mail':facts})

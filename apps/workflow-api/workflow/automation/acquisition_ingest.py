@@ -3,11 +3,37 @@ from datetime import datetime, timezone
 import re
 from .acquisition_store import digest, normalized
 from .acquisition_intelligence import service_for, language_for, intent_for, SERVICES, opportunities
-from .sales_intelligence import domain, live, contact_state, stamp
+from .sales_intelligence import domain, live, contact_state, stamp,collision
+from .trigger_evidence import latest_releases,assess_trigger
+from .evidence_quality import geography_evidence,search_evidence,numeric
 
 
 def gsc_rows(read):
-    return [{'query':r['keys'][0],'page':r['keys'][1],**{k:r.get(k) for k in ('clicks','impressions','ctr','position')}} for r in read.get('data',{}).get('rows',[]) if len(r.get('keys',[]))==2]
+    groups={}
+    for r in read.get('data',{}).get('rows',[]):
+        keys=r.get('keys',[])
+        if len(keys) not in (2,3):continue
+        groups.setdefault(tuple(keys[:2]),[]).append(r)
+    result=[]
+    for (query,page),rows in groups.items():
+        all_rows=rows
+        # Mixed-country visibility must not carry foreign counts into a local
+        # recommendation. Raw global metrics and each country stay inspectable.
+        canadian=[r for r in rows if len(r['keys'])==3 and r['keys'][2].casefold() in {'can','ca','canada'}]
+        if canadian:rows=canadian
+        impressions=[numeric(r.get('impressions')) for r in rows];clicks=[numeric(r.get('clicks')) for r in rows]
+        n=sum(impressions) if all(v is not None for v in impressions) else None
+        c=sum(clicks) if all(v is not None for v in clicks) else None
+        positions=[(numeric(r.get('position')),numeric(r.get('impressions'))) for r in rows]
+        position=sum(p*w for p,w in positions)/n if n and all(p is not None and w is not None for p,w in positions) else None
+        result.append({'query':query,'page':page,'impressions':n,'clicks':c,'ctr':c/n if n and c is not None else None,'position':position,
+            'country':'CAN' if canadian else None,
+            'source_countries':sorted({r['keys'][2] for r in rows if len(r['keys'])==3}),
+            'metric_scope':'Canada query-page visibility' if canadian else 'Provider query-page scope; geography may be unknown',
+            'all_country_metrics':{'impressions':sum(numeric(r.get('impressions')) for r in all_rows) if all(numeric(r.get('impressions')) is not None for r in all_rows) else None,'scope':'Raw returned country population'},
+            'country_breakdown':[{'country':r['keys'][2],**{k:r.get(k) for k in ('impressions','clicks','position')}} for r in all_rows if len(r['keys'])==3],
+            'date_from':read.get('date_from'),'date_to':read.get('date_to'),'observed_at':read.get('observed_at')})
+    return result
 
 
 def ingest(store,inputs,*,now):
@@ -63,10 +89,13 @@ def ingest(store,inputs,*,now):
     store.source('crm','WORKING',now,observed_at=inputs.get('crm_at'),reason='Existing exact CRM identity cache reused; protected records READ ONLY, no raw research promotion.',cache_hit=True)
     google=inputs.get('google',{}).get('reads',{});gsc=google.get('gsc_queries',{})
     queries=gsc_rows(gsc) if gsc.get('state')=='WORKING' else inputs.get('gsc',[])
+    queries=[{**r,'date_from':r.get('date_from') or inputs.get('date_from'),'date_to':r.get('date_to') or inputs.get('date_to'),
+              'observed_at':r.get('observed_at') or gsc.get('observed_at') or inputs.get('broker_at')} for r in queries]
     url='https://search.google.com/search-console?resource_id=sc-domain%3Aopticable.ca';sid=snapshot('search_console',url,queries)
     for r in queries:
         row={**r,'language':language_for(r['query']),'geography':'UNKNOWN','service':service_for(r['query']),'intent':intent_for(r['query']),
-             'market_volume':None,'metric_scope':'Opticable query-page visibility; not total search demand'}
+             'market_volume':None,'metric_scope':r.get('metric_scope','Opticable query-page visibility; not total search demand')}
+        row.update(geography_evidence=geography_evidence(r),search_sample=search_evidence(r))
         observed=gsc.get('observed_at') or inputs.get('google',{}).get('at') if gsc.get('state')=='WORKING' else inputs.get('broker_at')
         put('KEYWORD',row,'search_console',digest([r['query'],r['page']]),url,sid,raw=r,at=observed)
         put('SOURCE_PERFORMANCE',row,'search_console',digest([r['query'],r['page'],inputs.get('date_from'),inputs.get('date_to')]),url,sid,raw=r,at=observed)
@@ -74,7 +103,7 @@ def ingest(store,inputs,*,now):
     current_gsc=gsc.get('state')=='WORKING' and attempts.get('gsc_queries',{}).get('state','WORKING')=='WORKING' and not attempts.get('collection')
     store.source('search_console','WORKING' if current_gsc else 'PARTIAL',now,observed_at=(gsc.get('observed_at') or inputs.get('google',{}).get('at')) if gsc.get('state')=='WORKING' else inputs.get('broker_at'),
                  reason='Native bounded query/page and historical reports.' if gsc.get('state')=='WORKING' else 'Windsor first-party performance fallback; native read blocked.',requests=6 if gsc.get('state')=='WORKING' else 0,query='query/page, daily, country, device')
-    for name in ('ads_campaigns','ads_keywords','ads_search_terms','ga4_main','ga4_other','gsc_daily','gsc_countries','gsc_devices','gsc_sitemaps'):
+    for name in ('ads_campaigns','ads_keywords','ads_search_terms','ga4_main','ga4_other','ga4_collection','gsc_daily','gsc_countries','gsc_devices','gsc_sitemaps'):
         read=google.get(name,{})
         if read.get('state')!='WORKING':continue
         source='google_ads' if name.startswith('ads_') else 'ga4' if name.startswith('ga4') else 'search_console'
@@ -97,9 +126,10 @@ def ingest(store,inputs,*,now):
     ads=google.get('ads_customer',{})
     store.source('google_ads','PARTIAL' if attempts.get('ads_customer',{}).get('state','WORKING')!='WORKING' or attempts.get('collection') else ads.get('state','UNKNOWN'),now,observed_at=ads.get('observed_at') or inputs.get('google',{}).get('at'),
         reason='Native account, campaigns, keywords and search-term reads; CAD / Toronto. Historical removed campaigns remain unchanged; missing CPC is unknown.',requests=5)
-    ga=[google.get(k,{}) for k in ('ga4_main','ga4_other')]
-    store.source('ga4','PARTIAL',now,
-        observed_at=ga[0].get('observed_at') or inputs.get('google',{}).get('at'),reason='Native reporting API works; inspected reports have no rows. Event/consent instrumentation remains partial; missing events are not inferred.',requests=2)
+    from .measurement_health import collection_health
+    ga_health=collection_health(google.get('ga4_collection',{}),now=now,attempt=attempts.get('ga4_collection') or attempts.get('collection'))
+    store.source('ga4','WORKING' if ga_health['auth_status']=='GREEN' and ga_health['collection_status']=='FRESH' else 'PARTIAL',now,
+        observed_at=google.get('ga4_collection',{}).get('observed_at'),reason=ga_health['coverage_notes'],requests=3)
     gbp=inputs.get('gbp',[]);url='https://business.google.com/';sid=snapshot('gbp',url,gbp)
     put('SOURCE_PERFORMANCE',{'report':'GBP visibility','rows':gbp,'metric_scope':'Provider daily report; missing reviews are not zero reviews'},'gbp','7349986536842101698',url,sid)
     store.source('gbp','PARTIAL' if gbp else 'UNKNOWN',now,observed_at=inputs.get('gbp_at') or inputs.get('broker_at'),reason='Windsor native GBP daily visibility read; reviews/posts/call attribution partial.',requests=1)
@@ -122,15 +152,17 @@ def ingest(store,inputs,*,now):
         put('LOCATION',row,'oqlf',str(r['MATRICULE'])+':address',url,sid,raw=r,at=inputs.get('public_business_at'))
     store.source('registry','PARTIAL',now,observed_at=inputs.get('public_business_at'),reason='OQLF CC BY 4.0 bounded business/NEQ sample works. REQ bulk CC BY-NC-SA is excluded from commercial acquisition.',requests=1)
     raw_permits={str(r.get('id_permis')):r for r in inputs.get('raw_permits',[])}
-    raw_tenders={r.get('ocid'):r for r in inputs.get('seao_raw',[])}
+    raw_tenders=latest_releases(inputs.get('seao_raw',[]))
     permit_snapshot=snapshot('montreal_permit_native','https://donnees.montreal.ca/dataset/permis-construction',inputs.get('raw_permits',[]))
     for r in inputs.get('signals',[]):
-        ends=stamp(r.get('deadline'))
-        if ends and ends<=now:continue
+        r=assess_trigger(r,now=now)
+        checked=collision(r,apollo,crm,now=now)
         row={'id':r['key'],'source':r['source'],'title':r['trigger'],'why':r['why_now'],'source_url':r['source_url'],
              'record_id':r['record_id'],'effective_date':r.get('trigger_at'),'deadline':r.get('deadline'),
              'site':r.get('site'),'company':r.get('company'),'service_fit':[r.get('fit','')],'geography':r.get('geography','Montréal' if r['source']=='montreal_permit' else 'UNKNOWN'),
-             'contact_allowed':False,'identity_unresolved':True,'outreach_owner':'OPTIBRAIN_RESEARCH_ONLY'}
+             **{k:r.get(k) for k in ('native_version','source_version','source_version_date','version_proof','retrieved_at','last_checked','source_published_at','current_status','source_freshness','actors','actor_confidence','company_identity','target_contact','domain','identity_unresolved','sales_review_eligible','recommendation_state','missing_evidence','geography_evidence')},
+             'collision':checked,'contact_allowed':False,'outreach_owner':checked['outreach_owner']}
+        if checked['suppressed'] or checked['ambiguous']:row['sales_review_eligible']=False
         proof=raw_permits.get(r['record_id']) or raw_tenders.get(r['record_id']) or r
         sid=permit_snapshot if r['source']=='montreal_permit' else snapshot(r['source'],r['source_url'],proof)
         at=inputs.get('permits_at') if r['source']=='montreal_permit' else inputs.get('seao_at')
@@ -138,7 +170,7 @@ def ingest(store,inputs,*,now):
         put('TRIGGER',row,r['source'],r['record_id'],r['source_url'],sid,raw=proof,at=at)
         signals.append(row)
     store.source('permits','PARTIAL',now,observed_at=inputs.get('permits_at'),reason='Montréal latest 100 native records reused; two relevant commercial proofs. Laval result is road obstruction, not building intent; no misclassification.',cache_hit=True)
-    store.source('seao','PARTIAL',now,observed_at=inputs.get('seao_at'),reason='Curated native OCDS proof; active deadlines enforced. Latest procurement amendment/requirements still need review.',cache_hit=True)
+    store.source('seao','PARTIAL',now,observed_at=inputs.get('seao_at'),reason='Native versions/status and buyer proof retained. Stale/closed/unresolved triggers stay in research; owner reviews procurement requirements.',cache_hit=True)
     for r in inputs.get('competitors',[]):
         text=re.sub('<[^>]+>',' ',r.get('html','')).casefold();url=r['url'];host=domain(url)
         services=[s for s,tokens in SERVICES.items() if any(t in text for t in tokens)]
@@ -165,7 +197,7 @@ def ingest(store,inputs,*,now):
     for name in sorted({r['icp'] for r in markets}):put('ICP',{'name':name,'method':'Owner-defined acquisition target'},'optibrain_market',name,url)
     for health in store.summary(now)['source_health']:put('SOURCE',{'name':health['source'],'refresh_seconds':health['refresh_seconds'],'cost_class':health['cost_class']},'optibrain_market',health['source'],url)
     return {'schema':1,'at':now.isoformat(),'scope':'live','read_only':True,**store.summary(now),
-            'opportunities':markets,'prospect_signals':signals,'competitors':competitors,
+            'measurement_health':ga_health,'opportunities':markets,'prospect_signals':signals,'competitors':competitors,
             'queries':queries,'mode':'ZERO-LEAD MARKET EVIDENCE','content_publication_enabled':False,
             'conversion_upload_enabled':False,'financial_writes':0,'advertising_mutations':0,
             'next_actions':[{'title':'Review '+s['title'],'why':s['why']} for s in signals[:2]]}

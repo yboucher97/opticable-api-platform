@@ -53,3 +53,15 @@ class AcquisitionRuntimeTests(unittest.TestCase):
                 self.assertEqual(fact['observed_at'],health['observed_at'])
                 runtime.observe(SimpleNamespace(dry_run=False),SimpleNamespace(google_oauth=None),now=NOW+timedelta(minutes=1))
                 self.assertEqual(oauth.call_count,1)
+
+    def test_expired_trigger_is_reclassified_even_without_new_source_input(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);original=self.fixture(root)
+            row={'key':'t','source':'seao','record_id':'o','native_version':'v','trigger':'Commercial cameras','why_now':'Published procurement','source_url':'https://seao.gouv.qc.ca/test',
+                 'current_status':'OPEN','deadline':(NOW+timedelta(minutes=1)).isoformat(),'last_checked':NOW.isoformat()}
+            def trusted(path,*args):return {'signals':[row]} if path.name=='public-triggers.json' else original(path,*args)
+            with patch.object(runtime,'ROOT',root),patch.object(runtime,'DATABASE',root/'db'),patch.object(runtime,'DISPLAY',root/'display.json'),patch.object(runtime.lc,'trusted_json',side_effect=trusted),patch.object(runtime.os,'chown'),patch.object(runtime.grp,'getgrnam',return_value=SimpleNamespace(gr_gid=1)),patch('workflow.google_oauth.GoogleOAuthManager') as oauth:
+                first=runtime.observe(SimpleNamespace(dry_run=False),None,now=NOW)
+                second=runtime.observe(SimpleNamespace(dry_run=False),None,now=NOW+timedelta(minutes=2))
+                self.assertNotEqual(first['input_version'],second['input_version']);self.assertEqual(second['prospect_signals'][0]['current_status'],'CLOSED')
+                oauth.assert_not_called();self.assertEqual(first['counts']['TRIGGER'],second['counts']['TRIGGER'])

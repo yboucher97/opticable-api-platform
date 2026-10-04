@@ -1,6 +1,6 @@
 # Acquisition intelligence
 
-AUTHORITATIVE CURRENT. API1.19.0 adds owner-only `/v1/operator/acquisition`. CRM remains the business cockpit; raw research stays outside CRM. Claude/Apollo retains outreach execution. This observer grants no send, enrollment, financial, campaign, publishing or conversion-upload authority. Existing12 internal/four customer families are preserved.
+AUTHORITATIVE CURRENT. API1.20.0 adds owner-only `/v1/operator/acquisition`. CRM remains the business cockpit; raw research stays outside CRM. Claude/Apollo retains outreach execution. This observer grants no send, enrollment, financial, campaign, publishing or conversion-upload authority. Existing12 internal/four customer families are preserved.
 
 ## Storage and identities
 
@@ -12,7 +12,7 @@ Every fact retains source, native ID, URL, raw/normalized value, storage `retrie
 
 ## Runtime and recovery
 
-Root0700 `/var/lib/optibrain/acquisition-intelligence` contains versioned `inputs.json`, Google cache, `view.json` and private proofs. The optional domain runs after healthy existing internal/sales observations. Daily fixed Google reporting reads are bounded to13 requests/40seconds; failures preserve dated prior proof and cool down, without holding existing business automation. Apollo/CRM/permit evidence is reused from the existing observer. Website, competitor, broker/social and business samples are manual refreshes under [source policy](OPTIBRAIN_MARKETING_DATA_SOURCES.md), not new schedulers.
+Root0700 `/var/lib/optibrain/acquisition-intelligence` contains versioned `inputs.json`, Google cache, `view.json` and private proofs. The optional domain runs after healthy existing internal/sales observations. Daily fixed Google reporting reads are bounded to14 requests/40seconds; failures preserve dated prior proof and cool down, without holding existing business automation. Apollo/CRM/permit evidence is reused from the existing observer. Website, competitor, broker/social and business samples are manual refreshes under [source policy](OPTIBRAIN_MARKETING_DATA_SOURCES.md), not new schedulers.
 
 Private0640 root:opticable-workflow-api `/run/optibrain-readiness/acquisition-intelligence.json` is a minimized display cache. Human Access authentication precedes any cache read; shared workflow keys cannot view it. Unavailable data returns503; no public acquisition API or write route exists. Repeated identical inputs skip ingestion. Cached data retains its original source freshness.
 
@@ -21,3 +21,11 @@ The internal oneshot's strict systemd sandbox permits local writes to the two ex
 Independent stop: `sudo touch /var/lib/optibrain/acquisition-intelligence/STOP`. This stops acquisition observation only. Remove that marker deliberately after reconciliation to resume; it does not change existing lifecycle, Mail or conversion policies. Source projection/derived acquisition tables can be rebuilt from trusted snapshots using the exact release's `ops/phase28_29/build_inputs.py` and `build_content.py`; neither performs provider writes. Production rebuild uses the optional observer and existing journal, while manual lab helpers use private nonproduction `lab.sqlite`. The standard archive captures the whole root state and eight production/history SQLite stores. The lab is an ordinary research artifact, not a ninth authoritative database. Rebuild/restore keeps application timers and consequential policies off under existing recovery rules.
 
 See [market decisions](OPTIBRAIN_MARKET_OPPORTUNITY_CONTRACT.md), [SEO](OPTIBRAIN_SEO_INTELLIGENCE_CONTRACT.md), [content](OPTIBRAIN_CONTENT_ENGINE_CONTRACT.md), [cost controls](OPTIBRAIN_PROVIDER_COST_POLICY.md) and [Phase30 handoff](PHASE30_HANDOFF.md). No next phase is authorized by these documents.
+
+## Completion remediation 1–2
+
+Acquisition source health separates GA4 authentication from collection dates and per-site coverage. No recent report rows mean verification is needed, not zero visitors. Daily processing can lag independently of Realtime proof. Both sites use owner-selected530093120/G-ZEQXVSZWRL; privacy/consent and native Forms limits are in the measurement/intake contracts.
+
+Search recommendations expose impressions, clicks, CTR, average position and date window. Evidence bands are INSUFFICIENT(null/zero), TENTATIVE(1–9), MODERATE(10–99), STRONG(100+). These are transparent operating rules, not statistical significance claims. Position support scales with sample size; tiny samples remain interesting but cannot alone become HIGH. Geographic source scope, explicit query-location intent and owner target hypothesis stay separate. French language never implies Québec. Native query/page/country reads keep foreign counts out of Canadian recommendation samples while preserving raw country evidence.
+
+Public triggers retain native record/version, current source/addendum proof, actors, exact company proof, last check and source freshness. A current source check expires after72hours and deadlines are enforced at rendering/rebuild. Likely/name-only/applicant-only actors cannot establish a target. Unresolved/stale/closed triggers remain research and do not appear as sales target reviews. Proven tender buyers may appear for owner procurement review; that is not permission to contact a person. Exact Apollo/CRM collisions, suppressions and original outreach ownership are checked again. No new business-write scope or scheduler is introduced.

@@ -15,13 +15,15 @@ def main():
     from workflow.automation.acquisition_sources import GoogleAcquisitionReader
     now=datetime.now(timezone.utc)
     kinds=('gsc_sites','gsc_sitemaps','gsc_queries','gsc_daily','gsc_devices','gsc_countries',
-           'ga4_main','ga4_other','ads_customer','ads_campaigns','ads_keywords','ads_search_terms','ads_geo_constants')
+           'ga4_main','ga4_other','ga4_collection','ads_customer','ads_campaigns','ads_keywords','ads_search_terms','ads_geo_constants')
+    rows={};reader=None
     try:
         token=GoogleOAuthManager(settings.google_oauth).access_token()
         reader=GoogleAcquisitionReader(token)
-        try:rows={kind:reader.read(kind,now=now) for kind in kinds}
-        finally:reader.close()
-    except Exception as exc:rows={'google':{'state':'AUTH EXPIRED','error_class':type(exc).__name__}}
+        for kind in kinds:rows[kind]=reader.read(kind,now=now)
+    except Exception as exc:rows['collection']={'state':'PARTIAL','error_class':type(exc).__name__}
+    finally:
+        if reader:reader.close()
     result={'schema':1,'at':now.isoformat(),'read_only':True,'provider_mutations':0,'reads':rows}
     root=Path('/var/lib/optibrain/acquisition-intelligence');root.mkdir(parents=True,exist_ok=True,mode=0o700)
     receipt=root/('google-'+now.strftime('%Y%m%dT%H%M%SZ')+'.json')

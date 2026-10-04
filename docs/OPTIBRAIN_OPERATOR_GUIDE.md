@@ -101,3 +101,9 @@ Read [sales intelligence contract](OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md) and
 ## Acquisition intelligence — research only
 
 [Acquisition](https://optibrain.opticable.ca/v1/operator/acquisition) combines search, company/project signals, competitors, SEO/content and future paid research into a handful of owner actions. Read the [acquisition contract](OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md), [market policy](OPTIBRAIN_MARKET_OPPORTUNITY_CONTRACT.md) and [sources](OPTIBRAIN_MARKETING_DATA_SOURCES.md). Raw research stays outside CRM; Claude/Apollo keeps outreach. Priorities are market-based, with unknown demand/CPC/ROI labeled. Existing pages are improved before duplicate pages are proposed; new-page candidates need owner expertise and demand validation. No content publication, campaign change, cold send or conversion upload is enabled by this view.
+
+## Measurement and research confidence (API1.20.0)
+
+Business and Acquisition show GA4 authentication, collection date and coverage separately. A missing fresh row does not mean no visitors. Acquisition shows query sample/window, geographic scope and confidence. Sparse commercial evidence can justify a small improvement/research step without proving demand or ROI. Sales receives only current, resolved trigger reviews; unresolved permit actors remain in Acquisition. Apollo-owned follow-up continues in Apollo. Google outcome uploads remain READY BUT OFF.
+
+The two Forms need one hidden acquisition-context field/notification inclusion before native FR/EN attribution parity can be claimed. English remains excluded from real automation. Use [Forms intake](OPTIBRAIN_FORMS_INTAKE_CONTRACT.md) and the [remaining provider action](r1-owner-actions.md); website prefill and fixture success do not prove provider delivery.

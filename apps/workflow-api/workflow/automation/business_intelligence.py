@@ -62,6 +62,7 @@ def project_source(snapshot):
         finance_reviews=snapshot.get('finance_reviews',{}),recurring_reviews=snapshot.get('recurring_reviews',{}),accepted_work=snapshot.get('accepted_work',{}),
         finance_detail_coverage=snapshot.get('finance_detail_coverage',{}),cost_population={'rows':len(snapshot.get('expenses',[])), 'native_customer_allocated':sum(bool(r.get('customer_id')) for r in snapshot.get('expenses',[])),
                          'job_cost_completeness':'UNPROVEN'},test_excluded=excluded)
+    output['ga4_collection_health']=snapshot.get('ga4_collection_health',{})
     output['measurement_health']=snapshot.get('measurement_health',{'forms':'PARTIAL','ga4':'PARTIAL','google_ads':'PARTIAL','offline_conversions':'OFF'})
     return output
 
@@ -168,6 +169,7 @@ def build_business(snapshot, *, now=None, period='month', start=None, end=None):
         'truth':{'native_counts':'PROVEN','financial_totals':'DERIVED DETERMINISTICALLY','recurring_service_value':'PARTIAL','profitability':'UNKNOWN','advertising_return':'UNKNOWN'},
         'finance_linkage':{'attention':finance_attention,'detail_coverage':snapshot.get('finance_detail_coverage',{}),'coverage':lineage,
             'owner_workflow':'CRM Deal → Zoho Finance → New Estimate; convert the same Estimate to Invoice. Choose the Deal’s Service Location in CRM. Books recurring billing remains human-owned.'},
+        'ga4_collection_health':snapshot.get('ga4_collection_health',{}),
         'measurement_health':snapshot.get('measurement_health',{'forms':'PARTIAL','ga4':'PARTIAL','google_ads':'PARTIAL','offline_conversions':'OFF'}),
         'spend':None,'roas':None,'financial_writes':False,'advertising_mutations':False,
         'basis':'Gross issued invoice value by issue date; paid Invoice value by issue date/current status; recorded customer payments by payment date/base currency, refunds separate. Outstanding/overdue and pipeline are current snapshot stocks, not period flows. No recognized revenue, bank settlement, net income or forecast claimed.'}
@@ -186,7 +188,7 @@ def render_business(view):
         '<p>Source observed '+h(view['observed_at'])+'</p><p>Counts: PROVEN · financial totals: DERIVED DETERMINISTICALLY · recurring Service value: PARTIAL · profitability/advertising return: UNKNOWN</p>',
         "<form method='get'><label>Period <select name='period'>"+''.join("<option value='"+p+"'"+(' selected' if view['period']==p else '')+'>'+h(p.replace('_',' ').title())+'</option>' for p in PERIODS)+"</select></label> <label>From <input type='date' name='start'></label> <label>Through <input type='date' name='end'></label> <button>Show</button></form>",
         "<p><a href='?format=csv&amp;period="+h(view['period'])+'&amp;start='+h(view['start'])+'&amp;end='+h(view['end_inclusive'])+"'>Export these metrics as CSV</a></p>",
-        '<h2>Linkage and measurement</h2><p>'+h(view['finance_linkage']['owner_workflow'])+'</p>'+table(['Family','State'],list(view['measurement_health'].items()))+
+        '<h2>Linkage and measurement</h2><p>GA4 auth / collection / last data: '+h(view.get('ga4_collection_health',{}).get('auth_status'))+' / '+h(view.get('ga4_collection_health',{}).get('collection_status'))+' / '+h(view.get('ga4_collection_health',{}).get('last_observed_data'))+'</p><p>'+h(view['finance_linkage']['owner_workflow'])+'</p>'+table(['Family','State'],list(view['measurement_health'].items()))+
         table(['Relationship','Coverage'],[(k,view['attribution']['coverage'][k]) for k in ('estimates','invoices','recurring_profiles')])+
         '<details><summary>Finance linkage required ('+str(len(view['finance_linkage']['attention']))+')</summary>'+
         table(['Kind','Transaction','Date','Amount','Currency','Next action'],[[r[k] for k in ('kind','number','date','amount','currency','reason')] for r in view['finance_linkage']['attention']])+

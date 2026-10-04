@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "at": "2026-10-04T03:49:26Z",
+  "gate": "PASS",
+  "scope": "R1 implemented and focused-tested; website production released; API changes await final combined release",
+  "ga4": {
+    "property": "530093120",
+    "stream": "14233342137",
+    "measurement_id": "G-ZEQXVSZWRL",
+    "other_property": "530619880 HISTORICAL ONLY",
+    "main_root_cause": "Published GTM v4 has no GA4 tag; consented direct site path now canonical because owner and OAuth accounts cannot access container",
+    "ai_root_cause": "Missing Actions secret yielded empty build constant; pre-existing first-party gtag also caused early return",
+    "production_collection": "PROVEN: native Realtime contains main French title and AI title",
+    "main_en_reception": "PROVEN native Data API pagePath /en/, main FR /, AI /fr/",
+    "proof": "/var/lib/optibrain/completion-remediation-1-2/ga4-collection-20261004T034926Z.json",
+    "historical_last_data": "2026-05-18; no backfill",
+    "automatic_form_interactions": false,
+    "standard_report": "FRESH both sites, last data2026-10-03; native date/event/host report2026-10-04T12:54:53Z",
+    "proof_after_propagation": "/var/lib/optibrain/completion-remediation-1-2/ga4-restored-page-paths.json"
+  },
+  "forms": {
+    "fr_delivery": "PROVEN reused Phase16 native notification",
+    "en_delivery": "UNPROVEN; OWNER ACTION",
+    "attribution_parity": "FR/EN prefill, parser, immutable ledger and CRM planning fixtures PASS; native persisted context NOT PROVEN",
+    "external_blocker": "Owner has now saved Zoho sign-in; bounded browser field/notification setup is in progress. Native attribution/delivery proof remains pending until completed.",
+    "real_english_automation": "EXCLUDED unchanged"
+  },
+  "focused": {
+    "tests": 47,
+    "subtests": 24,
+    "failures": 0,
+    "offline_network_attempts": 0,
+    "browser_checks_per_site": 10
+  },
+  "safety": {
+    "ads_mutations": 0,
+    "conversion_uploads": 0,
+    "financial_writes": 0,
+    "canonical_crm_test_leads_created": 0,
+    "internal_diagnostic_intake_receipts": 1,
+    "customer_sends": 0
+  },
+  "remaining_required_work": [
+    "Combined API release and post-deploy health verification",
+    "Zoho field setup/live controlled validation if owner completes sign-in",
+    "Final report and recovery"
+  ]
+}

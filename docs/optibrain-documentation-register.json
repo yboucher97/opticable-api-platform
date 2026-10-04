@@ -23,9 +23,9 @@
   "counts": {
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
+    "AUDIT EVIDENCE": 103,
+    "AUTHORITATIVE CURRENT": 34,
     "SECURITY / CONTROL": 1,
-    "AUTHORITATIVE CURRENT": 28,
-    "AUDIT EVIDENCE": 100,
     "RECOVERY": 1
   },
   "documents": [
@@ -100,6 +100,18 @@
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
     },
     {
+      "path": "completion-remediation-1-2/R1_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Completion remediation bounded gate evidence; no execution authority"
+    },
+    {
+      "path": "completion-remediation-1-2/R2_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Completion remediation bounded gate evidence; no execution authority"
+    },
+    {
       "path": "deploy/README.md",
       "classification": "SUPERSEDED",
       "current": false,
@@ -107,11 +119,25 @@
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
     },
     {
+      "path": "docs/CURRENT_CLAUDE_APOLLO_FLOW.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current read-only coexistence/sales contract"
+    },
+    {
       "path": "docs/OPTIBRAIN-SAFETY-INVARIANTS.md",
       "classification": "SECURITY / CONTROL",
       "current": true,
       "superseded_by": "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md",
       "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current acquisition research / SEO / content / source / cost contract"
     },
     {
       "path": "docs/OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md",
@@ -148,6 +174,13 @@
       "purpose": "Current contract"
     },
     {
+      "path": "docs/OPTIBRAIN_CONTENT_ENGINE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current acquisition research / SEO / content / source / cost contract"
+    },
+    {
       "path": "docs/OPTIBRAIN_CUSTOMER_COMMUNICATION_CONTRACT.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
@@ -176,6 +209,12 @@
       "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
     },
     {
+      "path": "docs/OPTIBRAIN_FORMS_INTAKE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Current completion-remediation contract/classification"
+    },
+    {
       "path": "docs/OPTIBRAIN_LIFECYCLE_AUTOMATION_MATRIX.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
@@ -190,6 +229,20 @@
       "purpose": "Current recurring/attribution operational contract"
     },
     {
+      "path": "docs/OPTIBRAIN_MARKETING_DATA_SOURCES.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current acquisition research / SEO / content / source / cost contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_MARKET_OPPORTUNITY_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current acquisition research / SEO / content / source / cost contract"
+    },
+    {
       "path": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
@@ -201,6 +254,12 @@
       "current": true,
       "superseded_by": null,
       "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_OWNER_ACTIONS_CURRENT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Current completion-remediation contract/classification"
     },
     {
       "path": "docs/OPTIBRAIN_PHASE1_LOCAL_BACKUP.md",
@@ -308,6 +367,25 @@
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
     },
     {
+      "path": "docs/OPTIBRAIN_PHASE_COMPLETENESS_MATRIX.json",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Current completion-remediation contract/classification"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PHASE_COMPLETENESS_MATRIX.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Current completion-remediation contract/classification"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PROVIDER_COST_POLICY.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current acquisition research / SEO / content / source / cost contract"
+    },
+    {
       "path": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
@@ -336,11 +414,37 @@
       "purpose": "Current contract"
     },
     {
+      "path": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current read-only coexistence/sales contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_SEO_INTELLIGENCE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current acquisition research / SEO / content / source / cost contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_SOURCE_HEALTH.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Current completion-remediation contract/classification"
+    },
+    {
       "path": "docs/OPTIBRAIN_STATE_CONTRACT.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
       "superseded_by": null,
       "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_SYSTEM_CAPABILITY_MATRIX.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Current completion-remediation contract/classification"
     },
     {
       "path": "docs/OPTIBRAIN_TEST_LAB_RUNBOOK.md",
@@ -402,39 +506,39 @@
       "path": "docs/PHASE22_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE22_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE23_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE23_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE24_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/PHASE24_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/PHASE25_CHECKPOINT.json",
@@ -449,6 +553,69 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
       "purpose": "Bounded Phase25 provider checkpoint; no runtime authority"
+    },
+    {
+      "path": "docs/PHASE26_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
+    },
+    {
+      "path": "docs/PHASE26_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
+    },
+    {
+      "path": "docs/PHASE27_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
+    },
+    {
+      "path": "docs/PHASE27_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
+    },
+    {
+      "path": "docs/PHASE28_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Bounded acquisition release evidence / future handoff, never execution authority"
+    },
+    {
+      "path": "docs/PHASE28_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Bounded acquisition release evidence / future handoff, never execution authority"
+    },
+    {
+      "path": "docs/PHASE29_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Bounded acquisition engineering checkpoint, never provider authority"
+    },
+    {
+      "path": "docs/PHASE29_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Bounded acquisition engineering checkpoint, never provider authority"
+    },
+    {
+      "path": "docs/PHASE30_HANDOFF.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Bounded acquisition release evidence / future handoff, never execution authority"
     },
     {
       "path": "docs/README.md",
@@ -1091,14 +1258,28 @@
       "path": "docs/phase22-provider-observations.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/phase25-owner-actions.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
+    },
+    {
+      "path": "docs/phase26-27-final-report.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
+    },
+    {
+      "path": "docs/phase26-27-message-comparison.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
     },
     {
       "path": "docs/phase5/additive-plan-review.json",
@@ -1178,6 +1359,12 @@
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
     },
     {
+      "path": "docs/r1-owner-actions.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Completion remediation bounded gate evidence; no execution authority"
+    },
+    {
       "path": "docs/repository-structure.md",
       "classification": "HISTORICAL",
       "current": false,
@@ -1197,139 +1384,6 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
-    },
-    {
-      "path": "docs/CURRENT_CLAUDE_APOLLO_FLOW.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Current read-only coexistence/sales contract"
-    },
-    {
-      "path": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Current read-only coexistence/sales contract"
-    },
-    {
-      "path": "docs/PHASE26_CHECKPOINT.json",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
-      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
-    },
-    {
-      "path": "docs/PHASE26_CHECKPOINT.md",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
-      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
-    },
-    {
-      "path": "docs/PHASE27_CHECKPOINT.json",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
-      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
-    },
-    {
-      "path": "docs/PHASE27_CHECKPOINT.md",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
-      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
-    },
-    {
-      "path": "docs/phase26-27-final-report.md",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
-      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
-    },
-    {
-      "path": "docs/phase26-27-message-comparison.md",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
-      "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
-    },
-    {
-      "path": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Current acquisition research / SEO / content / source / cost contract"
-    },
-    {
-      "path": "docs/OPTIBRAIN_CONTENT_ENGINE_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Current acquisition research / SEO / content / source / cost contract"
-    },
-    {
-      "path": "docs/OPTIBRAIN_MARKETING_DATA_SOURCES.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Current acquisition research / SEO / content / source / cost contract"
-    },
-    {
-      "path": "docs/OPTIBRAIN_MARKET_OPPORTUNITY_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Current acquisition research / SEO / content / source / cost contract"
-    },
-    {
-      "path": "docs/OPTIBRAIN_PROVIDER_COST_POLICY.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Current acquisition research / SEO / content / source / cost contract"
-    },
-    {
-      "path": "docs/OPTIBRAIN_SEO_INTELLIGENCE_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Current acquisition research / SEO / content / source / cost contract"
-    },
-    {
-      "path": "docs/PHASE28_CHECKPOINT.json",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
-      "purpose": "Bounded acquisition release evidence / future handoff, never execution authority"
-    },
-    {
-      "path": "docs/PHASE28_CHECKPOINT.md",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
-      "purpose": "Bounded acquisition release evidence / future handoff, never execution authority"
-    },
-    {
-      "path": "docs/PHASE30_HANDOFF.md",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
-      "purpose": "Bounded acquisition release evidence / future handoff, never execution authority"
-    },
-    {
-      "path": "docs/PHASE29_CHECKPOINT.md",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
-      "purpose": "Bounded acquisition engineering checkpoint, never provider authority"
-    },
-    {
-      "path": "docs/PHASE29_CHECKPOINT.json",
-      "classification": "AUDIT EVIDENCE",
-      "current": false,
-      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
-      "purpose": "Bounded acquisition engineering checkpoint, never provider authority"
     }
   ]
 }
