@@ -16,6 +16,8 @@ Only unresolved or conditional upcoming actions are included. Cloud API enables,
 
 **Verification:** The UI-only public administration limitation is established; retain existing OAuth. Verify saved fields/alias/notification settings, then use the established TEST_ONLY route/controlled subject and reconcile Mail receipt→intake→CRM fields. Native controlled TEST_ONLY verification is still pending this external setup. English remains excluded from real automation.
 
+**Latest setup result:** The owner-authorized one-time browser run was allowed to finish and failed with `Browser session closed unexpectedly`. Subsequent GET-only published-form inspection found no acquisition field on either form. No submission or saved setting was confirmed. The exact manual setup in the linked action sheet remains required; this does not justify another OAuth client, wider scope or recurring browser workflow.
+
 ## OA3: Confirm vendor-supported AI hosting/legal claims before wider publication.
 
 **Why:** Current AI website promises Montréal hosting; prior message review lacked independent evidence for Canadian-hosting/Law25 claims.

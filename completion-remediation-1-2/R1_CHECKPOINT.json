@@ -23,7 +23,18 @@
     "en_delivery": "UNPROVEN; OWNER ACTION",
     "attribution_parity": "FR/EN prefill, parser, immutable ledger and CRM planning fixtures PASS; native persisted context NOT PROVEN",
     "external_blocker": "Public Forms administration API not exposed (G), established by owner guidance plus Zoho-authored service definition after O UNKNOWN diagnostic. Existing Forms read scope present, CRM/Mail200; no extra scope, client or license needed. One-time UI field/alias/notification setup requires verified saved state and native TEST_ONLY parity proof.",
-    "real_english_automation": "EXCLUDED unchanged"
+    "real_english_automation": "EXCLUDED unchanged",
+    "one_time_setup_result": {
+      "run_id": "dc1031c0-2bff-431d-ba73-afe8dfb77537",
+      "status": "FAILED",
+      "error": "Browser session closed unexpectedly",
+      "owner_direction": "Let it finish",
+      "saved_change_confirmed": false,
+      "published_context_field_fr": false,
+      "published_context_field_en": false,
+      "submissions": 0,
+      "next_action": "Exact one-time manual UI setup in docs/r1-owner-actions.md; keep existing OAuth and API/Mail runtime."
+    }
   },
   "focused": {
     "tests": 47,
