@@ -18,7 +18,12 @@ def owner_projection(view):
     # Full provenance/facts remain in the private view/store. The cockpit only
     # needs the recommendation sample, confidence and actionable exceptions.
     display={k:v for k,v in view.items() if k!='queries'}
-    display['content_queue']=[{k:v for k,v in row.items() if k not in {'facts','score_components','competitor_gap','internal_links'}} for row in view.get('content_queue',[])]
+    display['content_queue']=[{k:v for k,v in row.items() if k not in {'facts','evidence','score_components','competitor_gap','internal_links'}} for row in view.get('content_queue',[])]
+    display['opportunities']=[]
+    for row in view.get('opportunities',[]):
+        item={k:v for k,v in row.items() if k!='facts'}
+        item['evidence']=[{k:v for k,v in evidence.items() if k not in {'impressions','clicks','ctr','position','date_from','date_to'}} for evidence in row.get('evidence',[])]
+        display['opportunities'].append(item)
     seo=view.get('technical_seo',{})
     display['technical_seo']={k:v for k,v in seo.items() if k not in {'issues','orphan_candidates'}}
     display['technical_seo']['issue_count']=len(seo.get('issues',[]))
@@ -78,6 +83,7 @@ def observe(engine,settings,*,now=None):
     if not engine.dry_run:
         store=AcquisitionStore(DATABASE);view.update(store.summary(now));view['at']=now.isoformat()
         display=owner_projection(view)
-        if len(json.dumps(display).encode())>262144:raise ValueError('Owner acquisition projection exceeds byte bound')
+        # Match the bytes written by atomic(), including indentation and UTF-8.
+        if len((json.dumps(display,sort_keys=True,ensure_ascii=False,indent=2)+'\n').encode())>262144:raise ValueError('Owner acquisition projection exceeds byte bound')
         atomic(DISPLAY,display,0o600);os.chown(DISPLAY,0,grp.getgrnam('opticable-workflow-api').gr_gid);os.chmod(DISPLAY,0o640)
     return view
