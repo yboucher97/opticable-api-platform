@@ -18,7 +18,10 @@ def owner_projection(view):
     # Full provenance/facts remain in the private view/store. The cockpit only
     # needs the recommendation sample, confidence and actionable exceptions.
     display={k:v for k,v in view.items() if k!='queries'}
-    display['content_queue']=[{k:v for k,v in row.items() if k not in {'facts','evidence','score_components','competitor_gap','internal_links'}} for row in view.get('content_queue',[])]
+    display['content_queue_count']=len(view.get('content_queue',[]))
+    display['content_queue']=[{k:v for k,v in row.items() if k not in {'facts','evidence','score_components','competitor_gap','internal_links'}} for row in view.get('content_queue',[])[:8]]
+    display['paid_opportunities_count']=len(view.get('paid_opportunities',[]))
+    display['paid_opportunities']=view.get('paid_opportunities',[])[:5]
     display['opportunities']=[]
     for row in view.get('opportunities',[]):
         item={k:v for k,v in row.items() if k!='facts'}

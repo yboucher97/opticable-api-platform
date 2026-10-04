@@ -34,6 +34,26 @@ class AcquisitionRuntimeTests(unittest.TestCase):
         def trusted(path,*args):return saved[path.name] if path.name in saved else json.loads(path.read_text())
         return trusted
 
+    def test_owner_projection_keeps_complete_evidence_private_and_fits_display_budget(self):
+        # Thirty full briefs plus paid research exceed the published byte limit.
+        # The cockpit renders eight briefs and five paid ideas; preserve total
+        # counts without duplicating the unrendered full queues in its payload.
+        sample={'impressions':1,'clicks':0,'position':14,'date_from':'2026-09-01','date_to':'2026-09-28'}
+        briefs=[{'id':str(i),'why':'Evidence and missing data '*80,'search_sample':sample,
+                 'facts':{'raw':'private'*1000}} for i in range(30)]
+        paid=[{'id':str(i),'reason':'Commercial evidence '*100,'search_sample':sample} for i in range(30)]
+        economics={'records':11,'state':'WORKING','rows':[{'query':'commercial wifi','market_volume':10,
+                     'cpc':None,'geography':'QUÉBEC','language':'EN'} for _ in range(11)]}
+        view={'content_queue':briefs,'paid_opportunities':paid,'keyword_economics':economics}
+        owner=runtime.owner_projection(view)
+        self.assertEqual(owner['content_queue_count'],30);self.assertEqual(len(owner['content_queue']),8)
+        self.assertEqual(owner['paid_opportunities_count'],30);self.assertEqual(len(owner['paid_opportunities']),5)
+        self.assertEqual(owner['content_queue'][0]['search_sample'],sample)
+        self.assertEqual(owner['keyword_economics'],economics)
+        self.assertLess(len(json.dumps(owner,ensure_ascii=False,indent=2).encode()),262144)
+        self.assertEqual(len(view['content_queue']),30);self.assertEqual(len(view['paid_opportunities']),30)
+        self.assertIn('facts',view['content_queue'][0])
+
     def test_dry_run_and_independent_stop_do_not_read_provider_or_write_store(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);trusted=self.fixture(root,old=True)
