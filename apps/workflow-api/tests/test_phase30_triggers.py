@@ -38,6 +38,13 @@ def decision(row, apollo=None, crm=None, **kw):
 
 
 class TriggerPolicyTests(unittest.TestCase):
+    def test_native_procurement_identity_without_matchable_collision_stays_review(self):
+        r,a,c=fixture();r.pop('domain');r.update(source_provider='seao',trigger_type='PUBLIC TENDER',status='OPEN',closing_date=(NOW+timedelta(days=2)).isoformat(),raw={'buyer':{'id':'buyer'}})
+        r['company_identity']={'confidence':'EXACT','native_buyer_id':'buyer','source_url':r['source_url']}
+        d=decision(r,a,c)
+        self.assertEqual(d['company_resolution_status'],'EXACT');self.assertEqual(d['collision']['classification'],'UNKNOWN')
+        self.assertEqual(d['priority_class'],'REVIEW');self.assertFalse(d['sales_review_eligible'])
+
     def test_exact_warehouse_with_native_crm_identity_is_owner_review(self):
         r,a,c = fixture();c['Accounts']=[{'id':'a','Website':'company.test'}]
         r['company_identity']['crm_account_id']='a'
@@ -219,6 +226,13 @@ class PublicSourceTests(unittest.TestCase):
         raw={'NO_PERMIS':'p','DATE_EMISSION':'2026-10-01','CATEGORIE_BATIMENT':'COMM, INDUSTR','TYPE_PERMIS_DESCR':'Permis de construction','TYPE_BATIMENT':'Entrepôt','ENTREPRENEUR':'GC Inc.'}
         rows=permits([raw],provider='laval_permit',now=NOW,verified_at=NOW.isoformat())
         self.assertEqual(rows[0]['actors'][0]['role'],'GENERAL CONTRACTOR');self.assertEqual(rows[0]['actors'][0]['confidence'],'UNRESOLVED')
+
+    def test_native_nullable_building_type_does_not_disable_entire_laval_feed(self):
+        rows=[{'NO_PERMIS':'a','DATE_EMISSION':'2026-10-01','CATEGORIE_BATIMENT':'COMM','TYPE_PERMIS_DESCR':'Commercial renovation','TYPE_BATIMENT':None},
+              {'NO_PERMIS':'b','DATE_EMISSION':'2026-03-31','CATEGORIE_BATIMENT':'COMM','TYPE_PERMIS_DESCR':'Commercial renovation','TYPE_BATIMENT':None}]
+        result=permits(rows,provider='laval_permit',now=NOW,verified_at=NOW.isoformat())
+        self.assertEqual([r['source_record_id'] for r in result],['a'])
+        self.assertEqual(result[0]['company_name'],None)
 
     def test_known_buyer_name_cannot_override_explicit_foreign_source_location(self):
         row={'ocid':'foreign','id':'20261003110000','date':'2026-10-03T07:00:00-04:00',

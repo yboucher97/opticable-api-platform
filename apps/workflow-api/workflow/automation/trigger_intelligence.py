@@ -153,7 +153,7 @@ def assess(row, apollo, crm, *, now, crm_at, feedback=None):
     excluded = geo in {'FOREIGN', 'OTHER CANADA'} or status in TERMINAL or row.get('test_only') is True
     disposition = ('IGNORE' if excluded or not fit['primary'] else 'RESEARCH' if identity['status'] not in {'EXACT', 'SUPPORTED'} or geo == 'UNKNOWN' or status == 'UNKNOWN'
                    else 'WATCH' if not source_fresh or not coverage_fresh or not recent or checked['suppressed']
-                   else 'ACT NOW' if confidence == 'STRONG' and components['timing'] == 3 and checked['crm_fresh_complete'] and checked['apollo_fresh_complete'] and not checked['ambiguous']
+                   else 'ACT NOW' if confidence == 'STRONG' and components['timing'] == 3 and checked['crm_fresh_complete'] and checked['apollo_fresh_complete'] and checked['identity_matchable'] and not checked['ambiguous']
                    else 'REVIEW')
     if checked['ambiguous']: disposition = 'RESEARCH'
     tid = row.get('trigger_id') or digest([row['source_provider'], str(row['source_record_id'])])
