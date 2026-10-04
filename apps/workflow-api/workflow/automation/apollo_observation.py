@@ -12,6 +12,7 @@ READS = {
     'labels': ('GET', '/labels', set()),
     'stages': ('GET', '/contact_stages', set()),
     'mailboxes': ('GET', '/email_accounts', set()),
+    'people_research': ('POST', '/mixed_people/api_search', {'q_organization_domains_list','person_titles','page','per_page'}),
 }
 
 
@@ -30,6 +31,14 @@ class ApolloReader:
     def read(self, kind, **params):
         if kind not in READS or not set(params) <= READS[kind][2]:
             raise ValueError('Only fixed Apollo observation requests are supported')
+        if kind == 'people_research':
+            from .sales_intelligence import domain
+            hosts=params.get('q_organization_domains_list')
+            if not isinstance(hosts,list) or len(hosts)!=1 or domain(hosts[0])!=hosts[0] or params.get('page',1)!=1 or params.get('per_page',5)>5:
+                raise ValueError('Research requires one resolved domain and at most five people')
+            titles=params.get('person_titles',[])
+            if not isinstance(titles,list) or len(titles)>12 or any(not isinstance(t,str) or len(t)>80 for t in titles):
+                raise ValueError('Bounded business roles required')
         if not 1 <= params.get('page', 1) <= 20 or not 1 <= params.get('per_page', 100) <= 100:
             raise ValueError('Apollo pagination bound exceeded')
         if self.calls >= self.limit or monotonic()-self.started>40:
@@ -43,6 +52,7 @@ class ApolloReader:
             raise ValueError('Apollo observation unavailable; no effect attempted') from None
         if not response.is_success:
             raise ValueError('Apollo read unavailable: HTTP ' + str(response.status_code))
+        if kind=='people_research' and len(response.content)>1048576:raise ValueError('Apollo research response exceeds byte bound')
         return response.json()
 
     def workspace(self):

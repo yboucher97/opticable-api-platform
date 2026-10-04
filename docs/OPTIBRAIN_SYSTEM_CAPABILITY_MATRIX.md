@@ -30,15 +30,15 @@ Every capability has an explicit definition of complete. Working code, provider 
 | GA4 production page-view collection | GREEN | Canonical530093120 page-view reception independently proven for main and AI. Historical gap is not backfilled. Standard report propagation/future freshness remain separate. | P2 / KEEP + MONITOR |
 | Website conversion telemetry/privacy | YELLOW | Consent defaults, safe parameter/URL allowlisting and one GA4 destination now pass browser/network tests. Successful AI event is acknowledgement-bound; native iframe success and provider reception of full event set remain unproven. | P2 / NATURAL EVENT PROOF; FORMS SETUP RESOLVED |
 | Google Ads read/account state | GREEN | Recent activity is empty. Auction/competitive coverage is limited; readable account does not mean an active campaign runs. | P3 / KEEP |
-| Keyword market volume/CPC/competition | YELLOW — PROVIDER LIMITATION | Working cached Windsor Québec FR/EN economics supports shadow research. Native Google remains403 Explorer-restricted; Windsor Trial continuity unknown. Missing values remain unknown. | P1 / BASIC CLOUD ACCESS FOR PERMANENT SOURCE |
+| Keyword market volume/CPC/competition | YELLOW — PROVIDER LIMITATION | Gate C PASS: cached Windsor Québec FR/EN economics supports shadow research. Native Google remains403 Explorer-restricted; Basic DEFERRED BY OWNER, non-blocking. Windsor continuity unknown; missing/unavailable values remain UNKNOWN. | P2 / MONITOR CACHE AND SOURCE HEALTH; OA4 DEFERRED |
 | Google business-outcome conversions | GREEN — WAITING FOR NATURAL EVENT | Three configured destinations; uploads OFF. Fresh restore explicitly resets upload authority. No synthetic/genuine upload performed. | P2 / KEEP; NATURAL EVENT + SEPARATE AUTHORIZATION |
 | Google Business Profile read intelligence | GREEN | Scheduled runtime ingestion and post-list coverage are unproven. Current gateway is sufficient for bounded local research. | P3 / KEEP |
 | Apollo direct research/production state | GREEN | Saved-search API unavailable; activity history is bounded. The2000-contact limit deliberately fails closed rather than granting partial clearance. | P3 / KEEP |
 | Claude/Apollo coexistence | GREEN | Private Claude history is inaccessible and not claimed. Evidence does not justify replacing its controller. | P3 / KEEP |
 | Clay supplemental enrichment integration | GREEN — INTENTIONALLY OPTIONAL | Clay comparison is unperformed. Optional GREEN does not certify provider connectivity. | P3 / KEEP |
-| Semrush specialist integration | GREEN — INTENTIONALLY OPTIONAL | No current detailed report/unit proof. Optional integration does not fill the actual economics/competitive data gap. | P3 / KEEP |
-| Ahrefs specialist integration | GREEN — INTENTIONALLY OPTIONAL | No current detailed report proof; no upgrade purchased. Core acquisition does not require this provider. | P3 / KEEP |
-| Windsor marketing gateway | GREEN | Two Keyword Planner gateway reads proven; direct scheduled OptiBrain credential not established. Trial coverage supports current bounded research; no purchase. | P2 / PERMANENT GOOGLE FALLBACK |
+| Semrush specialist integration | GREEN — INTENTIONALLY OPTIONAL | No current detailed report/unit proof. Owner finds cost unjustified; require unique material value before reconsidering. | P3 / OPTIONAL |
+| Ahrefs specialist integration | GREEN — INTENTIONALLY OPTIONAL | No current detailed report proof; owner finds cost unjustified. Core acquisition does not require this provider. | P3 / OPTIONAL |
+| Windsor marketing gateway | GREEN | Two Keyword Planner gateway reads proven; direct scheduled OptiBrain credential not established. Temporary cache supports current bounded research; continuing entitlement not guaranteed. | P2 / MONITOR CACHE AND SOURCE HEALTH |
 | Acquisition Intelligence store/model | GREEN | Some supported entity types lack provider data. Schema capability is not population coverage; no warehouse or ninth database was created. | P3 / KEEP |
 | SEO/site inventory intelligence | YELLOW | Sample-sensitive position support, numeric sample/window display and geography filtering are fixed. Mobile/performance and broader competitive/keyword coverage remain incomplete; bounded Québec economics are now available. | P2 / KEEP; LATER MEASURE COVERAGE |
 | Content intelligence and repurposing | GREEN | All30 briefs (21 existing/9 new) and5 reuse plans are retained with evidence confidence. Owner expertise and publication approval remain required; no proven ROI claimed. | P2 / KEEP + DOCUMENT |
@@ -344,13 +344,13 @@ Implementation: Implemented and usable for the intended bounded scope. Data: See
 
 **Complete means:** One reliable source provides language/location-aware volume, CPC, competition and dates, with cache/cost controls and unknown values preserved.
 
-**Evidence:** One bounded native historical-metrics request returns403; existing Explorer reads work.
+**Evidence:** One bounded native historical-metrics request returns403; existing Explorer reads work. Foundation proof establishes Google Keyword Planner via Windsor, independent Québec FR/EN, CAD and30-day cache;11 normalized sample identities preserve known9 volumes/5 CPC estimates/8 competition categories.
 
 **Evidence locations:** google-audit.json planner_access_once
 
 Implementation: Usable bounded implementation; stated gap remains. Data: See explicit current population/evidence; no inferred completion percentage. Live proof: See independent current/retained evidence; code alone is not proof. Natural proof: Not required for this bounded capability, or explicitly limited in evidence. History: Historical uncertainty remains where deterministic evidence is absent.
 
-**Gap/limit:** Broad market economics needs higher approved access or one genuinely available alternative. GSC impressions cannot substitute.
+**Gap/limit:** Working temporary gateway coverage is sufficient for shadow research; broad permanent coverage and Windsor continuity remain unproven. Google Basic access is DEFERRED BY OWNER — NON-BLOCKING EXTERNAL ACCESS IMPROVEMENT. Gate C remains PASS; Phase30/32/34/37 bounded work and Phase33 shadow intelligence are not blocked. If Windsor becomes unavailable, affected current economics become UNKNOWN / SOURCE UNAVAILABLE. GSC impressions cannot substitute for market volume. The single future access action is OA4; no repeated restricted calls or new provider purchase.
 
 ## Google business-outcome conversions
 
@@ -422,7 +422,7 @@ Implementation: Implemented and usable for the intended bounded scope. Data: See
 
 Implementation: Implemented and usable for the intended bounded scope. Data: See explicit current population/evidence; no inferred completion percentage. Live proof: Not proven: no callable access in this environment; provider is optional. Natural proof: Not required for this bounded capability, or explicitly limited in evidence. History: Historical uncertainty remains where deterministic evidence is absent.
 
-**Gap/limit:** No current detailed report/unit proof. Optional integration does not fill the actual economics/competitive data gap.
+**Gap/limit:** No current detailed report/unit proof. GREEN — INTENTIONALLY OPTIONAL by owner decision October4,2026: cost is not justified. Reconsider only for unique material business value unavailable through existing sources; not a required dependency.
 
 ## Ahrefs specialist integration
 
@@ -434,7 +434,7 @@ Implementation: Implemented and usable for the intended bounded scope. Data: See
 
 Implementation: Implemented and usable for the intended bounded scope. Data: See explicit current population/evidence; no inferred completion percentage. Live proof: Not proven: no callable access in this environment; provider is optional. Natural proof: Not required for this bounded capability, or explicitly limited in evidence. History: Historical uncertainty remains where deterministic evidence is absent.
 
-**Gap/limit:** No current detailed report proof; no upgrade purchased. Core acquisition does not require this provider.
+**Gap/limit:** No current detailed report proof; no upgrade purchased. GREEN — INTENTIONALLY OPTIONAL by owner decision October4,2026: cost is not justified. Reconsider only for unique material business value unavailable through existing sources; not a required dependency.
 
 ## Windsor marketing gateway
 
@@ -593,3 +593,8 @@ Implementation: Implemented and usable for the intended bounded scope. Data: See
 **Gap/limit:** This is a scoped review, not a full penetration test. Telemetry privacy and future recovery/export reset are readiness improvements.
 
 Current provider-access clarification: Forms public administration is G PROVIDER-SIDE API LIMITATION, clarified by owner/provider guidance after initial O UNKNOWN diagnosis, despite existing ZohoForms.forms.READ and working US CRM/Mail OAuth. The prior admin probe returns404 HTML, not an OAuth scope error; a CRM-only MCP service does not expose Forms administration (M). Native FR/EN attribution parity stays YELLOW; no broad reauthorization or new OAuth client is justified. GA4 collection/page-view reception is GREEN, while acknowledged inquiry-event/native Forms proof remains separate. Exact owner/provider action: [r1-owner-actions.md](r1-owner-actions.md).
+
+
+## Phase30 — Trigger shadow acquisition
+
+Current implementation: durable versioned trigger/actor/company/role evidence, separate quality and confidence, explicit geography, publication freshness and collision/suppression holds. Complete for the intended shadow scope when current public examples and focused/full fixtures, exact-SHA release and recovery pass. Montréal latest100 and SEAO exports are bounded; Laval publication is stale; primary expansion coverage is one company; Rive-Nord/Québec City continuous feeds remain gaps. No automatic CRM promotion or outbound execution. Source coverage remains PARTIAL independently of the engine gate. See [contract](OPTIBRAIN_TRIGGER_INTELLIGENCE_CONTRACT.md).

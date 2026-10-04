@@ -804,6 +804,14 @@ def run(*,dry_run=False):
             'Apollo collision evidence is unavailable; new outreach remains held',
             'Review provider read access; existing lifecycle scopes continue')
     try:
+        from .trigger_runtime import observe as observe_triggers
+        observe_triggers(engine,settings)
+        engine.state['attention'].pop('trigger-observation',None)
+    except (ValueError,OSError,KeyError,TypeError,RuntimeError,sqlite3.Error):
+        engine.attention('trigger-observation','Trigger research observations unavailable',
+            'Public-source or collision proof is unavailable; shadow targets remain held',
+            'Review source freshness and identity; existing lifecycle scopes continue')
+    try:
         from .acquisition_runtime import observe as observe_acquisition
         observe_acquisition(engine,settings)
         engine.state['attention'].pop('acquisition-observation',None)

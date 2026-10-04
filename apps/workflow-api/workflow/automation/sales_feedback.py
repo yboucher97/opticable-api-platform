@@ -29,12 +29,12 @@ class SalesFeedback:
     def latest(self):
         try:
             with sqlite3.connect('file:'+self.path+'?mode=ro',uri=True,timeout=5) as db:
-                rows = db.execute('SELECT prospect,choice,actor,at FROM sales_shadow_feedback ORDER BY at, rowid').fetchall()
+                rows = db.execute('SELECT prospect,choice,actor,at,version FROM sales_shadow_feedback ORDER BY at, rowid').fetchall()
         except sqlite3.OperationalError:
             return {}
         result = {}
-        for prospect,choice,actor,at in rows:
+        for prospect,choice,actor,at,version in rows:
             # A later GOOD cannot silently undo local do-not-contact feedback.
             if result.get(prospect,{}).get('choice') == 'DO NOT CONTACT':continue
-            result[prospect] = dict(choice=choice,actor=actor,at=at)
+            result[prospect] = dict(choice=choice,actor=actor,at=at,version=version)
         return result

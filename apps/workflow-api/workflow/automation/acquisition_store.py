@@ -21,6 +21,8 @@ REFRESH={'search_console':86400,'ga4':86400,'google_ads':86400,'gbp':604800,'apo
          'semrush':2592000,'ahrefs':2592000,'clay':2592000,'windsor':86400,
          'facebook_organic':604800,'instagram':604800,'linkedin_organic':604800}
 REFRESH['windsor_keyword_planner']=2592000
+REFRESH.update(trigger_montreal_permit=86400, trigger_seao=86400,
+               trigger_laval_permit=604800, trigger_company_announcement=604800, trigger_apollo_roles=1209600)
 
 
 def digest(value):

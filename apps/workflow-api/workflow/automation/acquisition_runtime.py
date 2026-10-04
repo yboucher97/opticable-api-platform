@@ -88,6 +88,24 @@ def observe(engine,settings,*,now=None):
     if not engine.dry_run:
         store=AcquisitionStore(DATABASE);view.update(store.summary(now));view['at']=now.isoformat()
         display=owner_projection(view)
+        triggers=ROOT/'triggers-view.json'
+        if triggers.exists():
+            from .trigger_runtime import projection
+            queue=lc.trusted_json(triggers,16777216)
+            display['trigger_intelligence']=projection(queue)
+            # Link source IDs rather than blending public triggers into keyword
+            # metrics or treating ICP/geography hypotheses as measured demand.
+            from .acquisition_intelligence import service_for
+            for market in display.get('opportunities',[]):
+                market['trigger_evidence']=[{'trigger_id':r['trigger_id'],'source_url':r['source_url'],
+                    'confidence':r['evidence_confidence'],'priority':r['priority_class'],
+                    'scope':'Service/geography overlap; ICP and demand not implied'} for r in queue['rows']
+                    if r['geography_class']==str(market.get('geography','')).upper()
+                    and any(service_for(s)==market['service'] for s in r['service_fit']['primary']+r['service_fit']['secondary'])
+                    and r['priority_class'] in {'ACT NOW','REVIEW'}][:3]
+            # Existing cockpit already uses most of its display budget. Avoid
+            # duplicating the full private queue in its small recommendation view.
+            display['trigger_intelligence']['rows']=display['trigger_intelligence']['rows'][:5]
         # Match the bytes written by atomic(), including indentation and UTF-8.
         if len((json.dumps(display,sort_keys=True,ensure_ascii=False,indent=2)+'\n').encode())>262144:raise ValueError('Owner acquisition projection exceeds byte bound')
         atomic(DISPLAY,display,0o600);os.chown(DISPLAY,0,grp.getgrnam('opticable-workflow-api').gr_gid);os.chmod(DISPLAY,0o640)

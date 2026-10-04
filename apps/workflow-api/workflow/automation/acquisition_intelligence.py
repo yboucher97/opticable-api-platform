@@ -181,7 +181,11 @@ def render_acquisition(view):
     for c in view.get('content_queue',[])[:8]:
         sample=c.get('search_sample',{})
         html+=f"<p><strong>{h(c['decision'])}: {h(c['title'])}</strong> · {h(c['language'])}<br>{h(c['why'])}<br><small>{h(c.get('evidence_confidence'))} · {h(c.get('geography'))} · {h(sample.get('impressions'))} impressions · {h(sample.get('clicks'))} clicks · CTR {h(sample.get('ctr'))} · average position {h(sample.get('position'))} · {h(sample.get('date_from'))}–{h(sample.get('date_to'))}<br>{h(c.get('existing_page') or c.get('recommended_url'))} · CTA: {h(c.get('cta'))}</small></p>"
-    html+='</section><section><h2>Paid search research</h2>'
+    html+='</section>'
+    if view.get('trigger_intelligence'):
+        from .trigger_intelligence import render_queue
+        html+=render_queue(view['trigger_intelligence'])
+    html+='<section><h2>Paid search research</h2>'
     economics=view.get('keyword_economics',{})
     if economics:
         html+=f"<p>Keyword economics: {h(economics.get('state'))} · {h(economics.get('geography'))} · {h(economics.get('currency'))}<br><small>{h(economics.get('access'))}. Retrieved {h(economics.get('retrieved_at'))}. Trial continuity: {h(economics.get('trial_continuity'))}.</small></p>"

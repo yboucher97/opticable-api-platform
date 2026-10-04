@@ -45,8 +45,8 @@ def observe(engine, settings, *, now=None):
     if not identity_at or not 0 <= (now-identity_at).total_seconds()<3600:
         from .business_observation import NativeReader
         reader=NativeReader(engine.client,limit=max(0,160-engine.reads))
-        fields={'Leads':'id,Full_Name,Company,Email,Website,Lead_Status,OptiBrain_Test,Created_Time,Modified_Time',
-                'Contacts':'id,Full_Name,Email,Account_Name,OptiBrain_Test',
+        fields={'Leads':'id,Full_Name,Company,Email,Website,Lead_Status,Email_Opt_Out,OptiBrain_Test,Created_Time,Modified_Time',
+                'Contacts':'id,Full_Name,Email,Email_Opt_Out,Account_Name,OptiBrain_Test',
                 'Accounts':'id,Account_Name,Website,OptiBrain_Test'}
         try:identities={'schema':1,'at':now.isoformat(),'crm':{m:reader.crm(m,f) for m,f in fields.items()}}
         finally:engine.reads+=reader.reads
@@ -87,7 +87,9 @@ def observe(engine, settings, *, now=None):
         b=s.get('books_estimate_index',{}).get(eid,{})
         from .sales_intelligence import live
         if live(deals[did]) and live(b):estimates.append({'id':eid,'title':b.get('estimate_number'),'status':b.get('status'),'deal_id':did})
-    view=build_sales(apollo,crm,signals,now=now,recurring=saved.get('recurring'),feedback=feedback,estimates=estimates)
+    # Phase30 supplies versioned, collision-checked trigger rows independently.
+    # Never publish an older manually staged trigger as a fresh sales action.
+    view=build_sales(apollo,crm,[],now=now,recurring=saved.get('recurring'),feedback=feedback,estimates=estimates)
     view['crm_observed_at']=saved['observed_at']
     view['identity_observed_at']=identities['at']
     view['public_permits_observed_at']=old.get('at')

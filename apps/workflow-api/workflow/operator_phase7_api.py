@@ -141,8 +141,51 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         identity(cf_access_jwt_assertion)
         view=read_internal_attention(now(),Path('/run/optibrain-readiness/acquisition-intelligence.json'))
         if not view:raise HTTPException(status_code=503,detail='Acquisition observation unavailable')
+        from .automation.sales_feedback import SalesFeedback
+        feedback=SalesFeedback(Path(store.db_path).with_name('phase12-autonomy.db')).latest()
+        for row in view.get('trigger_intelligence',{}).get('rows',[]):
+            choice=feedback.get(row['key'],{}).get('choice')
+            if choice in {'DO NOT CONTACT','BAD FIT','BAD TRIGGER','NOT NOW'}:
+                row['priority_class']='WATCH' if choice=='NOT NOW' else 'IGNORE'
+                row['owner_review_state']=choice;row['sales_review_eligible']=False
+                if choice=='DO NOT CONTACT':row['collision'].update(suppressed=True,classification='SUPPRESSED')
         from .automation.acquisition_intelligence import render_acquisition
         return HTMLResponse(render_acquisition(view),headers=private_headers)
+
+    def trigger_candidate(candidate):
+        if not re.fullmatch('[0-9a-f]{64}',candidate):raise HTTPException(status_code=404,detail='Candidate unavailable')
+        queue=read_internal_attention(now(),Path('/run/optibrain-readiness/trigger-intelligence.json'))
+        row=next((r for r in (queue or {}).get('rows',[]) if r.get('key')==candidate),None)
+        if not row:raise HTTPException(status_code=409,detail='Fresh displayed shadow trigger required')
+        return row
+
+    @app.get('/v1/operator/acquisition/review/{candidate}',response_class=HTMLResponse,tags=['operator'])
+    async def review_trigger(candidate: str,cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        identity(cf_access_jwt_assertion);row=trigger_candidate(candidate)
+        from .automation.sales_intelligence import FEEDBACK
+        h=lambda v:escape(str(v),quote=True)
+        body=f"<h1>{h(row['title'])}</h1><p>{h(row['why_now'])}</p><p>Shadow review only. This does not send, enroll, bid or promote into CRM.</p><form method='post' action='/v1/operator/acquisition/review/{candidate}'><input type='hidden' name='version' value='{row['version']}'><select name='choice'>"+''.join(f"<option>{h(c)}</option>" for c in sorted(FEEDBACK))+"</select><button>Record review</button></form>"
+        return HTMLResponse(body,headers={**private_headers,'Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'"})
+
+    @app.post('/v1/operator/acquisition/review/{candidate}',response_class=HTMLResponse,tags=['operator'])
+    async def save_trigger_review(candidate: str,request: Request,cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        person=identity(cf_access_jwt_assertion)
+        if request.headers.get('origin')!=origin or request.headers.get('sec-fetch-site') not in {None,'same-origin','none'}:
+            raise HTTPException(status_code=403,detail='same-origin review required')
+        if request.headers.get('content-type','').split(';')[0]!='application/x-www-form-urlencoded':
+            raise HTTPException(status_code=415,detail='Bounded review form required')
+        from urllib.parse import parse_qs
+        body=b''
+        async for chunk in request.stream():
+            body+=chunk
+            if len(body)>512:raise HTTPException(status_code=413,detail='Review form too large')
+        try:
+            fields=parse_qs(body.decode('ascii'),strict_parsing=True,max_num_fields=2)
+            if set(fields)!={'version','choice'} or any(len(v)!=1 for v in fields.values()):raise ValueError('Exact review required')
+            from .automation.sales_feedback import SalesFeedback
+            SalesFeedback(Path(store.db_path).with_name('phase12-autonomy.db')).record(trigger_candidate(candidate),fields['version'][0],fields['choice'][0],person.actor,now())
+        except (ValueError,UnicodeError):raise HTTPException(status_code=409,detail='Fresh exact shadow review required')
+        return HTMLResponse("<p>Review recorded; no provider effect.</p><a href='/v1/operator/acquisition'>Acquisition</a>",headers=private_headers)
 
     @app.get('/v1/operator/sales',response_class=HTMLResponse,tags=['operator'])
     async def today_sales(cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
