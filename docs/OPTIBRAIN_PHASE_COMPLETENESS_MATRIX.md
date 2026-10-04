@@ -2,13 +2,13 @@ AUTHORITATIVE CURRENT — Foundation completion delta, API1.21.0. Phase15 is GRE
 
 # OptiBrain phase completeness matrix
 
-Original audit baseline for Phases13–29 was SHA15bfb27aa48f4cc9479db7ee0128d76d48bb3d04/API1.19.0. Current contract isAPI1.20.0; exact deployment is recorded in `/var/lib/optibrain/releases/current.json`. Original PASS means the original bounded gate, not universal live completeness. Completion remediation1–2 restores site collection and hardens confidence/trigger eligibility; API1.20.0 release receipt determines final deployment state. Historical phase SHAs/evidence remain original.
+Original audit baseline for Phases13–29 was SHA15bfb27aa48f4cc9479db7ee0128d76d48bb3d04/API1.19.0. Current contract is API1.21.0; exact deployment is recorded in `/var/lib/optibrain/releases/current.json`. Original PASS means the original bounded gate, not universal live completeness. Historical phase SHAs/evidence remain original. The Foundation delta below supersedes resolved Remediation1–2 limitations; detailed original audit observations remain historical evidence where explicitly superseded.
 
 | Phase | Original objective | Current state | Priority/action |
 | --- | --- | --- | --- |
 | 13 | Connector and mutation containment, Forms fallback, Mail/Sign/WorkDrive, scheduler retirement and recovery closure | GREEN | P2 / KEEP + DOCUMENT |
 | 14 | Today/operator foundation, readiness and recovery timeline | YELLOW | P2 / CONSOLIDATE |
-| 15 | Contained clean-room reconstruction and recovery validation | YELLOW | P1 / REMEDIATE RECOVERY AUTHORITY BEFORE ACTIVATION |
+| 15 | Contained clean-room reconstruction and recovery validation | GREEN | P3 / KEEP + VERIFY EACH RECOVERY |
 | 16 | Live-provider TEST_ONLY lifecycle proof | GREEN | P2 / KEEP + DOCUMENT |
 | 17 | Bounded genuine Lead/internal automation | GREEN — WAITING FOR NATURAL EVENT | P2 / KEEP + DOCUMENT |
 | 18 | Controlled customer communication families | GREEN — WAITING FOR NATURAL EVENT | P2 / KEEP + DOCUMENT |
@@ -140,7 +140,7 @@ Original audit baseline for Phases13–29 was SHA15bfb27aa48f4cc9479db7ee0128d76
 
 **Historical coverage:** Protected baseline unchanged; original historical proof retained
 
-**Known gaps:** Bootstrap/restore do not explicitly reset/exclude conversion-export control. Current export is OFF with no timer. Add that boundary before activation. Latest whole-host/DNS/provider cutover and private-key decrypt were not repeated. Operational timers are separate and intentionally remain active. This is a scoped review, not a full penetration test. Telemetry privacy and future recovery/export reset are readiness improvements.
+**Known gaps:** Original conversion-authority reset gap is resolved by the explicit reset helper, marked clean-root simulation and archive-drill policy. Whole-host DNS/provider cutover and owner-private-key decrypt are not repeated by this bounded mission.
 
 **Current regressions:** No regression of protected/effect safety found. GA4 page-view collection restored; native Forms attribution/event parity remains bounded and incomplete. Original bounded PASS is not universal live completeness.
 
@@ -152,9 +152,9 @@ Original audit baseline for Phases13–29 was SHA15bfb27aa48f4cc9479db7ee0128d76
 
 **Classification:** GREEN
 
-**Remediation priority:** P1
+**Remediation priority:** P3
 
-**Recommended action:** REMEDIATE RECOVERY AUTHORITY BEFORE ACTIVATION
+**Recommended action:** KEEP + VERIFY EACH EXACT-SOURCE RECOVERY
 
 **Capability references:** ["recovery", "worker", "security"]
 
@@ -791,10 +791,12 @@ Original audit baseline for Phases13–29 was SHA15bfb27aa48f4cc9479db7ee0128d76
 
 **Capability references:** ["seo", "content", "competitors"]
 
-## Completion remediation1–2 current delta
+## Foundation completion current delta
 
-Phases21/22/25 remain YELLOW overall: GA4 page views are restored, while native FR/EN acquisition-context persistence and English delivery remain owner-bound. Conversion destinations remain READY BUT OFF, and historical acquisition/Finance gaps remain untouched.
+Remediation1 is PASS for native FR/EN intake and attribution: independent hidden-alias and one-per-language native TEST_ONLY delivery proofs preserve31 context fields, first/last touch and replay. Authenticated notifications reach only the approved admin recipient. CRM planning is proven; this mission creates no real Lead. English real automation remains DISABLED pending a separate authorization review. GA4 page views remain GREEN; native successful-form Analytics reception remains separate natural-event proof.
 
-Phases28/29 remain YELLOW for overall provider/data coverage. The tiny-sample, missing/zero, foreign geography and owner-display confidence defects are fixed;30 content candidates and5 repurposing plans were re-evaluated. Current tender versions/buyers are checked; unresolved permits stay research and are held out of Sales. Market economics, measured performance and broader competitive coverage remain future work. Phase30 is READY for shadow trigger research under these fail-closed gates; no phase is started by this status.
+Phase15 is GREEN for explicit fresh-recovery authority semantics: destinations survive, conversion export resets OFF, customer/internal authorities reset OFF after fresh disaster recovery, while ordinary deployment preserves original authorized12/4 scopes, expiry and claims. Changing-release protection is unchanged; same-SHA verification is read-only. Each final recovery still requires its exact-source/archive/database/readback proof.
 
-Current provider-access clarification: Forms public administration is G PROVIDER-SIDE API LIMITATION, clarified by owner/provider guidance after initial O UNKNOWN diagnosis, despite existing ZohoForms.forms.READ and working US CRM/Mail OAuth. The prior admin probe returns404 HTML, not an OAuth scope error; a CRM-only MCP service does not expose Forms administration (M). Native FR/EN attribution parity stays YELLOW; no broad reauthorization or new OAuth client is justified. GA4 collection/page-view reception is GREEN, while acknowledged inquiry-event/native Forms proof remains separate. Exact owner/provider action: [r1-owner-actions.md](r1-owner-actions.md).
+Phases21/22/25 remain YELLOW overall because historical Finance/acquisition coverage and genuine complete business/conversion effects remain partial or naturally pending. Resolved Forms setup is no longer an owner blocker. Phases28/29 remain YELLOW for broader competitive/performance and permanent economics access. The position/sample/geography defects are fixed; a working cached Québec FR/EN Windsor Keyword Planner source supplies bounded shadow economics. Direct Google Explorer access still returns403 DEVELOPER_TOKEN_NOT_APPROVED; Basic access and continuing provider entitlement remain external.
+
+Phase30 is READY for shadow trigger research only. Phase32 is READY for bounded website/local measurement work. Phase33 is READY for shadow Ads intelligence, with durable economics access required before quantitative optimization. Phase34 is READY for bounded read/draft design; Phase37 for bounded owner decision design. None has been started. Current actions: [owner action list](OPTIBRAIN_OWNER_ACTIONS_CURRENT.md).
