@@ -36,9 +36,17 @@ class GoogleAcquisitionReader:
         elif kind=='gsc_sites':method='GET';url='https://www.googleapis.com/webmasters/v3/sites'
         elif kind=='gsc_sitemaps':method='GET';url='https://www.googleapis.com/webmasters/v3/sites/'+SITE+'/sitemaps'
         elif kind.startswith('gsc_') and kind[4:] in ('queries','daily','devices','countries'):
-            dimensions={'queries':['query','page'],'daily':['date'],'devices':['device'],'countries':['country']}[kind[4:]]
+            dimensions={'queries':['query','page','country'],'daily':['date'],'devices':['device'],'countries':['country']}[kind[4:]]
             url='https://www.googleapis.com/webmasters/v3/sites/'+SITE+'/searchAnalytics/query'
             body={'startDate':start,'endDate':end,'dimensions':dimensions,'rowLimit':1000,'dataState':'final'}
+        elif kind=='ga4_collection':
+            start=(today-timedelta(days=90)).isoformat();end=(today-timedelta(days=1)).isoformat()
+            url='https://analyticsdata.googleapis.com/v1beta/properties/530093120:runReport'
+            body={'dateRanges':[{'startDate':start,'endDate':end}],
+                  'dimensions':[{'name':x} for x in ('date','eventName','hostName')],
+                  'metrics':[{'name':'eventCount'}], 'limit':'500',
+                  'orderBys':[{'dimension':{'dimensionName':'date'},'desc':True}],
+                  'dimensionFilter':{'filter':{'fieldName':'hostName','inListFilter':{'values':['opticable.ca','www.opticable.ca','ai.opticable.ca']}}}}
         elif kind in ('ga4_main','ga4_other'):
             pid='530093120' if kind=='ga4_main' else '530619880'
             url='https://analyticsdata.googleapis.com/v1beta/properties/'+pid+':runReport'
@@ -72,7 +80,7 @@ class GoogleAcquisitionReader:
                 return {'state': 'AUTH EXPIRED' if status==401 else 'RATE LIMITED' if status==429 else 'BLOCKED',
                         'http_status':status,'error':'Fixed native read rejected','date_from':start,'date_to':end}
             return {'state':'WORKING','http_status':status,'data':json.loads(payload),
-                    'date_from':start,'date_to':end,'partial':kind in ('gsc_queries','ads_keywords','ads_search_terms')}
+                    'date_from':start,'date_to':end,'observed_at':now.isoformat(),'partial':kind in ('gsc_queries','ads_keywords','ads_search_terms')}
         except httpx.HTTPError:return {'state':'PARTIAL','error':'Native read unavailable'}
 
     def close(self):self.http.close()

@@ -5,6 +5,7 @@ from urllib.parse import urljoin,urlsplit,urlunsplit
 import hashlib,json,re
 from .acquisition_intelligence import SERVICES,service_for,intent_for,language_for,market_priority,number
 from .acquisition_store import digest,normalized
+from .evidence_quality import geography_evidence,search_evidence,fact
 
 OWN_HOSTS={'opticable.ca','ai.opticable.ca','connect.opticable.ca'}
 
@@ -129,13 +130,16 @@ def content_opportunity(keyword,pages,*,competitors=(),outcomes=None):
     ranked=next((p for p in pages if clean_url(p['url'])==clean_url(keyword.get('page','')) and p['indexable_candidate'] and (p['language']==language or language=='UNKNOWN')),None)
     suitable=[p for p in pages if p['indexable_candidate'] and p['service']==service and p['language']==language and p['page_type'] in {'SERVICE','INDUSTRY','GUIDE'}]
     existing=ranked if ranked and ranked['service']==service and ranked['page_type'] in {'SERVICE','INDUSTRY','GUIDE','CASE STUDY'} else next(iter(sorted(suitable,key=lambda p:p['page_type']!='SERVICE')),None)
-    target_geo=keyword.get('geography') or 'Greater Montréal'
+    geo=geography_evidence(keyword);sample=search_evidence(keyword)
+    target_geo=geo['geography']
     item={'service':service,'intent':intent,'geography':target_geo,'market_volume':keyword.get('market_volume'),
           'observed_search_impressions':keyword.get('impressions'),'cpc':keyword.get('cpc'),'position':keyword.get('position'),
           'addressable_companies':keyword.get('addressable_companies',0),'recurring_potential':service in {'Commercial Wi-Fi','AI loss prevention','Managed network','PTP wireless'},
           'seo_difficulty':keyword.get('seo_difficulty'),'paid_competition':keyword.get('paid_competition'),'contact_coverage':None}
     score=market_priority(item,outcomes=outcomes);pos=number(keyword.get('position'));demand=number(keyword.get('market_volume'))
-    if language=='UNKNOWN' or not service or intent in {'IRRELEVANT','BRANDED'}:
+    if not geo['quebec_recommendation_allowed']:
+        decision='OUT OF SCOPE — RESEARCH ONLY';why='Foreign/other-Canada evidence is retained, but excluded from Québec SEO and paid recommendations.'
+    elif language=='UNKNOWN' or not service or intent in {'IRRELEVANT','BRANDED'}:
         decision='RESEARCH / HOLD';why='Language, service fit or acquisition relevance is not established.'
     elif intent=='INFORMATIONAL':decision='LOWER PRIORITY EDUCATION';why='Useful education requires business relevance; volume alone is insufficient.'
     elif demand is not None and demand<10 and keyword.get('addressable_companies',0)>=10:
@@ -143,22 +147,28 @@ def content_opportunity(keyword,pages,*,competitors=(),outcomes=None):
     elif existing:
         decision='IMPROVE EXISTING PAGE';why='An indexable page already covers this service/language; strengthen intent and internal links before creating a duplicate.'
         if ranked and existing['url']==ranked['url'] and pos is not None and 8<=pos<=20 and (number(keyword.get('impressions')) or 0)>0:
-            score['score']=min(100,score['score']+12);score['components']['existing_near_page_one']=12;why='Existing relevant page has observed impressions near page one. Improve its commercial answer, metadata and supporting internal links.'
+            bonus=round(12*sample['position_support'],1)
+            score['score']=min(100,score['score']+bonus);score['components']['existing_near_page_one']=bonus
+            why=sample['position_note']+'. Improve the existing relevant page; validate demand before a major investment.'
     else:
         decision='NEW PAGE CANDIDATE';why='No suitable inspected service/language page covers this commercial need. Confirm unique expertise and demand before publication.'
+    corroborated=bool((demand is not None and demand>=100) or keyword.get('verified_independent_signals'))
+    if sample['class'] in {'TENTATIVE EVIDENCE','INSUFFICIENT EVIDENCE'} and not corroborated:score['score']=min(69,score['score'])
     service_slug=re.sub('[^a-z0-9]+','-',normalized(service or query)).strip('-')
     existing_url=existing['url'] if existing else None
     return {'id':digest([normalized(query),language,service,keyword.get('geography','UNKNOWN')]),'title':query,'language':language,'service':service,
         'icp':keyword.get('icp','Business buyers — refine from evidence'),'geography':item['geography'],
-        'geography_basis':'Target hypothesis unless explicitly observed; property query metrics are not city-specific demand','target_query':query,'intent':intent,
+        'geography_basis':geo['basis'],'geography_evidence':geo,'evidence_confidence':sample['class'],'search_sample':sample,'target_query':query,'intent':intent,
         'decision':decision,'why':why,'why_now':'Observed search visibility / verified market evidence; not proven ROI.',
-        'score':score['score'],'basis':score['basis'],'score_components':score['components'],'missing_data':score['missing_data'],
+        'score':score['score'],'priority':'HIGH' if score['score']>=70 else 'MEDIUM' if score['score']>=40 else 'LOW','basis':score['basis'],'score_components':score['components'],'missing_data':score['missing_data'],
         'existing_page':existing_url,'recommended_url':existing_url or '/'+language.lower()+'/services/'+service_slug+'/',
         'content_type':'Existing service improvement' if existing else 'Service / use-case brief','cta':'Request a site assessment / Estimate',
         'internal_links':[p['url'] for p in suitable[:3]],'ads_use':'Landing-page relevance review only','outbound_use':'Optional evidence resource; existing Apollo ownership remains unchanged',
         'selected_page_position':pos if ranked and existing and existing['url']==ranked['url'] else None,
-        'evidence':{**{k:keyword.get(k) for k in ('page','impressions','clicks','position','market_volume','cpc','source','date_from','date_to')},
+        'evidence':{**{k:keyword.get(k) for k in ('page','impressions','clicks','ctr','position','market_volume','cpc','source','date_from','date_to','observed_at')},
             'metric_scope':'Observed query-page pair, not a ranking for a different chosen page or total market demand'},
+        'facts':{k:fact(keyword.get(k),keyword.get('source'), 'ESTIMATE' if k in {'market_volume','cpc','seo_difficulty'} else 'MEASURED FACT') for k in ('impressions','clicks','ctr','position','market_volume','cpc','seo_difficulty')},
+        'recommendation_strength':'TENTATIVE — RESEARCH / SMALL IMPROVEMENT' if sample['class'] in {'TENTATIVE EVIDENCE','INSUFFICIENT EVIDENCE'} else 'SUPPORTED — OWNER REVIEW',
         'competitor_gap':{'observed_service_pages':[c['url'] for c in competitors if service in c.get('services',[])][:3],'ranking_gap':'UNMEASURED'},
         'requires_owner_expertise':True,'publication_allowed':False,'paid_changes_allowed':False,'doorway_expansion_allowed':False}
 
@@ -176,7 +186,7 @@ def build_content(queries,pages,*,competitors=(),market_keywords=()):
     keywords=[{**q,'language':language_for(q['query']),'source':'Native Search Console'} for q in queries]
     keywords+=list(market_keywords)
     candidates=[content_opportunity(q,pages,competitors=competitors) for q in keywords]
-    eligible=[r for r in candidates if r['decision'] not in {'RESEARCH / HOLD','LOWER PRIORITY EDUCATION','NO SEO PAGE — OUTBOUND RESEARCH'}]
+    eligible=[r for r in candidates if r['decision'] not in {'RESEARCH / HOLD','OUT OF SCOPE — RESEARCH ONLY','LOWER PRIORITY EDUCATION','NO SEO PAGE — OUTBOUND RESEARCH'}]
     # One brief per existing page or distinct service/language target. No article
     # or doorway-page explosion from multiple variants of a single query.
     grouped={}
@@ -189,11 +199,13 @@ def build_content(queries,pages,*,competitors=(),market_keywords=()):
         if c['intent'] not in {'TRANSACTIONAL','LOCAL SERVICE','COMMERCIAL INVESTIGATION'}:continue
         pos=number(c.get('selected_page_position'));cpc=number(c['evidence'].get('cpc'))
         paid.append({'service':c['service'],'language':c['language'],'keyword':c['target_query'],'cpc':cpc,
+            'geography':c['geography'],'geography_evidence':c['geography_evidence'],'evidence_confidence':c['evidence_confidence'],'search_sample':c['search_sample'],
             'campaign_family':c['service']+' / '+c['language'],'landing_page':c['existing_page'],'landing_gap':not bool(c['existing_page']),
             'reason':'Commercial visibility exists; organic position is weak. Coordinate SEO and future paid testing.' if pos is not None and pos>10 else 'Commercial hypothesis; owner validates economics before any campaign.',
             'negative_themes':['employment / salary','residential-only where commercial service is intended','irrelevant generic research'],'changes_allowed':False})
     universe={(normalized(k['query']),k.get('language')):k for k in keywords}
     return {'content_queue':queue,'paid_opportunities':paid,'repurposing':[repurpose(r) for r in queue[:5]],
+        'excluded_research':[r for r in candidates if r['decision']=='OUT OF SCOPE — RESEARCH ONLY'],
         'technical_seo':technical_audit(pages),'keyword_universe':{'count':len(universe),
             'languages':{l:sum(k.get('language')==l for k in universe.values()) for l in ('FR','EN','UNKNOWN')},
             'service_families':sorted({service_for(k['query']) for k in keywords if service_for(k['query'])}),

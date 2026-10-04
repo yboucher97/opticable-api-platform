@@ -76,7 +76,7 @@ def observe(engine, settings, *, now=None):
             if not engine.dry_run:atomic(permits,old)
         except (httpx.HTTPError,ValueError,KeyError):pass
     if stamp(old.get('at')) and 0 <= (now-stamp(old['at'])).total_seconds()<7*86400:
-        signals.extend(permit_signals(old['records'],now=now))
+        signals.extend(permit_signals(old['records'],now=now,retrieved_at=old.get('at')))
     feedback=SalesFeedback(DATABASE).latest()
     from .recurring_lifecycle import identity
     deals={str(d['id']):d for d in s.get('deals',[])}

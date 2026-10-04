@@ -9,6 +9,7 @@ from html import escape
 import json
 import re
 from urllib.parse import urlsplit
+from .trigger_evidence import latest_releases,tender_status,actors_from_release,assess_trigger
 
 FREE_DOMAINS = {'gmail.com','hotmail.com','outlook.com','yahoo.com','live.com','icloud.com'}
 FEEDBACK = {'GOOD','BAD FIT','WRONG PERSON','ALREADY CUSTOMER','NOT NOW','DO NOT CONTACT','GOOD TRIGGER','BAD TRIGGER'}
@@ -120,7 +121,7 @@ def collision(subject, apollo, crm, *, now=None):
             'next_action': 'Review existing Apollo account / conversation' if matches or apollo_accounts else 'Review current customer context' if crm_people or crm_accounts else 'Research identity and review collision/suppression before outreach'}
 
 
-def permit_signals(records, *, now=None):
+def permit_signals(records, *, now=None, retrieved_at=None):
     now = now or datetime.now(timezone.utc)
     output = {}
     for row in records:
@@ -140,6 +141,8 @@ def permit_signals(records, *, now=None):
             'trigger':text[:700], 'trigger_at':row['date_emission'], 'fit':'Potential structured cabling / network infrastructure; scope unconfirmed',
             'why_now':'Recent commercial/industrial permit issued', 'who':'Identify developer / project manager',
             'source_url':'https://donnees.montreal.ca/dataset/permis-construction',
+            'native_version':key(row),'retrieved_at':retrieved_at,'last_checked':retrieved_at,
+            'current_status':'ISSUED','geography':'Montréal','actors':row.get('actors',[]),
             'discovery_source':'PUBLIC_PERMIT','marketing_first_touch':'NOT APPLICABLE — RESEARCH',
             'contact_allowed':False, 'identity_unresolved':True}
     return list(output.values())
@@ -147,13 +150,11 @@ def permit_signals(records, *, now=None):
 
 def tender_signals(releases, *, now=None):
     now = now or datetime.now(timezone.utc)
-    found = {};latest={}
-    for row in releases:
-        if row.get('ocid') and str(row.get('id',''))>str(latest.get(row['ocid'],{}).get('id','')):latest[row['ocid']]=row
+    found = {};latest=latest_releases(releases)
     for row in latest.values():
         tender = row.get('tender', {});title = tender.get('title', '')
         ends = stamp(tender.get('tenderPeriod', {}).get('endDate'))
-        if tender.get('status') != 'active' or not ends or ends <= now: continue
+        if tender_status(tender,now) != 'OPEN': continue
         if not re.search(r'vidéosurveillance|g[ué]é?rites.{0,30}caméras|câblage.{0,20}(informatique|communication)|fibre optique|intercommunication', title, re.I): continue
         if re.search(r'égout|laue|incendie', title, re.I): continue
         record = row.get('ocid')
@@ -163,6 +164,7 @@ def tender_signals(releases, *, now=None):
         source = next((d['url'] for d in tender.get('documents', []) if str(d.get('url','')).startswith('https://seao.gouv.qc.ca/')), 'https://seao.gouv.qc.ca/avis-du-jour')
         found[record] = {'key':key({'source':'seao','record':record}), 'source':'seao','record_id':record,
             'native_version':str(row.get('id','')), 'company':row.get('buyer',{}).get('name','Unknown buyer'),
+            'current_status':tender_status(tender,now),'actors':actors_from_release(row),
             'trigger':title, 'trigger_at':row.get('date'), 'deadline':ends.isoformat(),
             'source_url':source,'fit':'CCTV' if re.search(r'caméra|vidéosurveillance',title,re.I) else 'Structured cabling',
             'why_now':'Published procurement opportunity; confirm latest amendment/requirements',
@@ -180,8 +182,9 @@ def build_shadow(apollo, crm, signals, *, now=None):
     states = [contact_state(c,apollo.get('messages',[])+apollo.get('replies',[]),stages,now=now) for c in apollo.get('contacts',[])]
     prospects = []
     for row in signals:
-        if row.get('deadline') and (not stamp(row['deadline']) or stamp(row['deadline']) <= now):continue
+        row=assess_trigger(row,now=now)
         checked = collision(row,apollo,crm,now=now)
+        if checked['suppressed'] or checked['ambiguous']:row['sales_review_eligible']=False
         prospects.append({**row,**checked,'mode':'SHADOW','draft_send_allowed':False,'version':key(row)})
     return {'schema':1,'scope':'live','read_only':True,'at':now.isoformat(),'observed_at':apollo.get('at'),
             'state':'SHADOW','provider_writes':0,'contacts':len(states),'active_contacts':sum(s['active'] for s in states),
@@ -241,12 +244,13 @@ def build_sales(apollo, crm, signals, *, now=None, recurring=None, feedback=None
             'Accepted work requires internal preparation' if e['status']=='accepted' else 'Sent Estimate — check reply and suppression before follow-up',
             'Review the existing Deal and operational context in CRM',2 if e['status']=='accepted' else 3,
             'OWNER_MANUAL','https://crm.zoho.com/crm/org763070937/tab/Deals/'+str(e['deal_id']))
-    for p in view['prospects'][:5]:
+    for p in [r for r in view['prospects'] if r.get('sales_review_eligible')][:5]:
         add('trigger',p['key'],p['company'],p['why_now']+': '+p['trigger'],
             p['next_action']+'; '+p['who'],4,p['outreach_owner'],p['source_url'],
             fit=p['fit'],site=p.get('site'),source=p['source'],source_record=p['record_id'],
             apollo_matches=len(p['apollo_matches']),existing_customer=p['existing_customer'],
             source_version=p.get('native_version'),trigger_at=p.get('trigger_at'))
+    view['research_held']=sum(not p.get('sales_review_eligible') for p in view['prospects'])
     for a in (recurring or {}).get('attention', []):
         if a.get('test_only'):continue
         add('customer_attention',key(a),a.get('context') or 'Customer lifecycle attention',

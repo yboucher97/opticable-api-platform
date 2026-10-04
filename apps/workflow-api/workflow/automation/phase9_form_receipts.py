@@ -28,6 +28,7 @@ MAIN_FORM = "i6pIlfoGOFER0OCZ4oUH_KMxVWRZKC9Of8vbyNAjR0g"
 ENGLISH_FORM = "5kpuPyq6HG3cmmNAHG_2cFprnp16uoMzojC7Fxq42xo"
 TORONTO = ZoneInfo("America/Toronto")
 LABELS = {
+    "OptiBrain Acquisition Context": "acquisition_context",
     "Nom du contact": "name", "Entreprise": "company", "Courriel": "email",
     "Type de propriété": "property", "Téléphone": "phone", "Échéancier": "timeline",
     "Services requis": "service", "Code Promo": "promo", "Code de référence / partenaire": "reference",
@@ -87,6 +88,9 @@ def controlled_test_identity(email, fields):
     company = str(fields.get("company") or "")
     notes = str(fields.get("notes") or "")
     reference = str(fields.get("reference") or "")
+    if (email == 'logs@opticable.ca' and company.startswith('OPTIBRAIN TEST — REMEDIATION 1–2')
+            and 'TEST ONLY' in notes and re.search(r'\bob-r1-20261004-form-(fr|en)\b',notes)):
+        return True
     return (bool(re.fullmatch(r"hckyan97\+obp9[a-z0-9]+@gmail\.com", email))
             and "OPTIBRAIN TEST" in company and "TEST ONLY" in notes) or (
         email == "logs@opticable.ca" and company.startswith("OPTIBRAIN TEST — PHASE 16")
@@ -122,9 +126,14 @@ def parse_notification(*, message_id, details, content, headers, now):
             label = " ".join(row[0].split())
             names.add(label)
             if label in LABELS:
-                fields[LABELS[label]] = row[2][:2000]
+                key = LABELS[label]
+                value = row[2][:12000] if key == 'acquisition_context' else row[2][:2000]
+                if key == 'acquisition_context' and (len(row[2]) > 12000 or key in fields and fields[key] != value):
+                    raise ValueError('Ambiguous or oversized form acquisition context')
+                fields[key] = value
     french = "Courriel" in names and "Nom du contact" in names
     english = "Email" in names and "Name of the contact" in names
+    if french and english:raise UnsupportedFormNotification('Ambiguous mixed-language notification')
     if not (french or english) or not all(fields.get(key) for key in ("name", "company", "email", "phone")):
         raise UnsupportedFormNotification("Notification is not a recognized main-site quote form")
     email = str(fields.get("email") or "").strip().casefold()
@@ -133,13 +142,32 @@ def parse_notification(*, message_id, details, content, headers, now):
     reference = str(fields.get("reference") or "")
     test_only = controlled_test_identity(email, fields)
     raw_hash = hashlib.sha256(str(content["content"]).encode()).hexdigest()
+    attribution = {}
+    if fields.get('acquisition_context'):
+        context = json.loads(fields['acquisition_context'])
+        if not isinstance(context, dict) or context.get('schema') != 1:
+            raise ValueError('Invalid form acquisition context')
+        if context.get('language') != ('fr' if french else 'en'):
+            raise ValueError('Form acquisition language mismatch')
+        from .lifecycle_control import ATTR_FIELDS
+        keys = {k.casefold() for k in ATTR_FIELDS} | {'google_gclid','google_gbraid','google_wbraid','meta_fbclid',
+                'meta_fbp','meta_fbc','msclkid','origin_site','origin_path','origin_service','visitor_id'}
+        incoming = context.get('attribution', {})
+        if not isinstance(incoming, dict) or any(k not in keys or not isinstance(v,str) or len(v)>2000 for k,v in incoming.items()):
+            raise ValueError('Invalid form attribution fields')
+        attribution = incoming
+        for k,v in attribution.items():
+            if k.endswith('_touch_time') and v and datetime.fromisoformat(instant(v)) > occurred + timedelta(minutes=5):
+                raise ValueError('Future form acquisition timestamp')
     return {
         "event_id": event_id("zoho_form", internet_id), "provider_message_id": str(message_id),
         "internet_message_id": internet_id, "occurred_at": occurred.isoformat(),
         "source": "zoho_form", "source_detail": "Main website French quote form" if french else "Main website English quote form",
         "form_id": MAIN_FORM if french else ENGLISH_FORM, "submitted_email": email, "fields": fields,
         "reference": reference, "raw_hash": raw_hash, "test_only": test_only,
-        "campaign": None, "attribution_confidence": "FORM_NOTIFICATION_ONLY",
+        "language": 'fr' if french else 'en', "attribution": attribution,
+        "campaign": attribution.get('last_campaign') or attribution.get('first_campaign'),
+        "attribution_confidence": "CAPTURED_CONTEXT" if attribution else "FORM_NOTIFICATION_ONLY",
     }
 
 

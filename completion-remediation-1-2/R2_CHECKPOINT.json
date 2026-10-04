@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "gate": "PASS",
+  "engineering_safe_to_deploy": true,
+  "cold_outbound_enabled": false,
+  "scope": "Evidence support, geography, trigger current-version/actor/collision gates; no acquisition execution",
+  "queue": {
+    "existing": 21,
+    "new": 9,
+    "repurposing": 5,
+    "tentative": 11,
+    "moderate": 5,
+    "insufficient": 14,
+    "strong": 0,
+    "foreign_excluded": 84
+  },
+  "triggers": {
+    "permits_checked": 2,
+    "permit_actors_resolved": 0,
+    "permit_actors_unresolved": 2,
+    "tenders_current_checked": 2,
+    "tender_buyer_actors_proven": 2,
+    "target_people_proven": 0,
+    "sales_tender_reviews": 2,
+    "permit_sales_targets": 0
+  },
+  "provider_proof": "/var/lib/optibrain/completion-remediation-1-2/current-trigger-proof-v2.json",
+  "phase30": "READY \u2014 SHADOW RESEARCH ONLY; resolved current identity required before target recommendation",
+  "safety": {
+    "provider_writes": 0,
+    "apollo_changes": 0,
+    "ads_changes": 0,
+    "books_writes": 0,
+    "crm_promotions": 0
+  }
+}

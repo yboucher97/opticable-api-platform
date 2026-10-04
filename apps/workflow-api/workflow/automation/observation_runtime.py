@@ -55,6 +55,15 @@ def observe(engine, *, now=None):
         if set(states)!={'forms','ga4','google_ads','offline_conversions'} or not all(v in {'HEALTHY','PARTIAL','ISSUE','OFF','READY','ACTIVE'} for v in states.values()):
             raise ValueError('Invalid reviewed measurement health')
         value['snapshot']['measurement_health']=states
+    google=Path('/var/lib/optibrain/acquisition-intelligence/google-current.json')
+    if google.exists():
+        from .measurement_health import collection_health
+        try:
+            reports=lc.trusted_json(google,2097152)
+            health=collection_health(reports.get('reads',{}).get('ga4_collection',{}),now=now,
+                attempt=reports.get('attempts',{}).get('ga4_collection') or reports.get('attempts',{}).get('collection'))
+        except (ValueError,OSError):health={'auth_status':'UNKNOWN','collection_status':'UNKNOWN','coverage_notes':'Optional reporting cache unavailable; working lifecycle scopes are unaffected.'}
+        value['snapshot']['ga4_collection_health']=health
     if not engine.dry_run:
         atomic(DISPLAY,recurring,0o644)
         # Display contains aggregates only. Native identifiers/outcome plans and
