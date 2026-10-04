@@ -10,6 +10,18 @@ NOW=datetime(2026,10,3,23,tzinfo=timezone.utc)
 
 
 class AcquisitionRuntimeTests(unittest.TestCase):
+    def test_owner_projection_removes_duplicate_facts_but_keeps_samples_and_reasons(self):
+        sample={'impressions':1,'position':14,'date_from':'2026-09-01','date_to':'2026-09-28'}
+        evidence={'source':'Search Console','url':'https://opticable.ca/fr/wifi/','query':'Wi-Fi commercial',**sample,'search_sample':sample}
+        view={'opportunities':[{'facts':{'x':'private'},'priority':'MEDIUM','components':{'intent':12},'evidence':[evidence]}],
+              'content_queue':[{'facts':{'x':'private'},'evidence':evidence,'search_sample':sample,'why':'Tentative position based on one impression'}]}
+        owner=runtime.owner_projection(view)
+        self.assertEqual(owner['opportunities'][0]['evidence'][0]['search_sample'],sample)
+        self.assertEqual(owner['opportunities'][0]['components'],{'intent':12})
+        self.assertEqual(owner['content_queue'][0]['search_sample'],sample)
+        self.assertNotIn('facts',owner['opportunities'][0]);self.assertNotIn('evidence',owner['content_queue'][0])
+        self.assertEqual(view['opportunities'][0]['evidence'][0]['impressions'],1)
+
     def fixture(self,root,old=False):
         at=(NOW-timedelta(days=3) if old else NOW).isoformat()
         google={'at':at,'reads':{'gsc_queries':{'state':'WORKING','observed_at':at,'data':{'rows':[
