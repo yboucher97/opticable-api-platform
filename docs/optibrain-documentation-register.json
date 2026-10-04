@@ -24,8 +24,8 @@
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
     "SECURITY / CONTROL": 1,
-    "AUTHORITATIVE CURRENT": 22,
-    "AUDIT EVIDENCE": 95,
+    "AUTHORITATIVE CURRENT": 28,
+    "AUDIT EVIDENCE": 100,
     "RECOVERY": 1
   },
   "documents": [
@@ -1253,6 +1253,83 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
       "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current acquisition research / SEO / content / source / cost contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_CONTENT_ENGINE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current acquisition research / SEO / content / source / cost contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_MARKETING_DATA_SOURCES.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current acquisition research / SEO / content / source / cost contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_MARKET_OPPORTUNITY_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current acquisition research / SEO / content / source / cost contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PROVIDER_COST_POLICY.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current acquisition research / SEO / content / source / cost contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_SEO_INTELLIGENCE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Current acquisition research / SEO / content / source / cost contract"
+    },
+    {
+      "path": "docs/PHASE28_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Bounded acquisition release evidence / future handoff, never execution authority"
+    },
+    {
+      "path": "docs/PHASE28_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Bounded acquisition release evidence / future handoff, never execution authority"
+    },
+    {
+      "path": "docs/PHASE30_HANDOFF.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Bounded acquisition release evidence / future handoff, never execution authority"
+    },
+    {
+      "path": "docs/PHASE29_CHECKPOINT.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Bounded acquisition engineering checkpoint, never provider authority"
+    },
+    {
+      "path": "docs/PHASE29_CHECKPOINT.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
+      "purpose": "Bounded acquisition engineering checkpoint, never provider authority"
     }
   ]
 }

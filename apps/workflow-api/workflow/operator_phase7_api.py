@@ -136,6 +136,14 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         if not view:raise HTTPException(status_code=503,detail='Sales observation unavailable; no clear-to-contact decision')
         return view
 
+    @app.get('/v1/operator/acquisition',response_class=HTMLResponse,tags=['operator'])
+    async def acquisition_intelligence(cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        identity(cf_access_jwt_assertion)
+        view=read_internal_attention(now(),Path('/run/optibrain-readiness/acquisition-intelligence.json'))
+        if not view:raise HTTPException(status_code=503,detail='Acquisition observation unavailable')
+        from .automation.acquisition_intelligence import render_acquisition
+        return HTMLResponse(render_acquisition(view),headers=private_headers)
+
     @app.get('/v1/operator/sales',response_class=HTMLResponse,tags=['operator'])
     async def today_sales(cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
         identity(cf_access_jwt_assertion)

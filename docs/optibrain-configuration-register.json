@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "classification": "AUTHORITATIVE CURRENT MATRIX",
-  "inventory_date": "2026-10-02",
+  "inventory_date": "2026-10-03",
   "no_secret_values": true,
   "configuration_items": [
     {
@@ -1037,6 +1037,39 @@
       "verified": "complete bounded Apollo identities, exact provider IDs/emails/domains, root private display modes, focused sales tests",
       "backed_up": "whole root application state plus existing phase12-autonomy.db online snapshot; display expendable",
       "purpose": "shadow discovery, contact collision prevention and coordinated owner sales review"
+    },
+    {
+      "location": "/var/lib/optibrain/acquisition-intelligence",
+      "purpose": "Private rebuildable acquisition input/snapshot/view cache and independent STOP",
+      "owner": "root",
+      "secret": false,
+      "source_of_truth": "dated provider evidence and reviewed exact release policy",
+      "deployed": "optional existing internal observer, no new timer",
+      "restored": "rebuildable with writers off; preserve original source age",
+      "verified": "focused identity/auth/cache/replay tests and post-deploy root projection",
+      "backed_up": "whole root-state archive"
+    },
+    {
+      "location": "/run/optibrain-readiness/acquisition-intelligence.json",
+      "purpose": "Minimized human-only acquisition display; no provider authority",
+      "owner": "root:opticable-workflow-api",
+      "secret": false,
+      "source_of_truth": "dated provider evidence and reviewed exact release policy",
+      "deployed": "optional existing internal observer, no new timer",
+      "restored": "rebuildable with writers off; preserve original source age",
+      "verified": "focused identity/auth/cache/replay tests and post-deploy root projection",
+      "backed_up": "rebuild from root cache; not authoritative"
+    },
+    {
+      "location": "/var/lib/opticable-workflow-api/output/automation/phase12-autonomy.db:acquisition_*",
+      "purpose": "Derived provenance/identity/history/health tables in existing journal",
+      "owner": "root observer; existing application journal owner",
+      "secret": false,
+      "source_of_truth": "dated provider evidence and reviewed exact release policy",
+      "deployed": "optional existing internal observer, no new timer",
+      "restored": "rebuildable with writers off; preserve original source age",
+      "verified": "focused identity/auth/cache/replay tests and post-deploy root projection",
+      "backed_up": "existing online SQLite backup"
     }
   ],
   "environment_key_references": [

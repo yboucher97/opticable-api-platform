@@ -1,0 +1,13 @@
+# Phase30 handoff — prepared, not executed
+
+AUDIT EVIDENCE. Phases28–29 supply acquisition research and recommendations. **Phase30 has not begun.** Claude/Apollo execution remains unchanged; OptiBrain has no cold-send/enrollment authority.
+
+Available: exact Apollo/CRM identities and suppressions; Search Console live query/page/daily evidence; removed Ads keyword inventory; GBP daily broker observations;30 public OQLF NEQ/company contexts;100 native Montréal permit rows/two relevant commercial triggers; two native camera-related SEAO tenders;135 own-page inventories; ten discovered competitor baselines;15 explainable markets, FR/EN keyword seeds and30 content briefs.
+
+Strongest immediate discovery sources: official Montréal commercial/industrial permits and SEAO buyer/tender IDs. Strongest search source: native Search Console. Apollo adds existing account/contact coverage and collision awareness without changing its controller. OQLF is exact company/NEQ context, not an expansion/intent signal. Most promising target hypotheses: Montréal commercial office/industrial cabling, Greater Montréal Wi-Fi/access-control/camera work, and owner-reviewed construction connectivity/cameras. Scope/geography must be proved for each company/project, not borrowed from aggregate market evidence.
+
+Proposed next bounded work: resolve actual companies/sites from the four proven dated project signals; check native CRM/Apollo collisions and active outreach; use existing adequate Apollo data; research missing decision makers only as needed; retain source/why-now; show a small owner review queue. SEAO tender deadlines/requirements/amendments need immediate human review before considering bidding. Do not submit bids or enroll/contact prospects automatically.
+
+Blockers: Clay/Semrush/Ahrefs not callable here; Keyword Planner requires Basic/Standard API access; GA4 live event reception/consent and English Forms continuity partial; whole-market volume/CPC/backlinks/neutral SERP ranks absent; permit/project company/contact linkage not proven; broader municipal permit feeds unproven. No historical conversions or ROI are required to begin shadow research, and none are manufactured.
+
+Company/native alias collision, TEST exclusion and repeated permit ingestion are tested. Shadow research can reuse market/service-fit evidence, but **contact clearance and outbound graduation remain separate owner decisions**. Preserve existing Claude/Apollo execution, all suppressions and the three OFF Google conversion destinations. Read the [acquisition contract](OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md) and [sources](OPTIBRAIN_MARKETING_DATA_SOURCES.md) before planning. Do not execute this handoff without the next manually initiated mission.

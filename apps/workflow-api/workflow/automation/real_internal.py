@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import re
 import shlex
+import sqlite3
 import unicodedata
 
 from . import lifecycle_control as lc
@@ -802,5 +803,13 @@ def run(*,dry_run=False):
         engine.attention('sales-observation','Sales observations unavailable',
             'Apollo collision evidence is unavailable; new outreach remains held',
             'Review provider read access; existing lifecycle scopes continue')
+    try:
+        from .acquisition_runtime import observe as observe_acquisition
+        observe_acquisition(engine,settings)
+        engine.state['attention'].pop('acquisition-observation',None)
+    except (ValueError,OSError,KeyError,TypeError,RuntimeError,sqlite3.Error):
+        engine.attention('acquisition-observation','Acquisition observations unavailable',
+            'Market research data needs review; sales and lifecycle remain available',
+            'Review source health; no outbound or publication is authorized')
     engine.save()
     return engine.publish()
