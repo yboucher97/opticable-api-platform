@@ -28,7 +28,7 @@ FIELDS={"First_Name":"OptiBrain","Last_Name":"Phase 7 Canary",
 
 
 def manifest():
-    return {"mode":MODE,"candidate_sha":SHA,"api_version":"1.20.0",
+    return {"mode":MODE,"candidate_sha":SHA,"api_version":"1.21.0",
             "allowed_origin":"https://approvals.opticable.ca",
             "team_domain":"https://opticable.cloudflareaccess.com",
             "access_audience":"fixture-audience-123", "allowed_subjects":["owner"],
@@ -74,7 +74,7 @@ class RegistrationTests(unittest.TestCase):
     def test_default_absence_registers_no_route_or_action(self):
         app=FastAPI()
         with patch.dict(os.environ,{},clear=True):
-            result=maybe_install_phase7(app,client=None,store=None,engine=None,api_version="1.20.0")
+            result=maybe_install_phase7(app,client=None,store=None,engine=None,api_version="1.21.0")
         self.assertFalse(result["registered"])
         self.assertEqual(TestClient(app).post("/v1/operator/phase7/lead-create/review").status_code,404)
 
@@ -101,7 +101,7 @@ class RegistrationTests(unittest.TestCase):
         with (patch.dict(os.environ,env),
               patch('workflow.phase7_registration._trusted_manifest',return_value=manifest()),
               patch('workflow.phase7_registration.verify_source_hashes')):
-            result=maybe_install_phase7(app,client=fake,store=store,engine=engine,api_version="1.20.0")
+            result=maybe_install_phase7(app,client=fake,store=store,engine=engine,api_version="1.21.0")
         self.assertTrue(result["registered"])
         self.assertFalse(any(result[k] for k in ("create","crm","outbound")))
         self.assertNotIn("lifecycle.mail_send_approved_v2",engine.action_names())
@@ -110,6 +110,19 @@ class RegistrationTests(unittest.TestCase):
                                      json={"fields":FIELDS},
                                      headers={"Origin":"https://approvals.opticable.ca"}).status_code,401)
         self.assertFalse(fake.calls)
+
+    def test_enabled_registration_matches_current_api_and_rejects_previous_version(self):
+        # Production enables this fence; default-disabled startup alone cannot prove it.
+        from workflow.api import API_VERSION
+        env={"OPTIBRAIN_PHASE7_REGISTRATION":MODE,"OPTIBRAIN_PHASE7_RELEASE_SHA":SHA}
+        self.assertEqual(manifest()["api_version"], API_VERSION)
+        with (patch.dict(os.environ,env,clear=True),
+              patch('workflow.phase7_registration._trusted_manifest') as read_manifest):
+            with self.assertRaisesRegex(ValueError,"requires API 1.21.0"):
+                maybe_install_phase7(FastAPI(),client=None,store=None,engine=None,api_version="1.20.0")
+            read_manifest.assert_not_called()
+        with self.assertRaises(ValueError):
+            validate_registration({**manifest(),"api_version":"1.20.0"},checkout_sha=SHA,env=env)
 
     def test_business_action_requires_exact_pin(self):
         env={"OPTIBRAIN_PHASE7_REGISTRATION":MODE,"OPTIBRAIN_PHASE7_RELEASE_SHA":SHA}
@@ -188,7 +201,7 @@ class RegistrationTests(unittest.TestCase):
               patch('workflow.phase7_registration._trusted_manifest',return_value=reviewed),
               patch('workflow.phase7_registration.verify_source_hashes'),
               patch('workflow.phase7_registration.AccessIdentityVerifier',return_value=FakeVerifier())):
-            plan=maybe_install_phase7(app,client=fake,store=store,engine=engine,api_version="1.20.0")
+            plan=maybe_install_phase7(app,client=fake,store=store,engine=engine,api_version="1.21.0")
             self.assertTrue(plan["create"])
             url=f"/v1/operator/phase7/lead-create/approvals/{approval.approval_id}/consume"
             headers={"Cf-Access-Jwt-Assertion":"signed-human-fixture",
