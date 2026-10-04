@@ -6,7 +6,7 @@ Only unresolved or conditional upcoming actions are included. Cloud API enables,
 
 **Why:** English central delivery is unproven; both languages need full hidden-field/notification acquisition proof.
 
-**System:** Zoho Forms → RequestaQuote (English) / Formulairedemandedesoumission (French) → Settings → Email Notifications → admin notification: approved recipient soumissions@opticable.ca. Keep native CRM integration writer OFF and customer auto-replies OFF. Add one optional hidden Multi Line field “OptiBrain Acquisition Context”, prefill alias `ob_attribution`, on both forms. Include its value in the admin notification. The prepared URL prefill and strict parser already carry UTMs, click IDs, First/Last, origin and language. [Exact action sheet](r1-owner-actions.md) includes API-access diagnosis. The owner saved a Zoho profile, but the setup task timed out; no acquisition field or settings change was confirmed. A supported admin endpoint/scope must be established before another UI write attempt.
+**System:** Zoho Forms → RequestaQuote (English) / Formulairedemandedesoumission (French) → Settings → Email Notifications → admin notification: approved recipient soumissions@opticable.ca. Keep native CRM integration writer OFF and customer auto-replies OFF. Add one optional hidden Multi Line field “OptiBrain Acquisition Context”, prefill alias `ob_attribution`, on both forms. Include its value in the admin notification. The prepared URL prefill and strict parser already carry UTMs, click IDs, First/Last, origin and language. [Exact action sheet](r1-owner-actions.md) includes API-access diagnosis. The owner saved a Zoho profile, but the setup task timed out; no acquisition field or settings change was confirmed. The public administration API limitation is now classified G using owner/provider guidance; one-time UI setup is authorized and still requires saved-state proof. No OAuth expansion is indicated.
 
 **Blocking:** English family cannot graduate until proven; affects Phase32/33.
 
@@ -14,7 +14,9 @@ Only unresolved or conditional upcoming actions are included. Cloud API enables,
 
 **Expected result:** Correct authenticated admin notification reaches central intake and preserves approved acquisition fields.
 
-**Verification:** First obtain the supported provider administration endpoint/specification or explicit UI-only confirmation; do not reauthorize a guessed scope. Then use the established TEST_ONLY route/controlled subject and reconcile Mail receipt→intake→CRM fields. Native controlled TEST_ONLY verification is still pending this external setup. English remains excluded from real automation.
+**Verification:** The UI-only public administration limitation is established; retain existing OAuth. Verify saved fields/alias/notification settings, then use the established TEST_ONLY route/controlled subject and reconcile Mail receipt→intake→CRM fields. Native controlled TEST_ONLY verification is still pending this external setup. English remains excluded from real automation.
+
+**Latest setup result:** The owner-authorized one-time browser run was allowed to finish and failed with `Browser session closed unexpectedly`. Subsequent GET-only published-form inspection found no acquisition field on either form. No submission or saved setting was confirmed. The exact manual setup in the linked action sheet remains required; this does not justify another OAuth client, wider scope or recurring browser workflow.
 
 ## OA3: Confirm vendor-supported AI hosting/legal claims before wider publication.
 
