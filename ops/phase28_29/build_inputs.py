@@ -20,6 +20,7 @@ def main():
     enabled=sorted(ROOT.glob('google-after-enable-*.json'))
     if enabled:
         newest=load(enabled[-1]);native['reads'].update({k:{**v,'observed_at':newest['at']} for k,v in newest['reads'].items()});native['at']=newest['at']
+    if (ROOT/'google-current.json').exists():native=load(ROOT/'google-current.json')
     broker=lambda name:load(EVIDENCE/name).get('structuredContent',{}).get('data',[])
     permits=load('/var/lib/optibrain/sales-intelligence/permits.json')
     seao=load('/var/lib/optibrain/sales-intelligence/public-triggers.json')
@@ -45,7 +46,11 @@ def main():
         prior=load(ROOT/'inputs.json')
         for name in ('website','market_research','verified_outcomes'):
             if name in prior:x[name]=prior[name]
-    (ROOT/'inputs.json').write_text(json.dumps(x,ensure_ascii=False));(ROOT/'inputs.json').chmod(0o600)
+    # Runtime hydrates these existing identity caches independently. Do not store
+    # a second full Apollo workspace beside multi-megabyte website snapshots.
+    payload=json.dumps({k:v for k,v in x.items() if k not in {'apollo','crm'}},ensure_ascii=False,separators=(',',':'))
+    if len(payload.encode())>16777216:raise ValueError('Bounded research assembly exceeds 16 MiB')
+    (ROOT/'inputs.json').write_text(payload);(ROOT/'inputs.json').chmod(0o600)
     store=AcquisitionStore(ROOT/'lab.sqlite');view=ingest(store,x,now=now)
     (ROOT/'phase28-lab.json').write_text(json.dumps(view,ensure_ascii=False));(ROOT/'phase28-lab.json').chmod(0o600)
     print(json.dumps({k:view[k] for k in ('counts','snapshots','facts','identity_conflicts','crm_promotions','provider_writes')},ensure_ascii=False))
