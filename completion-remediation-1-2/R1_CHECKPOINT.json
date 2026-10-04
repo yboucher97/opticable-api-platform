@@ -2,7 +2,7 @@
   "schema": 1,
   "at": "2026-10-04T03:49:26Z",
   "gate": "PASS",
-  "scope": "R1 implemented and focused-tested; website production released; API changes await final combined release",
+  "scope": "PASS bounded sequential engineering gate; final R1 outcome PARTIAL because native Forms delivery/attribution remains provider-bound and unproven",
   "ga4": {
     "property": "530093120",
     "stream": "14233342137",
@@ -22,7 +22,7 @@
     "fr_delivery": "PROVEN reused Phase16 native notification",
     "en_delivery": "UNPROVEN; OWNER ACTION",
     "attribution_parity": "FR/EN prefill, parser, immutable ledger and CRM planning fixtures PASS; native persisted context NOT PROVEN",
-    "external_blocker": "Owner has now saved Zoho sign-in; bounded browser field/notification setup is in progress. Native attribution/delivery proof remains pending until completed.",
+    "external_blocker": "Existing US OAuth grant includes ZohoForms.forms.READ; CRM/Mail HTTP200, prior Forms admin path HTTP404 HTML with both auth schemes. Supported admin endpoint/write scope unknown (O); CRM-only MCP lacks Forms service (M). Owner-saved UI setup timed out without confirmed changes; no new UI write pending diagnosis.",
     "real_english_automation": "EXCLUDED unchanged"
   },
   "focused": {
@@ -41,8 +41,22 @@
     "customer_sends": 0
   },
   "remaining_required_work": [
-    "Combined API release and post-deploy health verification",
-    "Zoho field setup/live controlled validation if owner completes sign-in",
-    "Final report and recovery"
-  ]
+    "Provider-supported Forms admin path or explicit UI-only confirmation",
+    "Native TEST_ONLY FR/EN persisted attribution/delivery proof",
+    "Final recovery and operational report"
+  ],
+  "focused_final": {
+    "tests": 136,
+    "subtests": 89,
+    "failures": 0,
+    "blocked_network_attempts": 0
+  },
+  "release_validation": {
+    "tests": 1347,
+    "subtests": 1243,
+    "failures": 0,
+    "blocked_network_attempts": 0,
+    "receipt": "/var/lib/optibrain/releases/current.json",
+    "api": "1.20.0"
+  }
 }
