@@ -187,6 +187,13 @@ class TriggerPersistenceTests(unittest.TestCase):
 
 
 class PublicSourceTests(unittest.TestCase):
+    def test_camera_keyword_does_not_make_scientific_or_sewer_work_a_security_prospect(self):
+        from workflow.automation.trigger_sources import relevant
+        for title in ['Acquisition de caméra Laue','Inspection caméra de réseaux d’égout','Alarme incendie']:
+            with self.subTest(title=title):self.assertFalse(relevant(title))
+        self.assertTrue(relevant('Alarme incendie et intercommunication'))
+        self.assertTrue(relevant('Modernisation des systèmes de vidéosurveillance'))
+
     def test_provider_transport_fixed_get_hosts_budget_byte_limit(self):
         calls=[]
         def respond(req):calls.append(req);return httpx.Response(200,json={'ok':True})

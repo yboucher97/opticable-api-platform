@@ -31,6 +31,8 @@ def local_date(value):
 def relevant(value):
     from .trigger_intelligence import text
     value = text(value)
+    if re.search(r'egout|laue|microscop|radiolog|camera.{0,30}scientifi', value): return False
+    if 'incendie' in value and not re.search(r'cablage|telecommunication|reseau informatique|wi.?fi|intercom|videosurveillance|controle d.acces',value): return False
     return bool(re.search(r'cablage|telecommunication|fibre optique|reseau informatique|wi.?fi|videosurveillance|camera|controle d.acces|intercom|low.voltage', value))
 
 
