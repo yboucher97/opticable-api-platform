@@ -68,7 +68,7 @@ def permits(records, *, provider, now, verified_at, published_at=None):
         rid = str(raw.get('NO_PERMIS') if laval else raw.get('id_permis') or '')
         issued = local_date(raw.get('DATE_EMISSION') if laval else raw.get('date_emission'))
         category = text(raw.get('CATEGORIE_BATIMENT') if laval else raw.get('description_type_batiment'))
-        description = str(raw.get('TYPE_PERMIS_DESCR', '') + ' — ' + raw.get('TYPE_BATIMENT', '')) if laval else str(raw.get('nature_travaux', ''))
+        description = (str(raw.get('TYPE_PERMIS_DESCR') or '') + ' — ' + str(raw.get('TYPE_BATIMENT') or '')) if laval else str(raw.get('nature_travaux') or '')
         commercial = any(word in category for word in ('comm', 'industri', 'institut')) or ('5 log' not in category and 'mult' in category)
         if not rid or not issued or not commercial: continue
         if (now-stamp(issued)).days > 120: continue

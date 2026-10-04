@@ -220,6 +220,13 @@ class PublicSourceTests(unittest.TestCase):
         rows=permits([raw],provider='laval_permit',now=NOW,verified_at=NOW.isoformat())
         self.assertEqual(rows[0]['actors'][0]['role'],'GENERAL CONTRACTOR');self.assertEqual(rows[0]['actors'][0]['confidence'],'UNRESOLVED')
 
+    def test_native_nullable_building_type_does_not_disable_entire_laval_feed(self):
+        rows=[{'NO_PERMIS':'a','DATE_EMISSION':'2026-10-01','CATEGORIE_BATIMENT':'COMM','TYPE_PERMIS_DESCR':'Commercial renovation','TYPE_BATIMENT':None},
+              {'NO_PERMIS':'b','DATE_EMISSION':'2026-03-31','CATEGORIE_BATIMENT':'COMM','TYPE_PERMIS_DESCR':'Commercial renovation','TYPE_BATIMENT':None}]
+        result=permits(rows,provider='laval_permit',now=NOW,verified_at=NOW.isoformat())
+        self.assertEqual([r['source_record_id'] for r in result],['a'])
+        self.assertEqual(result[0]['company_name'],None)
+
     def test_known_buyer_name_cannot_override_explicit_foreign_source_location(self):
         row={'ocid':'foreign','id':'20261003110000','date':'2026-10-03T07:00:00-04:00',
              'buyer':{'id':'b','name':'Ville de Mont-Royal.'},'parties':[{'id':'b','address':{'countryName':'France'}}],
