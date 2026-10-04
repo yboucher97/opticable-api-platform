@@ -24,7 +24,7 @@
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
     "AUDIT EVIDENCE": 103,
-    "AUTHORITATIVE CURRENT": 34,
+    "AUTHORITATIVE CURRENT": 37,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
   },
@@ -1384,6 +1384,27 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_RECOVERY_AUTHORITY_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Foundation authority, provider access and bounded economics contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_KEYWORD_ECONOMICS_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Foundation authority, provider access and bounded economics contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_PROVIDER_ACCESS_ARCHITECTURE.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Foundation authority, provider access and bounded economics contract"
     }
   ]
 }

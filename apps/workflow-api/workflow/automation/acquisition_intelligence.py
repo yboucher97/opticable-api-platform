@@ -182,6 +182,12 @@ def render_acquisition(view):
         sample=c.get('search_sample',{})
         html+=f"<p><strong>{h(c['decision'])}: {h(c['title'])}</strong> · {h(c['language'])}<br>{h(c['why'])}<br><small>{h(c.get('evidence_confidence'))} · {h(c.get('geography'))} · {h(sample.get('impressions'))} impressions · {h(sample.get('clicks'))} clicks · CTR {h(sample.get('ctr'))} · average position {h(sample.get('position'))} · {h(sample.get('date_from'))}–{h(sample.get('date_to'))}<br>{h(c.get('existing_page') or c.get('recommended_url'))} · CTA: {h(c.get('cta'))}</small></p>"
     html+='</section><section><h2>Paid search research</h2>'
+    economics=view.get('keyword_economics',{})
+    if economics:
+        html+=f"<p>Keyword economics: {h(economics.get('state'))} · {h(economics.get('geography'))} · {h(economics.get('currency'))}<br><small>{h(economics.get('access'))}. Retrieved {h(economics.get('retrieved_at'))}. Trial continuity: {h(economics.get('trial_continuity'))}.</small></p>"
+        examples=[r for language in ('FR','EN') for r in [x for x in economics.get('rows',[]) if x.get('language')==language][:3]]
+        for r in examples:
+            html+=f"<p>{h(r['query'])} · {h(r['language'])}<br><small>Monthly searches: {h(r['market_volume'])} · CPC estimate: {h(r['cpc'])} CAD · competition: {h(r['paid_competition'])}. {h(r['window'])}.</small></p>"
     for p in view.get('paid_opportunities',[])[:5]:html+=f"<p>{h(p['service'])} · {h(p['reason'])}<br><small>Campaign changes require owner approval. CPC: {h(p.get('cpc'))}</small></p>"
     html+='</section><section><h2>Local proof and content reuse</h2><p>'+h(view.get('local_strategy','Owner-reviewed project evidence comes before publication.'))+'</p>'
     for plan in view.get('repurposing',[])[:2]:html+='<p>'+h(' → '.join(a['type'] for a in plan['assets']))+'<br><small>'+h(plan['source'])+'</small></p>'

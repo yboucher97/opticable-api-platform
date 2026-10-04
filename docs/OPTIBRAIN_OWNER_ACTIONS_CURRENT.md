@@ -2,21 +2,9 @@
 
 Only unresolved or conditional upcoming actions are included. Cloud API enables, OAuth consent, Explorer approval, Tag Manager API enabling and release permission fixes are resolved. Completion remediation resolved the GA4 property/tagging decision. GTM access is no longer a production measurement blocker; adding a second GA4 tag would require removing the direct site path in the same reviewed change. No private AGE key is requested.
 
-## OA2: Verify FR/EN Forms notifications and persisted attribution parity.
+## English real automation — separate enablement decision
 
-**Why:** English central delivery is unproven; both languages need full hidden-field/notification acquisition proof.
-
-**System:** Zoho Forms → RequestaQuote (English) / Formulairedemandedesoumission (French) → Settings → Email Notifications → admin notification: approved recipient soumissions@opticable.ca. Keep native CRM integration writer OFF and customer auto-replies OFF. Add one optional hidden Multi Line field “OptiBrain Acquisition Context”, prefill alias `ob_attribution`, on both forms. Include its value in the admin notification. The prepared URL prefill and strict parser already carry UTMs, click IDs, First/Last, origin and language. [Exact action sheet](r1-owner-actions.md) includes API-access diagnosis. The owner saved a Zoho profile, but the setup task timed out; no acquisition field or settings change was confirmed. The public administration API limitation is now classified G using owner/provider guidance; one-time UI setup is authorized and still requires saved-state proof. No OAuth expansion is indicated.
-
-**Blocking:** English family cannot graduate until proven; affects Phase32/33.
-
-**Affects:** Phase 32, Phase 33
-
-**Expected result:** Correct authenticated admin notification reaches central intake and preserves approved acquisition fields.
-
-**Verification:** The UI-only public administration limitation is established; retain existing OAuth. Verify saved fields/alias/notification settings, then use the established TEST_ONLY route/controlled subject and reconcile Mail receipt→intake→CRM fields. Native controlled TEST_ONLY verification is still pending this external setup. English remains excluded from real automation.
-
-**Latest setup result:** The owner-authorized one-time browser run was allowed to finish and failed with `Browser session closed unexpectedly`. Subsequent GET-only published-form inspection found no acquisition field on either form. No submission or saved setting was confirmed. The exact manual setup in the linked action sheet remains required; this does not justify another OAuth client, wider scope or recurring browser workflow.
+Forms setup and native FR/EN attribution validation are resolved. English intake is READY FOR SEPARATE ENABLEMENT REVIEW; existing real scope configuration remains excluded. No action is needed for shadow research. If later enabling it, review source eligibility, recipient/suppression/dedupe and original cutoff policy through the existing root authority workflow; do not activate by merely editing a form or widen a historical cutoff.
 
 ## OA3: Confirm vendor-supported AI hosting/legal claims before wider publication.
 
@@ -32,19 +20,20 @@ Only unresolved or conditional upcoming actions are included. Cloud API enables,
 
 **Verification:** Attach evidence and review in a later content mission; no production copy/template change now.
 
-## OA4: Conditionally request Google API access for Planner or choose one supported alternative.
+## OA4: Permanent direct Google Keyword Planner access
 
-**Why:** Explorer reads work but a bounded keyword historical-metrics request returned403.
+OWNER ACTION REQUIRED
 
-**System:** Google Cloud project167927303345 → Google Ads API Overview → Upgrade access level: request appropriate Basic/Standard access if needed for Planner. Ads account680-849-1878. This does not enable campaigns or change bidding/spend.
+Provider: Google Ads API / Google Cloud project167927303345. Operation: read KeywordPlanIdeaService historical metrics for Québec FR/EN. Current status: OAuth and reporting200; Planner403 PERMISSION_DENIED / DEVELOPER_TOKEN_NOT_APPROVED, explicitly Explorer restricted. Classification: PROVIDER API ACCESS-LEVEL LIMITATION, not missing OAuth scope. Exact permission: Basic access for the existing OAuth Cloud project; no Standard access needed for bounded requests.
 
-**Blocking:** Before quantitative Phase33 economics unless an equivalent legitimate source is chosen.
+Steps:
+1. Open [Google Ads API Overview](https://console.cloud.google.com/google/ads-apis/overview?project=167927303345) using the existing project administrator; verify current access Explorer.
+2. Expand Upgrade access level; next access must be Basic. If brand verification warning appears, complete Google Auth Platform → Branding / Verification Center for the existing project, retaining existing authorized domains/client/redirects.
+3. Click Apply for access and report approved/pending or exact rejection. This owner action was not executed by OptiBrain. Do not change campaigns, budgets, bids, Ads-account links, billing or create another OAuth project/client.
 
-**Affects:** Phase 33
+Reauthorization required: NO for access-level change alone; existing adwords scope already works. Manager/MCC setup: not required for current Cloud-managed access. Historical Ads API Center/token application is obsolete for this current API workflow. [Official current access instructions](https://developers.google.com/google-ads/api/docs/api-policy/access-levels) explain Basic and brand verification. Approval is provider-dependent; no outcome is promised.
 
-**Expected result:** Approved required API access or deliberate one-provider alternative, with no redundant purchases.
-
-**Verification:** One bounded language/location historical-metrics read after access changes; record metrics/cache/cost without campaign writes.
+Impact: read capability only; no CRM/Books/Mail/lifecycle authority change. Risk: minimal configuration-only access application; API permission does not authorize Ads writes. Validation: rerun one bounded identical Québec historical-metrics request, require200 and sane location/language/currency before using results. Independent work can continue: YES. Temporary Windsor gateway data already supports shadow research; its current Trial plan is not guaranteed long-term. Permanent direct quantitative Ads optimization still needs reliable continuing access.
 
 ## OA5: Optionally confirm known historical Finance/Service mappings in one batch.
 

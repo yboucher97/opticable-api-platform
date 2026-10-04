@@ -1,3 +1,5 @@
+AUTHORITATIVE CURRENT — Foundation completion delta, API1.21.0. Phase15 is GREEN for intended fresh-recovery/authority scope; native FR/EN attribution is proven. Phase21/22/25 remain YELLOW overall because separate historical/natural/Analytics-event boundaries remain. Phase28/29 remain YELLOW for competitive/performance and permanent economics access; a working dated Windsor source resolves bounded shadow economics. This does not promote whole phases based on a single repaired capability. Machine-readable current deltas are in OPTIBRAIN_PHASE_COMPLETENESS_MATRIX.json; the detailed original/current remediation context below is retained where not superseded.
+
 # OptiBrain phase completeness matrix
 
 Original audit baseline for Phases13–29 was SHA15bfb27aa48f4cc9479db7ee0128d76d48bb3d04/API1.19.0. Current contract isAPI1.20.0; exact deployment is recorded in `/var/lib/optibrain/releases/current.json`. Original PASS means the original bounded gate, not universal live completeness. Completion remediation1–2 restores site collection and hardens confidence/trigger eligibility; API1.20.0 release receipt determines final deployment state. Historical phase SHAs/evidence remain original.
@@ -148,7 +150,7 @@ Original audit baseline for Phases13–29 was SHA15bfb27aa48f4cc9479db7ee0128d76
 
 **Provider blockers:** See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.
 
-**Classification:** YELLOW
+**Classification:** GREEN
 
 **Remediation priority:** P1
 
@@ -156,6 +158,9 @@ Original audit baseline for Phases13–29 was SHA15bfb27aa48f4cc9479db7ee0128d76
 
 **Capability references:** ["recovery", "worker", "security"]
 
+
+
+**Foundation completion:** Explicit conversion authority reset and marked fresh-root verification now pass. Destination configuration is preserved with authority OFF; whole-host provider/DNS cutover is outside this bounded validation.
 
 ## Phase 16
 

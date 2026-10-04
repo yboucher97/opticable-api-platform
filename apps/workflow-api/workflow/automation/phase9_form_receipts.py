@@ -69,6 +69,43 @@ class _FormTable(HTMLParser):
             self.row = None
 
 
+class _MergedContexts(HTMLParser):
+    """Read Zoho's inline merge fields outside the notification's field table.
+
+    Custom notification templates wrap merged values in zspan. Zoho linkifies
+    URLs inside JSON; text extraction restores the supplied value without
+    trusting anchor hrefs or searching respondent notes for attribution.
+    """
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.tables = 0
+        self.span = None
+        self.contexts = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'table':
+            self.tables += 1
+        elif tag == 'zspan' and self.tables == 0:
+            if self.span is not None:
+                raise ValueError('Nested acquisition merge field')
+            self.span = []
+
+    def handle_data(self, data):
+        if self.span is not None:
+            self.span.append(data)
+
+    def handle_endtag(self, tag):
+        if tag == 'table':
+            self.tables = max(0, self.tables - 1)
+        elif tag == 'zspan' and self.span is not None:
+            value = ''.join(self.span).strip()
+            self.span = None
+            if re.match(r'^\{\s*"schema"\s*:', value):
+                if len(value) > 12000:
+                    raise ValueError('Oversized acquisition merge field')
+                self.contexts.append(value)
+
+
 def _body(response, kind):
     if response.get("ok") is not True:
         raise ValueError(f"Zoho Mail {kind} unavailable")
@@ -142,10 +179,19 @@ def parse_notification(*, message_id, details, content, headers, now):
     reference = str(fields.get("reference") or "")
     test_only = controlled_test_identity(email, fields)
     raw_hash = hashlib.sha256(str(content["content"]).encode()).hexdigest()
+    merged = _MergedContexts()
+    merged.feed(str(content['content']))
+    contexts = ([fields['acquisition_context']] if fields.get('acquisition_context') else []) + merged.contexts
+    if contexts:
+        decoded = [json.loads(value) for value in contexts]
+        if any(value != decoded[0] for value in decoded[1:]):
+            raise ValueError('Conflicting acquisition contexts')
+        fields['acquisition_context'] = contexts[0]
     attribution = {}
     if fields.get('acquisition_context'):
         context = json.loads(fields['acquisition_context'])
-        if not isinstance(context, dict) or context.get('schema') != 1:
+        if (not isinstance(context, dict) or context.get('schema') != 1
+                or set(context) != {'schema', 'language', 'attribution'}):
             raise ValueError('Invalid form acquisition context')
         if context.get('language') != ('fr' if french else 'en'):
             raise ValueError('Form acquisition language mismatch')
@@ -206,6 +252,14 @@ class FormReceiptLedger:
                     BEGIN SELECT RAISE(ABORT,'form receipt is immutable'); END;
                 CREATE TRIGGER IF NOT EXISTS form_receipts_no_delete BEFORE DELETE ON form_receipts
                     BEGIN SELECT RAISE(ABORT,'form receipt is immutable'); END;
+                CREATE TABLE IF NOT EXISTS form_context_projections (
+                    event_id TEXT PRIMARY KEY REFERENCES form_receipts(event_id),
+                    evidence_json TEXT NOT NULL, recorded_at TEXT NOT NULL
+                );
+                CREATE TRIGGER IF NOT EXISTS form_context_projection_no_update BEFORE UPDATE ON form_context_projections
+                    BEGIN SELECT RAISE(ABORT,'context projection is immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS form_context_projection_no_delete BEFORE DELETE ON form_context_projections
+                    BEGIN SELECT RAISE(ABORT,'context projection is immutable'); END;
                 CREATE TABLE IF NOT EXISTS form_test_classifications (
                     event_id TEXT PRIMARY KEY REFERENCES form_receipts(event_id),
                     evidence_json TEXT NOT NULL, recorded_at TEXT NOT NULL
@@ -308,6 +362,24 @@ class FormReceiptLedger:
             if prior:
                 if prior["evidence_json"] != payload:
                     original = json.loads(prior["evidence_json"])
+                    # The exact unchanged provider body can be re-read after
+                    # inline merge-field support is added. Preserve the original
+                    # receipt and append a deterministic parsing projection;
+                    # this never grants business-write authority.
+                    stripped = {**receipt, 'fields': dict(receipt['fields']),
+                                'attribution': {}, 'campaign': None,
+                                'attribution_confidence': 'FORM_NOTIFICATION_ONLY'}
+                    stripped['fields'].pop('acquisition_context', None)
+                    if (not original.get('fields', {}).get('acquisition_context')
+                            and receipt['fields'].get('acquisition_context')
+                            and stripped == original):
+                        current = db.execute('SELECT evidence_json FROM form_context_projections WHERE event_id=?',
+                                             (receipt['event_id'],)).fetchone()
+                        if current and current[0] != payload:
+                            raise ValueError('Provider context projection conflicts')
+                        db.execute('INSERT OR IGNORE INTO form_context_projections VALUES(?,?,?)',
+                                   (receipt['event_id'], payload, datetime.now(timezone.utc).isoformat()))
+                        return 'REPLAY'
                     # A newly supported deterministic TEST lineage may have
                     # been collected by an older release. Preserve its original
                     # receipt; append only a derived exclusion. All provider
@@ -360,15 +432,22 @@ class FormReceiptLedger:
         with self._connect() as db:
             rows = db.execute("SELECT r.*,COALESCE(l.canonical_id,m.crm_id) AS canonical_id,"
                 "m.status AS provider_match_status,l.canonical_id AS reviewed_test_link,"
+                "p.evidence_json AS projected_evidence_json,"
                 "CASE WHEN c.event_id IS NOT NULL THEN 1 ELSE r.test_only END AS effective_test_only "
                 "FROM form_receipts r LEFT JOIN form_receipt_links l ON l.event_id=r.event_id "
                 "LEFT JOIN form_provider_matches m ON m.event_id=r.event_id "
                 "LEFT JOIN form_test_classifications c ON c.event_id=r.event_id "
+                "LEFT JOIN form_context_projections p ON p.event_id=r.event_id "
                 "ORDER BY r.occurred_at DESC LIMIT ?", (limit,)).fetchall()
         result = [dict(row) for row in rows]
         for row in result:
             row["original_test_only"] = row["test_only"]
             row["test_only"] = row.pop("effective_test_only")
+            projected = row.pop('projected_evidence_json')
+            if projected:
+                row['original_evidence_json'] = row['evidence_json']
+                row['evidence_json'] = projected
+                row['context_provenance'] = 'DERIVED_DETERMINISTICALLY_FROM_UNCHANGED_PROVIDER_BODY'
         return result
 
     def enrichment_state(self, event_id_value):

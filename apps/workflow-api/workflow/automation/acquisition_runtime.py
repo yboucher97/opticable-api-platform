@@ -49,6 +49,8 @@ def observe(engine,settings,*,now=None):
     inputs['permits_at']=permits.get('at');inputs['seao_at']=public.get('at')
     google=ROOT/'google-current.json'
     if google.exists():inputs['google']=lc.trusted_json(google,2097152)
+    economics=ROOT/'keyword-economics.json'
+    if economics.exists():inputs['keyword_economics']=lc.trusted_json(economics,2097152)
     at=stamp(inputs.get('google',{}).get('at'))
     if not engine.dry_run and (not at or (now-at).total_seconds()>=86400):
         from workflow.google_oauth import GoogleOAuthManager

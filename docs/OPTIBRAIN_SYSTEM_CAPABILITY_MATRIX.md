@@ -1,4 +1,4 @@
-AUTHORITATIVE CURRENT after completion remediation1–2 (API1.20.0 candidate). Original audit evidence is retained in audit/full-system-readiness-20261004; this matrix records current deltas.
+AUTHORITATIVE CURRENT after completion remediation1–2 (API1.21.0 Foundation release). Original audit evidence is retained in audit/full-system-readiness-20261004; this matrix records current deltas.
 
 # OptiBrain system capability matrix
 
@@ -7,15 +7,15 @@ Every capability has an explicit definition of complete. Working code, provider 
 | System | Classification | Meaningful gap | Priority/action |
 | --- | --- | --- | --- |
 | Infrastructure | GREEN | No material gap in intended operating scope. | P3 / KEEP |
-| Deployment and rollback | YELLOW | The guard runs before the same-SHA branch, preventing harmless integrity verification while scopes are enabled. Keep the changing-release guard; split no-op verification. Legacy receipt checks list five timers. | P2 / SIMPLIFY |
-| Recovery and disaster recovery | YELLOW | Bootstrap/restore do not explicitly reset/exclude conversion-export control. Current export is OFF with no timer. Add that boundary before activation. Latest whole-host/DNS/provider cutover and private-key decrypt were not repeated. | P1 / REMEDIATE BEFORE FUTURE CONVERSION ACTIVATION |
+| Deployment and rollback | GREEN | Explicit same-SHA read-only check added; changing-release closed-writer guard unchanged. | P3 / KEEP |
+| Recovery and disaster recovery | GREEN | Fresh recovery resets conversion authority and retains configuration; marked clean-root simulation passes. Final exact-source archive drill remains required. Whole-host DNS/provider cutover was not repeated. | P2 / KEEP + VERIFY RECOVERY |
 | Persistent development worker retirement | GREEN | Operational timers are separate and intentionally remain active. | P3 / KEEP |
-| Schedulers, queues and watchers | YELLOW | Readiness still counts five legacy timers and displays old blocked/DLQ exceptions as general attention. Classify without replaying or deleting them. | P2 / CONSOLIDATE |
+| Schedulers, queues and watchers | YELLOW | Root health includes authorized scoped timers and explicit authority state. Ten retained review items lack classification; no age-based automatic resolution or replay. | P2 / REVIEW RETAINED EXCEPTIONS |
 | Zoho CRM business architecture | GREEN | New genuine conversion proof remains pending; historical records stay read-only. | P3 / KEEP |
 | Zoho Books financial truth | GREEN | Costs exist but direct allocation is insufficient. Margin is deliberately disabled. | P3 / KEEP |
 | Zoho Mail delivery/provider reconciliation | GREEN | First eligible genuine communication is pending; no new send was performed. | P3 / KEEP |
-| French Forms intake | YELLOW | Full hidden-field/notification attribution parity is unproven. Forwarding URL context is not field persistence proof. | P1 / REMEDIATE MEASUREMENT PARITY |
-| English Forms intake | YELLOW — OWNER ACTION | Admin notification delivery and persisted acquisition parity remain unproven; exact owner settings/test steps are required. | P1 / REMEDIATE BEFORE ACQUISITION EXPANSION |
+| French Forms intake | GREEN | Hidden alias/native delivery/31 context fields/immutable receipt and planning/replay proven by one native TEST_ONLY submission. Genuine customer CRM effect remains separate. | P3 / KEEP |
+| English Forms intake | GREEN | Independent native proof matches FR. Real automation remains disabled pending separate enablement review. | P2 / SEPARATE AUTHORIZATION REVIEW |
 | WorkDrive | GREEN | Real uploads/sharing are unarmed; first genuine eligible folder chain is pending. Initial headerless diagnostic failure was not a regression. | P3 / KEEP |
 | Zoho Sign automatic contract send | YELLOW — PROVIDER LIMITATION | Read success does not prove send licensing. No write probe was performed; automatic send remains OFF. | P2 / KEEP + DOCUMENT |
 | Forward Finance/Deal/Site/Service lineage | GREEN — WAITING FOR NATURAL EVENT | No eligible new complete native chain occurred. Eligible denominator is zero, so no forward completeness percentage is claimed. | P2 / KEEP + DOCUMENT |
@@ -30,15 +30,15 @@ Every capability has an explicit definition of complete. Working code, provider 
 | GA4 production page-view collection | GREEN | Canonical530093120 page-view reception independently proven for main and AI. Historical gap is not backfilled. Standard report propagation/future freshness remain separate. | P2 / KEEP + MONITOR |
 | Website conversion telemetry/privacy | YELLOW | Consent defaults, safe parameter/URL allowlisting and one GA4 destination now pass browser/network tests. Successful AI event is acknowledgement-bound; native iframe success and provider reception of full event set remain unproven. | P1 / FORMS SETUP; THEN NATURAL EVENT PROOF |
 | Google Ads read/account state | GREEN | Recent activity is empty. Auction/competitive coverage is limited; readable account does not mean an active campaign runs. | P3 / KEEP |
-| Keyword market volume/CPC/competition | YELLOW — PROVIDER LIMITATION | Broad market economics needs higher approved access or one genuinely available alternative. GSC impressions cannot substitute. | P1 / REMEDIATE BEFORE PHASE33 |
-| Google business-outcome conversions | GREEN — WAITING FOR NATURAL EVENT | No eligible natural event; GCLID path is proven, BRAID/enhanced export is unarmed. Recovery authority reset is required before activation. | P1 / KEEP; RECOVERY SAFEGUARD BEFORE ACTIVATION |
+| Keyword market volume/CPC/competition | YELLOW — PROVIDER LIMITATION | Working cached Windsor Québec FR/EN economics supports shadow research. Native Google remains403 Explorer-restricted; Windsor Trial continuity unknown. Missing values remain unknown. | P1 / BASIC CLOUD ACCESS FOR PERMANENT SOURCE |
+| Google business-outcome conversions | GREEN — WAITING FOR NATURAL EVENT | Three configured destinations; uploads OFF. Fresh restore explicitly resets upload authority. No synthetic/genuine upload performed. | P2 / KEEP; NATURAL EVENT + SEPARATE AUTHORIZATION |
 | Google Business Profile read intelligence | GREEN | Scheduled runtime ingestion and post-list coverage are unproven. Current gateway is sufficient for bounded local research. | P3 / KEEP |
 | Apollo direct research/production state | GREEN | Saved-search API unavailable; activity history is bounded. The2000-contact limit deliberately fails closed rather than granting partial clearance. | P3 / KEEP |
 | Claude/Apollo coexistence | GREEN | Private Claude history is inaccessible and not claimed. Evidence does not justify replacing its controller. | P3 / KEEP |
 | Clay supplemental enrichment integration | GREEN — INTENTIONALLY OPTIONAL | Clay comparison is unperformed. Optional GREEN does not certify provider connectivity. | P3 / KEEP |
 | Semrush specialist integration | GREEN — INTENTIONALLY OPTIONAL | No current detailed report/unit proof. Optional integration does not fill the actual economics/competitive data gap. | P3 / KEEP |
 | Ahrefs specialist integration | GREEN — INTENTIONALLY OPTIONAL | No current detailed report proof; no upgrade purchased. Core acquisition does not require this provider. | P3 / KEEP |
-| Windsor marketing gateway | GREEN | Runtime consumes staged observations; a ChatGPT connector does not automatically grant direct scheduled OptiBrain access. | P3 / KEEP |
+| Windsor marketing gateway | GREEN | Two Keyword Planner gateway reads proven; direct scheduled OptiBrain credential not established. Trial coverage supports current bounded research; no purchase. | P2 / PERMANENT GOOGLE FALLBACK |
 | Acquisition Intelligence store/model | GREEN | Some supported entity types lack provider data. Schema capability is not population coverage; no warehouse or ninth database was created. | P3 / KEEP |
 | SEO/site inventory intelligence | YELLOW | Sample-sensitive position support, numeric sample/window display and geography filtering are fixed. Mobile/performance and market economics remain unmeasured. | P2 / KEEP; LATER MEASURE COVERAGE |
 | Content intelligence and repurposing | GREEN | All30 briefs (21 existing/9 new) and5 reuse plans are retained with evidence confidence. Owner expertise and publication approval remain required; no proven ROI claimed. | P2 / KEEP + DOCUMENT |

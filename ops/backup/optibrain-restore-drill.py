@@ -2,6 +2,7 @@
 """Validate a checksum-pinned archive in disposable isolated staging, never live paths."""
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -11,6 +12,13 @@ import sqlite3
 import stat
 import tarfile
 import tempfile
+
+_authority_path=Path(__file__).with_name('recovery_authority.py')
+if not _authority_path.is_file():
+    _authority_path=Path(__file__).resolve().parents[1]/'phase15/recovery_authority.py'
+_spec=importlib.util.spec_from_file_location('recovery_authority',_authority_path)
+authority=importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(authority)
 
 
 class DrillError(Exception):
@@ -146,6 +154,9 @@ def validate(archive, expected_sha, workspace):
                 raise DrillError('ownership restore mismatch')
             if digest(restored) != digest(root / name):
                 raise DrillError('restored config changed')
+        archived_conversion=root/'system/etc/optibrain/conversion-export-control.json'
+        reset=authority.reset_conversion_authority(json.loads(archived_conversion.read_text()) if archived_conversion.exists() else None)
+        conversion_proof=authority.verify_conversion_disabled(reset)
         return dict(result='PASS', source_sha256=expected_sha,
                     generation=manifest['timestamp'], source_commit=sha,
                     files_verified=len(files), legacy_files_covered_by_archive_hash_only=len(omitted),
@@ -155,6 +166,7 @@ def validate(archive, expected_sha, workspace):
                     retired_unit_masks_restored=sum(u.startswith('optibrain-agent-') for u in masks),
                     recovery_unit_masks_restored=sum(not u.startswith('optibrain-agent-') for u in masks),
                     critical_configs_restored=len(critical), source_extraction='PASS',
+                    conversion_authority=conversion_proof,
                     scope='isolated archive/database/config/source validation; no services started')
 
 
