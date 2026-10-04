@@ -171,7 +171,7 @@ def assess(row, apollo, crm, *, now, crm_at, feedback=None):
               'Verify current source/status before review' if disposition == 'WATCH' else
               'Review procurement requirements and current addenda; no bid or contact authorized' if row.get('trigger_type') == 'PUBLIC TENDER' else
               'Owner reviews service need, installation timing and relevant role; no contact authorized')
-    sales_eligible = bool(disposition in {'ACT NOW', 'REVIEW'} and confidence == 'STRONG' and checked['crm_fresh_complete'] and checked['apollo_fresh_complete'] and checked['identity_matchable'] and
+    sales_eligible = bool(disposition in {'ACT NOW', 'REVIEW'} and quality == 'HIGH' and confidence == 'STRONG' and checked['crm_fresh_complete'] and checked['apollo_fresh_complete'] and checked['identity_matchable'] and
                           not checked['suppressed'] and not checked['ambiguous'] and not excluded)
     result = {**row, 'trigger_id': tid, 'key': candidate, 'status': status, 'geography_class': geo,
               'company_resolution_status': identity['status'], 'company_id': row.get('company_id'), 'company_identity_result': identity,

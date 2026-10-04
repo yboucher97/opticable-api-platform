@@ -152,7 +152,7 @@ def expansion(raw, *, now):
             'source_version': digest([headline, '2026-08-10', 'new warehouse facility in Laval, Quebec']),
             'source_version_at': '2026-08-10T12:00:00-04:00', 'source_effective_at': now.isoformat(), 'last_verified_at': now.isoformat(),
             'publish_date': '2026-08-10T12:00:00-04:00', 'status': 'ANNOUNCED', 'trigger_type': 'COMPANY EXPANSION',
-            'title': 'TricorBraun opened a Laval distribution warehouse', 'description': 'New warehouse facility; network installation stage is unknown.',
+            'title': 'TricorBraun opened a Laval distribution warehouse', 'description': 'New warehouse facility; installation stage is unknown.',
             'company_name': 'TricorBraun', 'domain': 'tricorbraun.com', 'geography_class': 'LAVAL', 'location': 'Laval, Québec',
             'company_identity': {'confidence': 'SUPPORTED', 'source_url': TRICOR},
             'actors': [{'role': 'FACILITY OPERATOR', 'name': 'TricorBraun', 'source_actor_id': 'domain:tricorbraun.com', 'confidence': 'SUPPORTED', 'source_url': TRICOR}],
