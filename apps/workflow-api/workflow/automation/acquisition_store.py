@@ -20,6 +20,7 @@ REFRESH={'search_console':86400,'ga4':86400,'google_ads':86400,'gbp':604800,'apo
          'permits':86400,'seao':86400,'website':604800,'competitors':604800,'registry':2592000,
          'semrush':2592000,'ahrefs':2592000,'clay':2592000,'windsor':86400,
          'facebook_organic':604800,'instagram':604800,'linkedin_organic':604800}
+REFRESH['windsor_keyword_planner']=2592000
 
 
 def digest(value):

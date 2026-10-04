@@ -2,6 +2,7 @@
 """Bounded CHECK/PREPARE/VERIFY for an explicit fresh host/root. Never starts units."""
 import argparse
 import grp
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,9 @@ import stat
 import subprocess
 
 REPO = Path(__file__).resolve().parents[2]
+_spec = importlib.util.spec_from_file_location('recovery_authority', Path(__file__).with_name('recovery_authority.py'))
+authority = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(authority)
 USERS = ('optibrain', 'opticable-workflow-api', 'opticable-password-pdf', 'opticable-omada-site')
 APP = ('opticable-workflow-api', 'opticable-password-pdf', 'opticable-omada-site')
 TIMERS = ('optibrain-backup','optibrain-phase2a-upload','opticable-phase9-intake-receipts',
@@ -36,6 +40,7 @@ HELPERS = {'/usr/local/sbin/opticable-api-deploy-root':'deploy/manual-guarded-re
     '/usr/local/lib/optibrain-backup/optibrain-phase2a-upload.sh':'ops/backup/optibrain-phase2a-upload.sh',
     '/usr/local/lib/optibrain-backup/optibrain-phase2a-upload.py':'ops/backup/optibrain-phase2a-upload.py',
     '/usr/local/lib/optibrain-backup/optibrain-restore-drill.py':'ops/backup/optibrain-restore-drill.py',
+    '/usr/local/lib/optibrain-backup/recovery_authority.py':'ops/phase15/recovery_authority.py',
     '/usr/local/lib/optibrain/phase12-run-test-lab.py':'ops/phase12/run_test_lab.py',
     '/usr/local/lib/optibrain/phase14-runtime-snapshot.py':'ops/phase14/runtime_snapshot.py',
     '/usr/local/lib/optibrain/phase14-retention.py':'ops/phase14/retention.py',
@@ -130,6 +135,8 @@ def prepare(root):
     os.chown(root/'etc/optibrain/mutation-control.json',0,groups[APP[0]])
     write(root,'/etc/optibrain/customer-communication-control.json',
           json.dumps({'schema':1,'external_enabled':False,'test_enabled':False})+'\n')
+    write(root,'/etc/optibrain/conversion-export-control.json',
+          json.dumps(authority.reset_conversion_authority(), indent=2)+'\n')
     for name in APP:
         write(root,'/etc/'+name+'.env','')
     write(root,'/etc/optibrain/phase12-runner.env','OPTIBRAIN_BUSINESS_AUTO_WRITES=0\nOPTIBRAIN_AUTO_TEST_TASK=0\n')
@@ -193,11 +200,19 @@ def verify(root):
     require(policy['test_writes_enabled'] is False and policy['real_canary_allowed'] is False,'Writers enabled')
     customer=json.loads((root/'etc/optibrain/customer-communication-control.json').read_text())
     require(customer.get('external_enabled') is False and customer.get('test_enabled') is False,'Customer sends enabled')
+    require(not policy.get('lifecycle', {}).get('enabled') and not policy.get('lifecycle', {}).get('real_scopes'),
+            'Recovered internal lifecycle authority enabled')
+    conversion=target_path(root,'/etc/optibrain/conversion-export-control.json')
+    conversion_info=conversion.lstat()
+    require(stat.S_ISREG(conversion_info.st_mode) and conversion_info.st_uid==0 and not conversion_info.st_mode&0o077,
+            'Untrusted recovered conversion policy')
+    conversion_proof=authority.verify_conversion_disabled(json.loads(conversion.read_text()))
     require(info.st_uid==0 and not info.st_mode&0o022 and stat.S_ISREG(info.st_mode),'Untrusted safety policy')
     require(all(flags.get(k)==v for k,v in SAFETY.items()),'Recovery flags changed')
     require(all(n in pw and n in groups for n in USERS),'Service identity missing')
     require(not (root/'etc/optibrain/authorize-persistent-codex-development').exists(),'Development authority present')
-    return dict(mode='VERIFY',root=str(root),safety_defaults='PASS',masks=len(masks),users=len(USERS),units_started=0)
+    return dict(mode='VERIFY',root=str(root),safety_defaults='PASS',masks=len(masks),users=len(USERS),units_started=0,
+                conversion_authority=conversion_proof)
 
 
 if __name__=='__main__':

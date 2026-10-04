@@ -42,12 +42,16 @@ def restore(archive,expected,root,workspace):
         generation=next(scratch.glob('generation-*'))
         manifest=json.loads((generation/'manifest.json').read_text())
         mappings=[]
+        conversion_config=None
         seen=set()
         for row in manifest['source_metadata']:
             name=row['source_path']
             if not selected(name) or name in seen:
                 continue
             seen.add(name)
+            if name=='/etc/optibrain/conversion-export-control.json':
+                conversion_config=json.loads((generation/validation.relative(row['backup_path'])).read_text())
+                continue  # Preserve native configuration below, never archived execution authority.
             if name.endswith(('.db-wal','.db-shm')) or '/ms-playwright/' in name or name.endswith('/ms-playwright'):
                 continue  # SQLite online snapshots supersede sidecars; retired browser cache is not runtime state.
             if (name in {'/etc/optibrain/mutation-control.json','/etc/optibrain/customer-communication-control.json','/etc/optibrain/rebuild-safety.env',
@@ -61,6 +65,7 @@ def restore(archive,expected,root,workspace):
             bootstrap.require(source.exists(),'Manifest recovery target absent')
             mode=int(row['mode'],8)
             mappings.append((source,target,row['type'],uid[row['owner']],gid[row['group']],mode))
+        recovered_conversion=bootstrap.authority.reset_conversion_authority(conversion_config)
         # Preflight every mapping and destination first; no traversal/symlink target allowed.
         for source,target,kind,owner,group,mode in mappings:
             bootstrap.require(kind in {'file','directory'},'Unsupported recovery type')
@@ -83,6 +88,9 @@ def restore(archive,expected,root,workspace):
         (root/'etc/optibrain/phase9-form-enrichment.env').write_text('OPTIBRAIN_PHASE9_FORM_ENRICHMENT=off\nOPTIBRAIN_PHASE9_FORM_GO_LIVE=off\n')
         for p in ('phase12-runner.env','phase9-form-enrichment.env'):
             os.chown(root/'etc/optibrain'/p,0,0);(root/'etc/optibrain'/p).chmod(0o600)
+        conversion=root/'etc/optibrain/conversion-export-control.json'
+        conversion.write_text(json.dumps(recovered_conversion,indent=2)+'\n')
+        os.chown(conversion,0,0);conversion.chmod(0o600)
         reg=root/'etc/optibrain/phase7-canary-registration.json'
         if reg.exists():
             value=json.loads(reg.read_text());value['business_actions_enabled']=False
@@ -103,6 +111,7 @@ def restore(archive,expected,root,workspace):
     bootstrap.verify(root)
     receipt=dict(schema=1,archive_sha256=expected,generation=proof['generation'],restored_files=copied,
                  databases=checks,safety_defaults='PASS',timers='MASKED',writers_enabled=False,provider_calls=0,
+                 conversion_authority=bootstrap.authority.verify_conversion_disabled(recovered_conversion),
                  source_strategy='Exact repository/bundle checkout; old source archive remains recovery evidence',
                  omitted='SSH host identity, live units/enables, browser cache, old execution authorizations')
     p=root/'var/lib/optibrain/rebuild-restore-receipt.json';p.write_text(json.dumps(receipt,indent=2)+'\n');p.chmod(0o600)

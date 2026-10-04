@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import shutil
 import sqlite3
+import stat
 import subprocess
 import tempfile
 
@@ -16,6 +17,45 @@ TIMERS = {'optibrain-backup':172800,'optibrain-phase2a-upload':172800,
 DB_ROOT = Path('/var/lib/opticable-workflow-api/output/automation')
 DBS = ('automation.db','phase9-form-receipts.db','phase9-intake.db',
        'phase10-service-events.db','phase12-autonomy.db')
+
+
+def authority_summary(value, kind, now):
+    """Sanitized capability/authority display. This cannot authorize an effect."""
+    policy=value.get('lifecycle',{}) if kind=='internal' else value
+    configured=len(value.get('destinations',{})) if kind=='conversion' else len(policy.get('real_scopes',policy.get('scopes',[])))
+    enabled=policy.get('enabled') is True if kind!='customer' else policy.get('external_enabled') is True
+    effective=enabled
+    expiry=policy.get('expires_at')
+    operation='DISABLED'
+    if enabled:
+        try:
+            cutoff=datetime.fromisoformat((policy.get('eligible_after') or policy['activated_at']).replace('Z','+00:00'))
+            end=datetime.fromisoformat(expiry.replace('Z','+00:00'))
+            if cutoff.utcoffset() is None or end.utcoffset() is None or cutoff>end:
+                raise ValueError('Invalid authority window')
+            operation='EXPIRED' if now>=end else 'BLOCKED' if now<cutoff else 'ACTIVE'
+            effective=operation=='ACTIVE' and configured>0
+            if not configured:operation='BLOCKED'
+        except (KeyError,AttributeError,TypeError,ValueError):
+            operation='BLOCKED';effective=False
+    elif kind=='conversion' and configured:
+        operation='WAITING FOR NATURAL EVENT'
+    if kind=='conversion' and effective:
+        effective=any(d.get('local_enabled') is True and len(d.get('allowed_event_keys',[]))==1
+                      for d in value['destinations'].values())
+        operation='ACTIVE' if effective else 'BLOCKED'
+    return dict(capability='CAPABLE', configuration='CONFIGURED' if configured else 'NOT CONFIGURED', configured=configured,
+                authority='AUTHORIZED' if effective else 'NOT AUTHORIZED', enabled=enabled,
+                operation_state=operation, expires_at=expiry)
+
+
+def read_authority(path):
+    fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW)
+    with os.fdopen(fd) as stream:
+        info=os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_uid!=0 or info.st_mode&0o022:
+            raise ValueError('Untrusted authority policy')
+        return json.load(stream)
 
 
 def resolved_read_reviews(receipt_path,producer_path,db_path):
@@ -60,8 +100,23 @@ def collect(now=None):
     signals=[]
     def add(name,state,reason,**extra):
         signals.append(dict(name=name,state=state,reason=reason,**extra))
+    authorities={}
+    for kind,label,filename in [('internal','Internal automation','mutation-control.json'),
+                                ('customer','Customer communication','customer-communication-control.json'),
+                                ('conversion','Google conversion export','conversion-export-control.json')]:
+        try:
+            summary=authority_summary(read_authority(Path('/etc/optibrain')/filename),kind,now)
+            authorities[kind]=summary
+            add(label,'ACTION REQUIRED' if summary['operation_state']=='BLOCKED' else
+                'DEGRADED' if summary['operation_state']=='EXPIRED' else 'OK',
+                'Capability and execution authority are separate; recovery never grants authority',**summary)
+        except (OSError,ValueError,TypeError):
+            add(label,'UNKNOWN','Authority policy unavailable; effects must fail closed',authority='UNKNOWN',operation_state='BLOCKED')
+    expected=dict(TIMERS)
+    for kind,name in [('internal','opticable-lifecycle-internal'),('customer','opticable-customer-communications')]:
+        if authorities.get(kind,{}).get('authority')=='AUTHORIZED':expected[name]=900
     failed=[];stale=[]
-    for name,deadline in TIMERS.items():
+    for name,deadline in expected.items():
         output=subprocess.check_output(['systemctl','show',name+'.service','-p','Result','-p','ExecMainStatus','-p','ExecMainExitTimestampMonotonic'],text=True,timeout=5)
         props=dict(line.split('=',1) for line in output.splitlines() if '=' in line)
         active=subprocess.run(['systemctl','is-active',name+'.timer'],text=True,stdout=subprocess.PIPE,timeout=5,check=False).stdout.strip()
@@ -69,8 +124,8 @@ def collect(now=None):
         if props.get('Result')!='success' or props.get('ExecMainStatus')!='0' or active!='active':failed.append(name)
         elif elapsed>deadline:stale.append(name)
     add('Timers','ACTION REQUIRED' if failed else 'DEGRADED' if stale else 'OK',
-        'Scheduled job failed or disabled' if failed else 'Scheduled result is stale' if stale else 'Five expected timers have successful recent results',
-        expected=5,failed=len(failed),stale=len(stale))
+        'Scheduled job failed or disabled' if failed else 'Scheduled result is stale' if stale else 'Expected authorized timers have successful recent results',
+        expected=len(expected),failed=len(failed),stale=len(stale),scoped_timers_expected=len(expected)-len(TIMERS))
     archives=sorted(Path('/var/backups/optibrain').glob('optibrain-backup-*.tar.gz'))
     latest=archives[-1] if archives else None
     age=(now-datetime.fromtimestamp(latest.stat().st_mtime,timezone.utc)).total_seconds() if latest else None

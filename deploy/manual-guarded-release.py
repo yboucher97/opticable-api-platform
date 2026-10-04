@@ -109,6 +109,19 @@ def verify_closed():
         vals=dict(x.split('=',1) for x in p.read_text().splitlines() if '=' in x and not x.startswith('#'))
         require(vals.get('OPTIBRAIN_BUSINESS_AUTO_WRITES','0')=='0','automatic_writes_enabled')
     require(not Path('/etc/optibrain/authorize-persistent-codex-development').exists(),'development_worker_authorized')
+
+def verify_current(target):
+    """Explicit read-only verification; cannot select a different release or grant authority."""
+    require(os.geteuid()==0 and re.fullmatch('[0-9a-f]{40}',target),'root_and_exact_sha_required')
+    require(run(*GIT,'rev-parse','HEAD')==target,'read_only_verification_requires_current_sha')
+    require(not run(*GIT,'diff','--name-only') and not run(*GIT,'diff','--cached','--name-only'),'production_changes_present')
+    manifest=json.loads(MANIFEST.read_text())
+    require(manifest['candidate_sha']==target,'deployed_manifest_drift')
+    for p,h in manifest['source_hashes'].items():
+        require(hashlib.sha256((PROD/'apps/workflow-api'/p).read_bytes()).hexdigest()==h,'deployed_source_drift')
+    require(health(candidate_version()),'current_release_unhealthy')
+    return {'state':'verified_current','sha':target,'read_only':True,'authority_changes':0}
+
 def main(target):
     require(os.geteuid()==0 and re.fullmatch('[0-9a-f]{40}',target),'root_and_exact_sha_required')
     ROOT.mkdir(mode=0o700,parents=True,exist_ok=True)
@@ -181,6 +194,9 @@ def main(target):
 
 if __name__=='__main__':
     try:
-        require(len(sys.argv)==2,'one_exact_sha_argument_required');main(sys.argv[1])
+        if len(sys.argv)==3 and sys.argv[1]=='--verify-current':
+            print(json.dumps(verify_current(sys.argv[2])))
+        else:
+            require(len(sys.argv)==2,'one_exact_sha_argument_required');main(sys.argv[1])
     except Exception as exc:
         print('Guarded release refused: '+(str(exc) if isinstance(exc,RuntimeError) else type(exc).__name__),file=sys.stderr);sys.exit(1)

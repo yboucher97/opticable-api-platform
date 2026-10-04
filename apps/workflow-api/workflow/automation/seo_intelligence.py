@@ -256,7 +256,22 @@ def enrich(store,inputs,view,*,now):
             seeds.append({'query':result['text'],'language':'FR' if name.endswith('_fr') else 'EN','geography':'Québec',
                 'market_volume':number(metrics.get('avgMonthlySearches')),'cpc':number(metrics.get('averageCpcMicros'))/1e6 if number(metrics.get('averageCpcMicros')) is not None else None,
                 'currency':'CAD','source':'Native Keyword Planner historical estimate','intent':intent_for(result['text'])})
+    economics=None
+    if inputs.get('keyword_economics'):
+        from .keyword_economics import integrate
+        try:economics=integrate(store,inputs['keyword_economics'],now=now)
+        except (ValueError,KeyError,TypeError):
+            store.source('windsor_keyword_planner','BLOCKED',now,reason='Cached economics provenance failed validation; other acquisition evidence continues.')
+            economics={'state':'BLOCKED','rows':[],'metric_basis':'UNKNOWN — INPUT NOT TRUSTED','provider_calls_this_rebuild':0}
+        # Keep first-party query metrics intact. These separate province-level
+        # estimates support commercial research, never replace ranking samples.
+        if economics['state']=='WORKING':seeds.extend(economics['rows'])
     report=build_content(view.get('queries',[]),pages,competitors=view.get('competitors',[]),market_keywords=seeds)
+    if economics:
+        report['keyword_economics']=economics
+        for opportunity in view.get('opportunities',[]):
+            opportunity['supporting_keyword_economics']=[r for r in economics['rows'] if r['service']==opportunity['service']][:3]
+            opportunity['economics_scope']='Province-wide estimates support research; city/ICP demand remains unproven. No aggregated market volume.'
     url='https://optibrain.opticable.ca/v1/operator/acquisition'
     for c in report['content_queue']:
         store.record('CONTENT_TOPIC',c,source='optibrain_content',native_id=c['id'],url=url,now=now,confidence='EXPLAINABLE DERIVED RECOMMENDATION — NOT PROVEN ROI')
@@ -265,7 +280,7 @@ def enrich(store,inputs,view,*,now):
     store.source('website','WORKING',now,observed_at=raw.get('at'),reason='Bounded own-site HTML/robots/sitemap inventory; two native URL inspections prove indexing. Performance remains unmeasured.',requests=len(pages))
     planner=all(inspections.get(k,{}).get('state')=='WORKING' for k in ('market_keywords_fr','market_keywords_en'))
     store.source('keyword_planner','WORKING' if planner else 'PLAN LIMITED',now,observed_at=inputs.get('market_research',{}).get('at'),
-        reason='Native Quebec FR/EN demand estimates.' if planner else 'Explorer access rejects KeywordPlanIdeaService: DEVELOPER_TOKEN_NOT_APPROVED. Basic/Standard application required; no automatic retry or purchase.',requests=2)
+        reason='Native Quebec FR/EN demand estimates.' if planner else 'Explorer rejects KeywordPlanIdeaService: DEVELOPER_TOKEN_NOT_APPROVED. Cloud project Basic access required; cached Windsor fallback is separate. No automatic retry or purchase.',requests=2)
     for name in ('website','keyword_planner'):store.record('SOURCE',{'name':name,'role':'Acquisition observation / research only'},source='optibrain_market',native_id=name,url=url,now=now,confidence='DECLARED SOURCE ROLE')
     report['keyword_universe']['required_keyword_families_evaluated']=21
     report['keyword_universe']['independent_fr_en_seed_families']=21

@@ -108,8 +108,13 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
         rows.append(signal('Queue','ACTION REQUIRED' if blocked else 'OK',
                            'Work requires reconciliation' if blocked else 'No stale or failed queued work',
                            queued=health.get('queued',0),running=health.get('running',0),blocked=blocked))
-        rows.append(signal('Retained exceptions','OK','Retained runs are separate from current business attention',
-                           retained_human_review=health.get('human_action_required',0),reconciled_read_only_failures=resolved))
+        pending=health.get('human_action_required',0)
+        rows.append(signal('Retained exceptions','UNKNOWN' if pending else 'OK',
+                           'Retained review items are unclassified; review provenance before treating them as current failures'
+                           if pending else 'No unclassified retained review items; reconciled reads remain historical evidence',
+                           retained_human_review=pending,reconciled_read_only_failures=resolved,
+                           exception_states={'UNCLASSIFIED REVIEW':pending,'RESOLVED READ-ONLY':resolved},
+                           accepted_exceptions=0))
     except (OSError,sqlite3.Error):
         rows.extend([signal('Delta checkpoint','UNKNOWN','Checkpoint unavailable'),signal('Queue','UNKNOWN','Queue state unavailable')])
     status = native.get('native_subscription_status','unconfigured')
