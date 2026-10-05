@@ -20,3 +20,7 @@ Geographic states include CANADA, QUÉBEC, MONTRÉAL, LAVAL, RIVE-NORD, GREATER 
 ## Phase30 trigger evidence links
 
 Existing service/geography market hypotheses link to versioned trigger IDs, source URLs, priority and confidence. The link does not imply measured ICP demand, market volume, installed service scope or ROI. Public facts remain independently inspectable; moderate batch-lag tender proof stays review research. Missing Windsor economics does not stop trigger discovery. No Ads or outbound execution is added. See [trigger policy](OPTIBRAIN_TRIGGER_INTELLIGENCE_CONTRACT.md).
+
+## Phase33 paid opportunity overlay
+
+The existing Market Opportunity projection may include a separate paid-intelligence assessment: service/ICP/geography/language, keyword estimates, Canadian organic visibility, existing landing readiness, conversion limits, market/trigger references, recurring potential, current Ads coverage, missing data and channel recommendation. Raw provider observations and previous market/trigger records remain separate. Organic impressions are not keyword search volume; Québec estimates are not Montréal auction prices. A high strategic opportunity with weak economics remains a research hypothesis. AI loss prevention can favor education/outbound/partnerships instead of an unsupported Search launch.

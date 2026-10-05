@@ -129,7 +129,8 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
                            business_journal.view(),system_health(),now=instant,unavailable=unavailable,internal=read_internal_attention(instant),
                            communications=read_internal_attention(instant,Path('/run/optibrain-readiness/customer-communications.json')),
                            recurring=read_internal_attention(instant,Path('/run/optibrain-readiness/recurring.json')),
-                           sales_intelligence=read_internal_attention(instant,Path('/run/optibrain-readiness/sales-intelligence.json')))
+                           sales_intelligence=read_internal_attention(instant,Path('/run/optibrain-readiness/sales-intelligence.json')),
+                           ads_intelligence=read_internal_attention(instant,Path('/run/optibrain-readiness/ads-intelligence.json')))
 
     def sales_snapshot():
         view=read_internal_attention(now(),Path('/run/optibrain-readiness/sales-intelligence.json'))
@@ -137,8 +138,18 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         return view
 
     @app.get('/v1/operator/acquisition',response_class=HTMLResponse,tags=['operator'])
-    async def acquisition_intelligence(prospect_id: str | None = None, cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+    async def acquisition_intelligence(prospect_id: str | None = None, proposal_id: str | None = None,
+                                      cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
         identity(cf_access_jwt_assertion)
+        if proposal_id is not None:
+            if not re.fullmatch('[0-9a-f]{64}',proposal_id):raise HTTPException(status_code=404,detail='Proposal unavailable')
+            from .automation.optimization_store import OptimizationStore
+            from .automation.ads_intelligence import render_proposal
+            proposals=OptimizationStore(Path(store.db_path).with_name('phase12-autonomy.db')).rows()
+            row=next((p for p in proposals if p['record']['proposal_id']==proposal_id),None)
+            if not row:raise HTTPException(status_code=404,detail='Proposal unavailable')
+            return HTMLResponse(render_proposal(row),headers={**private_headers,
+                'Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'"})
         if prospect_id is not None:
             if not re.fullmatch('[0-9a-f]{64}',prospect_id):raise HTTPException(status_code=404,detail='Prospect unavailable')
             detail=read_internal_attention(now(),Path('/run/optibrain-readiness/prospect-details.json'))
@@ -158,6 +169,29 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
                 if choice=='DO NOT CONTACT':row['collision'].update(suppressed=True,classification='SUPPRESSED')
         from .automation.acquisition_intelligence import render_acquisition
         return HTMLResponse(render_acquisition(view),headers=private_headers)
+
+    @app.post('/v1/operator/acquisition/proposal/{proposal_id}/review',response_class=HTMLResponse,tags=['operator'])
+    async def review_optimization(proposal_id: str,request: Request,
+        cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        person=identity(cf_access_jwt_assertion)
+        if not re.fullmatch('[0-9a-f]{64}',proposal_id):raise HTTPException(status_code=404,detail='Proposal unavailable')
+        if request.headers.get('origin')!=origin or request.headers.get('sec-fetch-site') not in {None,'same-origin','none'}:
+            raise HTTPException(status_code=403,detail='same-origin review required')
+        if request.headers.get('content-type','').split(';')[0]!='application/x-www-form-urlencoded':
+            raise HTTPException(status_code=415,detail='Bounded review form required')
+        body=b''
+        async for chunk in request.stream():
+            body+=chunk
+            if len(body)>1024:raise HTTPException(status_code=413,detail='Review form too large')
+        from urllib.parse import parse_qs
+        from .automation.optimization_store import OptimizationStore
+        try:
+            fields=parse_qs(body.decode('ascii'),strict_parsing=True,max_num_fields=3)
+            if set(fields)!={'revision','payload_hash','choice'} or any(len(v)!=1 for v in fields.values()):raise ValueError('Exact review required')
+            OptimizationStore(Path(store.db_path).with_name('phase12-autonomy.db')).review(proposal_id,
+                int(fields['revision'][0]),fields['payload_hash'][0],fields['choice'][0],person.actor,now())
+        except (ValueError,UnicodeError):raise HTTPException(status_code=409,detail='Fresh exact local review required; execution unavailable')
+        return HTMLResponse("<p>Local review recorded. No provider execution authorized.</p><a href='/v1/operator/acquisition'>Acquisition</a>",headers=private_headers)
 
     def trigger_candidate(candidate):
         if not re.fullmatch('[0-9a-f]{64}',candidate):raise HTTPException(status_code=404,detail='Candidate unavailable')

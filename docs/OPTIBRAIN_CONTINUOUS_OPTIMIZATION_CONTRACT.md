@@ -1,6 +1,6 @@
 # Continuous optimization integration
 
-AUTHORITATIVE CURRENT. This contract defines the shared foundation for later domain phases. **Implemented now: versioned record contracts and a machine-readable schema.** No optimization manager, proposal database migration, endpoint, scheduler, execution adapter or new production authority is installed by this foundation.
+AUTHORITATIVE CURRENT. This contract defines the shared foundation for later domain phases. **Implemented now: shared formats/schema plus Phase33 minimal immutable proposal/priority/asset persistence, local review and Ads preparation in existing owner views.** No optimization manager, new scheduler, Ads execution adapter or new production authority is installed. See the [Ads contract](OPTIBRAIN_ADS_INTELLIGENCE_CONTRACT.md).
 
 The common path is:
 

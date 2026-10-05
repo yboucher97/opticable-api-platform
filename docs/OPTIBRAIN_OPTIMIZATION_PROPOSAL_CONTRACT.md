@@ -1,6 +1,6 @@
 # Optimization proposal record
 
-AUTHORITATIVE CURRENT. Canonical format: `schema=1`, `type=optibrain.optimization_proposal`; [machine schema](optibrain-optimization.schema.json). This is a shared data contract, not an installed proposal engine. No equivalent cross-domain optimization envelope was found. Existing action/approval/effect journals are reused through references.
+AUTHORITATIVE CURRENT. Canonical format: `schema=1`, `type=optibrain.optimization_proposal`; [machine schema](optibrain-optimization.schema.json). Phase33 implements minimal shared immutable revision/review persistence in the existing research database. Domain details are hashed sidecars to this envelope. This is not the full optimization engine. Existing action/approval/effect journals remain the future execution boundary; local reviews cannot grant a writer.
 
 ## Identity and content
 

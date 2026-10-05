@@ -19,3 +19,7 @@ Each item answers: what should happen, why, impact, urgency, evidence/confidence
 Do not label a retained historical exception active without current failure evidence. Use CURRENT_ISSUE, HISTORICAL_EXCEPTION, ACCEPTED_LIMITATION, EXPECTED_DISABLED or UNKNOWN when appropriate. Empty eligible queues are not failures; scheduled starts without successful queue processing are not healthy.
 
 Future priority items cannot override root kill switches, scope expiry, protected ownership, provider permission, suppression or approval. Closed/rejected items and learning remain queryable for later decisions. No new scheduler, public endpoint, cold send or financial action is enabled by this contract.
+
+## Phase33 minimal persistence and owner preparation
+
+Ads domain priorities use this shared representation and immutable research-store revisions. Each links the exact Optimization Proposal preview, business reason, timing, confidence/evidence, owner action and dependency. Existing Today shows up to three ready Ads priorities; Acquisition retains the complete queue. Rejected proposals remain durable and leave the ready priority projection. A priority or REVIEWED choice grants no approval or execution authority. No new dashboard, scheduler or task provider is added.

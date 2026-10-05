@@ -88,6 +88,21 @@ def observe(engine,settings,*,now=None):
     if not engine.dry_run:
         store=AcquisitionStore(DATABASE);view.update(store.summary(now));view['at']=now.isoformat()
         display=owner_projection(view)
+        if (ROOT/'ads-context.json').exists():
+            from .ads_runtime import observe as observe_ads
+            try:
+                ads=observe_ads(engine,settings,now=now,base_view=view)
+                display['ads_intelligence']={k:ads.get(k) for k in ('at','proposal_count','hook_count','economics_state',
+                    'collection_origin','preparation_origin','source_health','proposals')}
+                for market in display.get('opportunities',[]):
+                    paid=next((r for r in ads.get('opportunities',[]) if r['service']==market.get('service')),None)
+                    if paid:
+                        market['paid_intelligence']={'rating':paid['rating'],'channels':paid['channels'],
+                            'confidence':paid['confidence'],'estimate_scope':paid['cpc_range']['scope'] if 'scope' in paid['cpc_range'] else paid['cpc_range']['basis'],
+                            'derived_at':ads['prepared_at'],'source':'shared Ads preparation; native facts remain separate'}
+            except (ValueError,OSError,RuntimeError):
+                display['ads_intelligence']={'source_health':{'state':'DEGRADED — independent Ads preparation unavailable'},
+                    'execution_authorized':False,'provider_writes':0}
         triggers=ROOT/'triggers-view.json'
         if triggers.exists():
             from .trigger_runtime import projection

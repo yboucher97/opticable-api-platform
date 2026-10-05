@@ -182,6 +182,9 @@ def render_acquisition(view):
         sample=c.get('search_sample',{})
         html+=f"<p><strong>{h(c['decision'])}: {h(c['title'])}</strong> · {h(c['language'])}<br>{h(c['why'])}<br><small>{h(c.get('evidence_confidence'))} · {h(c.get('geography'))} · {h(sample.get('impressions'))} impressions · {h(sample.get('clicks'))} clicks · CTR {h(sample.get('ctr'))} · average position {h(sample.get('position'))} · {h(sample.get('date_from'))}–{h(sample.get('date_to'))}<br>{h(c.get('existing_page') or c.get('recommended_url'))} · CTA: {h(c.get('cta'))}</small></p>"
     html+='</section>'
+    if view.get('ads_intelligence'):
+        from .ads_intelligence import render_summary
+        html+=render_summary(view['ads_intelligence'])
     if view.get('trigger_intelligence'):
         from .trigger_intelligence import render_queue
         html+=render_queue(view['trigger_intelligence'])
