@@ -602,4 +602,8 @@ Current implementation: durable versioned trigger/actor/company/role evidence, s
 
 ## Acquisition coverage expansion current delta
 
-Acquisition coverage expansion (API1.23.0): durable retained prospects, immutable Phase30 classification receipt, buyer/history/ICP-only/multi-actor research, independent contact confidence, collision/suppression, bounded retry/revisit and owner coverage funnel are implemented. Engine gate is bounded by focused/full tests, current safe reads, exact release and verified recovery. Source completeness remains PARTIAL; Sales execution safety is unchanged. See [coverage contract](OPTIBRAIN_ACQUISITION_COVERAGE_CONTRACT.md).
+Acquisition coverage expansion (API1.24.0): durable retained prospects, immutable Phase30 classification receipt, buyer/history/ICP-only/multi-actor research, independent contact confidence, collision/suppression, bounded retry/revisit and owner coverage funnel are implemented. Engine gate is bounded by focused/full tests, current safe reads, exact release and verified recovery. Source completeness remains PARTIAL; Sales execution safety is unchanged. See [coverage contract](OPTIBRAIN_ACQUISITION_COVERAGE_CONTRACT.md).
+
+## Prospect enrichment current delta
+
+The API1.24.0 shadow enrichment engine is implemented with native-bound proof replay, independent company/domain/role/contact/collision confidence, multiple contacts and actor types, retry memory, bounded owner details and an unchanged Sales gate. Domain/contact data coverage remains YELLOW; unresolved commissioning buyers, incomplete directories and missing official sites remain visible. Clay stays GREEN — INTENTIONALLY OPTIONAL with an execution-environment access gap, not a required provider defect. Phase32 bounded website/local-SEO work does not depend on completing every prospect contact. Final exact-source/testing/recovery evidence is in the prospect-enrichment mission report.

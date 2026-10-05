@@ -1,0 +1,13 @@
+# Bounded prospect enrichment
+
+AUTHORITATIVE CURRENT — API1.24.0. Enrichment expands the upstream research universe; Phase30 Sales admission and send authority are unchanged. There is no enrichment-to-CRM writer, outreach transport, Ads writer or runtime LLM loop.
+
+The existing root observer reads `/var/lib/optibrain/acquisition-intelligence/enrichment-proofs.json`, limited to1MiB,256 organization proofs,128 actor links and30 contacts per organization. This root-owned input is manually reviewed native-bound structured evidence, not a public upload endpoint. Accepted bundles/proof variants are immutable in the existing acquisition journal. Invalid input falls back to the last validated bundle, preserving original dates and exposing PARTIAL health. This does not disable other sources. No ninth database or new scheduler is created.
+
+Each company has company/domain confidence, useful roles, role/contact age, CRM/Apollo freshness, loss reasons and a bounded revisit queue. Queue reasons include RESOLVE_ACTOR / RESOLVE_COMPANY / RESOLVE_DOMAIN / FIND_PRIMARY_ROLE / FIND_SECONDARY_ROLE / VERIFY_EMPLOYER / CHECK_CRM / CHECK_APOLLO. High-value current items, repeat buyers and private-sector partners precede weak historical records. ICP fit does not require a current trigger; missing urgency remains NO CURRENT TRIGGER.
+
+Automatic Apollo searches remain3 per Toronto calendar day,5 results per domain,14-day retry intervals, fixed read-only endpoints and no paid enrichment. Titles are selected by company type. Mission-specific authorized batches remain separately bounded and recorded; they do not increase recurring budgets. Failed query fingerprints retain provider, operation, result, time and next eligible retry. Provider-wide quota/auth failures pause further automatic searches for that day.
+
+The authenticated Acquisition endpoint includes a compact coverage funnel and `?prospect_id=<64hex>` details from a root-owned projection. It shows website, location, fit, trigger history, role evidence, current confidence, collisions and next research work. Contact methods remain in the private research store; the display reports channel availability and deliverability confidence. Display truncation is explicit and never deletes research evidence. Every displayed record remains without send or CRM-promotion authority.
+
+Sources remain bounded samples. Clay is optional and currently an execution-environment access gap; no comparative credit trial or purchase is claimed. LinkedIn connector reads are occasional named verification only, not a direct autonomous OptiBrain dependency. Semrush, Ahrefs, Holo, Windsor contact enrichment and browser automation are not used.

@@ -222,7 +222,8 @@ def contacts_for(prospect, apollo, crm, research, *, now):
         result[candidate['id']] = candidate
     for p in prospect.get('source_contacts', []):
         candidate = dict(p); at = stamp(candidate.get('observed_at'))
-        candidate['confidence'] = 'SUPPORTED_CURRENT' if at and 0 <= (now-at).total_seconds() <= 180*86400 else 'STALE'
+        supplied = candidate.get('confidence', 'SUPPORTED_CURRENT')
+        candidate['confidence'] = supplied if supplied not in {'VERIFIED_CURRENT', 'SUPPORTED_CURRENT'} else supplied if at and 0 <= (now-at).total_seconds() <= 180*86400 else 'STALE'
         candidate['contact_allowed'] = False; result[candidate['id']] = candidate
     return list(result.values())[:30]
 
@@ -403,6 +404,8 @@ def owner_projection(view):
             'CRM_state', 'Apollo_state', 'suppression_state', 'why_not_ready', 'repeat_buyer_count', 'current_trigger_count',
             'historical_trigger_count', 'next_research_at', 'research_priority', 'future_outreach_state', 'outbound_authorized')
     public['rows'] = [{k: p.get(k) for k in keys} | {'source_url': p['source_provenance'][0]['url']} for p in view['records'][:8]]
+    for row, p in zip(public['rows'], view['records']):
+        row.update({k: p.get(k) for k in ('domain_confidence', 'enrichment_readiness', 'enrichment_queue')})
     return public
 
 
@@ -412,9 +415,11 @@ def render(view):
     html += '<p>'+h(' · '.join(k+': '+str(v) for k, v in view.get('funnel', {}).items()))+'</p>'
     html += '<p>Coverage gaps: '+h(' · '.join(k+': '+str(v) for k, v in view.get('why_not_ready', {}).items()))+'</p>'
     html += '<p>Pools: '+h(' · '.join(k+': '+str(v) for k, v in view.get('pool_counts', {}).items()))+'</p>'
+    html += '<p>Enrichment: '+h(' · '.join(k+': '+str(v) for k, v in view.get('enrichment_metrics', {}).items()))+'</p>'
     for p in view.get('rows', []):
         html += '<article><strong>'+h(p['prospecting_status'])+' · '+h(p['canonical_name'] or 'Unresolved project')+'</strong><p>'+h(p['geography_class'])+' · company '+h(p['identity_status'])+' · contacts '+h(p['contact_coverage']['valid_roles'])+'</p>'
         html += '<p>'+h(p['why_opticable'])+'<br>'+h(p['why_now'])+'</p><p>CRM: '+h(p['CRM_state'])+' · Apollo: '+h(p['Apollo_state'])+'<br>Needs: '+h(', '.join(p['why_not_ready']))+'</p></article>'
+        if p.get('entity_kind') == 'ORGANIZATION': html += '<p><a href="/v1/operator/acquisition?prospect_id='+h(p['prospect_id'])+'">Prospect evidence and roles</a></p>'
     return html+'</section>'
 
 
@@ -446,15 +451,16 @@ def research_contacts(store, view, cache, settings, *, now):
             outcome = {'attempted_at': now.isoformat(), 'state': 'PARTIAL', 'candidates': prior.get('candidates', [])}
             try:
                 if reader is None: reader = ApolloReader(settings.apollo, limit=3)
-                data = reader.read('people_research', q_organization_domains_list=[host], page=1, per_page=5,
-                                   person_titles=['Operations','Facilities','IT','Security','Procurement','Construction','Maintenance'])
+                from .prospect_enrichment import useful_role
+                titles = ['Estimator','Project Manager','Construction','Operations'] if p.get('icp') in {'general contractor','electrical partner'} else ['Property Manager','Facilities','Operations','IT'] if p.get('icp') in {'property management','developer'} else ['Procurement','Facilities','IT','Security'] if p.get('icp') == 'institution' else ['Operations','Facilities','IT','Security','Maintenance']
+                data = reader.read('people_research', q_organization_domains_list=[host], page=1, per_page=5, person_titles=titles)
                 people = data.get('people', [])
                 if not isinstance(people, list) or len(people)>5: raise ValueError('Bounded Apollo person schema')
                 candidates = []
                 for person in people:
                     if not person.get('id'): continue
                     current = domain((person.get('organization') or {}).get('primary_domain')) == host
-                    relevant = bool(ROLE_PATTERN.search(str(person.get('title', ''))))
+                    relevant = useful_role(person.get('title'))
                     candidates.append({'id':'apollo_search:'+str(person['id']), 'name':person.get('first_name'),
                         'title':person.get('title'), 'confidence':'SUPPORTED_CURRENT' if current and relevant else 'LIKELY',
                         'current_employer_proven':current, 'role_relevant':relevant, 'source':'Apollo people API search',

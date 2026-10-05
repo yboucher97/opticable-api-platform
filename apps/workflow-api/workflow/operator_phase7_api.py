@@ -137,8 +137,15 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         return view
 
     @app.get('/v1/operator/acquisition',response_class=HTMLResponse,tags=['operator'])
-    async def acquisition_intelligence(cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+    async def acquisition_intelligence(prospect_id: str | None = None, cf_access_jwt_assertion: str | None = Header(default=None,alias='Cf-Access-Jwt-Assertion')):
         identity(cf_access_jwt_assertion)
+        if prospect_id is not None:
+            if not re.fullmatch('[0-9a-f]{64}',prospect_id):raise HTTPException(status_code=404,detail='Prospect unavailable')
+            detail=read_internal_attention(now(),Path('/run/optibrain-readiness/prospect-details.json'))
+            row=next((p for p in (detail or {}).get('rows',[]) if p.get('prospect_id')==prospect_id),None)
+            if not row:raise HTTPException(status_code=404,detail='Fresh prospect evidence unavailable')
+            from .automation.prospect_enrichment import render_detail
+            return HTMLResponse(render_detail(row),headers=private_headers)
         view=read_internal_attention(now(),Path('/run/optibrain-readiness/acquisition-intelligence.json'))
         if not view:raise HTTPException(status_code=503,detail='Acquisition observation unavailable')
         from .automation.sales_feedback import SalesFeedback

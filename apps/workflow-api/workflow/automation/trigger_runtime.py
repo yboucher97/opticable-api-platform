@@ -229,6 +229,9 @@ def observe(engine, settings, *, now=None):
     queue = build_queue(store, rows, apollo, crm, now=now, crm_at=identities.get('at'), feedback=feedback, source_health=health)
     queue['provider_calls'] = reader.calls+sum(h['requests'] for h in coverage_health)
     role_cache=cache_read(ROOT/'trigger-role-research.json')
+    from .prospect_enrichment import resolve_document, actor_seeds, apply as enrich, details
+    proofs,enrichment_state = resolve_document(store,cache_read(ROOT/'enrichment-proofs.json',1048576),now=now)
+    seeds.extend(actor_seeds(proofs,queue,now=now))
     universe=build_universe(store,queue,apollo,crm,now=now,crm_at=identities.get('at'),seeds=seeds,research=role_cache,feedback=feedback)
     role_cache,role_calls=research_contacts(store,universe,role_cache,settings,now=now)
     # Re-assess from raw stored events; do not feed changed retention labels to
@@ -237,6 +240,16 @@ def observe(engine, settings, *, now=None):
         queue['rows']=[assess(r,apollo,crm,now=now,crm_at=identities.get('at'),feedback=feedback) for r in store.records()]
         universe=build_universe(store,queue,apollo,crm,now=now,crm_at=identities.get('at'),seeds=seeds,research=role_cache,feedback=feedback)
     atomic(ROOT/'trigger-role-research.json',role_cache)
+    if proofs:
+        universe['_events'] = queue['rows']
+        universe = enrich(store,universe,proofs,apollo,crm,now=now,crm_at=identities.get('at'))
+    health.append({'source':'prospect_enrichment','state':'PARTIAL' if enrichment_state.startswith('PARTIAL') else 'WORKING',
+                   'observed_at':proofs.get('at'),'coverage':'PARTIAL — REVIEWED NATIVE PROOFS / BOUNDED RESEARCH',
+                   'requests':0,'reason':enrichment_state+'; contact age and collision freshness are checked independently'})
+    detail = details(universe)
+    if len(json.dumps(detail,ensure_ascii=False,indent=2).encode())>262144:raise ValueError('Prospect detail byte bound')
+    detail_path=Path('/run/optibrain-readiness/prospect-details.json')
+    atomic(detail_path,detail,0o600);os.chown(detail_path,0,grp.getgrnam('opticable-workflow-api').gr_gid);os.chmod(detail_path,0o640)
     queue['prospect_universe']=owner_projection(universe)
     atomic(ROOT/'prospects-view.json',queue['prospect_universe'])
     order={'ACT NOW':0,'REVIEW':1,'RESEARCH':2,'WATCH':3,'IGNORE':4}

@@ -1,6 +1,6 @@
 # Contact and role resolution
 
-AUTHORITATIVE CURRENT — API1.23.0. Contact confidence is independent of company confidence. Retain legitimate candidates at VERIFIED_CURRENT / SUPPORTED_CURRENT / LIKELY / STALE / UNRESOLVED; only supported current relevant roles improve useful contact coverage. Multiple primary/secondary roles are allowed. No candidate is authorized for contact.
+AUTHORITATIVE CURRENT — API1.24.0. Contact confidence is independent of company confidence. Retain legitimate candidates at VERIFIED_CURRENT / SUPPORTED_CURRENT / LIKELY / STALE / UNRESOLVED; only supported current relevant roles improve useful contact coverage. Multiple primary/secondary roles are allowed. No candidate is authorized for contact.
 
 Native saved Apollo account/employer binding, CRM Contact-to-Account references, dated primary company statements and bounded Apollo people searches provide evidence. People search domain filters can include former employers: explicit current employer domain and relevant business role are required for SUPPORTED_CURRENT. Missing employer proof remains LIKELY, not discarded. Obfuscated/partial names stay partial; absent email remains unknown. Provider search does not enrich email/phone.
 
@@ -9,3 +9,7 @@ Saved native contact or dated primary role proof becomes stale after180days; job
 Apollo reads use fixed people-search endpoint POST /api/v1/mixed_people/api_search. Limit3/Toronto day,5results/domain,14-day attempt cache and durable retry history. No contact/task/account/sequence writes, mailboxes, settings or suppression changes. Existing Claude/Apollo ownership remains intact. Clay has no callable capability in this execution environment; it is an optional specialist, not a required dependency. Semrush/Ahrefs are not used. No purchase or credential fragmentation.
 
 See [identity](OPTIBRAIN_IDENTITY_RESOLUTION_CONTRACT.md), [coverage](OPTIBRAIN_ACQUISITION_COVERAGE_CONTRACT.md) and [prospect universe](OPTIBRAIN_PROSPECT_UNIVERSE_CONTRACT.md).
+
+## Enrichment proof semantics
+
+Official organizational directories can support current relevant roles as of their observed/effective date. Dated historical documents retain STALE even if recently indexed. Publicly listed email is not verified deliverability or consent. Functional role endpoints are counted separately from named people. Exact sourced-email duplicates consolidate person evidence; no email patterns are generated. Company, domain, role/contact and collision confidence remain separate. Current-employer evidence is required for supported roles; Apollo domain-filter-only results remain LIKELY. See [enrichment](OPTIBRAIN_ENRICHMENT_CONTRACT.md).
