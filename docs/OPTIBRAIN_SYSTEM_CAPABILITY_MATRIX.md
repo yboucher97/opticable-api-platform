@@ -617,7 +617,16 @@ Immutable receipt replay and message-level isolation are implemented with additi
 
 - Scheduled Forms processing after the replay fix: PROVEN, primarily retained TEST_ONLY notifications; no genuine business effect inferred.
 - Today/System Health actual-operation summary: capability distinguishes observed schedule, manual/unproven, TEST and acknowledged receipt counts.
-- Native Forms iframe success → consented GA4: PARTIAL / provider Submit Form callback configuration and exact payload validation required.
+- Native Forms iframe success → consented GA4: FR GREEN — OWNER-PROVEN diagnostic TEST; EN OWNER TEST REQUIRED. Both callback configurations and exact origin/iframe/alias validation are implemented. Do not repeat Forms setup or FR submission.
 - Existing website camera/Wi-Fi and AI assessment explanations: bounded production improvements; no new commercial pages or public social content.
 - Holo integration: optional execution-environment gap; manual Holo-ready draft brief provided.
 - Phase33: read-only/shadow analysis may use existing evidence; quantitative production optimization is not authorized.
+
+
+## Phase32 final closure — current precedence
+
+Five existing website page improvements, scheduled receipt processing, operation visibility and the marketing draft pack remain valid. The owner now confirms finding the existing live EN quote form. JavaScript-only insertion in an empty, unlabelled mount has no form heading/loading/fallback; a separately prepared enhancement renders the existing iframe in English HTML, adds a quote anchor/call/email/loading/fallback and preserves URL/canonical/hreflang/attribution/listener. It is not required before the existing live embed's owner test. Exact website release/rollback and owner QA checkpoint are recorded in the existing Phase32 runtime report; no unmerged enhancement is claimed deployed and no new form/property/tag is created.
+
+FR and EN native acknowledged embedded submissions and DebugView `generate_lead` are GREEN — PROVIDER-PROVEN TEST. The EN final test at16:10 America/Toronto on October5,2026 is reconciled with authenticated Mail, immutable TEST_ONLY receipt, preserved attribution and zero TEST business effects. An earlier EN attempt is separately owner-confirmed. FR's original receipt flag is not rewritten to match owner intent. Phase32 technical implementation is PASS; natural GA4-to-business attribution, qualification and revenue remain separate unproven outcomes. A separate unrelated inquiry/verified Lead is recorded as existing authorized activity. Filters stay Exclude/Testing; diagnostic events may appear in ordinary reports and must not be treated as genuine outcomes.
+
+Shared optimization foundation: **DEFINED + machine-readable minimal data format**, no active engine. Future Phase33/34/37 use [evidence/proposal/preview/approval/execution/measurement/learning contracts](OPTIBRAIN_CONTINUOUS_OPTIMIZATION_CONTRACT.md). Domain managers, persistence/execution adapters and autonomous publication are future separately approved work. Google export OFF, English real automation DISABLED, protected123 read-only and Claude/Apollo ownership remain intact.

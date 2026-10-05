@@ -24,7 +24,7 @@
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
     "AUDIT EVIDENCE": 103,
-    "AUTHORITATIVE CURRENT": 47,
+    "AUTHORITATIVE CURRENT": 54,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
   },
@@ -1478,6 +1478,48 @@
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
       "purpose": "Phase32 owner-review marketing drafts; no publication authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_CONTINUOUS_OPTIMIZATION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_OPTIMIZATION_PROPOSAL_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_AUTHORITY_CLASSES.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_DATA_INTELLIGENCE_ARCHITECTURE.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_BUSINESS_PRIORITY_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
+    },
+    {
+      "path": "docs/optibrain-optimization.schema.json",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
     }
   ]
 }

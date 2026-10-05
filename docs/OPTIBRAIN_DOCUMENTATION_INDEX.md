@@ -44,3 +44,6 @@ Current specialist contracts: [lifecycle matrix](OPTIBRAIN_LIFECYCLE_AUTOMATION_
 Current specialists also include [recurring services](OPTIBRAIN_RECURRING_SERVICE_CONTRACT.md) and [marketing attribution](OPTIBRAIN_MARKETING_ATTRIBUTION_CONTRACT.md). PHASE20/21 checkpoints are sanitized audit evidence, never additional instructions or write authority.
 
 Current specialist references: [sales coexistence contract](OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md), [observed Claude/Apollo flow](CURRENT_CLAUDE_APOLLO_FLOW.md). Phase26/27 checkpoints and reports are audit evidence, not takeover authority.
+
+
+Shared optimization specialists: [integration foundation](OPTIBRAIN_CONTINUOUS_OPTIMIZATION_CONTRACT.md), [proposal](OPTIBRAIN_OPTIMIZATION_PROPOSAL_CONTRACT.md), [authority](OPTIBRAIN_AUTHORITY_CLASSES.md), [data/asset architecture](OPTIBRAIN_DATA_INTELLIGENCE_ARCHITECTURE.md), [owner priority](OPTIBRAIN_BUSINESS_PRIORITY_CONTRACT.md), [interchange schema](optibrain-optimization.schema.json). These define future domain integration; they install no autonomous engine or authority.

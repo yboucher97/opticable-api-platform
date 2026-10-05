@@ -1,0 +1,1127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:opticable:optibrain:optimization:1",
+  "title": "OptiBrain shared optimization interchange \u2014 contract only",
+  "description": "Data-only foundation. Successful validation does not grant execution authority, prove a deployed feature, or replace existing action/approval journals.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/proposal"
+    },
+    {
+      "$ref": "#/$defs/priority"
+    },
+    {
+      "$ref": "#/$defs/asset"
+    }
+  ],
+  "$defs": {
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "system": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entity_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entity_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "system",
+        "entity_type",
+        "entity_id"
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "valid_until": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "freshness": {
+          "type": "string",
+          "enum": [
+            "CURRENT",
+            "STALE",
+            "HISTORICAL",
+            "UNKNOWN"
+          ]
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "STRONG",
+            "MODERATE",
+            "TENTATIVE",
+            "INSUFFICIENT",
+            "UNKNOWN"
+          ]
+        },
+        "truth_class": {
+          "type": "string",
+          "enum": [
+            "NATIVE_MEASURED",
+            "OWNER_CONFIRMED",
+            "DERIVED_DETERMINISTIC",
+            "ESTIMATED",
+            "INFERRED",
+            "UNKNOWN"
+          ]
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "provider",
+        "source_reference",
+        "observed_at",
+        "valid_until",
+        "freshness",
+        "confidence",
+        "truth_class",
+        "limitations"
+      ]
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "metric": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseline_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "baseline_status": {
+          "type": "string",
+          "enum": [
+            "OBSERVED",
+            "UNKNOWN"
+          ]
+        },
+        "baseline_sample": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "baseline_window": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cohort_geography_language": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "metric",
+        "source_reference",
+        "unit",
+        "baseline_value",
+        "baseline_status",
+        "baseline_sample",
+        "baseline_window",
+        "cohort_geography_language"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "baseline_status": {
+                "const": "UNKNOWN"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "baseline_value": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "baseline_status": {
+                "const": "OBSERVED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "baseline_value": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/metric"
+          },
+          "minItems": 1
+        },
+        "window": {
+          "type": "string",
+          "minLength": 1
+        },
+        "minimum_usable_sample": {
+          "type": "string",
+          "minLength": 1
+        },
+        "guardrails": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "success": {
+          "type": "string",
+          "minLength": 1
+        },
+        "neutral": {
+          "type": "string",
+          "minLength": 1
+        },
+        "regression": {
+          "type": "string",
+          "minLength": 1
+        },
+        "insufficient_data": {
+          "type": "string",
+          "minLength": 1
+        },
+        "test_exclusion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attribution_limits": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "metrics",
+        "window",
+        "minimum_usable_sample",
+        "guardrails",
+        "success",
+        "neutral",
+        "regression",
+        "insufficient_data",
+        "test_exclusion",
+        "attribution_limits"
+      ]
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority_record_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "receipt_reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "invocation_origin": {
+          "type": "string",
+          "enum": [
+            "UNATTENDED",
+            "MANUAL",
+            "UNKNOWN"
+          ]
+        },
+        "effect_class": {
+          "type": "string",
+          "enum": [
+            "TEST_ONLY",
+            "NATURAL_BUSINESS_EFFECT",
+            "NONE",
+            "UNKNOWN"
+          ]
+        }
+      },
+      "required": [
+        "action_id",
+        "authority_record_reference",
+        "receipt_reference",
+        "invocation_origin",
+        "effect_class"
+      ]
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "SUCCESS",
+            "NEUTRAL",
+            "REGRESSION",
+            "INSUFFICIENT_DATA"
+          ]
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "minItems": 1
+        },
+        "observed_metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/observation"
+          },
+          "minItems": 1
+        },
+        "guardrail_result": {
+          "type": "string",
+          "minLength": 1
+        },
+        "interpretation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "outcome",
+        "observed_at",
+        "evidence",
+        "observed_metrics",
+        "guardrail_result",
+        "interpretation",
+        "limitations"
+      ]
+    },
+    "proposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": 1
+        },
+        "type": {
+          "const": "optibrain.optimization_proposal"
+        },
+        "proposal_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "proposal_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_system": {
+          "type": "string",
+          "enum": [
+            "WEBSITE",
+            "SEO",
+            "CONTENT",
+            "IMAGE_CREATIVE",
+            "ZOHO_FORM",
+            "CRM_CONFIGURATION",
+            "GBP",
+            "GOOGLE_ADS",
+            "OUTREACH",
+            "SALES_PROCESS",
+            "OTHER_SUPPORTED"
+          ]
+        },
+        "target_object": {
+          "$ref": "#/$defs/entity"
+        },
+        "target_url_or_record": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "minItems": 1
+        },
+        "business_problem": {
+          "type": "string",
+          "minLength": 1
+        },
+        "why_now": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recommended_change": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_benefit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "risk": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "STRONG",
+            "MODERATE",
+            "TENTATIVE",
+            "INSUFFICIENT",
+            "UNKNOWN"
+          ]
+        },
+        "data_quality": {
+          "type": "string",
+          "minLength": 1
+        },
+        "affected_files_or_records": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "preview_location": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner_action_required": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority_class": {
+          "type": "string",
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "DISCOVERED",
+            "RESEARCHING",
+            "PROPOSED",
+            "PREPARING_PREVIEW",
+            "PREVIEW_READY",
+            "OWNER_REVIEW",
+            "APPROVED",
+            "REJECTED",
+            "EXECUTING",
+            "DEPLOYED",
+            "MEASURING",
+            "SUCCESS",
+            "NEUTRAL",
+            "REGRESSION",
+            "INSUFFICIENT_DATA",
+            "BLOCKED"
+          ]
+        },
+        "approved_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "approved_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "execution_reference": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/execution"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deployed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "measurement_plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/measurement"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "measurement_start": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "measurement_end": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/result"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "learning": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rollback_reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "schema",
+        "type",
+        "proposal_id",
+        "revision",
+        "proposal_type",
+        "target_system",
+        "target_object",
+        "target_url_or_record",
+        "created_at",
+        "updated_at",
+        "source_evidence",
+        "business_problem",
+        "why_now",
+        "recommended_change",
+        "expected_benefit",
+        "risk",
+        "confidence",
+        "data_quality",
+        "affected_files_or_records",
+        "preview_location",
+        "owner_action_required",
+        "authority_class",
+        "status",
+        "approved_by",
+        "approved_at",
+        "execution_reference",
+        "deployed_at",
+        "measurement_plan",
+        "measurement_start",
+        "measurement_end",
+        "result",
+        "learning",
+        "rollback_reference"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "APPROVED",
+                  "EXECUTING",
+                  "DEPLOYED",
+                  "MEASURING",
+                  "SUCCESS",
+                  "NEUTRAL",
+                  "REGRESSION",
+                  "INSUFFICIENT_DATA"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "measurement_plan": {
+                "$ref": "#/$defs/measurement"
+              },
+              "rollback_reference": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "authority_class": {
+                "enum": [
+                  "C",
+                  "D"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "APPROVED",
+                  "EXECUTING",
+                  "DEPLOYED",
+                  "MEASURING",
+                  "SUCCESS",
+                  "NEUTRAL",
+                  "REGRESSION",
+                  "INSUFFICIENT_DATA"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "preview_location": {
+                "type": "string",
+                "minLength": 1
+              },
+              "approved_by": {
+                "type": "string",
+                "minLength": 1
+              },
+              "approved_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "EXECUTING",
+                  "DEPLOYED",
+                  "MEASURING",
+                  "SUCCESS",
+                  "NEUTRAL",
+                  "REGRESSION",
+                  "INSUFFICIENT_DATA"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "execution_reference": {
+                "$ref": "#/$defs/execution"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "SUCCESS",
+                  "NEUTRAL",
+                  "REGRESSION",
+                  "INSUFFICIENT_DATA"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "result": {
+                "$ref": "#/$defs/result"
+              },
+              "learning": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "priority": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": 1
+        },
+        "type": {
+          "const": "optibrain.business_priority"
+        },
+        "priority_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entity"
+          },
+          "minItems": 1
+        },
+        "proposal_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "what": {
+          "type": "string",
+          "minLength": 1
+        },
+        "why": {
+          "type": "string",
+          "minLength": 1
+        },
+        "business_impact": {
+          "type": "string",
+          "minLength": 1
+        },
+        "urgency": {
+          "type": "string",
+          "enum": [
+            "HIGH",
+            "MEDIUM",
+            "LOW",
+            "WATCH",
+            "UNKNOWN"
+          ]
+        },
+        "due_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "STRONG",
+            "MODERATE",
+            "TENTATIVE",
+            "INSUFFICIENT",
+            "UNKNOWN"
+          ]
+        },
+        "data_quality": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "minItems": 1
+        },
+        "priority_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "dependency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "blocker": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "can_prepare": {
+          "type": "boolean"
+        },
+        "owner_approval_required": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "OPEN",
+            "PREPARING",
+            "OWNER_REVIEW",
+            "BLOCKED",
+            "DONE",
+            "REJECTED",
+            "WATCH"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "schema",
+        "type",
+        "priority_id",
+        "domain",
+        "targets",
+        "proposal_id",
+        "what",
+        "why",
+        "business_impact",
+        "urgency",
+        "due_at",
+        "confidence",
+        "data_quality",
+        "source_evidence",
+        "priority_reasons",
+        "dependency",
+        "blocker",
+        "actor",
+        "can_prepare",
+        "owner_approval_required",
+        "status",
+        "created_at",
+        "updated_at",
+        "next_action"
+      ]
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": 1
+        },
+        "type": {
+          "const": "optibrain.optimization_asset"
+        },
+        "asset_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "asset_type": {
+          "type": "string",
+          "enum": [
+            "HOOK",
+            "HEADLINE",
+            "CTA",
+            "KEYWORD",
+            "AUDIENCE",
+            "PAIN_POINT",
+            "PROOF_POINT",
+            "CREATIVE_CONCEPT",
+            "ARTICLE_IDEA",
+            "GBP_POST",
+            "SOCIAL_POST",
+            "EMAIL_ANGLE",
+            "VIDEO_CONCEPT",
+            "IMAGE"
+          ]
+        },
+        "proposal_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "service": {
+          "type": "string",
+          "minLength": 1
+        },
+        "icp": {
+          "type": "string",
+          "minLength": 1
+        },
+        "geography": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1
+        },
+        "channel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "minItems": 1
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "brief_or_prompt_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "draft_or_asset_reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rights_source_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "usage": {
+          "type": "string",
+          "minLength": 1
+        },
+        "illustrative": {
+          "type": "boolean"
+        },
+        "performance_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "minItems": 0
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "schema",
+        "type",
+        "asset_id",
+        "asset_type",
+        "proposal_id",
+        "service",
+        "icp",
+        "geography",
+        "language",
+        "channel",
+        "source_evidence",
+        "provider",
+        "brief_or_prompt_reference",
+        "draft_or_asset_reference",
+        "rights_source_status",
+        "usage",
+        "illustrative",
+        "performance_evidence",
+        "created_at"
+      ]
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metric",
+        "source_reference",
+        "value",
+        "status",
+        "unit",
+        "sample",
+        "window"
+      ],
+      "properties": {
+        "metric": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "OBSERVED",
+            "UNKNOWN"
+          ]
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sample": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "window": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNKNOWN"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "OBSERVED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

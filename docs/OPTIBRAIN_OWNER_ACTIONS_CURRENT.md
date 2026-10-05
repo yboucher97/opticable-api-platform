@@ -90,7 +90,11 @@ No owner permission, OAuth reauthorization, Forms UI edit or message deletion is
 
 Provider: Zoho Forms. One-time callback configuration was completed by the owner during Phase32. Both published Forms now expose `form_submit=true`, empty Data Push fields and aliases `opticablefrquote` / `opticableenquote` (Zoho removes underscores). Form-view is also enabled but is ignored by the success listener. No additional Forms UI action, OAuth scope/client or reauthorization is currently required. Retain hidden `ob_attribution`, admin recipient soumissions@opticable.ca, native CRM writer OFF and respondent auto-replies OFF.
 
-Remaining proof: independently observe an acknowledged native provider submission reaching GA4 under valid analytics consent. Isolated callback tests are not genuine customer proof. Do not manufacture a business event or enable conversion uploads. Runtime remains Mail/API driven, never browser driven.
+FR and EN native embedded acknowledgement → GA4 DebugView proof is complete and reconciled with authenticated Mail/immutable intake/attribution. EN final test: October5,2026 16:10 America/Toronto, one intended `generate_lead`. The owner also confirmed an earlier separate EN attempt; neither has a downstream business claim. **No native submission, Forms setup, OAuth reauthorization or owner test remains for Phase32. Do not repeat FR or EN.** The archived EN QA sheet records the completed test method, not a current action.
+
+Keep both Internal Traffic and Developer Traffic Exclude filters in Testing. Testing labels rather than excludes ordinary reports; activation remains a separate optional owner decision after its scope is validated. No Ads import/goal change is authorized. TEST events never establish customer, qualified Lead, Ads or revenue performance. A separate unrelated natural FR inquiry/verified Lead is recorded independently in the runtime report.
+
+The existing English form is live. The separately prepared website visibility improvement and foundation-document PRs retain their exact review/CI status in the runtime report; the GitHub runner incident is a release-processing limitation, not an owner Forms/OAuth action or remaining native telemetry defect. Native GBP read remains the separate optional action below.
 
 ## Phase32 — optional GBP profile read
 
