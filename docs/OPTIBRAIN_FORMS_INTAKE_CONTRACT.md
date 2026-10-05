@@ -21,3 +21,10 @@ Private proof: `/var/lib/optibrain/foundation-completion/GATE_A_CHECKPOINT.json`
 ## Forms polling patch — API1.24.1
 
 Exact replay is a normal idempotent result. Missing parser defaults and an independently proven TEST_ONLY exclusion may be appended as derived state only when all original provider facts/body match. A true immutable mismatch is quarantined with additive evidence; malformed notifications retain bounded diagnostics. Both continue to later independent messages. Provider/database failures still abort safely. Quarantined rows cannot enter CRM reconciliation/enrichment. See [replay](OPTIBRAIN_REPLAY_IDEMPOTENCY_CONTRACT.md) and [immutability](OPTIBRAIN_IMMUTABLE_RECEIPT_CONTRACT.md). This patch neither resubmits forms nor changes native writer/auto-reply configuration.
+
+
+## Phase32 final English embed and native QA
+
+The correct existing RequestaQuote form is rendered at `/en/contact/`, using the existing `ob_attribution` encoder, language `en`, trusted exact iframe/alias and analytics-only consent. A static English iframe/heading/quote anchor/loading/contact fallback closes the empty JavaScript-only mount/discoverability boundary. No form replacement, URL/canonical/hreflang change, native CRM writer or auto-reply enablement occurs.
+
+FR owner acknowledgement/GA4 DebugView is technical TEST proof, not genuine acquisition. Preserve original immutable receipt flags even if an owner test omitted the established machine markers; record owner intent as separate evidence and verify root effects/holds independently. For the one EN QA use exact existing controlled `logs@opticable.ca`, company prefix `OPTIBRAIN TEST — REMEDIATION 1–2`, and notes `TEST ONLY ob-r1-20261004-form-en` plus the Phase32 EN correlation marker. These are exclusion-only; hidden attribution never confers test ownership or execution authority. Runtime collection stays authenticated Mail/API, with immutable replay/conflict handling unchanged.

@@ -617,7 +617,16 @@ Immutable receipt replay and message-level isolation are implemented with additi
 
 - Scheduled Forms processing after the replay fix: PROVEN, primarily retained TEST_ONLY notifications; no genuine business effect inferred.
 - Today/System Health actual-operation summary: capability distinguishes observed schedule, manual/unproven, TEST and acknowledged receipt counts.
-- Native Forms iframe success → consented GA4: PARTIAL / provider Submit Form callback configuration and exact payload validation required.
+- Native Forms iframe success → consented GA4: FR GREEN — OWNER-PROVEN diagnostic TEST; EN OWNER TEST REQUIRED. Both callback configurations and exact origin/iframe/alias validation are implemented. Do not repeat Forms setup or FR submission.
 - Existing website camera/Wi-Fi and AI assessment explanations: bounded production improvements; no new commercial pages or public social content.
 - Holo integration: optional execution-environment gap; manual Holo-ready draft brief provided.
 - Phase33: read-only/shadow analysis may use existing evidence; quantitative production optimization is not authorized.
+
+
+## Phase32 final closure — current precedence
+
+Five existing website page improvements, scheduled receipt processing, operation visibility and the marketing draft pack remain valid. The existing EN quote form was present in deployed source, but JavaScript-only insertion in an empty, unlabelled mount gave no form heading/loading/fallback. The narrow fix renders the existing iframe in English HTML, adds a quote anchor/call/email/loading/fallback and preserves URL/canonical/hreflang/attribution/listener. Exact website release/rollback and owner QA checkpoint are recorded in the existing Phase32 runtime report; no new form/property/tag is created.
+
+FR native acknowledged submission and DebugView `generate_lead` are owner-proven technical TEST, not a genuine customer. Native Mail evidence is reconciled separately; the original receipt's test flag is not rewritten to match owner intent. EN must pass its one embedded owner test before native instrumentation/Phase32 is fully GREEN. Filters stay Exclude/Testing; diagnostic events may appear in ordinary reports and must not be treated as genuine outcomes.
+
+Shared optimization foundation: **DEFINED + machine-readable minimal data format**, no active engine. Future Phase33/34/37 use [evidence/proposal/preview/approval/execution/measurement/learning contracts](OPTIBRAIN_CONTINUOUS_OPTIMIZATION_CONTRACT.md). Domain managers, persistence/execution adapters and autonomous publication are future separately approved work. Google export OFF, English real automation DISABLED, protected123 read-only and Claude/Apollo ownership remain intact.

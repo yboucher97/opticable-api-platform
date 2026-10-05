@@ -817,3 +817,10 @@ Post-Phase30 acquisition coverage expansion consumes API1.23.0; it is not Phase3
 ## Phase32 scope
 
 Website conversion/local SEO/marketing readiness improves five existing pages and the existing operation display. Native FR/EN attribution/intake remains proven. Native successful submission reception in GA4 remains a material telemetry boundary until the official callback is configured and independently validated; Phase32 must remain PARTIAL while that proof is absent. No earlier phase is rewritten and no genuine customer conversion is manufactured.
+
+
+## Phase32 final closure and future integration — current precedence
+
+Website/local-SEO implementation PASS for the five deployed existing pages and narrow English form visibility correction. Scheduled Forms processing and operator unattended/manual/TEST distinctions are proven. FR native embedded acknowledgement → GA4 DebugView is GREEN — PROVIDER-PROVEN TEST (owner observation), never repeated. EN remains OWNER EN TEST REQUIRED; native instrumentation and overall Phase32 remain PARTIAL until that single real embedded proof plus Mail/intake reconciliation. Genuine customer outcome is NOT YET OBSERVED and is not a technical closure prerequisite.
+
+Phase33 does not start before Phase32 technical closure. Once closed it is READY for separately initiated read-only/shadow Ads analysis, not production Ads changes. Phase33 must produce evidence-backed, previewable campaign/keyword/creative/landing-page proposals with source limitations and measurement plans using the [shared foundation](OPTIBRAIN_CONTINUOUS_OPTIMIZATION_CONTRACT.md). Phase34 supplies conversation/sales drafts using the same records; Phase37 composes the owner priority/proposal/result view. Later engine activation still requires bounded schedulers/analysis budgets, durable revision/outcome storage, concrete adapters, exact approval/effect fencing/recovery validation and explicit owner authority. No future phase or writer is activated by this documentation.
