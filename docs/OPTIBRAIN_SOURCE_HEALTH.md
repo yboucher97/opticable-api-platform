@@ -27,3 +27,10 @@ Reviewed proof timestamps, current-role age and collision-cache freshness are in
 ## Forms polling — API1.24.1
 
 Mail reads use the measured Mail response rather than an unrelated job's aggregate failure. Separate Forms processing health reports completed/failed/in-progress observation, last successful poll, new receipts, exact replays, retained conflicts, invalid messages and provider-read count. Replay is healthy; retained quarantine or invalid input is DEGRADED; poll abort requires action; absent observations are UNKNOWN. Mail authentication/read success does not certify Forms processing. Diagnostics remain private in the receipt database; operator output exposes counts/references, not notification content.
+
+
+## Phase32 unattended activity
+
+The existing root runtime sampler produces a bounded, read-only activity projection for Today/System Health: latest invocation per Forms observer, service observer, TEST runner, authorized internal/customer runners, backup and encrypted upload. A run is labelled SCHEDULED only when the observed timer trigger matches service start; an enabled timer alone is insufficient. Nonmatching starts remain MANUAL OR EXTERNAL / UNPROVEN. Timestamps render in America/Toronto. No 24-hour totals are inferred from latest-cycle counters. Missing observations remain UNKNOWN. TEST inquiries/effects remain separate from real effects; Claude/Apollo is excluded. Research/enrichment is manually initiated.
+
+Forms has successful normal timer completions after 1.24.1, including exact replays; receipt intake is healthy. Queue/DLQ and growth alerts remain separate, retained and visible. An empty current business queue is not a failure; retained dead letters are not silently purged or declared resolved. Root projection and operator display never grant authority.

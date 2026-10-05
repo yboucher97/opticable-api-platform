@@ -611,3 +611,13 @@ The API1.24.0 shadow enrichment engine is implemented with native-bound proof re
 ## Forms polling remediation — current API1.24.1 delta
 
 Immutable receipt replay and message-level isolation are implemented with additive parse projections/anomaly evidence, deterministic cooldowns, per-message transactions and separate Mail/Forms health. FR/EN native delivery/attribution proofs remain valid; no provider settings or automation eligibility were changed. Replay restart/concurrency and conflict-followed-by-valid-message tests are required release evidence. Genuine new customer business effects remain natural-event proof. Exact deployment/current mailbox verification and protected/recovery evidence are recorded in `forms-polling-remediation/final-report.md` outside the source checkout.
+
+
+## Phase32 scoped update
+
+- Scheduled Forms processing after the replay fix: PROVEN, primarily retained TEST_ONLY notifications; no genuine business effect inferred.
+- Today/System Health actual-operation summary: capability distinguishes observed schedule, manual/unproven, TEST and acknowledged receipt counts.
+- Native Forms iframe success → consented GA4: PARTIAL / provider Submit Form callback configuration and exact payload validation required.
+- Existing website camera/Wi-Fi and AI assessment explanations: bounded production improvements; no new commercial pages or public social content.
+- Holo integration: optional execution-environment gap; manual Holo-ready draft brief provided.
+- Phase33: read-only/shadow analysis may use existing evidence; quantitative production optimization is not authorized.

@@ -135,9 +135,18 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
                         "AND s.error='EventConflict' AND r.run_id IN ("+','.join('?' for _ in ids)+')',ids).fetchone()[0]
         except (OSError,ValueError,TypeError):resolved=0
         blocked = sum(health.get(k,0) for k in ('stale_queued','stale_running','expired_leases','dead_letter','failed'))-resolved
+        current_delivery=sum(health.get(k,0) for k in ('stale_queued','stale_running','expired_leases'))
+        with readonly(store.db_path) as db:
+            last_failed=db.execute("SELECT MAX(created_at) FROM automation_runs WHERE status IN ('failed','dead_letter')").fetchone()[0]
+        failure_age=age_seconds(last_failed,now)
+        historical=bool(blocked and not current_delivery and not health.get('queued',0) and not health.get('running',0)
+                        and failure_age is not None and failure_age>86400)
         rows.append(signal('Queue','ACTION REQUIRED' if blocked else 'OK',
+                           'Historical failures retained for review; no current queued/running delivery problem observed' if historical else
                            'Work requires reconciliation' if blocked else 'No stale or failed queued work',
-                           queued=health.get('queued',0),running=health.get('running',0),blocked=blocked))
+                           queued=health.get('queued',0),running=health.get('running',0),blocked=blocked,
+                           current_delivery_problems=current_delivery,last_failed_at=last_failed,
+                           classification='HISTORICAL RETAINED EXCEPTION' if historical else 'CURRENT OR UNCLASSIFIED' if blocked else 'CLEAR'))
         pending=health.get('human_action_required',0)
         rows.append(signal('Retained exceptions','UNKNOWN' if pending else 'OK',
                            'Retained review items are unclassified; review provenance before treating them as current failures'
@@ -152,6 +161,7 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
     rows.append(signal('Native watch','OK' if status=='verified' else 'UNKNOWN' if status=='unconfigured' else 'ACTION REQUIRED',
                        'Notification binding verified' if status=='verified' else 'Notification verification needs review',
                        at=at,verification_status=status,expiry=native.get('native_subscription_expires_at')))
+    activity = None
     try:
         snapshot = json.loads(Path(runtime_path).read_text())
         age = age_seconds(snapshot.get('captured_at'), now)
@@ -162,6 +172,9 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
             rows.append(signal(item['name'],item['state'],item['reason'],at=snapshot['captured_at'],
                                **{k:v for k,v in item.items() if k not in {'name','state','reason','observed_at'}}))
         deployed_sha = snapshot.get('deployment_sha')
+        candidate=snapshot.get('activity')
+        if isinstance(candidate,dict) and candidate.get('schema')==1 and candidate.get('read_only') is True:
+            activity={**candidate,'captured_at':snapshot['captured_at']}
     except (OSError, ValueError, TypeError, KeyError):
         deployed_sha = None
         rows.extend(signal(name,'UNKNOWN','Runtime sample absent or stale') for name in
@@ -169,7 +182,7 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
     rows.append(queue_depth_signal(now))
     state = max((r['state'] for r in rows), key=STATES.index)
     return {'schema':1,'state':state,'read_only':True,'captured_at':now.isoformat(),
-            'deployment_sha':deployed_sha,'signals':rows}
+            'deployment_sha':deployed_sha,'signals':rows,'activity':activity}
 
 
 def queue_depth_signal(now, path=Path('/run/optibrain-readiness/queue-depth.json')):

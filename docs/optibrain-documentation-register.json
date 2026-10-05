@@ -506,39 +506,39 @@
       "path": "docs/PHASE22_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE22_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE23_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE23_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE24_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/PHASE24_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/PHASE25_CHECKPOINT.json",
@@ -1258,14 +1258,14 @@
       "path": "docs/phase22-provider-observations.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/phase25-owner-actions.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/phase26-27-final-report.md",
@@ -1472,6 +1472,12 @@
       "current": true,
       "superseded_by": null,
       "purpose": "Forms replay, immutable evidence and message-level fault isolation"
+    },
+    {
+      "path": "docs/marketing/phase32-camera-ai-content-pack.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Phase32 owner-review marketing drafts; no publication authority"
     }
   ]
 }

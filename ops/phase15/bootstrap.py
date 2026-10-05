@@ -43,6 +43,7 @@ HELPERS = {'/usr/local/sbin/opticable-api-deploy-root':'deploy/manual-guarded-re
     '/usr/local/lib/optibrain-backup/recovery_authority.py':'ops/phase15/recovery_authority.py',
     '/usr/local/lib/optibrain/phase12-run-test-lab.py':'ops/phase12/run_test_lab.py',
     '/usr/local/lib/optibrain/phase14-runtime-snapshot.py':'ops/phase14/runtime_snapshot.py',
+    '/usr/local/lib/optibrain/activity_snapshot.py':'ops/phase14/activity_snapshot.py',
     '/usr/local/lib/optibrain/phase14-retention.py':'ops/phase14/retention.py',
     '/usr/local/lib/optibrain/queue-metrics.py':'ops/phase15/queue_metrics.py',
     '/usr/local/lib/optibrain/lifecycle_runner.py':'ops/phase16_17/lifecycle_runner.py',

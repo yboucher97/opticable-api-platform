@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import stat
+from zoneinfo import ZoneInfo
 
 from .business_autonomy import attention_scope
 from .operations import build_operations
@@ -150,7 +151,7 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
     return dict(schema=1,read_only=True,at=now.isoformat(),sections=sections,system=signals,
                 scope_counts=journal.get('attention_scopes',{}),links=LINKS,
                 source_freshness={name:model.get('read_at') for name,model in [('Sales',sales),('Lifecycle',lifecycle),('Operations',operations)]},
-                attention_count=sum(len(rows) for rows in sections.values()))
+                attention_count=sum(len(rows) for rows in sections.values()),activity=readiness.get('activity'))
 
 
 def render_today(view):
@@ -159,6 +160,7 @@ def render_today(view):
            "<title>OptiBrain · Today</title><style>body{font:16px/1.5 system-ui;max-width:1050px;margin:2rem auto;padding:0 1rem;color:#182536}nav{display:flex;flex-wrap:wrap;gap:1rem}article{border:1px solid #cdd6df;border-radius:8px;padding:1rem;margin:1rem 0}small{color:#526174}a{color:#075aa7}.priority{font-weight:700}h2{margin-top:2rem}</style></head><body>",
            f"<h1>Today</h1><p>What needs my attention now?</p><p>{h(view['attention_count'])} business items requiring review · Read-only</p>",
            '<nav>'+''.join(f"<a href='{h(link)}'>{h(name.title())}</a>" for name,link in LINKS.items() if name!='test')+'</nav>']
+    parts.append(render_activity(view.get('activity')))
     for name,rows in view['sections'].items():
         parts.append(f'<section><h2>{h(name)} · {len(rows)}</h2>')
         if not rows:parts.append('<p>No attention item found in the available bounded evidence.</p>')
@@ -174,10 +176,37 @@ def render_today(view):
     return ''.join(parts)
 
 
+def render_activity(value):
+    h=lambda v:escape(str(v if v is not None else 'Unknown'),quote=True)
+    if not value:
+        return '<section><h2>What OptiBrain actually did</h2><p>Recent execution evidence is unavailable. Scheduler configuration alone is not proof.</p></section>'
+    def local(raw):
+        try:
+            at=datetime.fromisoformat(raw.replace('Z','+00:00'))
+            if at.utcoffset() is None:raise ValueError('Timezone absent')
+            return at.astimezone(ZoneInfo('America/Toronto')).strftime('%Y-%m-%d %H:%M:%S %Z')
+        except (TypeError,AttributeError,ValueError):return 'Unknown'
+    parts=['<section><h2>What OptiBrain actually did</h2>',
+           f"<p>Snapshot {h(local(value.get('captured_at')))} · America/Toronto</p><p>{h(value.get('coverage'))}</p>"]
+    inquiries=value.get('inquiries',{})
+    parts.append(f"<p>Unique acknowledged native inquiries: {h(inquiries.get('confirmed_non_test_inquiries'))} non-test; "
+                 f"{h(inquiries.get('confirmed_test_inquiries'))} TEST_ONLY. Quarantined conflicts: {h(inquiries.get('quarantined_conflicts'))}. "
+                 f"Last acknowledgement: {h(local(inquiries.get('last_acknowledged_at')))}. These are receipt counts, not GA4 conversions.</p>")
+    parts.append('<table><tr><th>Job</th><th>Observed execution</th><th>Completion</th><th>Result / counters</th></tr>')
+    for row in value.get('jobs',[])[:7]:
+        counts='; '.join(f'{k}: {v}' for k,v in row.get('counters',{}).items() if type(v) is int and v>=0)
+        parts.append(f"<tr><td>{h(row.get('label'))}<br><small>{h(row.get('job'))}</small></td>"
+                     f"<td>{h(row.get('origin'))}<br>{h(local(row.get('started_at')))}<br>Timer active: {h(row.get('timer_active'))}</td>"
+                     f"<td>{h(local(row.get('completed_at')))}</td><td>{h(row.get('state'))}<br>{h(counts or 'No usable numeric counter; no zero assumed')}</td></tr>")
+    parts.append('</table><p>Existing authority and expiry are shown in System Health. A completed empty cycle does not imply a new lead, message or business result.</p></section>')
+    return ''.join(parts)
+
+
 def render_system_health(view):
     h=lambda value:escape(str(value),quote=True)
     rows=''.join(f"<tr><td>{h(r['name'])}</td><td>{h(r['state'])}</td><td>{h(r['reason'])}</td><td>{h(r.get('observed_at') or 'Unavailable')}</td></tr>" for r in view['signals'])
     return ("<!doctype html><html lang='en'><meta charset='utf-8'><title>OptiBrain System Health</title>"
             "<style>body{font:16px system-ui;margin:2rem}td,th{padding:.5rem;text-align:left;border-bottom:1px solid #ddd}</style>"
             f"<a href='/v1/operator/today'>Today</a><h1>System Health · {h(view['state'])}</h1><p>Release {h(view.get('deployment_sha'))}</p>"
-            '<table><tr><th>Signal</th><th>State</th><th>Meaning</th><th>Observed</th></tr>'+rows+'</table></html>')
+            '<table><tr><th>Signal</th><th>State</th><th>Meaning</th><th>Observed</th></tr>'+rows+'</table>'
+            +render_activity(view.get('activity'))+'</html>')

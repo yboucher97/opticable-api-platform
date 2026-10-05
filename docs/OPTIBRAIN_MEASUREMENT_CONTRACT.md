@@ -47,3 +47,10 @@ Private proof: `/var/lib/optibrain/phase24-25/google-native-20261003T151221Z.jso
 ## Foundation completion delta
 
 Native Forms FR/EN field/alias/notification/intake attribution is now independently proven with one TEST_ONLY submission each and 31 matched context fields. English automatic execution remains OFF. Parent-iframe successful-form Analytics reception is still not established by notification delivery; a click is not generate_lead. GA4 live page-view classification stays GREEN. Conversion destinations remain configured with uploads OFF; fresh recovery now explicitly resets grant state and retains destination metadata under [recovery authority](OPTIBRAIN_RECOVERY_AUTHORITY_CONTRACT.md). Temporary dated Québec FR/EN Keyword Planner economics via Windsor is separate from actual Ads CPC and requires Basic Cloud access for the permanent direct path.
+
+
+## Phase32 measurement boundary
+
+The native FR/EN Forms route remains Zoho Forms → authenticated Mail → immutable receipt → central parser/CRM planning. These receipts are the reliable deduplicated acknowledgement, including TEST_ONLY ownership and quarantine exclusions. Receipt counts are not GA4 conversions. Current published FR and EN Forms expose `ZFGTMUtil.postMsgJSON={}`; native iframe success-to-GA4 is not proven. Resize messages, submit clicks and generic thank-you visits never qualify as success.
+
+Official Zoho PostMessage Tracking supports a Submit Form callback but its one-time configuration remains a provider UI action. Owner must supply the generated code/payload; implementation must check exact origin, sending iframe, form alias, submission association, dedupe and consent. Data Push stays OFF to exclude form PII. No guessed callback is enabled. AI direct intake emits a consented success event only after an acknowledged HTTP/JSON response; opaque inquiry identity and acknowledgement survive a tab reload, with explicit new-inquiry reset. Offline fixtures are not genuine inquiries or GA4 provider proof.

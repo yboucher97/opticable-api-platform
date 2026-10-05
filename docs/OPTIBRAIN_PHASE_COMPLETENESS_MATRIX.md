@@ -812,3 +812,8 @@ API1.22.0 extends the acquisition evidence layer with durable trigger versions, 
 ## Acquisition coverage expansion current delta
 
 Post-Phase30 acquisition coverage expansion consumes API1.23.0; it is not Phase32. The original Phase30 pass and125-classification history remain intact. Broader research retains historical buyer value and unresolved/ICP-only opportunities; strict Sales admission, Google export OFF, English disabled, existing12/4 authority and Claude/Apollo ownership are preserved. Exact final SHA/recovery is recorded in acquisition-coverage-expansion/final-report.json and root release receipts. Phase32 remains ready for a separately initiated bounded mission, not started here.
+
+
+## Phase32 scope
+
+Website conversion/local SEO/marketing readiness improves five existing pages and the existing operation display. Native FR/EN attribution/intake remains proven. Native successful submission reception in GA4 remains a material telemetry boundary until the official callback is configured and independently validated; Phase32 must remain PARTIAL while that proof is absent. No earlier phase is rewritten and no genuine customer conversion is manufactured.
