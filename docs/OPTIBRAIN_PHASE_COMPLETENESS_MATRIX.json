@@ -2,7 +2,7 @@
   "schema_version": 1,
   "at": "2026-10-04T22:28:30.578101+00:00",
   "release": {
-    "api": "1.22.0",
+    "api": "1.23.0",
     "production_sha_source": "/var/lib/optibrain/releases/current.json",
     "source_pin_semantics": "Historical phase SHAs are unchanged; current exact release is independently recorded in root receipt",
     "production_executable_changed": true
@@ -766,5 +766,14 @@
       "production_executable_changed": true,
       "release_status": "Exact production receipt and final Phase30 evidence remain authoritative"
     }
-  ]
+  ],
+  "acquisition_coverage_expansion": {
+    "scope": "POST-PHASE30 SHADOW RESEARCH",
+    "implementation": "Prospect universe, historic retention, ICP/multi-actor/contact/revisit and funnel",
+    "source_coverage": "PARTIAL — explicit bounds",
+    "phase30_history_preserved": true,
+    "sales_gate_unchanged": true,
+    "execution_authority": false,
+    "receipt": "/var/lib/optibrain/acquisition-coverage-expansion/final-report.json"
+  }
 }

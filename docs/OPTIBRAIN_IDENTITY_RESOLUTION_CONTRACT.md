@@ -18,3 +18,8 @@ Decision makers come from existing approved saved Apollo contacts, bounded zero-
 CRM collision checks Leads, Contacts, Accounts, native open Deals, Service Locations and Services. Account existence alone means an existing prospect; actual Services/customer evidence establishes existing customer context. Apollo active/paused membership, recent sends, known account ownership, reply/suppression/bounce/unsubscribe remain protected. CRM Email_Opt_Out, do-not-contact and sticky local owner feedback hold recommendations. Current complete source checks never bypass recent Zoho Mail, complaints, consent or human coordination before future contact.
 
 Company aliases are shared across public/project/Apollo/CRM evidence. Conflicts remain separate human-review evidence; one source must not silently overwrite another. No source query or identity resolution creates a CRM record. See [trigger policy](OPTIBRAIN_TRIGGER_INTELLIGENCE_CONTRACT.md).
+
+
+## Acquisition coverage expansion current delta
+
+Coverage expansion separates unresolved project placeholders from named organizations, retains actor candidates without contact authority and supports multiple role candidates. Four additional reviewed native SEAO buyer/domain bindings use official primary sites: OP-24857 Parc olympique, OP-13505 ITHQ, OP-36590 STM, OP-36233 Université de Montréal. Native ID proof plus explicit primary-source evidence is required; no name-pattern domain generation. Shared alias conflicts remain held. See [contacts](OPTIBRAIN_CONTACT_RESOLUTION_CONTRACT.md).

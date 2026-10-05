@@ -71,3 +71,8 @@ Roadmap impact: does not block Phase30 shadow research, Phase32 bounded website/
 ## Waiting is not an owner configuration task
 
 Genuine eligible Lead, customer, operational, Finance and conversion effects must arise naturally. Do not manufacture a message, financial transaction or advertising conversion. Sign license upgrades, specialist integrations and complete historical backfill are optional decisions.
+
+
+## Acquisition coverage expansion current delta
+
+No new browser, subscription or OAuth owner action is required for bounded coverage. Current research work is to verify live procurement addenda, resolve retained permit actors/domains and validate relevant current contacts. These are research tasks, not provider-blocking setup. OA4 Google Basic/brand verification remains owner-deferred and nonblocking; do not repeatedly surface it during unrelated work.

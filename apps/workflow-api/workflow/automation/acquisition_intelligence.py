@@ -185,6 +185,9 @@ def render_acquisition(view):
     if view.get('trigger_intelligence'):
         from .trigger_intelligence import render_queue
         html+=render_queue(view['trigger_intelligence'])
+        if view['trigger_intelligence'].get('prospect_universe'):
+            from .prospect_universe import render
+            html+=render(view['trigger_intelligence']['prospect_universe'])
     html+='<section><h2>Paid search research</h2>'
     economics=view.get('keyword_economics',{})
     if economics:

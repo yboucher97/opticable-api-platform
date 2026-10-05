@@ -17,9 +17,14 @@ CKAN = 'https://www.donneesquebec.ca/recherche/api/3/action/'
 SEAO_CATALOG = CKAN + 'package_show?id=systeme-electronique-dappel-doffres-seao'
 LAVAL_RESOURCE = 'd4731ee2-b1e5-4a31-bc56-4e13115e74ef'
 TRICOR = 'https://www.tricorbraun.com/tricorbraun-opens-new-quebec-distribution-warehouse-to-enhance-customer-service-in-canada'
+QUEBEC_RESOURCE = 'ca02aca1-4082-4084-a87d-42f65e102cb8'
 BUCKETS = {'Ville de Mont-Royal.': 'GREATER MONTRÉAL', 'Collège de Maisonneuve': 'MONTRÉAL'}
 BUYER_PROOFS = {'OP-36446': ('ville.mont-royal.qc.ca', 'https://www.ville.mont-royal.qc.ca'),
-                'OP-36229': ('cmaisonneuve.qc.ca', 'https://www.cmaisonneuve.qc.ca/environnement/approvisionnement/')}
+                'OP-36229': ('cmaisonneuve.qc.ca', 'https://www.cmaisonneuve.qc.ca/environnement/approvisionnement/'),
+                'OP-24857': ('parcolympique.qc.ca', 'https://parcolympique.qc.ca/a-propos/'),
+                'OP-13505': ('ithq.qc.ca', 'https://www.ithq.qc.ca/nous-joindre/'),
+                'OP-36590': ('stm.info', 'https://www.stm.info/fr/nous-joindre'),
+                'OP-36233': ('umontreal.ca', 'https://www.umontreal.ca/fr/')}
 
 
 def local_date(value):
@@ -43,7 +48,7 @@ class PublicReader:
 
     def get(self, url, *, params=None, max_bytes=2097152, headers=None):
         host = urlsplit(url).hostname
-        if urlsplit(url).scheme != 'https' or host not in {'www.donneesquebec.ca', 'donnees.montreal.ca', 'www.tricorbraun.com'}:
+        if urlsplit(url).scheme != 'https' or host not in {'www.donneesquebec.ca', 'donnees.montreal.ca', 'www.tricorbraun.com', 'laval15.ecoparcmontoni.com', 'lovo.co', 'www.saq.com'}:
             raise ValueError('Only configured official public hosts are allowed')
         if self.calls >= self.limit or monotonic()-self.started > 55: raise ValueError('Public-source budget exceeded')
         self.calls += 1
@@ -60,7 +65,7 @@ class PublicReader:
     def close(self): self.http.close()
 
 
-def permits(records, *, provider, now, verified_at, published_at=None):
+def permits(records, *, provider, now, verified_at, published_at=None, retain_history=False):
     result = []
     from .trigger_intelligence import text
     for raw in records:
@@ -71,7 +76,7 @@ def permits(records, *, provider, now, verified_at, published_at=None):
         description = (str(raw.get('TYPE_PERMIS_DESCR') or '') + ' — ' + str(raw.get('TYPE_BATIMENT') or '')) if laval else str(raw.get('nature_travaux') or '')
         commercial = any(word in category for word in ('comm', 'industri', 'institut')) or ('5 log' not in category and 'mult' in category)
         if not rid or not issued or not commercial: continue
-        if (now-stamp(issued)).days > 120: continue
+        if not retain_history and (now-stamp(issued)).days > 120: continue
         if re.search(r'toiture|abattage|auvent|marquise', text(description)) and not relevant(description): continue
         if not laval and raw.get('code_type_base_demande') != 'CO' and not re.search(r'reamenag|agrand|amenagement|electri|reseau', text(description)): continue
         url = 'https://www.donneesquebec.ca/recherche/dataset/permis-de-construction' if laval else 'https://donnees.montreal.ca/dataset/permis-construction'
@@ -89,6 +94,39 @@ def permits(records, *, provider, now, verified_at, published_at=None):
                        'why_now': 'Commercial/industrial permit dated ' + issued[:10] + '; installation stage and buying organization require verification',
                        'raw': raw, 'refresh_seconds': 86400, 'coverage_seconds': 30*86400, 'event_max_age_days': 90})
     return result
+
+
+def location_geography(city, region, country):
+    from .trigger_intelligence import text
+    c, r, nation = text(city), text(region), text(country)
+    if nation and nation not in {'canada', 'ca', 'can'}: return 'FOREIGN'
+    if c in {'montreal', 'saint-laurent'}: return 'MONTRÉAL'
+    if c == 'laval': return 'LAVAL'
+    if c in {'terrebonne', 'mascouche', 'blainville', 'saint-jerome', 'boisbriand', 'rosemere', 'mirabel'}: return 'RIVE-NORD'
+    if c in {'quebec', 'quebec city'}: return 'QUÉBEC CITY'
+    if r in {'quebec', 'qc'}: return 'OTHER QUÉBEC'
+    return 'OTHER CANADA' if nation in {'canada', 'ca', 'can'} and r else 'UNKNOWN'
+
+
+def quebec_permits(data, *, now, verified_at, published_at):
+    """Official source lacks buyers; retain meaningful projects, not invented firms."""
+    from .trigger_intelligence import text
+    features = data.get('features')
+    if not isinstance(features, list) or len(features) > 100000: raise ValueError('Québec permit feature bound')
+    selected = []
+    for feature in features:
+        p = feature.get('properties') or {}; reason = str(p.get('RAISON') or ''); value = text(reason)
+        issued = local_date(p.get('DATE_DELIVRANCE')); rid = p.get('NUMERO_PERMIS')
+        commercial = re.search(r'commercial|industri|institution|entrepot|multifamilial de 9|9 logements et plus', value)
+        if not commercial or not issued or not rid or re.search(r'enseigne|affichage|arbre|piscine|stationnement', text(p.get('DOMAINE'))): continue
+        selected.append({'source_provider':'quebec_permit','source_record_id':str(rid),
+            'source_url':'https://www.donneesquebec.ca/recherche/dataset/permis-delivres-ville-de-quebec',
+            'source_version':digest(p),'source_version_at':issued,'source_effective_at':published_at,'last_verified_at':verified_at,
+            'publish_date':issued,'status':'ISSUED','trigger_type':'BUILDING PERMIT','title':reason[:700],
+            'description':reason[:1200],'geography_class':'QUÉBEC CITY','location':p.get('ADRESSE_TRAVAUX'),
+            'company_name':None,'actors':[],'raw':p,'why_now':'Dated official commercial/institutional or9+unit project; owner/buyer and installation stage require research',
+            'refresh_seconds':7*86400,'coverage_seconds':30*86400,'event_max_age_days':120})
+    return sorted(selected,key=lambda r:(r['publish_date'],r['source_record_id']),reverse=True)[:150]
 
 
 def seao(releases, *, now, verified_at, published_at, source_url):

@@ -124,7 +124,7 @@ def collect(reader, saved, *, now, permits_cache):
                     latest = max((r.get('DATE_EMISSION') or '' for r in raw), default='')
                     from .trigger_sources import local_date
                     published = local_date(latest)
-                    rows = permits(raw, provider=source, now=now, verified_at=now.isoformat(), published_at=published)
+                    rows = permits(raw, provider=source, now=now, verified_at=now.isoformat(), published_at=published,retain_history=True)
                     current.update(records=rows, observed_at=now.isoformat(), source_effective_at=published,
                                    state='PARTIAL', coverage='PARTIAL — STALE PUBLICATION / LATEST100', source_records=len(raw),
                                    reason='Native contractor names are not resolved actors; freshness uses latest published permit date')
@@ -148,6 +148,11 @@ def build_queue(store, rows, apollo, crm, *, now, crm_at, feedback, source_healt
     updates = Counter()
     for row in rows:
         proof = row.get('company_identity') or {}
+        from .trigger_sources import BUYER_PROOFS
+        binding=BUYER_PROOFS.get(proof.get('native_buyer_id')) if row.get('source_provider')=='seao' else None
+        if binding and not row.get('domain') and (row.get('raw') or {}).get('buyer',{}).get('id')==proof.get('native_buyer_id'):
+            row={**row,'domain':binding[0],'company_identity':{**proof,'source_url':binding[1]}}
+            proof=row['company_identity']
         if row.get('test_only') is True or row.get('evidence_kind') == 'FIXTURE':
             updates['TEST EXCLUDED'] += 1; continue
         if proof.get('confidence') in {'EXACT', 'SUPPORTED'} and (row.get('domain') or proof.get('native_buyer_id')):
@@ -182,17 +187,17 @@ def build_queue(store, rows, apollo, crm, *, now, crm_at, feedback, source_healt
             'expired_excluded': sum(r['status'] in {'CLOSED', 'EXPIRED', 'CANCELLED', 'AWARDED'} for r in assessed),
             'provider_writes': 0, 'crm_promotions': 0, 'outbound_sends': 0, 'cold_send_allowed': False,
             'promotion_states': ['RESEARCH', 'READY FOR OWNER REVIEW', 'APPROVED FOR CRM — FUTURE OWNER AUTHORITY', 'PROMOTED — NOT ENABLED'],
-            'uncovered_geographies': {'RIVE-NORD': 'UNKNOWN — NO VERIFIED FEED', 'QUÉBEC CITY': 'PARTIAL — DATASET DISCOVERED; ADAPTER NOT ENABLED', 'OTHER QUÉBEC': 'PARTIAL — SEAO ONLY'},
+            'uncovered_geographies': {'RIVE-NORD': 'UNKNOWN — NO VERIFIED FEED', 'QUÉBEC CITY': 'SUPPORTED — BOUNDED OFFICIAL150 PERMITS', 'OTHER QUÉBEC': 'PARTIAL — SEAO ONLY'},
             'keyword_economics_dependency': 'OPTIONAL; use trusted cache separately, missing economics UNKNOWN', 'natural_business_effects': 0}
 
 
 def projection(queue):
     rows = []
-    for row in [r for r in queue['rows'] if r['geography_class'] not in {'FOREIGN', 'OTHER CANADA'}][:20]:
-        r = {k: v for k, v in row.items() if k not in {'raw', 'company_identity_result', 'corroboration'}}
+    for row in [r for r in queue['rows'] if r['geography_class'] not in {'FOREIGN', 'OTHER CANADA'}][:12]:
+        r = {k: v for k, v in row.items() if k not in {'raw', 'company_identity_result', 'corroboration', 'retention'}}
         r['actors'] = [{k: v for k, v in a.items() if k not in {'note'}} for a in row['actors']][:5]
         rows.append(r)
-    return {**{k: v for k, v in queue.items() if k != 'rows'}, 'rows': rows, 'display_limit': 20}
+    return {**{k: v for k, v in queue.items() if k != 'rows'}, 'rows': rows, 'display_limit': 12}
 
 
 def observe(engine, settings, *, now=None):
@@ -212,17 +217,37 @@ def observe(engine, settings, *, now=None):
     try: rows, caches, health = collect(reader, saved, now=now, permits_cache=cache_read(SALES/'permits.json'))
     finally: reader.close()
     atomic(cache, caches)
-    store = TriggerStore(DATABASE)
+    from .prospect_universe import ProspectStore, build_universe, research_contacts, owner_projection
+    from .coverage_sources import collect as collect_coverage
+    store = ProspectStore(DATABASE)
+    store.initialize_prospects()
+    if not store.baseline(): store.capture_baseline(cache_read(ROOT/'triggers-view.json',16777216),now=now)
+    coverage_rows,seeds,coverage_cache,coverage_health=collect_coverage(cache_read(ROOT/'coverage-sources.json',16777216),now=now)
+    atomic(ROOT/'coverage-sources.json',coverage_cache)
+    rows.extend(coverage_rows);health.extend(coverage_health)
     feedback = SalesFeedback(DATABASE).latest()
     queue = build_queue(store, rows, apollo, crm, now=now, crm_at=identities.get('at'), feedback=feedback, source_health=health)
-    queue['provider_calls'] = reader.calls
-    role_cache,role_calls=research_roles(queue,cache_read(ROOT/'trigger-role-research.json'),settings,now=now)
+    queue['provider_calls'] = reader.calls+sum(h['requests'] for h in coverage_health)
+    role_cache=cache_read(ROOT/'trigger-role-research.json')
+    universe=build_universe(store,queue,apollo,crm,now=now,crm_at=identities.get('at'),seeds=seeds,research=role_cache,feedback=feedback)
+    role_cache,role_calls=research_contacts(store,universe,role_cache,settings,now=now)
+    # Re-assess from raw stored events; do not feed changed retention labels to
+    # Phase30 Sales policy or accidentally elevate a historical event.
+    if role_calls:
+        queue['rows']=[assess(r,apollo,crm,now=now,crm_at=identities.get('at'),feedback=feedback) for r in store.records()]
+        universe=build_universe(store,queue,apollo,crm,now=now,crm_at=identities.get('at'),seeds=seeds,research=role_cache,feedback=feedback)
     atomic(ROOT/'trigger-role-research.json',role_cache)
+    queue['prospect_universe']=owner_projection(universe)
+    atomic(ROOT/'prospects-view.json',queue['prospect_universe'])
+    order={'ACT NOW':0,'REVIEW':1,'RESEARCH':2,'WATCH':3,'IGNORE':4}
+    queue['rows'].sort(key=lambda r:(order.get(r.get('event_priority_class',r['priority_class']),4),
+        -sum(r['quality_components'].values()),r.get('closing_date') or '9999',r['trigger_id']))
+    queue['counts']=dict(Counter(r['priority_class'] for r in queue['rows']))
     queue['apollo_research_calls']=role_calls;queue['apollo_research_credits']=0
     health.append({'source':'apollo_roles','state':'PARTIAL' if any(c.get('state')=='PARTIAL' for c in role_cache.values()) else 'WORKING' if role_cache else 'UNKNOWN',
                    'observed_at':max((c.get('observed_at','') for c in role_cache.values()),default=None),
-                   'coverage':'PARTIAL — AT MOST THREE RESOLVED DOMAINS', 'requests':role_calls,
-                   'reason':'Current-employer and role proof required; no email/phone enrichment; 14-day per-domain cache'})
+                   'coverage':'PARTIAL — THREE DOMAINS/TORONTO DAY', 'requests':role_calls,
+                   'reason':'Likely contacts retained for research; current-employer proof required before eligibility;14-day per-domain cache'})
     for h in health:
         store.source('trigger_'+h['source'], h['state'], now, observed_at=h.get('observed_at'), reason=str(h.get('reason') or '') + '; ' + str(h.get('coverage') or ''), requests=h['requests'], cache_hit=h['requests'] == 0)
     store.prune_triggers(now); atomic(ROOT/'triggers-view.json', queue)

@@ -14,3 +14,8 @@ Root health now separates configured capability, execution authority, ACTIVE / W
 ## Phase30 source coverage
 
 The isolated trigger observer reuses the Montréal cache, checks the SEAO catalog at most daily and only downloads a changed latest monthly/weekly resource, checks Laval and one primary expansion proof at most weekly. A public read is capped by5 requests/55seconds and80MiB for the sole large procurement export; source failures have an explicit HTTP/category where available and no retry loop. Publication coverage is distinct from download time. SEAO exports older than3days cannot supply STRONG tender urgency; stale native rows cannot become new Sales. Source coverage is SUPPORTED / PARTIAL / UNKNOWN by geography. One source failure or unavailable economics preserves independent research and never changes lifecycle/customer authority.
+
+
+## Acquisition coverage expansion current delta
+
+Coverage expansion distinguishes Québec City authoritative weekly bounded150 permits; latest observed native dateOctober2; source-native buying actors absent. Rive-Nord remains PARTIAL/NO VERIFIED STRUCTURED ADAPTER. Curated primary sources are sample coverage. Apollo contact candidate research has3/Toronto-day and14-day per-domain attempt budgets; failed requests preserve endpoint/status/classification. Existing Windsor30-day cache is optional; Basic access deferred, Semrush/Ahrefs unused and optional, Clay execution-environment capability gap. Research backlog and contact/domain/collision loss reasons are visible independently of source auth.
