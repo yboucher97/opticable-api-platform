@@ -84,3 +84,17 @@ No new blocking owner permission, purchase or reauthorization is required for bo
 ## Forms polling patch
 
 No owner permission, OAuth reauthorization, Forms UI edit or message deletion is needed for the parser/replay defect. Investigate any future true quarantine using its immutable evidence and a separately reviewed resolution; never overwrite the original receipt. English customer automation remains disabled pending its separate authorization. This patch does not repeat native test submissions or reopen resolved Forms setup actions.
+
+
+## Phase32 — native Forms success measurement
+
+Provider: Zoho Forms. Operation: enable the documented postMessage Submit Form event for both existing production forms. Current published configuration is empty. Classification: PROVIDER-SIDE UI-ONLY CONFIGURATION; existing OAuth has no established supported Forms administration endpoint. Additional scope/client/reauthorization is not established as necessary.
+
+1. Open FR Formulairedemandedesoumission and EN RequestaQuote.
+2. Share → Google Tag Manager & Custom Tracking → PostMessage Tracking → Configure.
+3. Set aliases `opticable_fr_quote` and `opticable_en_quote`; select Submit Form only; Data Push OFF. Save and provide the generated tracking code to OptiBrain for exact payload validation.
+4. Retain hidden `ob_attribution`, admin recipient soumissions@opticable.ca, native CRM writer OFF and respondent auto-replies OFF. Do not change Ads or GTM/Yellow Pages.
+
+Reauthorization: NO. Runtime remains Mail/API driven, never browser driven. Verification: exact provider origin/iframe/form association, acknowledged success versus failure/reload/replay, consent-denied behavior and no PII, then bounded provider event proof. Independent website/operation work continues.
+
+Holo: optional manual draft handoff in `docs/marketing/phase32-camera-ai-content-pack.md`; no workflow/account change. Google Basic access remains owner-deferred, non-blocking and must not be resurfaced during unrelated work.

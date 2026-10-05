@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 import json
 import hashlib
+import importlib.util
 import os
 from pathlib import Path
 import shutil
@@ -168,7 +169,9 @@ def collect(now=None):
     add('Deployment','OK' if receipt.get('sha')==sha==manifest.get('candidate_sha') else 'ACTION REQUIRED','Release receipt, source and manifest compared')
     resolved=resolved_read_reviews('/var/lib/optibrain/phase14/observer-reconciliation/lead-review-resolution.json',
         '/opt/opticable-api-platform/apps/workflow-api/workflow/automation/providers/crm_leads.py',DB_ROOT/'automation.db')
-    return dict(schema=1,captured_at=now.isoformat(),deployment_sha=sha,signals=signals,
+    spec=importlib.util.spec_from_file_location('activity_snapshot',Path(__file__).with_name('activity_snapshot.py'))
+    activity=importlib.util.module_from_spec(spec);spec.loader.exec_module(activity)
+    return dict(schema=1,captured_at=now.isoformat(),deployment_sha=sha,signals=signals,activity=activity.collect(DB_ROOT),
                 resolved_read_only_failures=len(resolved),resolved_read_only_run_ids=resolved)
 
 

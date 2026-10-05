@@ -152,6 +152,7 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
     rows.append(signal('Native watch','OK' if status=='verified' else 'UNKNOWN' if status=='unconfigured' else 'ACTION REQUIRED',
                        'Notification binding verified' if status=='verified' else 'Notification verification needs review',
                        at=at,verification_status=status,expiry=native.get('native_subscription_expires_at')))
+    activity = None
     try:
         snapshot = json.loads(Path(runtime_path).read_text())
         age = age_seconds(snapshot.get('captured_at'), now)
@@ -162,6 +163,9 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
             rows.append(signal(item['name'],item['state'],item['reason'],at=snapshot['captured_at'],
                                **{k:v for k,v in item.items() if k not in {'name','state','reason','observed_at'}}))
         deployed_sha = snapshot.get('deployment_sha')
+        candidate=snapshot.get('activity')
+        if isinstance(candidate,dict) and candidate.get('schema')==1 and candidate.get('read_only') is True:
+            activity={**candidate,'captured_at':snapshot['captured_at']}
     except (OSError, ValueError, TypeError, KeyError):
         deployed_sha = None
         rows.extend(signal(name,'UNKNOWN','Runtime sample absent or stale') for name in
@@ -169,7 +173,7 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
     rows.append(queue_depth_signal(now))
     state = max((r['state'] for r in rows), key=STATES.index)
     return {'schema':1,'state':state,'read_only':True,'captured_at':now.isoformat(),
-            'deployment_sha':deployed_sha,'signals':rows}
+            'deployment_sha':deployed_sha,'signals':rows,'activity':activity}
 
 
 def queue_depth_signal(now, path=Path('/run/optibrain-readiness/queue-depth.json')):
