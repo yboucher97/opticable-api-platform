@@ -52,3 +52,7 @@ Execution references the existing action ID, payload hash, approval, exact deplo
 Fresh recovery follows the [recovery authority contract](OPTIBRAIN_RECOVERY_AUTHORITY_CONTRACT.md). Restored APPROVED/DEPLOYED records cannot rearm a writer, restore stale approval validity or replay an effect. Ordinary deployment preserves authorized lifecycle scopes/expiry/claims; new recovery retains writers OFF. Provider capability, configured destination and proposal approval are distinct from execution authorization.
 
 Examples and schema validation are format proof only. They are not provider-backed execution, customer results or continuous autonomous operation.
+
+## Ads completion operations
+
+[Pilot readiness](OPTIBRAIN_ADS_PILOT_READINESS_CONTRACT.md) binds complete campaign details into the existing immutable revision hash. CREATE_PAUSED/OWNER_ACTIVATE are future domain operations within EXECUTING/DEPLOYED; they do not add incompatible proposal states. Local REVIEWED or fixture APPROVED never grants transport. Exact approval/expiry/account/spec, off-host idempotency, readback and unknown-effect hold precede any future provider operation.

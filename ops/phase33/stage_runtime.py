@@ -16,7 +16,7 @@ from pathlib import Path
 import stat
 import urllib.request
 
-ROOT = Path('/var/lib/optibrain/phase33')
+ROOT = Path('/var/lib/optibrain/phase33/completion-release')
 HELPER = Path('/usr/local/lib/optibrain/phase18-19-stage-runtime.py')
 BASE = '586ac2818fcc8166a40ed0f2fb5c8a0ac5708e0b'
 
@@ -85,12 +85,12 @@ def main():
     expected={str(p.relative_to(source)):h.digest(h.trusted(p)) for p in (source/'apps/workflow-api/workflow').rglob('*.py')}
     h.require(validation.get('workflow_source_hashes')==expected, 'Final executable sources differ from full gate')
     release=h.load(h.RECEIPT)
-    h.require(release.get('sha')==sha and release.get('state')=='deployed' and release.get('api_version')=='1.26.0'
+    h.require(release.get('sha')==sha and release.get('state')=='deployed' and release.get('api_version')=='1.26.1'
               and release.get('writers_enabled') is False, 'Exact guarded release receipt required')
     h.require(h.load(h.INTERNAL/'state.json')['effects']==prior['internal_effects']
               and h.load(h.CUSTOMER/'state.json')['effects']==prior['customer_effects'], 'Effect state changed; reconcile before resume')
     with urllib.request.urlopen('http://127.0.0.1:8100/health',timeout=5) as response:
-        h.require(response.status==200 and json.load(response).get('version')=='1.26.0','API version differs')
+        h.require(response.status==200 and json.load(response).get('version')=='1.26.1','API version differs')
     path=ROOT/('runtime-activation-'+sha+'.json');h.require(not path.exists(),'Activation already exists; review, never reset')
     receipt={'schema':1,'state':'ARMED_TIMERS_OFF_PENDING_DRY_RUN_REVIEW','sha':sha,'at':now.isoformat(),
         'internal_scopes':activation['scopes'],'customer_scopes':customer['real_scopes'],

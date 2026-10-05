@@ -1,6 +1,6 @@
 # Google Ads intelligence and campaign previews
 
-AUTHORITATIVE CURRENT. API1.26.0 adds bounded reporting, deterministic preparation and owner review through the [shared optimization proposal](OPTIBRAIN_OPTIMIZATION_PROPOSAL_CONTRACT.md). Production authority is **READ / ANALYZE / PREPARE ONLY**. No Ads mutate, campaign creation, activation, budget/bid/keyword/goal change or conversion upload adapter exists in this domain.
+AUTHORITATIVE CURRENT. API1.26.1 adds bounded reporting, deterministic preparation and owner review through the [shared optimization proposal](OPTIBRAIN_OPTIMIZATION_PROPOSAL_CONTRACT.md). Production authority is **READ / ANALYZE / PREPARE ONLY**. No Ads mutate, campaign creation, activation, budget/bid/keyword/goal change or conversion upload adapter exists in this domain.
 
 ## Sources and limits
 
@@ -35,3 +35,7 @@ Preserve qualified_lead, estimate_accepted, invoice_paid as validated SECONDARY 
 Later sequence: SHADOW → separately owner-approved CREATE-PAUSED → owner review → separately owner-activated bounded pilot → measure → bounded optimization → possible later scoped autonomy. No stage is authorized here. Before activation decide exact goal/legacy-tag/test-isolation plan, serviced geography, genuine outcome linkage, manual quote handling (English automation remains disabled), spend/stop controls and exact landing preview. Before quantitative optimization require durable fresh economics and enough qualified outcomes; low volume cannot justify false precision or an aggressive Target CPA/ROAS/Performance Max launch.
 
 Ordinary exact-source deployment preserves existing12internal/4customer scopes, expiry, cutoffs and effect claims via the reviewed staging transaction. Fresh restore leaves all writersOFF, conversion authorityOFF and Ads mutation authority absent. Golden recovery is unchanged. Runtime mission evidence lives at `/home/optibrain/phase33-evidence/final-report.{md,json}`, separate from versioned contracts.
+
+## Phase33 completion
+
+[The pilot readiness contract](OPTIBRAIN_ADS_PILOT_READINESS_CONTRACT.md) supersedes earlier unresolved review wording: auto-tagging is enabled; Merci is page-visit-only/remove-from-bidding; historical custom references are fully mapped but contents API-inaccessible and prohibited from reuse; pilot goal level is CAMPAIGN with no custom/biddable outcomes initially. All four previews include exact city/language IDs, TEST policy, native total budget, spend/stop/rollback and sealed CREATE_PAUSED requirements. This is preparation, not provider authority.
