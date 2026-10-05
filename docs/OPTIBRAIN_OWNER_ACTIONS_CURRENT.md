@@ -88,13 +88,14 @@ No owner permission, OAuth reauthorization, Forms UI edit or message deletion is
 
 ## Phase32 — native Forms success measurement
 
-Provider: Zoho Forms. Operation: enable the documented postMessage Submit Form event for both existing production forms. Current published configuration is empty. Classification: PROVIDER-SIDE UI-ONLY CONFIGURATION; existing OAuth has no established supported Forms administration endpoint. Additional scope/client/reauthorization is not established as necessary.
+Provider: Zoho Forms. One-time callback configuration was completed by the owner during Phase32. Both published Forms now expose `form_submit=true`, empty Data Push fields and aliases `opticablefrquote` / `opticableenquote` (Zoho removes underscores). Form-view is also enabled but is ignored by the success listener. No additional Forms UI action, OAuth scope/client or reauthorization is currently required. Retain hidden `ob_attribution`, admin recipient soumissions@opticable.ca, native CRM writer OFF and respondent auto-replies OFF.
 
-1. Open FR Formulairedemandedesoumission and EN RequestaQuote.
-2. Share → Google Tag Manager & Custom Tracking → PostMessage Tracking → Configure.
-3. Set aliases `opticable_fr_quote` and `opticable_en_quote`; select Submit Form only; Data Push OFF. Save and provide the generated tracking code to OptiBrain for exact payload validation.
-4. Retain hidden `ob_attribution`, admin recipient soumissions@opticable.ca, native CRM writer OFF and respondent auto-replies OFF. Do not change Ads or GTM/Yellow Pages.
+Remaining proof: independently observe an acknowledged native provider submission reaching GA4 under valid analytics consent. Isolated callback tests are not genuine customer proof. Do not manufacture a business event or enable conversion uploads. Runtime remains Mail/API driven, never browser driven.
 
-Reauthorization: NO. Runtime remains Mail/API driven, never browser driven. Verification: exact provider origin/iframe/form association, acknowledged success versus failure/reload/replay, consent-denied behavior and no PII, then bounded provider event proof. Independent website/operation work continues.
+## Phase32 — optional GBP profile read
+
+Provider: Google Business Profile. Operation: read owned account/profile configuration to verify website/profile identity, contact, categories and service-area consistency. Existing OptiBrain Google OAuth returned HTTP403 `PERMISSION_DENIED` / `ACCESS_TOKEN_SCOPE_INSUFFICIENT` on `GET https://mybusinessaccountmanagement.googleapis.com/v1/accounts`. Classification: MISSING OAUTH SCOPE. Exact required scope: `https://www.googleapis.com/auth/business.manage`. Cached Windsor daily metrics do not expose current profile configuration.
+
+Non-blocking owner action only if current native profile configuration verification is desired: extend the existing OptiBrain Google OAuth authorization with that scope, reauthorize the existing client using an account managing the profile, and rerun the same read request expecting HTTP200; then read location identity/contact/category/service-area fields. No new OAuth client/project, Ads Basic application or purchase is required by this finding. If Google introduces additional verification, preserve the owner's deferral rather than forcing it. Provider permission does not grant GBP publication authority: all profile/posts/review changes remain recommendations or drafts. Existing CRM/Books/Mail/Forms authorization and automation are unaffected. No reauthorization was initiated during Phase32.
 
 Holo: optional manual draft handoff in `docs/marketing/phase32-camera-ai-content-pack.md`; no workflow/account change. Google Basic access remains owner-deferred, non-blocking and must not be resurfaced during unrelated work.
