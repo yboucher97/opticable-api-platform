@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
 import importlib.util
+import sqlite3
 from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
 
 from workflow.automation.today import render_activity, build_today
+from workflow.automation.phase9_form_receipts import FormReceiptLedger
 
 PATH = Path(__file__).resolve().parents[3] / 'ops/phase14/activity_snapshot.py'
 spec = importlib.util.spec_from_file_location('phase32_activity', PATH)
@@ -14,6 +16,28 @@ spec.loader.exec_module(activity)
 
 
 class ActivityTests(unittest.TestCase):
+    def test_real_receipt_schema_separates_tests_and_quarantined_originals(self):
+        with tempfile.TemporaryDirectory() as directory:
+            ledger = FormReceiptLedger(Path(directory) / 'receipts.db')
+            for key, test in (('genuine', False), ('test', True), ('classified', False), ('conflict', False)):
+                receipt = dict(event_id=key, provider_message_id='provider-' + key,
+                    internet_message_id='internet-' + key, occurred_at='2026-10-05T12:00:00+00:00',
+                    source='zoho_form', form_id='fixture', submitted_email='fixture@example.invalid',
+                    reference=None, raw_hash='hash-' + key, test_only=test)
+                self.assertEqual(ledger.record(receipt), 'CREATED')
+                self.assertEqual(ledger.record(receipt), 'REPLAY')
+            with sqlite3.connect(ledger.path) as db:
+                db.execute('INSERT INTO form_test_classifications VALUES(?,?,?)',
+                    ('classified', '{}', '2026-10-05T12:00:00+00:00'))
+            ledger.anomaly('mailbox', 'provider-conflict', 'IMMUTABLE_RECEIPT_CONFLICT',
+                {'reason':'fixture'}, datetime(2026, 10, 5, 12, tzinfo=timezone.utc), existing_event_id='conflict')
+            result = activity.inquiry_counts(ledger.path)
+            self.assertEqual(result['confirmed_non_test_inquiries'], 1)
+            self.assertEqual(result['confirmed_test_inquiries'], 2)
+            self.assertEqual(result['quarantined_conflicts'], 1)
+            self.assertNotIn('email', str(result))
+            self.assertEqual(len(ledger.list()), 4)
+
     def test_timer_configuration_alone_is_not_scheduled_proof(self):
         service = dict(ExecMainStartTimestamp='Mon 2026-10-05 12:00:00 UTC',
                        ExecMainExitTimestamp='Mon 2026-10-05 12:00:03 UTC', Result='success', ExecMainStatus='0')
