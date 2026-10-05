@@ -14,7 +14,7 @@ AUTHORITATIVE CURRENT. This contract joins existing models conceptually; it perf
 | Execution | Existing guarded action/approval/effect journals, independent authority, exact target and readback. |
 | Results/learning | Measured evidence/sample/window/guardrails; interpretation and follow-up retain provenance. |
 
-Each evidence reference includes provider/source, observed_at, freshness or valid_until, confidence, truth class and limitations. Distinguish NATIVE_MEASURED, DERIVED_DETERMINISTIC, ESTIMATED, INFERRED and UNKNOWN. Retrieval time does not make an old native fact fresh. Null missing metrics remain UNKNOWN; zero requires an observed zero and valid population/window.
+Each evidence reference includes provider/source, observed_at, freshness or valid_until, confidence, truth class and limitations. Distinguish NATIVE_MEASURED, OWNER_CONFIRMED, DERIVED_DETERMINISTIC, ESTIMATED, INFERRED and UNKNOWN. OWNER_CONFIRMED records the owner assertion and its scope, not a rewritten provider fact. Retrieval time does not make an old native fact fresh. Null missing metrics remain UNKNOWN; zero requires an observed zero and valid population/window.
 
 ## Entity references and relationships
 

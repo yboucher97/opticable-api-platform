@@ -87,6 +87,7 @@
           "type": "string",
           "enum": [
             "NATIVE_MEASURED",
+            "OWNER_CONFIRMED",
             "DERIVED_DETERMINISTIC",
             "ESTIMATED",
             "INFERRED",
