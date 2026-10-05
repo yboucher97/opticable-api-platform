@@ -102,7 +102,7 @@ def inquiry_counts(path):
         rows = db.execute('SELECT r.occurred_at, r.test_only, c.event_id, r.provider_message_id '
                           'FROM form_receipts r LEFT JOIN form_test_classifications c ON c.event_id=r.event_id '
                           "WHERE NOT EXISTS (SELECT 1 FROM form_message_anomalies a WHERE "
-                          "a.provider_message_id=r.provider_message_id AND a.kind='IMMUTABLE_RECEIPT_CONFLICT')").fetchall()
+                          "a.existing_event_id=r.event_id AND a.kind='IMMUTABLE_RECEIPT_CONFLICT')").fetchall()
         quarantined = db.execute("SELECT COUNT(*) FROM form_message_anomalies WHERE kind='IMMUTABLE_RECEIPT_CONFLICT'").fetchone()[0]
     return dict(confirmed_test_inquiries=sum(bool(r[1] or r[2]) for r in rows),
                 confirmed_non_test_inquiries=sum(not (r[1] or r[2]) for r in rows), quarantined_conflicts=quarantined,
