@@ -1,0 +1,13 @@
+# Forms replay and fault isolation
+
+AUTHORITATIVE CURRENT — API 1.24.1. See [immutable evidence](OPTIBRAIN_IMMUTABLE_RECEIPT_CONTRACT.md).
+
+The single Forms receipt service owns a five-minute systemd timer and the existing shared job lock. GitHub's manual customer-lifecycle mailbox workflow uses a different event path. No scheduler was added or removed. SQLite `BEGIN IMMEDIATE` protects receipt lookup plus insert against overlapping collectors: one canonical insert wins; an identical second attempt replays. Unique constraints remain strict. The collector performs Mail GETs and receipt bookkeeping, with no CRM/customer execution. Replay never creates a receipt, new CRM plan, notification or touch event.
+
+A poll records append-only STARTED then COMPLETED or FAILED observations. Each receipt and each anomaly commits independently. Deterministic invalid notifications and typed immutable conflicts are isolated per message. Parsing catches only data-validation exception classes; provider calls remain outside this boundary. Database errors, provider authentication/transport failures, failed searches, schema failures, unexpected code exceptions and excessive search/backfill bounds abort the poll and propagate. They are never classified as immutable conflicts.
+
+The saved successful watermark advances only after every fetched message is durably recorded, replayed or diagnosed. Search remains bounded to five200-message pages, a two-day overlap, daily full sweep, and an explicit maximum30-day backfill. A poison item cannot wedge the watermark or roll back earlier independent receipts. A crash before cache update repeats safely against immutable receipts/anomalies. Existing mutable lookup-cache cleanup is separate from evidence; no historical evidence is pruned.
+
+Unchanged deterministic conflict/invalid metadata skips body reads for14days even during the daily full scan; cache hits do not extend the retry date. Changed metadata or expiry allows one bounded re-observation. Identical anomaly evidence deduplicates across retries. Mail/provider failures use the existing timer's later bounded invocation; there is no immediate retry loop, browser or model worker. Quarantined evidence remains visible and does not grant business authority.
+
+FR/EN TEST_ONLY fixtures and retained native proofs cover source/language/context, first/last touch and click IDs. Replay retains canonical attribution without advancing last touch. Provider failure and database failure tests distinguish poll abort from per-message quarantine. Concurrent tests establish one receipt and zero duplicate planning effects. Native Forms configuration and English customer eligibility remain unchanged.

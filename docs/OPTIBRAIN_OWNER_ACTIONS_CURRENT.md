@@ -80,3 +80,7 @@ No new browser, subscription or OAuth owner action is required for bounded cover
 ## Prospect enrichment scope
 
 No new blocking owner permission, purchase or reauthorization is required for bounded Apollo/public-source enrichment. Clay is an optional execution-environment integration evaluation; no mandatory owner action is created. Further actor/company/domain/current-role research is an internal backlog, not an owner setup checklist. Keep Google Basic/brand verification deferred and resurface only under its existing material-dependency conditions. English automation and Google conversion uploads remain disabled; this mission does not authorize their enablement.
+
+## Forms polling patch
+
+No owner permission, OAuth reauthorization, Forms UI edit or message deletion is needed for the parser/replay defect. Investigate any future true quarantine using its immutable evidence and a separately reviewed resolution; never overwrite the original receipt. English customer automation remains disabled pending its separate authorization. This patch does not repeat native test submissions or reopen resolved Forms setup actions.

@@ -607,3 +607,7 @@ Acquisition coverage expansion (API1.24.0): durable retained prospects, immutabl
 ## Prospect enrichment current delta
 
 The API1.24.0 shadow enrichment engine is implemented with native-bound proof replay, independent company/domain/role/contact/collision confidence, multiple contacts and actor types, retry memory, bounded owner details and an unchanged Sales gate. Domain/contact data coverage remains YELLOW; unresolved commissioning buyers, incomplete directories and missing official sites remain visible. Clay stays GREEN — INTENTIONALLY OPTIONAL with an execution-environment access gap, not a required provider defect. Phase32 bounded website/local-SEO work does not depend on completing every prospect contact. Final exact-source/testing/recovery evidence is in the prospect-enrichment mission report.
+
+## Forms polling remediation — current API1.24.1 delta
+
+Immutable receipt replay and message-level isolation are implemented with additive parse projections/anomaly evidence, deterministic cooldowns, per-message transactions and separate Mail/Forms health. FR/EN native delivery/attribution proofs remain valid; no provider settings or automation eligibility were changed. Replay restart/concurrency and conflict-followed-by-valid-message tests are required release evidence. Genuine new customer business effects remain natural-event proof. Exact deployment/current mailbox verification and protected/recovery evidence are recorded in `forms-polling-remediation/final-report.md` outside the source checkout.

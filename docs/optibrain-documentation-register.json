@@ -24,7 +24,7 @@
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
     "AUDIT EVIDENCE": 103,
-    "AUTHORITATIVE CURRENT": 45,
+    "AUTHORITATIVE CURRENT": 47,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
   },
@@ -1458,6 +1458,20 @@
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
       "reason": "Prospect enrichment source-native confidence, bounded research and execution separation."
+    },
+    {
+      "path": "docs/OPTIBRAIN_IMMUTABLE_RECEIPT_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Forms replay, immutable evidence and message-level fault isolation"
+    },
+    {
+      "path": "docs/OPTIBRAIN_REPLAY_IDEMPOTENCY_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Forms replay, immutable evidence and message-level fault isolation"
     }
   ]
 }

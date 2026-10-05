@@ -17,3 +17,7 @@ Native iframe submit acknowledgement does not automatically establish parent-pag
 Provider administration diagnosis: existing US OAuth works for CRM/Mail; guessed Forms GET /api/v1/forms returned404. Public Forms administration for fields/notifications is not established by the supported API (provider-side UI-only setup), not a demonstrated missing scope or license. Owner completed the rare manual setup. Runtime remains Forms → authenticated Mail/API → immutable intake, with no recurring browser dependence.
 
 Private proof: `/var/lib/optibrain/foundation-completion/GATE_A_CHECKPOINT.json` and per-language provider/receipt parity receipts. Public test evidence: `/home/optibrain/foundation-completion-evidence`. Never repeat these native submissions to collect more proof.
+
+## Forms polling patch — API1.24.1
+
+Exact replay is a normal idempotent result. Missing parser defaults and an independently proven TEST_ONLY exclusion may be appended as derived state only when all original provider facts/body match. A true immutable mismatch is quarantined with additive evidence; malformed notifications retain bounded diagnostics. Both continue to later independent messages. Provider/database failures still abort safely. Quarantined rows cannot enter CRM reconciliation/enrichment. See [replay](OPTIBRAIN_REPLAY_IDEMPOTENCY_CONTRACT.md) and [immutability](OPTIBRAIN_IMMUTABLE_RECEIPT_CONTRACT.md). This patch neither resubmits forms nor changes native writer/auto-reply configuration.

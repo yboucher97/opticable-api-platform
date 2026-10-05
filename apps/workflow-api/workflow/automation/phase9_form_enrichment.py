@@ -235,7 +235,8 @@ def enrich_form_leads(client, ledger: FormReceiptLedger, *, go_live, baseline_pa
     start = aware(go_live)
     result = {"eligible": 0, "verified": 0, "attempted": 0, "review": 0}
     for receipt_row in ledger.list(100):
-        if aware(receipt_row["occurred_at"]) < start or not receipt_row["canonical_id"]:
+        if (receipt_row.get("quarantined") or aware(receipt_row["occurred_at"]) < start
+                or not receipt_row["canonical_id"]):
             continue
         event = receipt_row["event_id"]
         state = ledger.enrichment_state(event)
