@@ -24,7 +24,7 @@
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
     "AUDIT EVIDENCE": 103,
-    "AUTHORITATIVE CURRENT": 42,
+    "AUTHORITATIVE CURRENT": 45,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
   },
@@ -1440,6 +1440,24 @@
       "current": true,
       "purpose": "Acquisition coverage expansion contract",
       "superseded_by": null
+    },
+    {
+      "path": "docs/OPTIBRAIN_COMPANY_RESOLUTION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "reason": "Prospect enrichment source-native confidence, bounded research and execution separation."
+    },
+    {
+      "path": "docs/OPTIBRAIN_ENRICHMENT_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "reason": "Prospect enrichment source-native confidence, bounded research and execution separation."
+    },
+    {
+      "path": "docs/OPTIBRAIN_COLLISION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "reason": "Prospect enrichment source-native confidence, bounded research and execution separation."
     }
   ]
 }

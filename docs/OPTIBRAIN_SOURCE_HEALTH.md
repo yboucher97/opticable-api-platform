@@ -19,3 +19,7 @@ The isolated trigger observer reuses the Montréal cache, checks the SEAO catalo
 ## Acquisition coverage expansion current delta
 
 Coverage expansion distinguishes Québec City authoritative weekly bounded150 permits; latest observed native dateOctober2; source-native buying actors absent. Rive-Nord remains PARTIAL/NO VERIFIED STRUCTURED ADAPTER. Curated primary sources are sample coverage. Apollo contact candidate research has3/Toronto-day and14-day per-domain attempt budgets; failed requests preserve endpoint/status/classification. Existing Windsor30-day cache is optional; Basic access deferred, Semrush/Ahrefs unused and optional, Clay execution-environment capability gap. Research backlog and contact/domain/collision loss reasons are visible independently of source auth.
+
+## Prospect enrichment health
+
+Reviewed proof timestamps, current-role age and collision-cache freshness are independent. Invalid proof input is PARTIAL and reuses the last validated immutable bundle without changing dates. Official indexed pages with a failed direct fetch retain that collection limitation; connected/authenticated does not prove current employer. Queue/revisit gaps expose actor/domain/primary-secondary-role/employer/CRM/Apollo needs. Existing automatic Apollo budget3/Toronto day remains unchanged. No runtime LLM or persistent/browser job is added.

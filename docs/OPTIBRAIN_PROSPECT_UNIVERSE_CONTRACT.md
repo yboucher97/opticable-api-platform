@@ -1,6 +1,6 @@
 # Opticable Prospect Universe
 
-AUTHORITATIVE CURRENT — API1.23.0, acquisition coverage expansion. This is upstream research, not a duplicate CRM or an outreach graduation. Discover/retain broadly; execute carefully. Existing Phase30 Sales admission is unchanged. No sender, Apollo writer or CRM-promotion executor exists.
+AUTHORITATIVE CURRENT — API1.24.0, acquisition coverage expansion. This is upstream research, not a duplicate CRM or an outreach graduation. Discover/retain broadly; execute carefully. Existing Phase30 Sales admission is unchanged. No sender, Apollo writer or CRM-promotion executor exists.
 
 ## Identity and durable state
 
@@ -23,3 +23,7 @@ Prospect state preserves name/domain/location/industry where supplied, source pr
 Every record has outbound_authorized=false and crm_promote_allowed=false. Future outreach states describe missing proof and OWNER_REVIEW only, never grant permission. Phase30's independent HIGH-quality/STRONG-confidence/fresh/resolved/matchable Sales gate remains authoritative; historical/ICP-only research does not enter Sales. Existing customer/Deal/Apollo ownership remains protected. Retained contacts are not clear-to-contact recipients; consent, suppression, frequency and recent communication still require a later approved workflow.
 
 See [coverage](OPTIBRAIN_ACQUISITION_COVERAGE_CONTRACT.md), [contacts](OPTIBRAIN_CONTACT_RESOLUTION_CONTRACT.md), [identity](OPTIBRAIN_IDENTITY_RESOLUTION_CONTRACT.md) and [trigger gate](OPTIBRAIN_TRIGGER_INTELLIGENCE_CONTRACT.md).
+
+## Prospect enrichment current delta
+
+API1.24.0 adds reviewed source-native domain/actor/role evidence, independent domain confidence, explicit enrichment readiness and queues, durable proof/retry fingerprints and authenticated prospect details. Equivalent native identities retain original research receipts. Shared institution domains remain scoped; tenant/operator links do not resolve commissioning buyers. See [enrichment](OPTIBRAIN_ENRICHMENT_CONTRACT.md) and [company resolution](OPTIBRAIN_COMPANY_RESOLUTION_CONTRACT.md).

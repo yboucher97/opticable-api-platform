@@ -76,3 +76,7 @@ Genuine eligible Lead, customer, operational, Finance and conversion effects mus
 ## Acquisition coverage expansion current delta
 
 No new browser, subscription or OAuth owner action is required for bounded coverage. Current research work is to verify live procurement addenda, resolve retained permit actors/domains and validate relevant current contacts. These are research tasks, not provider-blocking setup. OA4 Google Basic/brand verification remains owner-deferred and nonblocking; do not repeatedly surface it during unrelated work.
+
+## Prospect enrichment scope
+
+No new blocking owner permission, purchase or reauthorization is required for bounded Apollo/public-source enrichment. Clay is an optional execution-environment integration evaluation; no mandatory owner action is created. Further actor/company/domain/current-role research is an internal backlog, not an owner setup checklist. Keep Google Basic/brand verification deferred and resurface only under its existing material-dependency conditions. English automation and Google conversion uploads remain disabled; this mission does not authorize their enablement.
