@@ -64,7 +64,9 @@ def inventory_summary(inventory):
         classified.append({'query':r['searchTermView']['searchTerm'],'category':category,
             'campaign_id':r['campaign']['id'],'cost':float(r.get('metrics',{}).get('costMicros',0))/1e6,
             'clicks':int(r.get('metrics',{}).get('clicks',0)),'impressions':int(r.get('metrics',{}).get('impressions',0))})
-    return {'account':'6808491878','currency':(rows(inventory,'customer') or [{}])[0].get('customer',{}).get('currencyCode'),
+    account=(rows(inventory,'customer') or [{}])[0].get('customer',{})
+    return {'account':'6808491878','currency':account.get('currencyCode'),
+        'auto_tagging':'ENABLED' if account.get('autoTaggingEnabled') is True else 'DISABLED' if account.get('autoTaggingEnabled') is False else 'UNKNOWN',
         'campaigns':sum(counts.values()) if inventory.get('reads',{}).get('campaigns',{}).get('state')=='WORKING' else None,
         'campaign_statuses':dict(counts),'performance_90d':totals('performance_90d'),
         'performance_history':totals('performance_history'),'search_terms_current':len(rows(inventory,'search_terms_90d')),
@@ -272,11 +274,15 @@ def build_bundle(inputs,now):
     for service in ('Security cameras','Structured cabling'):
         op=next(r for r in intelligence['opportunities'] if r['service']==service)
         for language in ('FR','EN'):
-            detail=campaign_preview(service,language,op)
+            from .ads_pilot import complete_preview
+            detail=complete_preview(campaign_preview(service,language,op))
             record=proposal('GOOGLE_ADS_CAMPAIGN',service,language,[native,ev,qa],now,detail,
                 problem='No active paid acquisition; historical generic/product traffic did not establish meaningful conversion outcomes.',
                 change='Review the complete conservative '+language+' '+service+' pilot; launch one bounded test only after separate authority.',
                 confidence='MODERATE' if any(r['language']==language and r['cpc'] is not None and not r['stale'] for r in op['economics']) else 'TENTATIVE')
+            if native['freshness']!='CURRENT' or any(v.get('state')!='WORKING' or v.get('complete') is not True for v in inputs.get('ads',{}).get('reads',{}).values()):
+                record['confidence']='TENTATIVE'
+                detail['launch_dependencies'].append('Refresh incomplete/stale native Ads evidence before future approval; no silently fresh cache')
             proposals.append({'record':record,'detail':detail})
             for index,hook in enumerate(detail['ad_groups'][0]['responsive_search_ad']['headlines'][:3]):
                 asset={'schema':1,'type':'optibrain.optimization_asset','asset_id':digest([record['proposal_id'],hook]),
@@ -293,6 +299,9 @@ def build_bundle(inputs,now):
             'negative_candidates':intelligence['inventory']['negative_candidates'],'goals':rows(inputs.get('ads',{}),'campaign_goals'),
             'goal_config':rows(inputs.get('ads',{}),'goal_config'),'customer_goals':rows(inputs.get('ads',{}),'customer_goals'),
             'current_actions':intelligence['inventory']['conversion_actions'],'provider_writes':0}
+    from .ads_pilot import GOALS
+    detail['target_state']=GOALS
+    detail['legacy_goal_resolution']='6457304694: referenced by ten removed campaigns; all-status and exact-ID reads return no object. Contents unavailable via current reporting API; never inherit/revive; no current serving use.'
     proposals.append({'record':proposal('GOOGLE_ADS_CLEANUP','Account measurement','FR/EN',[native,qa],now,detail,
         problem='Enabled primary page-visit goal can misrepresent successful inquiries; removed campaign goal references require review.',
         change='Review the frozen conversion-goal and negative-candidate inventory. Approve a separate exact change set before a future pilot.'),'detail':detail})
@@ -375,7 +384,15 @@ def render_proposal(item):
         for group in detail['ad_groups']:
             ad=group['responsive_search_ad']
             html+='<article><h3>'+h(' | '.join(ad['headlines'][:3]))+'</h3><p>'+h(ad['descriptions'][0])+'</p><p>'+h(group['landing_page'])+'</p></article>'
-        html+='<p>Suggested average budget: '+h(detail['budget']['average_daily'])+' CAD/day. '+h(detail['budget']['not_enforced'])+'</p>'
+        budget=detail['budget']
+        if budget.get('preferred_mode')=='CAMPAIGN_TOTAL_BUDGET':
+            html+='<h2>Expected cost</h2><p>Proposed total '+h(budget['pilot_28_day_average'])+' CAD / 28 days. Owner ceiling '+h(budget['hard_ceiling_CAD'])+' CAD. Native total budget required; not installed or spending.</p>'
+        else:html+='<p>Suggested average budget: '+h(budget['average_daily'])+' CAD/day. '+h(budget['not_enforced'])+'</p>'
+        html+='<h2>Keywords</h2><ul>'+''.join('<li>'+h(k['text'])+' · '+h('/'.join(k['match_types']))+'</li>' for g in detail['ad_groups'] for k in g['keywords'])+'</ul>'
+        if detail.get('measurement_window'):
+            html+='<h2>Measurement</h2><p>28 days; day7/14 review; 30 relevant clicks for intent diagnosis. '+h(detail['measurement_window']['promising'])+'</p>'
+            html+='<h2>Stop conditions</h2><ul>'+''.join('<li>'+h(x)+'</li>' for x in detail['stop_conditions']['immediate'])+'</ul>'
+            html+='<h2>What happens if reviewed</h2><p>Local review only. A separate exact proposal approval and CREATE_PAUSED authority are required; activation remains another owner decision.</p>'
     if detail.get('draft_section'):
         draft=detail['draft_section'];html+='<section><h2>Actual landing-section draft</h2><h3>'+h(draft['headline'])+'</h3><p>'+h(draft['intro'])+'</p><h4>'+h(draft['scope_heading'])+'</h4><ul>'
         html+=''.join('<li>'+h(v)+'</li>' for v in draft['scope'])+'</ul>'
