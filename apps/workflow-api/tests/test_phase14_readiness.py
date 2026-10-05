@@ -35,6 +35,17 @@ class ReadinessTests(unittest.TestCase):
     def test_native_drift_and_expiry_are_visible(self):
         self.native['native_subscription_status']='configuration_drift'
         self.assertEqual(next(s for s in self.summary()['signals'] if s['name']=='Native watch')['state'],'ACTION REQUIRED')
+    def test_historical_failure_is_visible_without_becoming_current_queue_failure(self):
+        with sqlite3.connect(self.store.db_path) as db:
+            db.execute('INSERT INTO automation_runs(run_id,workflow_id,event_id,correlation_id,status,created_at) VALUES(?,?,?,?,?,?)',
+                       ('retained','fixture','fixture','fixture','failed',(NOW-timedelta(days=2)).isoformat()))
+        row=next(s for s in self.summary()['signals'] if s['name']=='Queue')
+        self.assertEqual(row['state'],'ACTION REQUIRED')
+        self.assertEqual(row['classification'],'HISTORICAL RETAINED EXCEPTION')
+        self.assertEqual(row['blocked'],1)
+        self.assertEqual(row['current_delivery_problems'],0)
+        with sqlite3.connect(self.store.db_path) as db:
+            self.assertEqual(db.execute("SELECT status FROM automation_runs WHERE run_id='retained'").fetchone()[0],'failed')
     def test_future_naive_and_stale_runtime_are_unknown(self):
         self.assertIsNone(age_seconds('2026-10-02T00:00:00',NOW))
         self.assertIsNone(age_seconds((NOW+timedelta(seconds=1)).isoformat(),NOW))
