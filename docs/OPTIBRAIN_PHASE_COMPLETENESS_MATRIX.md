@@ -807,3 +807,8 @@ The Basic-access deferral does not block those bounded roadmap states. Direct ac
 ## Phase30 — Trigger-based client acquisition, shadow only
 
 API1.22.0 extends the acquisition evidence layer with durable trigger versions, actors, service fit, why-now, quality/confidence, geography, collision and owner-review state. The intended gate requires safe public examples plus focused/full regression and verified exact deployment/recovery; broader source coverage is partial independently. Existing unresolved Montréal actors remain RESEARCH. Procurement batch dates do not imply real-time addenda, and weak/stale/unmatchable evidence is withheld from Sales. No outreach or CRM promotion is enabled. Future trigger-to-outreach needs separate owner approval; Phase32/33 are not begun.
+
+
+## Acquisition coverage expansion current delta
+
+Post-Phase30 acquisition coverage expansion consumes API1.23.0; it is not Phase32. The original Phase30 pass and125-classification history remain intact. Broader research retains historical buyer value and unresolved/ICP-only opportunities; strict Sales admission, Google export OFF, English disabled, existing12/4 authority and Claude/Apollo ownership are preserved. Exact final SHA/recovery is recorded in acquisition-coverage-expansion/final-report.json and root release receipts. Phase32 remains ready for a separately initiated bounded mission, not started here.

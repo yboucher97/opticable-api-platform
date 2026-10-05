@@ -37,3 +37,8 @@ The queue links source IDs to matching existing market service/geography hypothe
 Complete for this scope means current public samples plus isolated fixtures prove source/version/freshness, separate actor/company identity, service fit, why-now, collisions/suppression, replay, queue/review and no effects, with focused/full regression, exact release and verified recovery. It does not mean all municipalities are covered or a natural sales result occurred. Trigger-to-outreach or CRM promotion requires a later explicit owner graduation; Phase32/33 are not started here.
 
 See [identity](OPTIBRAIN_IDENTITY_RESOLUTION_CONTRACT.md), [acquisition](OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md), [source health](OPTIBRAIN_SOURCE_HEALTH.md), [recovery authority](OPTIBRAIN_RECOVERY_AUTHORITY_CONTRACT.md) and [owner actions](OPTIBRAIN_OWNER_ACTIONS_CURRENT.md).
+
+
+## Acquisition coverage expansion current delta
+
+API1.23.0 coverage expansion preserves original Phase30 classifications in an immutable125-record baseline and derives research retention separately. Closed events remain non-actionable; reusable buyers survive. Once prospect storage exists, the age-only365day trigger retirement is disabled, with explicit capacity holds. Unknown/incomplete service need is retained as research, not terminal ignore. Sales admission stays unchanged. Québec City150-record official adapter and bounded private primary research are added. See [prospect universe](OPTIBRAIN_PROSPECT_UNIVERSE_CONTRACT.md).

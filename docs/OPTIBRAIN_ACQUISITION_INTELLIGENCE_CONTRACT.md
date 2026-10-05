@@ -34,3 +34,8 @@ Public triggers retain native record/version, current source/addendum proof, act
 ## Phase30 shadow trigger engine
 
 Current API1.22.0 adds durable source-native trigger versions and an owner review queue in the existing acquisition journal. Official Montréal/Laval permits, SEAO batch procurement and a primary company expansion proof feed explainable service/why-now/identity/collision decisions. Raw/native actors, source coverage dates and missing evidence remain separate. Only STRONG resolved fresh collision-checked shadow reviews enter Sales; no sending or CRM promotion. See [trigger contract](OPTIBRAIN_TRIGGER_INTELLIGENCE_CONTRACT.md) and [identity](OPTIBRAIN_IDENTITY_RESOLUTION_CONTRACT.md). Economics is supporting evidence only; Google Basic remains deferred by owner.
+
+
+## Acquisition coverage expansion current delta
+
+API1.23.0 adds an upstream durable [Prospect Universe](OPTIBRAIN_PROSPECT_UNIVERSE_CONTRACT.md) and [coverage funnel](OPTIBRAIN_ACQUISITION_COVERAGE_CONTRACT.md). Research, history, ICP-only fit, company/contact gaps and repeat buyers are retained independently of current event actionability. No raw research enters CRM and no provider execution is enabled.

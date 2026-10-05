@@ -598,3 +598,8 @@ Current provider-access clarification: Forms public administration is G PROVIDER
 ## Phase30 — Trigger shadow acquisition
 
 Current implementation: durable versioned trigger/actor/company/role evidence, separate quality and confidence, explicit geography, publication freshness and collision/suppression holds. Complete for the intended shadow scope when current public examples and focused/full fixtures, exact-SHA release and recovery pass. Montréal latest100 and SEAO exports are bounded; Laval publication is stale; primary expansion coverage is one company; Rive-Nord/Québec City continuous feeds remain gaps. No automatic CRM promotion or outbound execution. Source coverage remains PARTIAL independently of the engine gate. See [contract](OPTIBRAIN_TRIGGER_INTELLIGENCE_CONTRACT.md).
+
+
+## Acquisition coverage expansion current delta
+
+Acquisition coverage expansion (API1.23.0): durable retained prospects, immutable Phase30 classification receipt, buyer/history/ICP-only/multi-actor research, independent contact confidence, collision/suppression, bounded retry/revisit and owner coverage funnel are implemented. Engine gate is bounded by focused/full tests, current safe reads, exact release and verified recovery. Source completeness remains PARTIAL; Sales execution safety is unchanged. See [coverage contract](OPTIBRAIN_ACQUISITION_COVERAGE_CONTRACT.md).

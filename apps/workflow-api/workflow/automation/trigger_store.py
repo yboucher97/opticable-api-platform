@@ -72,7 +72,11 @@ class TriggerStore(AcquisitionStore):
         with self.connect() as db:
             # Retire only dated terminal research after a year. Active/unresolved
             # records are never silently evicted to make room for new research.
-            obsolete = [r['id'] for r in db.execute('SELECT id,record FROM acquisition_trigger_current')
+            # Once prospect retention exists, source events are commercial history,
+            # not disposable deadline projections. Explicit capacity holds replace
+            # age-only eviction. Phase30 archives remain unmodified.
+            retained_research = db.execute("SELECT 1 FROM sqlite_master WHERE name='acquisition_prospects'").fetchone()
+            obsolete = [] if retained_research else [r['id'] for r in db.execute('SELECT id,record FROM acquisition_trigger_current')
                         if (lambda row: row.get('status') in {'CLOSED','EXPIRED','CANCELLED','AWARDED','COMPLETED'} and
                             stamp(row.get('source_version_at')) and stamp(row['source_version_at']) < now-timedelta(days=365))(json.loads(r['record']))]
             for tid in obsolete:
