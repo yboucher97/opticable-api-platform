@@ -24,7 +24,7 @@
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
     "AUDIT EVIDENCE": 103,
-    "AUTHORITATIVE CURRENT": 54,
+    "AUTHORITATIVE CURRENT": 55,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
   },
@@ -1520,6 +1520,13 @@
       "current": true,
       "superseded_by": null,
       "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_ADS_INTELLIGENCE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Fixed read-only Ads evidence, shared immutable campaign previews, local review, measurement and future separate graduation",
+      "superseded_by": null
     }
   ]
 }

@@ -56,7 +56,7 @@ def read_internal_attention(now,path=None):
         return value
     except (OSError,ValueError,KeyError,TypeError):return None
 
-def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None,communications=None,recurring=None,sales_intelligence=None):
+def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None,communications=None,recurring=None,sales_intelligence=None,ads_intelligence=None):
     now=now or datetime.now(timezone.utc)
     sections={name:[] for name in CATEGORIES}
     def add(category,context,why,next_action,source,link,*,priority='MEDIUM',due=None,freshness=None):
@@ -144,6 +144,14 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
             add('Leads needing response' if row['kind']=='apollo_reply' else 'Sales research',
                 row['title'],row['why'],row['action'],'Apollo reply / public project evidence',LINKS['today sales'],
                 priority='HIGH' if row['kind']=='apollo_reply' else 'MEDIUM',freshness=sales_intelligence.get('observed_at'))
+    if ads_intelligence:
+        if ads_intelligence.get('scope')!='live' or ads_intelligence.get('read_only') is not True:
+            raise ValueError('Ads Today projection must be read-only live evidence')
+        for row in sorted(ads_intelligence.get('priorities',[]),key=lambda r:r.get('urgency')!='HIGH')[:3]:
+            if row.get('status') not in {'OWNER_REVIEW','OPEN'}:continue
+            add('Approvals',row['what'],row['why'],'Review exact preview; no execution authority',
+                'Shared optimization proposal / native reporting',LINKS['acquisition']+'?proposal_id='+row['proposal_id'],
+                priority=row['urgency'],freshness=ads_intelligence.get('at'))
     for name in unavailable:
         signals.append(dict(name=name,state='ACTION REQUIRED',reason='Current business evidence unavailable; open its source view'))
     order={'HIGH':0,'MEDIUM':1,'LOW':2}

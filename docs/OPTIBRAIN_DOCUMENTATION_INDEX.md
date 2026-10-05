@@ -47,3 +47,5 @@ Current specialist references: [sales coexistence contract](OPTIBRAIN_SALES_INTE
 
 
 Shared optimization specialists: [integration foundation](OPTIBRAIN_CONTINUOUS_OPTIMIZATION_CONTRACT.md), [proposal](OPTIBRAIN_OPTIMIZATION_PROPOSAL_CONTRACT.md), [authority](OPTIBRAIN_AUTHORITY_CLASSES.md), [data/asset architecture](OPTIBRAIN_DATA_INTELLIGENCE_ARCHITECTURE.md), [owner priority](OPTIBRAIN_BUSINESS_PRIORITY_CONTRACT.md), [interchange schema](optibrain-optimization.schema.json). These define future domain integration; they install no autonomous engine or authority.
+
+Phase33 domain specialist: [Ads intelligence](OPTIBRAIN_ADS_INTELLIGENCE_CONTRACT.md). Shared proposal/priority/asset persistence and local review are implemented minimally; no full autonomous engine or Ads authority is granted.
