@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 import re
 import sqlite3
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from .phase9_intake import event_id, instant
@@ -41,6 +42,28 @@ LABELS = {
 
 class UnsupportedFormNotification(ValueError):
     """Authenticated Zoho Forms mail that is not one of the two main-site forms."""
+
+
+class ImmutableReceiptConflict(ValueError):
+    """Deterministic message anomaly, distinct from database/provider failures."""
+    def __init__(self, reason, existing_event_id):
+        super().__init__(reason)
+        self.existing_event_id = existing_event_id
+
+
+def _legacy_representation(original, incoming):
+    """Add only proven parser defaults/exclusions; never normalize provider facts."""
+    expected = {**original}
+    language = {MAIN_FORM: 'fr', ENGLISH_FORM: 'en'}.get(original.get('form_id'))
+    if language and 'language' not in original and incoming.get('language') == language:
+        expected['language'] = language
+    if 'attribution' not in original and incoming.get('attribution') == {}:
+        expected['attribution'] = {}
+    if (original.get('test_only') is False and incoming.get('test_only') is True
+            and controlled_test_identity(original['submitted_email'], original['fields'])
+            and controlled_test_identity(incoming['submitted_email'], incoming['fields'])):
+        expected['test_only'] = True
+    return expected
 
 
 class _FormTable(HTMLParser):
@@ -260,6 +283,33 @@ class FormReceiptLedger:
                     BEGIN SELECT RAISE(ABORT,'context projection is immutable'); END;
                 CREATE TRIGGER IF NOT EXISTS form_context_projection_no_delete BEFORE DELETE ON form_context_projections
                     BEGIN SELECT RAISE(ABORT,'context projection is immutable'); END;
+                CREATE TABLE IF NOT EXISTS form_parse_projections (
+                    event_id TEXT PRIMARY KEY REFERENCES form_receipts(event_id),
+                    evidence_json TEXT NOT NULL, recorded_at TEXT NOT NULL
+                );
+                CREATE TRIGGER IF NOT EXISTS form_parse_projection_no_update BEFORE UPDATE ON form_parse_projections
+                    BEGIN SELECT RAISE(ABORT,'parse projection is immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS form_parse_projection_no_delete BEFORE DELETE ON form_parse_projections
+                    BEGIN SELECT RAISE(ABORT,'parse projection is immutable'); END;
+                CREATE TABLE IF NOT EXISTS form_message_anomalies (
+                    id TEXT PRIMARY KEY, account_id TEXT NOT NULL, message_id TEXT NOT NULL,
+                    kind TEXT NOT NULL, existing_event_id TEXT, evidence_hash TEXT NOT NULL,
+                    evidence_json TEXT NOT NULL, observed_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS form_anomaly_event ON form_message_anomalies(existing_event_id,kind);
+                CREATE TRIGGER IF NOT EXISTS form_anomaly_no_update BEFORE UPDATE ON form_message_anomalies
+                    BEGIN SELECT RAISE(ABORT,'message anomaly is immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS form_anomaly_no_delete BEFORE DELETE ON form_message_anomalies
+                    BEGIN SELECT RAISE(ABORT,'message anomaly is immutable'); END;
+                CREATE TABLE IF NOT EXISTS form_poll_events (
+                    id INTEGER PRIMARY KEY, poll_id TEXT NOT NULL, phase TEXT NOT NULL,
+                    account_id TEXT NOT NULL, observed_at TEXT NOT NULL, summary_json TEXT NOT NULL,
+                    UNIQUE(poll_id,phase)
+                );
+                CREATE TRIGGER IF NOT EXISTS form_poll_no_update BEFORE UPDATE ON form_poll_events
+                    BEGIN SELECT RAISE(ABORT,'poll evidence is immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS form_poll_no_delete BEFORE DELETE ON form_poll_events
+                    BEGIN SELECT RAISE(ABORT,'poll evidence is immutable'); END;
                 CREATE TABLE IF NOT EXISTS form_test_classifications (
                     event_id TEXT PRIMARY KEY REFERENCES form_receipts(event_id),
                     evidence_json TEXT NOT NULL, recorded_at TEXT NOT NULL
@@ -327,18 +377,21 @@ class FormReceiptLedger:
             row = db.execute("SELECT * FROM mail_poll_state WHERE account_id=?", (account_id,)).fetchone()
         return dict(row) if row else None
 
-    def cached_message(self, account_id, message_id, metadata_hash):
+    def cached_message(self, account_id, message_id, metadata_hash, *, now=None):
         with self._connect() as db:
-            row = db.execute("SELECT classification FROM mail_message_cache WHERE "
+            row = db.execute("SELECT classification,seen_at FROM mail_message_cache WHERE "
                 "account_id=? AND message_id=? AND metadata_hash=?", (account_id,message_id,metadata_hash)).fetchone()
             if row and row[0] == "receipt" and not db.execute(
                     "SELECT 1 FROM form_receipts WHERE provider_message_id=?", (message_id,)).fetchone():
                 return None
+            if row and row[0] in {'conflict','invalid'} and now is not None:
+                if now-datetime.fromisoformat(row['seen_at']) >= timedelta(days=14):
+                    return None
         return row[0] if row else None
 
     def cache_message(self, account_id, message_id, metadata_hash, classification, clock):
         # Discovery optimization only; never ownership, approval or write evidence.
-        if classification not in {"receipt", "unsupported"}:
+        if classification not in {"receipt", "unsupported", "conflict", "invalid"}:
             raise ValueError("Unknown Mail cache classification")
         with self._connect() as db:
             db.execute("INSERT INTO mail_message_cache VALUES(?,?,?,?,?) ON CONFLICT(account_id,message_id) "
@@ -358,45 +411,76 @@ class FormReceiptLedger:
         self.initialize()
         payload = json.dumps(receipt, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
         with self._connect() as db:
-            prior = db.execute("SELECT evidence_json FROM form_receipts WHERE event_id=?", (receipt["event_id"],)).fetchone()
-            if prior:
-                if prior["evidence_json"] != payload:
-                    original = json.loads(prior["evidence_json"])
-                    # The exact unchanged provider body can be re-read after
-                    # inline merge-field support is added. Preserve the original
-                    # receipt and append a deterministic parsing projection;
-                    # this never grants business-write authority.
-                    stripped = {**receipt, 'fields': dict(receipt['fields']),
-                                'attribution': {}, 'campaign': None,
-                                'attribution_confidence': 'FORM_NOTIFICATION_ONLY'}
-                    stripped['fields'].pop('acquisition_context', None)
-                    if (not original.get('fields', {}).get('acquisition_context')
-                            and receipt['fields'].get('acquisition_context')
-                            and stripped == original):
-                        current = db.execute('SELECT evidence_json FROM form_context_projections WHERE event_id=?',
-                                             (receipt['event_id'],)).fetchone()
-                        if current and current[0] != payload:
-                            raise ValueError('Provider context projection conflicts')
-                        db.execute('INSERT OR IGNORE INTO form_context_projections VALUES(?,?,?)',
-                                   (receipt['event_id'], payload, datetime.now(timezone.utc).isoformat()))
-                        return 'REPLAY'
-                    # A newly supported deterministic TEST lineage may have
-                    # been collected by an older release. Preserve its original
-                    # receipt; append only a derived exclusion. All provider
-                    # facts must remain byte-for-byte equivalent.
-                    if (original.get("test_only") is not False or receipt.get("test_only") is not True
-                            or {**original, "test_only": True} != receipt
-                            or not controlled_test_identity(receipt["submitted_email"], receipt["fields"])):
-                        raise ValueError("Provider replay conflicts with immutable form receipt")
-                    db.execute("INSERT OR IGNORE INTO form_test_classifications VALUES(?,?,?)", (
-                        receipt["event_id"], payload, datetime.now(timezone.utc).isoformat()))
-                return "REPLAY"
+            # Serialize SELECT + INSERT so a concurrent identical insert replays.
+            # Other integrity/database failures remain fatal, never swallowed.
+            db.execute("BEGIN IMMEDIATE")
+            matches = db.execute("SELECT event_id,evidence_json FROM form_receipts WHERE event_id=? "
+                "OR provider_message_id=? OR internet_message_id=?",
+                (receipt['event_id'],receipt['provider_message_id'],receipt['internet_message_id'])).fetchall()
+            if matches:
+                prior = matches[0]
+                original = json.loads(prior['evidence_json'])
+                if len(matches) != 1 or any(original[k] != receipt[k] for k in
+                        ('event_id','provider_message_id','internet_message_id')):
+                    raise ImmutableReceiptConflict('Provider receipt identity conflicts',prior['event_id'])
+                if original == receipt:
+                    return 'REPLAY'
+                expected = _legacy_representation(original, receipt)
+                context = db.execute('SELECT evidence_json FROM form_context_projections WHERE event_id=?',
+                                     (receipt['event_id'],)).fetchone()
+                projection = db.execute('SELECT evidence_json FROM form_parse_projections WHERE event_id=?',
+                                        (receipt['event_id'],)).fetchone()
+                if context and _legacy_representation(json.loads(context[0]), receipt) != receipt:
+                    raise ImmutableReceiptConflict('Provider context projection conflicts',prior['event_id'])
+                stripped = {**receipt, 'fields':dict(receipt['fields']), 'attribution':{},
+                            'campaign':None, 'attribution_confidence':'FORM_NOTIFICATION_ONLY'}
+                stripped['fields'].pop('acquisition_context',None)
+                context_upgrade = (not original.get('fields',{}).get('acquisition_context')
+                    and bool(receipt['fields'].get('acquisition_context'))
+                    and stripped == _legacy_representation(original,stripped))
+                if expected != receipt and not context_upgrade:
+                    raise ImmutableReceiptConflict('Provider replay conflicts with immutable form receipt',prior['event_id'])
+                comparison = stripped if context_upgrade else receipt
+                if projection and _legacy_representation(json.loads(projection[0]), comparison) != comparison:
+                    raise ImmutableReceiptConflict('Provider parse projection conflicts',prior['event_id'])
+                if original.get('test_only') is False and receipt.get('test_only') is True:
+                    db.execute('INSERT OR IGNORE INTO form_test_classifications VALUES(?,?,?)',
+                               (receipt['event_id'],payload,datetime.now(timezone.utc).isoformat()))
+                if context_upgrade:
+                    db.execute('INSERT OR IGNORE INTO form_context_projections VALUES(?,?,?)',
+                               (receipt['event_id'],payload,datetime.now(timezone.utc).isoformat()))
+                elif any(k not in original for k in ('language','attribution')):
+                    db.execute('INSERT INTO form_parse_projections VALUES(?,?,?) ON CONFLICT(event_id) DO NOTHING',
+                               (receipt['event_id'],payload,datetime.now(timezone.utc).isoformat()))
+                return 'REPLAY'
             db.execute("INSERT INTO form_receipts VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", (
                 receipt["event_id"], receipt["provider_message_id"], receipt["internet_message_id"],
                 receipt["occurred_at"], receipt["source"], receipt["form_id"],
                 receipt["submitted_email"], receipt["reference"], receipt["raw_hash"],
                 int(receipt["test_only"]), payload, datetime.now(timezone.utc).isoformat()))
         return "CREATED"
+
+    def anomaly(self, account_id, message_id, kind, evidence, clock, *, existing_event_id=None):
+        """Append bounded evidence once; deterministic variants never overwrite."""
+        if kind not in {'IMMUTABLE_RECEIPT_CONFLICT','INVALID_NOTIFICATION'}:
+            raise ValueError('Unsupported message anomaly')
+        raw = json.dumps(evidence,sort_keys=True,ensure_ascii=False,separators=(',',':'))
+        digest = hashlib.sha256(raw.encode()).hexdigest()
+        identifier = hashlib.sha256(json.dumps([account_id,message_id,kind,digest]).encode()).hexdigest()
+        stored = raw if len(raw.encode()) <= 131072 else json.dumps({
+            'evidence_hash':digest,'bytes':len(raw.encode()),'snapshot_truncated':True,
+            'reason':'Bounded snapshot; original provider message retained'})
+        with self._connect() as db:
+            db.execute('INSERT INTO form_message_anomalies VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING',
+                       (identifier,account_id,message_id,kind,existing_event_id,digest,stored,clock.isoformat()))
+        return identifier
+
+    def poll_event(self, poll_id, phase, account_id, clock, summary):
+        if phase not in {'STARTED','COMPLETED','FAILED'}:
+            raise ValueError('Unknown poll phase')
+        with self._connect() as db:
+            db.execute('INSERT INTO form_poll_events(poll_id,phase,account_id,observed_at,summary_json) '
+                       'VALUES(?,?,?,?,?)',(poll_id,phase,account_id,clock.isoformat(),json.dumps(summary,sort_keys=True)))
 
     def link_test_lead(self, event_id_value, crm, registered_ids):
         """Append a reviewed TEST_ONLY link after exact provider readback."""
@@ -432,12 +516,15 @@ class FormReceiptLedger:
         with self._connect() as db:
             rows = db.execute("SELECT r.*,COALESCE(l.canonical_id,m.crm_id) AS canonical_id,"
                 "m.status AS provider_match_status,l.canonical_id AS reviewed_test_link,"
-                "p.evidence_json AS projected_evidence_json,"
+                "COALESCE(p.evidence_json,v.evidence_json) AS projected_evidence_json,"
+                "EXISTS(SELECT 1 FROM form_message_anomalies a WHERE a.existing_event_id=r.event_id "
+                "AND a.kind='IMMUTABLE_RECEIPT_CONFLICT') AS quarantined,"
                 "CASE WHEN c.event_id IS NOT NULL THEN 1 ELSE r.test_only END AS effective_test_only "
                 "FROM form_receipts r LEFT JOIN form_receipt_links l ON l.event_id=r.event_id "
                 "LEFT JOIN form_provider_matches m ON m.event_id=r.event_id "
                 "LEFT JOIN form_test_classifications c ON c.event_id=r.event_id "
                 "LEFT JOIN form_context_projections p ON p.event_id=r.event_id "
+                "LEFT JOIN form_parse_projections v ON v.event_id=r.event_id "
                 "ORDER BY r.occurred_at DESC LIMIT ?", (limit,)).fetchall()
         result = [dict(row) for row in rows]
         for row in result:
@@ -594,6 +681,37 @@ class FormReceiptLedger:
 
 
 def collect_form_mail(client, ledger, *, account_id=ACCOUNT_ID, now=None, days=7):
+    """Durable poll audit; system failures abort, deterministic items isolate."""
+    clock = now or datetime.now(timezone.utc)
+    if clock.utcoffset() is None or not 1 <= days <= 30:
+        raise ValueError("Bounded aware collection time required")
+    clock = clock.astimezone(timezone.utc)
+    ledger.initialize()
+    poll_id = uuid4().hex
+    outcome = {"scanned":0,"created":0,"replayed":0,"skipped_other":0,
+               "cache_hits":0,"conflicts_quarantined":0,"invalid_messages":0,
+               "provider_reads":0,"poll_level_failure":False}
+    ledger.poll_event(poll_id,"STARTED",str(account_id),clock,{})
+    class ObservedMail:
+        def request(self,*args,**kwargs):
+            response = client.request(*args,**kwargs)
+            outcome["provider_reads"] += 1
+            if response.get("ok") is True:
+                outcome["last_provider_read"] = clock.isoformat()
+            return response
+    try:
+        _collect_form_mail(ObservedMail(),ledger,account_id=account_id,now=clock,days=days,outcome=outcome)
+    except Exception as error:
+        # Audit then propagate: never swallow a provider, database or code failure.
+        outcome["poll_level_failure"] = True
+        outcome["failure_class"] = type(error).__name__
+        ledger.poll_event(poll_id,"FAILED",str(account_id),clock,outcome)
+        raise
+    ledger.poll_event(poll_id,"COMPLETED",str(account_id),clock,outcome)
+    return outcome
+
+
+def _collect_form_mail(client, ledger, *, account_id, now, days, outcome):
     """Bounded polling; no automatic CRM writes. A complete search is required."""
     clock = now or datetime.now(timezone.utc)
     if clock.utcoffset() is None or not 1 <= days <= 30:
@@ -625,39 +743,64 @@ def collect_form_mail(client, ledger, *, account_id=ACCOUNT_ID, now=None, days=7
             break
     else:
         raise ValueError("Form Mail search exceeded bound")
-    outcome = {"scanned": len(found), "created": 0, "replayed": 0, "skipped_other": 0,
-               "cache_hits": 0, "full_scan": full_scan}
+    outcome.update(scanned=len(found),full_scan=full_scan)
     for item in found:
+        if not isinstance(item,dict):
+            ledger.anomaly(account_id,'metadata:'+hashlib.sha256(repr(item).encode()).hexdigest(),
+                'INVALID_NOTIFICATION',{'reason':'INVALID_SEARCH_ITEM','metadata':item},clock)
+            outcome['invalid_messages'] += 1
+            continue
         if str(item.get("fromAddress") or "").casefold() != SENDER:
             outcome["skipped_other"] += 1
             continue
         message_id = str(item.get("messageId") or "")
         folder = str(item.get("folderId") or "")
         if not re.fullmatch(r"[0-9]{1,30}", message_id) or not re.fullmatch(r"[0-9]{1,30}", folder):
-            raise ValueError("Form Mail result lacks stable provider identity")
+            ledger.anomaly(account_id,message_id or 'metadata:'+hashlib.sha256(
+                json.dumps(item,sort_keys=True).encode()).hexdigest(),'INVALID_NOTIFICATION',
+                {'reason':'MISSING_STABLE_PROVIDER_IDENTITY','metadata':item},clock)
+            outcome['invalid_messages'] += 1
+            continue
         # Folder/read flags change without changing a received message. Bind the
         # account and stable provider metadata, never arbitrary subject/body text.
         metadata_hash = hashlib.sha256(json.dumps({k:item.get(k) for k in (
             "messageId", "fromAddress", "toAddress", "receivedTime")},sort_keys=True).encode()).hexdigest()
-        cached = ledger.cached_message(account_id,message_id,metadata_hash)
-        if cached and not full_scan:
+        cached = ledger.cached_message(account_id,message_id,metadata_hash,now=clock)
+        if cached and (not full_scan or cached in {'conflict','invalid'}):
             outcome["cache_hits"] += 1
-            outcome["replayed" if cached == "receipt" else "skipped_other"] += 1
+            category = {'receipt':'replayed','conflict':'conflicts_quarantined',
+                        'invalid':'invalid_messages','unsupported':'skipped_other'}[cached]
+            outcome[category] += 1
             continue
         base = f"/api/accounts/{account_id}/folders/{folder}/messages/{message_id}"
         details = _body(client.request("mail", "GET", base + "/details"), "details")
         content = _body(client.request("mail", "GET", base + "/content"), "content")
         headers = _body(client.request("mail", "GET", base + "/header", query={"raw": "false"}), "header").get("headerContent")
-        if not isinstance(headers, dict):
-            raise ValueError("Form Mail headers unavailable")
         try:
+            if not isinstance(headers,dict):
+                raise ValueError("Notification headers invalid")
             receipt = parse_notification(message_id=message_id, details=details, content=content,
                                           headers=headers, now=clock)
-        except UnsupportedFormNotification:
-            outcome["skipped_other"] += 1
-            ledger.cache_message(account_id,message_id,metadata_hash,"unsupported",clock)
+        except (ValueError,KeyError,TypeError,OverflowError) as error:
+            unsupported = isinstance(error,UnsupportedFormNotification)
+            ledger.anomaly(account_id,message_id,'INVALID_NOTIFICATION',{
+                'reason':'UNSUPPORTED_FORM' if unsupported else 'INVALID_NOTIFICATION',
+                'failure_class':type(error).__name__,'folder_id':folder,
+                'metadata':item,'details':details,'content':content,'headers':headers},clock)
+            outcome['invalid_messages'] += 1
+            if unsupported:
+                outcome['skipped_other'] += 1
+            ledger.cache_message(account_id,message_id,metadata_hash,'invalid',clock)
             continue
-        result = ledger.record(receipt)
+        try:
+            result = ledger.record(receipt)
+        except ImmutableReceiptConflict as error:
+            ledger.anomaly(account_id,message_id,'IMMUTABLE_RECEIPT_CONFLICT',{
+                'reason':str(error),'folder_id':folder,'receipt':receipt},clock,
+                existing_event_id=error.existing_event_id)
+            ledger.cache_message(account_id,message_id,metadata_hash,'conflict',clock)
+            outcome['conflicts_quarantined'] += 1
+            continue
         ledger.cache_message(account_id,message_id,metadata_hash,"receipt",clock)
         outcome["created" if result == "CREATED" else "replayed"] += 1
     ledger.complete_poll(account_id,clock,full_scan=full_scan)
@@ -666,7 +809,7 @@ def collect_form_mail(client, ledger, *, account_id=ACCOUNT_ID, now=None, days=7
 
 def reconcile_form_crm(client, ledger):
     """Read-only exact form-to-CRM matching over a bounded complete Lead inventory."""
-    pending = [row for row in ledger.list(100) if not row["canonical_id"]]
+    pending = [row for row in ledger.list(100) if not row["canonical_id"] and not row["quarantined"]]
     if not pending:
         return {"pending": 0, "matched": 0, "ambiguous": 0}
     leads = []

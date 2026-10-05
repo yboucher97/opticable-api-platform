@@ -47,10 +47,39 @@ def provider_read_signal(directory, name, kind, now, max_age):
         return signal(name, 'UNKNOWN', 'No measured provider read yet')
     at, summary = latest
     age = age_seconds(at, now)
-    failed = summary.get('status')!='success' or summary.get('last_response',{}).get(kind)=='failed'
+    last_response = summary.get('last_response',{}).get(kind)
+    failed = last_response!='ok' if last_response is not None else summary.get('status')!='success'
     state = 'ACTION REQUIRED' if failed else 'DEGRADED' if age is None or age>max_age else 'OK'
     return signal(name, state, 'Last observed read failed' if failed else
                   'Last observed read is stale' if state!='OK' else 'Recent read succeeded', at=at, age_seconds=age)
+
+
+def forms_poll_signal(directory, now):
+    """Read only poll completion/anomalies; Mail success is separate evidence."""
+    try:
+        with readonly(directory/'phase9-form-receipts.db') as db:
+            latest = db.execute('SELECT * FROM form_poll_events ORDER BY id DESC LIMIT 1').fetchone()
+            completed = db.execute("SELECT observed_at FROM form_poll_events WHERE phase='COMPLETED' "
+                                   'ORDER BY id DESC LIMIT 1').fetchone()
+            conflicts = db.execute("SELECT COUNT(*) FROM form_message_anomalies "
+                                   "WHERE kind='IMMUTABLE_RECEIPT_CONFLICT'").fetchone()[0]
+        if latest is None:
+            raise ValueError('No poll yet')
+        summary = json.loads(latest['summary_json'])
+        age = age_seconds(latest['observed_at'],now)
+        failed = latest['phase']=='FAILED'
+        stale = age is None or age>900 or latest['phase']=='STARTED'
+        degraded = conflicts or summary.get('invalid_messages',0)
+        state = 'ACTION REQUIRED' if failed else 'DEGRADED' if stale or degraded else 'OK'
+        return signal('Forms processing',state,'Poll aborted; provider reads are reported separately' if failed else
+                      'Processing completed with retained anomalies' if degraded else
+                      'Poll observation is stale or in progress' if stale else 'Poll completed safely',
+                      at=latest['observed_at'],last_successful_poll=completed[0] if completed else None,
+                      quarantined_conflicts=conflicts,exact_replays=summary.get('replayed',0),
+                      new_receipts=summary.get('created',0),invalid_messages=summary.get('invalid_messages',0),
+                      provider_reads=summary.get('provider_reads',0),poll_phase=latest['phase'])
+    except (OSError,sqlite3.Error,ValueError,TypeError,KeyError):
+        return signal('Forms processing','UNKNOWN','No usable Forms poll observation')
 
 
 def usage_anomalies(directory,now):
@@ -80,6 +109,7 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
     rows.extend([provider_read_signal(directory,'CRM reads','crm_get',now,7200),
                  provider_read_signal(directory,'Mail reads','mail_get',now,7200)])
     rows.append(usage_anomalies(directory,now))
+    rows.append(forms_poll_signal(directory,now))
     try:
         with readonly(store.db_path) as db:
             checkpoints = db.execute('SELECT status,last_error,last_success_at FROM automation_sync_checkpoints').fetchall()

@@ -23,3 +23,7 @@ Coverage expansion distinguishes Québec City authoritative weekly bounded150 pe
 ## Prospect enrichment health
 
 Reviewed proof timestamps, current-role age and collision-cache freshness are independent. Invalid proof input is PARTIAL and reuses the last validated immutable bundle without changing dates. Official indexed pages with a failed direct fetch retain that collection limitation; connected/authenticated does not prove current employer. Queue/revisit gaps expose actor/domain/primary-secondary-role/employer/CRM/Apollo needs. Existing automatic Apollo budget3/Toronto day remains unchanged. No runtime LLM or persistent/browser job is added.
+
+## Forms polling — API1.24.1
+
+Mail reads use the measured Mail response rather than an unrelated job's aggregate failure. Separate Forms processing health reports completed/failed/in-progress observation, last successful poll, new receipts, exact replays, retained conflicts, invalid messages and provider-read count. Replay is healthy; retained quarantine or invalid input is DEGRADED; poll abort requires action; absent observations are UNKNOWN. Mail authentication/read success does not certify Forms processing. Diagnostics remain private in the receipt database; operator output exposes counts/references, not notification content.
