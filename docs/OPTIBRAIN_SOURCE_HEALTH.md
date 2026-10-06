@@ -42,3 +42,8 @@ The existing acquisition observer adds a fixed weekly Google Ads inventory (25 r
 ## Phase33 completion classifications
 
 Native account/auth/campaign/search-term reads GREEN; auto-tagging ENABLED. Current conversion action windows/value/counting/source and Ads–GA4 link are read-proven. Historical custom goal6457304694 is referenced only by removed campaigns; all-status and exact-ID queries return no object: API visibility limitation, no future reuse. GA4 filters retain owner-confirmed Exclude/Testing; Admin dataFilters404 is an unsupported administration surface, not failed analytics collection. First weekly native Ads inventory remains GREEN—WAITING FOR FIRST SCHEDULED EXECUTION while not due; scheduled cached preparation is observed independently. Fresh/missing Ads evidence downgrades proposal confidence. Windsor30-day cache is GREEN—TEMPORARY WORKING SOURCE; direct Planner deferred, optional vendors unused; fresh provider entitlement is not inferred from cached rows. Full boundaries: [pilot contract](OPTIBRAIN_ADS_PILOT_READINESS_CONTRACT.md).
+
+
+## Phase34 current delta
+
+Phase34 separates fresh Apollo identity/current messages, exact-header-bound Mail bodies, CRM associations, role evidence, incomplete activity and dated sequence analytics. Provider reply without a body remains UNKNOWN. Failed/unmatched Mail searches persist cooldown/result and never mean no reply. Collection/preparation origins and counters are distinct; detailed period/variant snapshot expiry is seven days and does not claim automatic refresh. Optional failure cannot disable existing intake/customer scopes.

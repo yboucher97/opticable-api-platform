@@ -27,3 +27,10 @@ AUTHORITATIVE CURRENT — bounded observations on 2026-10-03. This describes coe
 Existing French messages are concise and role/service specific; company/name tokens provide shallow personalization. MSP emphasizes local physical installation alongside IT partners; contractor messages emphasize subcontracting; retail messages emphasize loss detection. Two full message reads and all four campaign template sets (13 variants; median84 words, including LinkedIn variants) establish this baseline, without rewriting any content.
 
 Veesion template includes Canadian hosting / Law 25 compliance claims. **Owner fact verification recommended, noncritical**; no OptiBrain certification of those claims. New drafts must not reuse unverified regulatory statements. No response/cost evidence currently supports replacing Claude. Private raw messages, names, IDs, notes and provider responses stay root-only, outside Git.
+
+
+## Phase34 read-only snapshot
+
+Current native inventory:3active /1inactive sequences; saved six-hour identity cache1372contacts /56accounts. Today’s mailbox limit50; seven-day aggregate limit400 is not a raised cap. Four sequence caps10/12/10/32 remain unchanged. Complete cached memberships: subcontracting1057active/14finished/36failed; pharmacies10active/8finished; recruiting127paused/2finished/13failed; MSP no saved memberships/current messages. Date-window message metrics differ from snapshot membership/status totals and are retained as different denominators.
+
+Fourteen actual sent emails and sixteen exact-header-bound inbound messages in nine conversations support unsent owner previews. Five provider reply flags lack exact Mail-body linkage. Partner/site-survey and supplier discussions are not customer qualification or revenue. Existing ownership is unchanged; the new canonical enum APOLLO_CLAUDE names the same owner as legacy CLAUDE_APOLLO. No sequence, template, mailbox, membership or daily-limit setting was changed.

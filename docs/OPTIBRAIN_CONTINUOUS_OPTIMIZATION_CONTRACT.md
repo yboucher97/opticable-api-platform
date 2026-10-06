@@ -51,3 +51,8 @@ Phase33 produces read-only Ads intelligence and complete **draft** proposals usi
 After those domain capabilities, a final optimization-engine mission still needs concrete proposal persistence and revision tests, supported preview/execution adapters, exact-target approval integration, authority/recovery/effect-fencing validation, reliable outcome/sampling attribution, bounded analysis budgets and owner review. Completing those phases alone does not activate an autonomous writer. Any later bounded production autonomy requires explicit scope approval and fresh provider-backed safety proof.
 
 Phase33 completion uses the shared proposal lifecycle and learning fields for fully specified, non-executing campaign previews. [Pilot readiness](OPTIBRAIN_ADS_PILOT_READINESS_CONTRACT.md) defines future separate paused-creation, activation, monitor/pause and offline-export graduation. Unknown real outcomes stay null; no autonomous manager, new timer or unrestricted writer is enabled.
+
+
+## Phase34 current delta
+
+Phase34 integrates Sales conversation/context, unsent drafts, partner/customer reviews, sequence/list proposals and content feedback into the shared evidence → proposal → preview → owner review → future execution → measurement → learning path. Bounded deterministic preparation attaches to the existing observer; no persistent model or new production authority. Phase37 may later combine these domain priorities; it is not started here.

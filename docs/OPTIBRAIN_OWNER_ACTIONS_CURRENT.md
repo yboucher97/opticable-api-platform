@@ -111,3 +111,8 @@ Review the complete commercial-camera and structured-cabling language variants i
 ## Phase33 completion — decisions for a future pilot
 
 No immediate Forms setup, GA4 filter activation, Basic access or new OAuth action is required. Review the complete FR camera campaign in Acquisition; [pilot readiness](OPTIBRAIN_ADS_PILOT_READINESS_CONTRACT.md) specifies exact keywords/assets/targets, no inherited goals, preferred nativeCAD420/28day budget (owner maximumCAD500), TEST boundaries and stops. Local review causes no Ads effect. Future CREATE_PAUSED requires a separate exact approval and scoped writer; spending requires another activation decision plus proven native cap/monitor/pause. Camera section previews are optional production copy approvals. Old custom-goal UI inspection is needed only if historical configuration reuse is proposed; no reuse is recommended. Both GA4 filters stay Testing unless separately reviewed and approved later.
+
+
+## Phase34 current delta
+
+Phase34: review the shared Sales drafts and sequence issues in `/v1/operator/sales`. Coordinate the existing partner/supplier discussions in Apollo; confirm any manual response/appointment before using a draft. Resolve the five unbound reply threads through existing native Apollo/Mail context; no broader OAuth requested. Review recruitment-list cleanup and overdue LinkedIn-task strategy; no reactivation or sequence edits occurred. Draft recipients, channels, preferred language, current employer, suppression and recent/manual contact still need exact future execution review. Separate sealed outreach graduation is required before any send. Existing Ads/GA4/GBP owner decisions remain separate.

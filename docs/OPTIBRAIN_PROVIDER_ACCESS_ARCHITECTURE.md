@@ -59,3 +59,8 @@ API1.24.0 uses the existing direct Apollo read adapter and fresh CRM/Books-owned
 ## Phase33 supported Ads reporting path
 
 Existing OptiBrain Google OAuth successfully reads account 6808491878 using Google Ads v25 fixed `googleAds:search` reporting requests. The adapter exposes no mutation/upload operation. Queries cover removed/current inventory, conversion actions/goals, account performance and privacy-limited Search terms. The observed reporting capability does not authorize Ads writes or prove direct Keyword Planner eligibility. Economics use the dated trusted Windsor cache; no restricted Planner retry, brand verification, new client/project or Semrush/Ahrefs use. Failed reads preserve endpoint/status/provider error classifications and old dates; no browser fallback.
+
+
+## Phase34 current delta
+
+Phase34 native Apollo connector proves sequence/step/template inventory, period/variant analytics, sent-content and tasks. Sent-content endpoint excludes inbound replies; existing Zoho Mail READ proves exact-header-linked replies for nine of fourteen known reply contacts. Five remain unbound after a bounded diagnostic expansion, without new scopes or invented text. The unattended reader reuses existing Apollo workspace and bounded Mail GETs; detailed period analytics are a dated connector snapshot. Today’s native mailbox-limit metric is50; period aggregates must not be mistaken for a higher configured cap. No Apollo writes, paid enrichment, LinkedIn automation, TinyFish, Clay or Holo.

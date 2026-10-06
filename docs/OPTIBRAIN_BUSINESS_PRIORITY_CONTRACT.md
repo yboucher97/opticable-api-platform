@@ -23,3 +23,8 @@ Future priority items cannot override root kill switches, scope expiry, protecte
 ## Phase33 minimal persistence and owner preparation
 
 Ads domain priorities use this shared representation and immutable research-store revisions. Each links the exact Optimization Proposal preview, business reason, timing, confidence/evidence, owner action and dependency. Existing Today shows up to three ready Ads priorities; Acquisition retains the complete queue. Rejected proposals remain durable and leave the ready priority projection. A priority or REVIEWED choice grants no approval or execution authority. No new dashboard, scheduler or task provider is added.
+
+
+## Phase34 current delta
+
+Phase34 contributes concrete SALES_INTELLIGENCE priorities with exact conversation/proposal references, existing outreach owner, urgency/reason, expected value UNKNOWN where unproven, execution dependencies and an unsent preview. Today exposes at most three high-priority items; research and suppressed/negative replies remain visible in Sales without fake urgency.

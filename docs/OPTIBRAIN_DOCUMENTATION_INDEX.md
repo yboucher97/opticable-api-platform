@@ -51,3 +51,8 @@ Shared optimization specialists: [integration foundation](OPTIBRAIN_CONTINUOUS_O
 Phase33 domain specialist: [Ads intelligence](OPTIBRAIN_ADS_INTELLIGENCE_CONTRACT.md). Shared proposal/priority/asset persistence and local review are implemented minimally; no full autonomous engine or Ads authority is granted.
 
 - [Ads pilot readiness](OPTIBRAIN_ADS_PILOT_READINESS_CONTRACT.md): current goal mapping, attribution proof classes, complete campaign spec, TEST policy and future paused-creation/spend safety.
+
+
+## Phase34 current delta
+
+Phase34 specialists: [Sales Conversation](OPTIBRAIN_SALES_CONVERSATION_CONTRACT.md), [Outreach Preparation](OPTIBRAIN_OUTREACH_INTELLIGENCE_CONTRACT.md), [Hook/Content](OPTIBRAIN_HOOK_CONTENT_CONTRACT.md). They extend the current coexistence/shared proposal contracts rather than replace them.

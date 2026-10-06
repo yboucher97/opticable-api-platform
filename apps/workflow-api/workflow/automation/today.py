@@ -56,7 +56,7 @@ def read_internal_attention(now,path=None):
         return value
     except (OSError,ValueError,KeyError,TypeError):return None
 
-def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None,communications=None,recurring=None,sales_intelligence=None,ads_intelligence=None):
+def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None,communications=None,recurring=None,sales_intelligence=None,ads_intelligence=None,sales_conversations=None):
     now=now or datetime.now(timezone.utc)
     sections={name:[] for name in CATEGORIES}
     def add(category,context,why,next_action,source,link,*,priority='MEDIUM',due=None,freshness=None):
@@ -141,9 +141,18 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
         if sales_intelligence.get('scope')!='live' or sales_intelligence.get('read_only') is not True:raise ValueError('Sales projection must be read-only live evidence')
         for row in sales_intelligence.get('rows',[]):
             if row.get('kind') not in {'apollo_reply','trigger'}:continue
+            if row['kind']=='apollo_reply' and sales_conversations:continue
             add('Leads needing response' if row['kind']=='apollo_reply' else 'Sales research',
                 row['title'],row['why'],row['action'],'Apollo reply / public project evidence',LINKS['today sales'],
                 priority='HIGH' if row['kind']=='apollo_reply' else 'MEDIUM',freshness=sales_intelligence.get('observed_at'))
+    if sales_conversations:
+        if sales_conversations.get('scope')!='live' or sales_conversations.get('read_only') is not True:
+            raise ValueError('Conversation Today projection must be read-only live evidence')
+        for row in sales_conversations.get('priorities',[])[:3]:
+            if row.get('status')!='OWNER_REVIEW' or row.get('urgency')!='HIGH':continue
+            add('Approvals',row['what'],row['why'],'Review exact unsent draft; coordinate with existing Apollo owner',
+                'Shared sales proposal / exact Mail evidence',LINKS['acquisition']+'?proposal_id='+row['proposal_id'],
+                priority='HIGH',freshness=sales_conversations.get('observed_at'))
     if ads_intelligence:
         if ads_intelligence.get('scope')!='live' or ads_intelligence.get('read_only') is not True:
             raise ValueError('Ads Today projection must be read-only live evidence')

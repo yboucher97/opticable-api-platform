@@ -2,7 +2,7 @@
   "schema_version": 1,
   "at": "2026-10-04T22:28:30.578101+00:00",
   "release": {
-    "api": "1.23.0",
+    "api": "1.27.0",
     "production_sha_source": "/var/lib/optibrain/releases/current.json",
     "source_pin_semantics": "Historical phase SHAs are unchanged; current exact release is independently recorded in root receipt",
     "production_executable_changed": true
@@ -120,7 +120,7 @@
       "recovery_generation": "20261002T224822Z",
       "evidence": "/var/lib/optibrain/phase16-17/final-report.json",
       "current_implementation_state": "Zoho CRM business architecture: Implemented and usable for the intended bounded scope. WorkDrive: Implemented and usable for the intended bounded scope. Installation/completion/support operations: Implemented and usable for the intended bounded scope.",
-      "data_coverage_state": "Current native reads and prior live TEST conversion/relationship/replay proofs support the canonical flow. Supported GET with application/vnd.api+json returns200; native folder creation/reuse proofs are retained. Phase19 native TEST scenariosA–D and replay evidence remain valid; all current13 Installations and3 Cases are TEST.",
+      "data_coverage_state": "Current native reads and prior live TEST conversion/relationship/replay proofs support the canonical flow. Supported GET with application/vnd.api+json returns200; native folder creation/reuse proofs are retained. Phase19 native TEST scenariosA\u2013D and replay evidence remain valid; all current13 Installations and3 Cases are TEST.",
       "live_provider_proof": "Independent provider evidence is described above; synthetic/mock tests alone are not live proof.",
       "natural_event_proof": "Not required for the original bounded gate",
       "historical_coverage": "Protected baseline unchanged; original historical proof retained",
@@ -161,7 +161,7 @@
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
       "owner_actions": "Current deduplicated owner list applies; natural events must not be manufactured.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
-      "classification": "GREEN — WAITING FOR NATURAL EVENT",
+      "classification": "GREEN \u2014 WAITING FOR NATURAL EVENT",
       "remediation_priority": "P2",
       "recommended_action": "KEEP + DOCUMENT",
       "capability_references": [
@@ -191,7 +191,7 @@
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
       "owner_actions": "Current deduplicated owner list applies; natural events must not be manufactured.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
-      "classification": "GREEN — WAITING FOR NATURAL EVENT",
+      "classification": "GREEN \u2014 WAITING FOR NATURAL EVENT",
       "remediation_priority": "P2",
       "recommended_action": "KEEP + DOCUMENT",
       "capability_references": [
@@ -213,7 +213,7 @@
       "recovery_generation": "20261003T024735Z",
       "evidence": "/var/lib/optibrain/phase18-19/phase18-19-final-report.json",
       "current_implementation_state": "Installation/completion/support operations: Implemented and usable for the intended bounded scope. Forward Finance/Deal/Site/Service lineage: Implemented and usable for the intended bounded scope.",
-      "data_coverage_state": "Phase19 native TEST scenariosA–D and replay evidence remain valid; all current13 Installations and3 Cases are TEST. Native lookup/schema and one historical Estimate/Deal relation are proven; forward derivation/replay fixtures pass.",
+      "data_coverage_state": "Phase19 native TEST scenariosA\u2013D and replay evidence remain valid; all current13 Installations and3 Cases are TEST. Native lookup/schema and one historical Estimate/Deal relation are proven; forward derivation/replay fixtures pass.",
       "live_provider_proof": "Independent provider evidence is described above; synthetic/mock tests alone are not live proof.",
       "natural_event_proof": "First eligible genuine effect remains pending",
       "historical_coverage": "Protected baseline unchanged; original historical proof retained",
@@ -222,7 +222,7 @@
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
       "owner_actions": "Current deduplicated owner list applies; natural events must not be manufactured.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
-      "classification": "GREEN — WAITING FOR NATURAL EVENT",
+      "classification": "GREEN \u2014 WAITING FOR NATURAL EVENT",
       "remediation_priority": "P2",
       "recommended_action": "KEEP + DOCUMENT",
       "capability_references": [
@@ -253,7 +253,7 @@
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
       "owner_actions": "Current deduplicated owner list applies; natural events must not be manufactured.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
-      "classification": "YELLOW — HISTORICAL PARTIAL",
+      "classification": "YELLOW \u2014 HISTORICAL PARTIAL",
       "remediation_priority": "P2",
       "recommended_action": "KEEP + DOCUMENT",
       "capability_references": [
@@ -282,7 +282,7 @@
       "known_gaps": "Full hidden-field/notification attribution parity is unproven. Forwarding URL context is not field persistence proof. Admin notification delivery and persisted acquisition parity remain unproven; exact owner settings/test steps are required. 86 Estimates,120 Invoices and23 profiles lack the relevant Deal/Service relation. Account-only evidence does not prove a Deal. Historical attribution remains partial.",
       "current_regressions": "No protected/effect safety regression found. GA4 page-view collection remains restored; native FR/EN31-field attribution/intake planning is proven. Native successful-form Analytics reception and genuine business effects remain separate.",
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
-      "owner_actions": "Forms setup resolved. Separate EN real enablement review remains conditional. Google Basic access is DEFERRED BY OWNER — NON-BLOCKING EXTERNAL ACCESS IMPROVEMENT; see the single conditional future action OA4.",
+      "owner_actions": "Forms setup resolved. Separate EN real enablement review remains conditional. Google Basic access is DEFERRED BY OWNER \u2014 NON-BLOCKING EXTERNAL ACCESS IMPROVEMENT; see the single conditional future action OA4.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
       "classification": "YELLOW",
       "remediation_priority": "P1",
@@ -296,13 +296,13 @@
         "mission": "completion-remediation-1-2",
         "api_target": "1.20.0",
         "ga4_collection": "GREEN",
-        "forms_parity": "YELLOW — OWNER ACTION",
+        "forms_parity": "YELLOW \u2014 OWNER ACTION",
         "evidence_confidence": "GREEN",
         "trigger_target_gate": "GREEN; unresolved actors held",
-        "phase30": "READY — SHADOW RESEARCH ONLY",
+        "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
         "release_receipt": "/var/lib/optibrain/releases/current.json"
       },
-      "foundation_delta": "Native FR/EN attribution continuity proven; conversion recovery authority explicit; cached Québec FR/EN economics available and Gate C PASS. Historical Finance and complete native Analytics success reception remain partial. Direct Google Basic access is deferred by owner, non-blocking; continuing Windsor entitlement is monitored, and unavailable current metrics become UNKNOWN / SOURCE UNAVAILABLE."
+      "foundation_delta": "Native FR/EN attribution continuity proven; conversion recovery authority explicit; cached Qu\u00e9bec FR/EN economics available and Gate C PASS. Historical Finance and complete native Analytics success reception remain partial. Direct Google Basic access is deferred by owner, non-blocking; continuing Windsor entitlement is monitored, and unavailable current metrics become UNKNOWN / SOURCE UNAVAILABLE."
     },
     {
       "phase": 22,
@@ -325,7 +325,7 @@
       "known_gaps": "Current collection is incomplete or stale despite working APIs. Private GTM configuration and browser consent were not tested; empty reports do not prove zero visitors. 86 Estimates,120 Invoices and23 profiles lack the relevant Deal/Service relation. Account-only evidence does not prove a Deal. Historical attribution remains partial. 0/23 profiles are Service-linked and no live recurring Service is recognized by the current model. Real context coverage remains partial.",
       "current_regressions": "No protected/effect safety regression found. GA4 page-view collection remains restored; native FR/EN31-field attribution/intake planning is proven. Native successful-form Analytics reception and genuine business effects remain separate.",
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
-      "owner_actions": "Forms setup resolved. Separate EN real enablement review remains conditional. Google Basic access is DEFERRED BY OWNER — NON-BLOCKING EXTERNAL ACCESS IMPROVEMENT; see the single conditional future action OA4.",
+      "owner_actions": "Forms setup resolved. Separate EN real enablement review remains conditional. Google Basic access is DEFERRED BY OWNER \u2014 NON-BLOCKING EXTERNAL ACCESS IMPROVEMENT; see the single conditional future action OA4.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
       "classification": "YELLOW",
       "remediation_priority": "P1",
@@ -339,13 +339,13 @@
         "mission": "completion-remediation-1-2",
         "api_target": "1.20.0",
         "ga4_collection": "GREEN",
-        "forms_parity": "YELLOW — OWNER ACTION",
+        "forms_parity": "YELLOW \u2014 OWNER ACTION",
         "evidence_confidence": "GREEN",
         "trigger_target_gate": "GREEN; unresolved actors held",
-        "phase30": "READY — SHADOW RESEARCH ONLY",
+        "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
         "release_receipt": "/var/lib/optibrain/releases/current.json"
       },
-      "foundation_delta": "Native FR/EN attribution continuity proven; conversion recovery authority explicit; cached Québec FR/EN economics available and Gate C PASS. Historical Finance and complete native Analytics success reception remain partial. Direct Google Basic access is deferred by owner, non-blocking; continuing Windsor entitlement is monitored, and unavailable current metrics become UNKNOWN / SOURCE UNAVAILABLE."
+      "foundation_delta": "Native FR/EN attribution continuity proven; conversion recovery authority explicit; cached Qu\u00e9bec FR/EN economics available and Gate C PASS. Historical Finance and complete native Analytics success reception remain partial. Direct Google Basic access is deferred by owner, non-blocking; continuing Windsor entitlement is monitored, and unavailable current metrics become UNKNOWN / SOURCE UNAVAILABLE."
     },
     {
       "phase": 23,
@@ -401,7 +401,7 @@
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
       "owner_actions": "Current deduplicated owner list applies; natural events must not be manufactured.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
-      "classification": "YELLOW — HISTORICAL PARTIAL",
+      "classification": "YELLOW \u2014 HISTORICAL PARTIAL",
       "remediation_priority": "P2",
       "recommended_action": "KEEP + DOCUMENT",
       "capability_references": [
@@ -431,7 +431,7 @@
       "known_gaps": "Current collection is incomplete or stale despite working APIs. Private GTM configuration and browser consent were not tested; empty reports do not prove zero visitors. Admin notification delivery and persisted acquisition parity remain unproven; exact owner settings/test steps are required. No eligible natural event; GCLID path is proven, BRAID/enhanced export is unarmed. Recovery authority reset is required before activation.",
       "current_regressions": "No protected/effect safety regression found. GA4 page-view collection remains restored; native FR/EN31-field attribution/intake planning is proven. Native successful-form Analytics reception and genuine business effects remain separate.",
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
-      "owner_actions": "Forms setup resolved. Separate EN real enablement review remains conditional. Google Basic access is DEFERRED BY OWNER — NON-BLOCKING EXTERNAL ACCESS IMPROVEMENT; see the single conditional future action OA4.",
+      "owner_actions": "Forms setup resolved. Separate EN real enablement review remains conditional. Google Basic access is DEFERRED BY OWNER \u2014 NON-BLOCKING EXTERNAL ACCESS IMPROVEMENT; see the single conditional future action OA4.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
       "classification": "YELLOW",
       "remediation_priority": "P1",
@@ -445,13 +445,13 @@
         "mission": "completion-remediation-1-2",
         "api_target": "1.20.0",
         "ga4_collection": "GREEN",
-        "forms_parity": "YELLOW — OWNER ACTION",
+        "forms_parity": "YELLOW \u2014 OWNER ACTION",
         "evidence_confidence": "GREEN",
         "trigger_target_gate": "GREEN; unresolved actors held",
-        "phase30": "READY — SHADOW RESEARCH ONLY",
+        "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
         "release_receipt": "/var/lib/optibrain/releases/current.json"
       },
-      "foundation_delta": "Native FR/EN attribution continuity proven; conversion recovery authority explicit; cached Québec FR/EN economics available and Gate C PASS. Historical Finance and complete native Analytics success reception remain partial. Direct Google Basic access is deferred by owner, non-blocking; continuing Windsor entitlement is monitored, and unavailable current metrics become UNKNOWN / SOURCE UNAVAILABLE."
+      "foundation_delta": "Native FR/EN attribution continuity proven; conversion recovery authority explicit; cached Qu\u00e9bec FR/EN economics available and Gate C PASS. Historical Finance and complete native Analytics success reception remain partial. Direct Google Basic access is deferred by owner, non-blocking; continuing Windsor entitlement is monitored, and unavailable current metrics become UNKNOWN / SOURCE UNAVAILABLE."
     },
     {
       "phase": 26,
@@ -467,7 +467,7 @@
       "recovery_generation": "20261003T214528Z",
       "evidence": "/var/lib/optibrain/phase26-27/final-report.json",
       "current_implementation_state": "Apollo direct research/production state: Implemented and usable for the intended bounded scope. Claude/Apollo coexistence: Implemented and usable for the intended bounded scope. Permit/project intelligence: Usable bounded implementation; stated gap remains. Clay supplemental enrichment integration: Implemented and usable for the intended bounded scope.",
-      "data_coverage_state": "Four sequence and mailbox/schedule reads succeed;13 template objects and steps/caps/schedules are unchanged by immutable ID. Current Apollo production configuration is unchanged; no enrollment/sending/migration occurs; ownership/collision fixtures pass. Latest100 Montréal evidence records provide two commercial/industrial signals; identity/replay/collision fixtures pass. Installed plugin discovery finds no callable tool/direct access in this environment; no credit consumption.",
+      "data_coverage_state": "Four sequence and mailbox/schedule reads succeed;13 template objects and steps/caps/schedules are unchanged by immutable ID. Current Apollo production configuration is unchanged; no enrollment/sending/migration occurs; ownership/collision fixtures pass. Latest100 Montr\u00e9al evidence records provide two commercial/industrial signals; identity/replay/collision fixtures pass. Installed plugin discovery finds no callable tool/direct access in this environment; no credit consumption.",
       "live_provider_proof": "Independent provider evidence is described above; synthetic/mock tests alone are not live proof.",
       "natural_event_proof": "Not required for the original bounded gate",
       "historical_coverage": "Partial Finance/acquisition history remains unmodified and unguessed",
@@ -538,7 +538,7 @@
       "known_gaps": "Some supported entity types lack provider data. Schema capability is not population coverage; no warehouse or ninth database was created. Tiny-sample bonus/default geography can overstate owner confidence. No observed ROI or regional segment demand is proven. Broad market economics needs higher approved access or one genuinely available alternative. GSC impressions cannot substitute.",
       "current_regressions": "No protected/effect safety regression found. GA4 page-view collection remains restored; native FR/EN31-field attribution/intake planning is proven. Native successful-form Analytics reception and genuine business effects remain separate.",
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
-      "owner_actions": "Forms setup resolved. Separate EN real enablement review remains conditional. Google Basic access is DEFERRED BY OWNER — NON-BLOCKING EXTERNAL ACCESS IMPROVEMENT; see the single conditional future action OA4.",
+      "owner_actions": "Forms setup resolved. Separate EN real enablement review remains conditional. Google Basic access is DEFERRED BY OWNER \u2014 NON-BLOCKING EXTERNAL ACCESS IMPROVEMENT; see the single conditional future action OA4.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
       "classification": "YELLOW",
       "remediation_priority": "P1",
@@ -552,13 +552,13 @@
         "mission": "completion-remediation-1-2",
         "api_target": "1.20.0",
         "ga4_collection": "GREEN",
-        "forms_parity": "YELLOW — OWNER ACTION",
+        "forms_parity": "YELLOW \u2014 OWNER ACTION",
         "evidence_confidence": "GREEN",
         "trigger_target_gate": "GREEN; unresolved actors held",
-        "phase30": "READY — SHADOW RESEARCH ONLY",
+        "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
         "release_receipt": "/var/lib/optibrain/releases/current.json"
       },
-      "foundation_delta": "Native FR/EN attribution continuity proven; conversion recovery authority explicit; cached Québec FR/EN economics available and Gate C PASS. Historical Finance and complete native Analytics success reception remain partial. Direct Google Basic access is deferred by owner, non-blocking; continuing Windsor entitlement is monitored, and unavailable current metrics become UNKNOWN / SOURCE UNAVAILABLE."
+      "foundation_delta": "Native FR/EN attribution continuity proven; conversion recovery authority explicit; cached Qu\u00e9bec FR/EN economics available and Gate C PASS. Historical Finance and complete native Analytics success reception remain partial. Direct Google Basic access is deferred by owner, non-blocking; continuing Windsor entitlement is monitored, and unavailable current metrics become UNKNOWN / SOURCE UNAVAILABLE."
     },
     {
       "phase": 29,
@@ -574,14 +574,14 @@
       "recovery_generation": "20261004T003403Z",
       "evidence": "/var/lib/optibrain/phase28-29/final-report.json",
       "current_implementation_state": "SEO/site inventory intelligence: Usable bounded implementation; stated gap remains. Content intelligence and repurposing: Usable bounded implementation; stated gap remains. Competitor discovery and gaps: Usable bounded implementation; stated gap remains.",
-      "data_coverage_state": "135 crawlable candidates and two indexed proofs; bounded metadata/canonical/hreflang/sitemap audit finds no structural issues. 21 existing improvements,9 new candidates,5 plans×6 assets; dedupe/publication guards pass. Ten discoveries and seven readable primary pages demonstrate service overlap.",
+      "data_coverage_state": "135 crawlable candidates and two indexed proofs; bounded metadata/canonical/hreflang/sitemap audit finds no structural issues. 21 existing improvements,9 new candidates,5 plans\u00d76 assets; dedupe/publication guards pass. Ten discoveries and seven readable primary pages demonstrate service overlap.",
       "live_provider_proof": "Independent provider evidence is described above; synthetic/mock tests alone are not live proof.",
       "natural_event_proof": "First eligible genuine effect remains pending",
       "historical_coverage": "Partial Finance/acquisition history remains unmodified and unguessed",
       "known_gaps": "No measured mobile/performance coverage. One-impression ranking gets the same+12 bonus as100 impressions; foreign query/language uncertainty persists. Owner next-action/content text omits numeric sample/ranking confidence. Candidates are research hypotheses, not proven demand or approved pages. Ranking/share/backlink/authority/paid gap coverage is largely unmeasured; one justified supporting source may help later.",
       "current_regressions": "No protected/effect safety regression found. GA4 page-view collection remains restored; native FR/EN31-field attribution/intake planning is proven. Native successful-form Analytics reception and genuine business effects remain separate.",
       "later_improvements_available": "Use shared source health, deterministic Finance evidence, root authority and current owner views rather than duplicate systems.",
-      "owner_actions": "Forms setup resolved. Separate EN real enablement review remains conditional. Google Basic access is DEFERRED BY OWNER — NON-BLOCKING EXTERNAL ACCESS IMPROVEMENT; see the single conditional future action OA4.",
+      "owner_actions": "Forms setup resolved. Separate EN real enablement review remains conditional. Google Basic access is DEFERRED BY OWNER \u2014 NON-BLOCKING EXTERNAL ACCESS IMPROVEMENT; see the single conditional future action OA4.",
       "provider_blockers": "See provider architecture; optional Sign/Clay/SEO limits do not block the whole system.",
       "classification": "YELLOW",
       "remediation_priority": "P1",
@@ -595,13 +595,13 @@
         "mission": "completion-remediation-1-2",
         "api_target": "1.20.0",
         "ga4_collection": "GREEN",
-        "forms_parity": "YELLOW — OWNER ACTION",
+        "forms_parity": "YELLOW \u2014 OWNER ACTION",
         "evidence_confidence": "GREEN",
         "trigger_target_gate": "GREEN; unresolved actors held",
-        "phase30": "READY — SHADOW RESEARCH ONLY",
+        "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
         "release_receipt": "/var/lib/optibrain/releases/current.json"
       },
-      "foundation_delta": "Native FR/EN attribution continuity proven; conversion recovery authority explicit; cached Québec FR/EN economics available and Gate C PASS. Historical Finance and complete native Analytics success reception remain partial. Direct Google Basic access is deferred by owner, non-blocking; continuing Windsor entitlement is monitored, and unavailable current metrics become UNKNOWN / SOURCE UNAVAILABLE."
+      "foundation_delta": "Native FR/EN attribution continuity proven; conversion recovery authority explicit; cached Qu\u00e9bec FR/EN economics available and Gate C PASS. Historical Finance and complete native Analytics success reception remain partial. Direct Google Basic access is deferred by owner, non-blocking; continuing Windsor entitlement is monitored, and unavailable current metrics become UNKNOWN / SOURCE UNAVAILABLE."
     },
     {
       "phase": 30,
@@ -615,7 +615,7 @@
       "live_provider_proof": "Official SEAO/municipal structured responses and primary company announcement; collision uses current approved CRM/Apollo caches.",
       "natural_event_proof": "No new outreach/CRM effect required or caused",
       "historical_coverage": "Versions preserved; closed tenders historical; unresolved actors remain research",
-      "known_gaps": "Partial stale Laval coverage; no Rive-Nord permit adapter; procurement export addendum lag; unresolved Montréal actors",
+      "known_gaps": "Partial stale Laval coverage; no Rive-Nord permit adapter; procurement export addendum lag; unresolved Montr\u00e9al actors",
       "current_regressions": "No additional provider-write authority",
       "later_improvements_available": "Owner-approved isolated trigger-to-outreach pilot after current version/actor verification",
       "owner_actions": "No new access action required for shadow scope; unresolved research is not a configuration blocker",
@@ -629,21 +629,21 @@
     "mission": "foundation-completion",
     "api_target": "1.21.0",
     "ga4_collection": "GREEN",
-    "forms_parity": "GREEN — NATIVE TEST_ONLY DELIVERY/ATTRIBUTION/INTAKE PLANNING",
+    "forms_parity": "GREEN \u2014 NATIVE TEST_ONLY DELIVERY/ATTRIBUTION/INTAKE PLANNING",
     "evidence_confidence": "GREEN",
     "trigger_target_gate": "GREEN; unresolved actors held",
-    "phase30": "READY — SHADOW RESEARCH ONLY",
+    "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
     "release_receipt": "/var/lib/optibrain/releases/current.json",
     "foundation_completion": {
-      "gate_a": "PASS — native FR/EN attribution and TEST_ONLY intake/planning",
-      "gate_b": "PASS — fresh authority reset, explicit health and unchanged changing-release guard",
-      "gate_c": "PASS — temporary-source definition; direct Google Basic DEFERRED BY OWNER, non-blocking",
+      "gate_a": "PASS \u2014 native FR/EN attribution and TEST_ONLY intake/planning",
+      "gate_b": "PASS \u2014 fresh authority reset, explicit health and unchanged changing-release guard",
+      "gate_c": "PASS \u2014 temporary-source definition; direct Google Basic DEFERRED BY OWNER, non-blocking",
       "english_real_automation": "DISABLED",
-      "phase30": "READY — SHADOW RESEARCH ONLY",
-      "phase32": "READY — BOUNDED WEBSITE/LOCAL MEASUREMENT WORK",
-      "phase33": "READY — SHADOW ADS INTELLIGENCE; durable economics required before quantitative production optimization; direct access required before relying on native Planner as permanent source",
-      "phase34": "READY — BOUNDED READ/DRAFT DESIGN",
-      "phase37": "READY — BOUNDED OWNER DECISION DESIGN"
+      "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
+      "phase32": "READY \u2014 BOUNDED WEBSITE/LOCAL MEASUREMENT WORK",
+      "phase33": "READY \u2014 SHADOW ADS INTELLIGENCE; durable economics required before quantitative production optimization; direct access required before relying on native Planner as permanent source",
+      "phase34": "READY \u2014 BOUNDED READ/DRAFT DESIGN",
+      "phase37": "READY \u2014 BOUNDED OWNER DECISION DESIGN"
     },
     "remediation_1": "PASS"
   },
@@ -663,15 +663,15 @@
     "recurring_browser_dependency": false
   },
   "foundation_completion": {
-    "gate_a": "PASS — native FR/EN attribution and TEST_ONLY intake/planning",
-    "gate_b": "PASS — fresh authority reset, explicit health and unchanged changing-release guard",
-    "gate_c": "PASS — temporary-source definition; direct Google Basic DEFERRED BY OWNER, non-blocking",
+    "gate_a": "PASS \u2014 native FR/EN attribution and TEST_ONLY intake/planning",
+    "gate_b": "PASS \u2014 fresh authority reset, explicit health and unchanged changing-release guard",
+    "gate_c": "PASS \u2014 temporary-source definition; direct Google Basic DEFERRED BY OWNER, non-blocking",
     "english_real_automation": "DISABLED",
-    "phase30": "READY — SHADOW RESEARCH ONLY",
-    "phase32": "READY — BOUNDED WEBSITE/LOCAL MEASUREMENT WORK",
-    "phase33": "READY — SHADOW ADS INTELLIGENCE; durable economics required before quantitative production optimization; direct access required before relying on native Planner as permanent source",
-    "phase34": "READY — BOUNDED READ/DRAFT DESIGN",
-    "phase37": "READY — BOUNDED OWNER DECISION DESIGN"
+    "phase30": "READY \u2014 SHADOW RESEARCH ONLY",
+    "phase32": "READY \u2014 BOUNDED WEBSITE/LOCAL MEASUREMENT WORK",
+    "phase33": "READY \u2014 SHADOW ADS INTELLIGENCE; durable economics required before quantitative production optimization; direct access required before relying on native Planner as permanent source",
+    "phase34": "READY \u2014 BOUNDED READ/DRAFT DESIGN",
+    "phase37": "READY \u2014 BOUNDED OWNER DECISION DESIGN"
   },
   "owner_decisions": {
     "google_ads_basic_access": {
@@ -683,10 +683,10 @@
       "reason": "Owner does not want Google Cloud brand verification at this time.",
       "optibrain_defect": false,
       "gate_c": "PASS",
-      "working_source": "Google Keyword Planner via existing Windsor gateway → trusted OptiBrain cache",
+      "working_source": "Google Keyword Planner via existing Windsor gateway \u2192 trusted OptiBrain cache",
       "cache_days": 30,
       "currency": "CAD",
-      "geography": "QUÉBEC",
+      "geography": "QU\u00c9BEC",
       "languages": [
         "FR",
         "EN"
@@ -730,12 +730,12 @@
       },
       "durability_requirement": "Before relying on direct Google Keyword Planner as the permanent quantitative Ads economics source.",
       "semrush": {
-        "classification": "GREEN — INTENTIONALLY OPTIONAL",
+        "classification": "GREEN \u2014 INTENTIONALLY OPTIONAL",
         "required_dependency": false,
         "reason": "Cost not justified at this stage."
       },
       "ahrefs": {
-        "classification": "GREEN — INTENTIONALLY OPTIONAL",
+        "classification": "GREEN \u2014 INTENTIONALLY OPTIONAL",
         "required_dependency": false,
         "reason": "Cost not justified at this stage."
       },
@@ -756,9 +756,9 @@
       "implementation": "Shadow trigger source/version/identity/actor/role/service-fit/why-now/queue and feedback",
       "classification": "GREEN",
       "evidence": "/home/optibrain/phase30-evidence/final-report.json",
-      "coverage": "Montréal bounded permits; partial stale Laval permits; official batched SEAO; targeted primary company announcement",
+      "coverage": "Montr\u00e9al bounded permits; partial stale Laval permits; official batched SEAO; targeted primary company announcement",
       "limitations": [
-        "Two prior Montréal actors remain unresolved; research only",
+        "Two prior Montr\u00e9al actors remain unresolved; research only",
         "Batch procurement coverage is not real-time addendum certification",
         "No outreach or automatic CRM promotion",
         "Optional keyword economics and SEO tools cannot disable trigger research"
@@ -770,10 +770,24 @@
   "acquisition_coverage_expansion": {
     "scope": "POST-PHASE30 SHADOW RESEARCH",
     "implementation": "Prospect universe, historic retention, ICP/multi-actor/contact/revisit and funnel",
-    "source_coverage": "PARTIAL — explicit bounds",
+    "source_coverage": "PARTIAL \u2014 explicit bounds",
     "phase30_history_preserved": true,
     "sales_gate_unchanged": true,
     "execution_authority": false,
     "receipt": "/var/lib/optibrain/acquisition-coverage-expansion/final-report.json"
+  },
+  "phase34_sales_intelligence": {
+    "state": "IMPLEMENTED \u2014 READ / ANALYZE / PREPARE",
+    "provider_inventory": "4 sequences, 7/30-day and 3-month windows, 14 actual sent emails, 9 exact-header-linked conversations / 16 inbound messages",
+    "shared_architecture": "Existing optimization proposal/priority/asset store plus immutable conversation revisions in the same database",
+    "authority": "Outreach mutation absent; existing Claude/Apollo ownership unchanged",
+    "evidence": "/home/optibrain/phase34-evidence/final-report.json",
+    "known_limits": [
+      "Five Apollo reply bodies remain unmatched; not positive intent",
+      "Current role/channel/manual context still required before future execution",
+      "Period analytics connector snapshot, not scheduled reporting",
+      "Low samples and deterministic Finance lineage gaps remain UNKNOWN"
+    ],
+    "phase37_started": false
   }
 }

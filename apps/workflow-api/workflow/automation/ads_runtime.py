@@ -68,10 +68,13 @@ def persist(bundle,store):
 
 
 def projection(bundle,store,*,collection_origin,preparation_origin,health):
-    proposals=store.rows()
+    proposal_ids={r['record']['proposal_id'] for r in bundle['proposals']}
+    asset_ids={r['record']['asset_id'] for r in bundle['assets']}
+    priorities=[r for r in store.rows('optibrain.business_priority') if r['record']['proposal_id'] in proposal_ids]
+    proposals=[r for r in store.rows() if r['record']['proposal_id'] in proposal_ids]
     return {'schema':1,'scope':'live','read_only':True,'at':bundle['intelligence']['at'],'authority':'READ / ANALYZE / PREPARE ONLY',
         'execution_authorized':False,'provider_writes':0,'proposal_count':len(proposals),
-        'hook_count':len(store.rows('optibrain.optimization_asset')),'priority_count':len(store.rows('optibrain.business_priority')),
+        'hook_count':sum(r['record']['asset_id'] in asset_ids for r in store.rows('optibrain.optimization_asset')),'priority_count':len(priorities),
         'collection_origin':collection_origin,'preparation_origin':preparation_origin,'effect_class':'NONE',
         'source_health':health,'economics_state':bundle['intelligence']['economics_state'],
         'inventory':bundle['intelligence']['inventory'],'opportunities':bundle['intelligence']['opportunities'],
@@ -79,7 +82,7 @@ def projection(bundle,store,*,collection_origin,preparation_origin,health):
             'title':r['record']['proposal_type']+' · '+str(r['detail'].get('service') or r['detail'].get('campaign_name') or 'FR/EN'),
             'status':r['effective_status'],'confidence':r['record']['confidence'],
             'budget':r['detail'].get('budget',{}).get('average_daily'),'why':r['record']['business_problem']} for r in proposals],
-        'priorities':[{**r['record'],'status':'REJECTED' if next((p['effective_status'] for p in proposals if p['record']['proposal_id']==r['record']['proposal_id']),None)=='REJECTED' else r['record']['status']} for r in store.rows('optibrain.business_priority')],
+        'priorities':[{**r['record'],'status':'REJECTED' if next((p['effective_status'] for p in proposals if p['record']['proposal_id']==r['record']['proposal_id']),None)=='REJECTED' else r['record']['status']} for r in priorities],
         'natural_lead':bundle['intelligence']['natural_lead'],
         'autonomy':'Existing daily Google reporting observer; bounded weekly inventory/preparation. No Ads effect or scheduled model calls.'}
 

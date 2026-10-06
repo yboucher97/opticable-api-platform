@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import grp
 import os
+import sqlite3
 import httpx
 from . import lifecycle_control as lc
 from .apollo_observation import ApolloReader
@@ -94,6 +95,16 @@ def observe(engine, settings, *, now=None):
     view['identity_observed_at']=identities['at']
     view['public_permits_observed_at']=old.get('at')
     if not engine.dry_run:
+        # Separate bounded read/preparation domain. Failure never changes the
+        # existing lifecycle writer scopes or turns stale context into clearance.
+        from .sales_conversation_runtime import observe as conversations
+        try:
+            conversations(engine,settings,apollo=apollo,crm=crm,now=now)
+            engine.state['attention'].pop('sales-conversations',None)
+        except (ValueError,OSError,KeyError,TypeError,RuntimeError,sqlite3.Error):
+            engine.attention('sales-conversations','Sales conversation evidence unavailable',
+                'Bounded reply/proposal preparation needs review; no outreach is authorized',
+                'Review authenticated Mail linkage and private source health')
         atomic(DISPLAY,view,0o600)
         os.chown(DISPLAY,0,grp.getgrnam('opticable-workflow-api').gr_gid);os.chmod(DISPLAY,0o640)
     return view

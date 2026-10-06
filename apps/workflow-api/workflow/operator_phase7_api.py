@@ -130,7 +130,8 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
                            communications=read_internal_attention(instant,Path('/run/optibrain-readiness/customer-communications.json')),
                            recurring=read_internal_attention(instant,Path('/run/optibrain-readiness/recurring.json')),
                            sales_intelligence=read_internal_attention(instant,Path('/run/optibrain-readiness/sales-intelligence.json')),
-                           ads_intelligence=read_internal_attention(instant,Path('/run/optibrain-readiness/ads-intelligence.json')))
+                           ads_intelligence=read_internal_attention(instant,Path('/run/optibrain-readiness/ads-intelligence.json')),
+                           sales_conversations=read_internal_attention(instant,Path('/run/optibrain-readiness/sales-conversations.json')))
 
     def sales_snapshot():
         view=read_internal_attention(now(),Path('/run/optibrain-readiness/sales-intelligence.json'))
@@ -148,6 +149,8 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
             proposals=OptimizationStore(Path(store.db_path).with_name('phase12-autonomy.db')).rows()
             row=next((p for p in proposals if p['record']['proposal_id']==proposal_id),None)
             if not row:raise HTTPException(status_code=404,detail='Proposal unavailable')
+            if row['record']['proposal_type'] in {'SALES_REPLY','OUTREACH_PROPOSAL','CUSTOMER_EXPANSION','SEQUENCE_CHANGE','CONTENT_FEEDBACK'}:
+                from .automation.sales_conversations import render_proposal
             return HTMLResponse(render_proposal(row),headers={**private_headers,
                 'Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'"})
         if prospect_id is not None:
@@ -236,7 +239,13 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         view=sales_snapshot()
         feedback=SalesFeedback(Path(store.db_path).with_name('phase12-autonomy.db')).latest()
         view['rows']=[r for r in view.get('rows',[]) if feedback.get(r['key'],{}).get('choice') not in {'DO NOT CONTACT','BAD FIT','NOT NOW','BAD TRIGGER'}]
-        return HTMLResponse(render_sales(view),headers=private_headers)
+        from .automation.sales_conversations import render as render_conversations
+        conversations=read_internal_attention(now(),Path('/run/optibrain-readiness/sales-conversations.json'))
+        if conversations:view['rows']=[r for r in view['rows'] if r.get('kind')!='apollo_reply']
+        html=render_sales(view)
+        if conversations:html=html.replace('</body>',render_conversations(conversations)+'</body>')
+        return HTMLResponse(html,headers={**private_headers,
+            'Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'"})
 
     def sales_candidate(candidate):
         if not re.fullmatch('[0-9a-f]{64}',candidate):raise HTTPException(status_code=404,detail='Candidate unavailable')

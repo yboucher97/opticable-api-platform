@@ -39,3 +39,8 @@ Discovery source (`APOLLO`, `PUBLIC_PERMIT`, `PUBLIC_TENDER`, optional `CLAY_ASS
 **KEEP current execution; HYBRID research in shadow.** OptiBrain adds project triggers, exact CRM context and collision visibility; Apollo supplies saved identity/state; Claude personalization remains undisturbed; Apollo sends. No evidence yet proves response uplift, comparative research cost or revenue. Do not recommend replacement on different prospect counts alone.
 
 Future owner-approved migration only: shadow → new isolated segment after full collision/consent checks → compare response/quality/cost/revenue → expand only on evidence → retire duplicate controller only after reversible handoff. None of these sending stages is authorized or executed here.
+
+
+## Phase34 current delta
+
+Phase34 extends this coexistence policy with [canonical conversations](OPTIBRAIN_SALES_CONVERSATION_CONTRACT.md), [bounded preparation](OPTIBRAIN_OUTREACH_INTELLIGENCE_CONTRACT.md) and shared unsent previews. Existing contact execution thresholds, original acquisition retention and Apollo/Claude ownership are preserved.
