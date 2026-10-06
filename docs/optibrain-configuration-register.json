@@ -1070,6 +1070,17 @@
       "restored": "rebuildable with writers off; preserve original source age",
       "verified": "focused identity/auth/cache/replay tests and post-deploy root projection",
       "backed_up": "existing online SQLite backup"
+    },
+    {
+      "location": "/etc/optibrain/website-preview; /var/lib/optibrain/first-hosted-camera-preview",
+      "owner": "root:root; credentials directory 0700 and secret files 0600",
+      "secret": true,
+      "source_of_truth": "Owner-authorized existing GitHub App reuse with selected-repository installation tokens; separate selected-Worker authority; authenticated provider readback",
+      "deployed": "Private directory, nonsecret existing App IDs and read-only adapter evidence; Cloudflare user token pending; execution disabled",
+      "restored": "Restore secure configuration with preview execution OFF; revalidate current scopes and proposal tuple",
+      "verified": "Private directory ownership/mode; existing App and both repository-restricted token permission sets verified live; candidate proposal-ref guard tests; Cloudflare credential intake pending",
+      "backed_up": "Existing encrypted /etc/optibrain and /var/lib/optibrain operational backup; verify secure configuration coverage after credential intake before execution",
+      "purpose": "Isolated preview credentials and bounded mission evidence; accepted GitHub Free plan limit without provider main protection"
     }
   ],
   "environment_key_references": [
@@ -1833,6 +1844,28 @@
       "recovery_requirement": "owner offline identity/device",
       "owner_held_offline": true,
       "backed_up": "EXCLUDED from every VPS/source/backup/log"
+    },
+    {
+      "name": "Existing GitHub App key reference for website preview",
+      "provider": "GitHub",
+      "storage": "/etc/optibrain/github-app.pem; existing root-owned 0640 key; unchanged",
+      "consumer": "Future reviewed bounded preview adapter; production services unchanged",
+      "purpose": "Mint short-lived installation tokens limited to opticable-website and minimum preview permissions",
+      "rotation": "Owner/provider minimum-scope rotation, secure intake and effective-permission readback; never log values",
+      "recovery_requirement": "Encrypted secure configuration backup or owner UI reissuance; preview disabled until revalidated",
+      "owner_held_offline": false,
+      "backed_up": "Existing protected App configuration backup; no new private key or persisted installation token"
+    },
+    {
+      "name": "Preview Cloudflare user-scoped trigger read token",
+      "provider": "Cloudflare",
+      "storage": "/etc/optibrain/website-preview/cloudflare-trigger-read.token; root:root 0600; not yet supplied",
+      "consumer": "Future reviewed bounded preview adapter; production services unchanged",
+      "purpose": "Read Workers Builds trigger configuration without any production edit scope",
+      "rotation": "Owner/provider minimum-scope rotation, secure intake and effective-permission readback; never log values",
+      "recovery_requirement": "Encrypted secure configuration backup or owner UI reissuance; preview disabled until revalidated",
+      "owner_held_offline": false,
+      "backed_up": "Pending credential intake; use existing secure configuration backup and verify coverage before execution"
     }
   ],
   "external_bindings": {

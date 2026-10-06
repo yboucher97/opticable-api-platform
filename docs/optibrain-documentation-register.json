@@ -21,11 +21,11 @@
     "HISTORICAL EVIDENCE"
   ],
   "counts": {
-    "SUPERSEDED": 9,
+    "SUPERSEDED": 10,
     "HISTORICAL": 48,
-    "AUDIT EVIDENCE": 137,
+    "AUDIT EVIDENCE": 138,
     "AUTHORITATIVE CURRENT": 66,
-    "SECURITY / CONTROL": 1,
+    "SECURITY / CONTROL": 2,
     "RECOVERY": 1
   },
   "documents": [
@@ -1797,9 +1797,10 @@
     },
     {
       "path": "docs/preview-control-plane-integration/owner-config.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "purpose": "Reviewed preview integration release and separate future provider configuration; runtime receipts determine live state"
+      "classification": "SUPERSEDED",
+      "current": false,
+      "purpose": "Prior provider setup recommendation; owner now accepts GitHub Free plan limit and proposal-only application enforcement",
+      "superseded_by": "docs/first-hosted-camera-preview/owner-configuration.md"
     },
     {
       "path": "docs/preview-control-plane-integration/validation.json",
@@ -1818,6 +1819,18 @@
       "classification": "AUDIT EVIDENCE",
       "current": true,
       "purpose": "Verified current preview control-plane release, matching recovery, preserved lifecycle/completion and separate owner provider configuration; no provider authority"
+    },
+    {
+      "path": "docs/first-hosted-camera-preview/provider-preflight.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "purpose": "Read-only provider preflight and preserved production baseline; no hosted preview"
+    },
+    {
+      "path": "docs/first-hosted-camera-preview/owner-configuration.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Owner-authorized existing GitHub App reuse, GitHub Free preview boundary and exact remaining Cloudflare user-token setup"
     }
   ]
 }
