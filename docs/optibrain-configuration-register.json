@@ -1076,9 +1076,9 @@
       "owner": "root:root; credentials directory 0700 and secret files 0600",
       "secret": true,
       "source_of_truth": "Owner-authorized existing GitHub App reuse with selected-repository installation tokens; separate selected-Worker authority; authenticated provider readback",
-      "deployed": "Private directory, nonsecret existing App IDs and read-only adapter evidence; Cloudflare user token pending; execution disabled",
+      "deployed": "Existing App IDs and owner-provided user Builds token present; live read verification PASS; preview execution blocked by production-linked trigger",
       "restored": "Restore secure configuration with preview execution OFF; revalidate current scopes and proposal tuple",
-      "verified": "Private directory ownership/mode; existing App and both repository-restricted token permission sets verified live; candidate proposal-ref guard tests; Cloudflare credential intake pending",
+      "verified": "Existing website-restricted App tokens; user token/account/Workers/Builds all HTTP 200; proposed trigger exclusion not applied",
       "backed_up": "Existing encrypted /etc/optibrain and /var/lib/optibrain operational backup; verify secure configuration coverage after credential intake before execution",
       "purpose": "Isolated preview credentials and bounded mission evidence; accepted GitHub Free plan limit without provider main protection"
     }
@@ -1857,15 +1857,15 @@
       "backed_up": "Existing protected App configuration backup; no new private key or persisted installation token"
     },
     {
-      "name": "Preview Cloudflare user-scoped trigger read token",
+      "name": "Existing owner-authorized Cloudflare user Builds token",
       "provider": "Cloudflare",
-      "storage": "/etc/optibrain/website-preview/cloudflare-trigger-read.token; root:root 0600; not yet supplied",
-      "consumer": "Future reviewed bounded preview adapter; production services unchanged",
-      "purpose": "Read Workers Builds trigger configuration without any production edit scope",
+      "storage": "/etc/optibrain/website-preview/cloudflare-builds-user.token; existing root:opticable-workflow-api 0640; no duplicate secret",
+      "consumer": "Bounded user-scoped Builds discovery; future owner-authorized exact provider boundary configuration",
+      "purpose": "Owner-authorized Workers CI Edit and Workers Scripts Edit for one account; reuse without downgrade or duplication; initial mission calls read-only",
       "rotation": "Owner/provider minimum-scope rotation, secure intake and effective-permission readback; never log values",
       "recovery_requirement": "Encrypted secure configuration backup or owner UI reissuance; preview disabled until revalidated",
       "owner_held_offline": false,
-      "backed_up": "Pending credential intake; use existing secure configuration backup and verify coverage before execution"
+      "backed_up": "Existing secure configuration backup policy; verify new credential coverage before provider execution"
     }
   ],
   "external_bindings": {

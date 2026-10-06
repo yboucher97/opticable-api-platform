@@ -1,0 +1,47 @@
+{
+  "state": "PROPOSED_ONLY_NOT_APPLIED",
+  "reason": "Non-main optimization push currently uploads a version to the production Worker; owner boundary forbids that effect",
+  "account_id": "81d07d311d1b51e5e04b451d1f254850",
+  "worker": "opticable-website",
+  "worker_tag": "e3fc5eaa3a46499893264f7805709d8e",
+  "repository": "yboucher97/opticable-website",
+  "repository_id": 1179376497,
+  "trigger_name": "Deploy non-production branches",
+  "trigger_uuid": "0a7fcf36-1a8a-4adf-8c04-03a7b517938d",
+  "method": "PATCH",
+  "endpoint": "/accounts/81d07d311d1b51e5e04b451d1f254850/builds/triggers/0a7fcf36-1a8a-4adf-8c04-03a7b517938d",
+  "expected_branch_includes": [
+    "*"
+  ],
+  "expected_branch_excludes": [
+    "main"
+  ],
+  "body": {
+    "branch_excludes": [
+      "main",
+      "optimization/*"
+    ]
+  },
+  "user_token_path": "/etc/optibrain/website-preview/cloudflare-builds-user.token",
+  "production_main_trigger_to_preserve": "66679014-4b6f-4b6f-b5d3-b4656d9c425b",
+  "do_not_change": [
+    "production main trigger",
+    "build/deploy commands",
+    "Worker scripts or versions",
+    "bindings or secrets",
+    "routes",
+    "DNS",
+    "GitHub visibility or main",
+    "credential values or grants"
+  ],
+  "verification": [
+    "Re-read exact trigger and repository/Worker identity before update",
+    "Preserve any concurrent owner exclusions; never blindly replace a changed before-state",
+    "Read back exclusions and unchanged remaining trigger fields",
+    "Check every connected Worker trigger before proposal publication",
+    "Read back production Worker/version/deployment/routes/DNS"
+  ],
+  "new_tokens_required": false,
+  "owner_specific_authorization_required": true,
+  "source": "https://developers.cloudflare.com/api/resources/workers_builds/subresources/triggers/methods/update/"
+}

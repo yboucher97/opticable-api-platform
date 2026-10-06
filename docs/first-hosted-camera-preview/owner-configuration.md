@@ -16,9 +16,19 @@ Native CI is the actual `validate` job in `measurement-validation.yml`, bound to
 
 Webhook: **DEFERRED**. The live receiver is not installed or validated. Bounded polling is sufficient for the first preview. Do not enable or change the production App webhook for this mission.
 
-## Remaining manual Cloudflare action
+## Verified Cloudflare credentials and remaining production-linked trigger exception
 
-The existing account-owned token has Workers CI Read but the Builds API rejects its token type. A user-owned read token is required to inspect production Git integration before any proposal push: unknown branch triggers cannot be assumed safe. The owner must create this credential in the user profile; account-token APIs cannot create user-owned credentials. Do not repeat the denied account-token call.
+The owner completed credential setup and explicitly authorizes reusing the broader **user-owned** token at `/etc/optibrain/website-preview/cloudflare-builds-user.token`. Its account grants are Workers CI Edit and Workers Scripts Edit for `81d07d311d1b51e5e04b451d1f254850`. The existing root-owned file is mode 0640, group `opticable-workflow-api`, inside the root-private directory. Do not duplicate, replace, downgrade or require the previously requested filename. The checkpoint's read-only recommendation is superseded by the owner's explicit permission choice. The existing account-owned `/etc/optibrain/cloudflare-test-token` remains distinct and is used only with supported account-scoped APIs.
+
+Programmatic verification passed HTTP 200 / success true / no error codes for `/user/tokens/verify`, exact account identity, Workers script metadata and the production Worker-tag Builds triggers endpoint. The original account-token Invalid token cause is resolved by using the supported user token. GitHub App reuse and effective website-only token scopes are also reverified. Website main remains `fc67ddc8c76b7527a620a93ca216b038f210b895`.
+
+Discovery exposed an existing **production-linked** non-production Builds trigger: `0a7fcf36-1a8a-4adf-8c04-03a7b517938d`, **Deploy non-production branches**, attached to `opticable-website`, Worker tag `e3fc5eaa3a46499893264f7805709d8e`. It includes `*`, excludes only `main` and runs `npx wrangler versions upload`. Pushing the proposal would therefore upload a version to the production Worker outside this mission's allowed target. The main trigger is separate (`66679014-4b6f-4b6f-b5d3-b4656d9c425b`) and runs `npx wrangler deploy` only for main.
+
+The current authorization permits writes to the isolated preview target and explicitly forbids changing the production Worker. Editing its attached non-production Builds configuration requires a specific owner exception to that production boundary. The exact minimal proposed API change is prepared in [reviewable exclusion plan](production-build-trigger-exclusion.json), **not applied**. It changes only `branch_excludes` from `["main"]` to `["main", "optimization/*"]`; production main builds, other branch behavior, commands, Worker code/versions/bindings, routes and DNS stay untouched. No replacement credential is needed. Workers documentation does not establish a per-commit skip mechanism that can be relied upon here while still running exact-head GitHub PR CI.
+
+The candidate read-only `CloudflarePushSafety` adapter uses the canonical existing token, checks account/Worker/repository identity and branch filters, and fails before GitHub token issuance or branch publication if an automatic Worker write matches. On a safe receipt it must inspect every Worker trigger, with bounded reads and a 30-second cache. It exposes no trigger mutation/upload/token-creation operation. Focused containment tests pass; full regression passes **1,813 tests / 1,658 subtests**, zero failures/errors/skips/network attempts. This code remains an unreleased local checkpoint.
+
+The live 1.31.0 preview journal was updated through its existing contract: successful authentication is recorded separately; state remains `PROVIDER_BLOCKED`, preview `FAILED`, owner `PENDING`, no verified URL. The exact reason is `PRODUCTION_BUILDS_TRIGGER_MATCHES_PROPOSAL`. No authentication blocker is fabricated and no PREVIEW_READY is claimed.
 
 OWNER ACTION REQUIRED
 
@@ -26,29 +36,28 @@ SYSTEM:
 Cloudflare
 
 ACTION:
-Create one user-owned read-only token for Workers Builds trigger discovery. Store it securely on this host at `/etc/optibrain/website-preview/cloudflare-trigger-read.token`, root:root, mode 0600. Do not paste the token into chat.
+Authorize OptiBrain to apply the prepared one-field exclusion to the production Worker's attached non-production Builds trigger. Your hard stop on production Worker changes is why this specific exception is required. No new credential or App is needed.
 
 EXACT UI PATH:
-Cloudflare Dashboard → profile icon → My Profile → API Tokens → Create Token → Create Custom Token: https://dash.cloudflare.com/profile/api-tokens
+For inspection: Cloudflare Dashboard → Workers & Pages → `opticable-website` → Settings → Build → Branch control. No dashboard edit is required if you authorize the exact API change here.
 
 EXACT VALUES:
-Token name: `OptiBrain Preview Trigger Read`.
-Account: `Yboucher@opti-plex.ca's Account` — `81d07d311d1b51e5e04b451d1f254850`.
-Permission: Workers product scope → **Content Read-Only**. If the UI still shows legacy permissions, use Account → **Workers CI → Read**. The current Workers role documentation identifies these as equivalents. No write permission is required for the list-triggers endpoint.
-Account resources: Include → Specific account → the account above.
-Credential destination: `/etc/optibrain/website-preview/cloudflare-trigger-read.token`, root:root 0600.
+Account: `81d07d311d1b51e5e04b451d1f254850`.
+Worker: `opticable-website`.
+Non-production trigger: `0a7fcf36-1a8a-4adf-8c04-03a7b517938d` — `Deploy non-production branches`.
+One changed field: `branch_excludes = ["main", "optimization/*"]`.
+Existing production main trigger: unchanged.
+Reply: `Authorize only this non-production Builds exclusion, then continue the existing camera preview mission.`
 
 CHECKBOXES:
-Select only the specified account and the read-only permission. No zone resources or edit grants.
+No checkbox change required for the API exclusion. Keep production branch `main`; retain other existing settings.
 
 DO NOT ENABLE:
-Account-owned token creation, Workers Builds Configuration Edit, Workers CI Write, Workers Editor/Admin, DNS write, Workers Routes write, or any production deployment/edit authority.
-
-After credential intake, verify user-token identity/scopes, then issue one bounded trigger-discovery read using production Worker tag `e3fc5eaa3a46499893264f7805709d8e`. Inspect actual repository/branch/deploy rules before allowing publication. A denied or partial read remains non-ready.
+A new credential/App, repository public visibility, auto-merge, production upload/deploy, routes/DNS changes, or the irreversible Switch to Worker Previews migration.
 
 ## Automatic work after credential verification
 
-Provision exactly `opticable-optimization-preview` using separate one-time provisioning authority after the guarded adapter release. Create a distinct writer with **Individual Workers Editor only** on that Worker's immutable tag using the supported selected-resource token API. No broad production token becomes the preview runtime writer. The target must have zero routes/custom domains, no copied production secrets or external production bindings, and an isolated static-assets binding generated for this preview.
+Provision exactly `opticable-optimization-preview` using separate one-time provisioning authority after the guarded adapter release. Reuse the verified credentials without duplicate token creation. Verify preview write authority against the existing owner constraints and supported selected-Worker boundary before upload; retain a fixed exact-target adapter and keep production deployment credentials out of the preview process. The target must have zero routes/custom domains, no copied production secrets or external production bindings, and an isolated static-assets binding generated for this preview.
 
 Finish the bounded Cloudflare transport and pinned native build policy, then run final full regression and the existing guarded OptiBrain release before provider writes. The candidate GitHub adapter has been verified, but is **not deployed or enabled** in API 1.31.0. Current timers, original authority, effects and proposal state remain unchanged. No foundation phase is needed.
 

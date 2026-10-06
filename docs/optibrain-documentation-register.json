@@ -1830,7 +1830,13 @@
       "path": "docs/first-hosted-camera-preview/owner-configuration.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
-      "purpose": "Owner-authorized existing GitHub App reuse, GitHub Free preview boundary and exact remaining Cloudflare user-token setup"
+      "purpose": "Verified existing GitHub/Cloudflare credentials and exact production-linked non-production Builds exclusion exception"
+    },
+    {
+      "path": "docs/first-hosted-camera-preview/production-build-trigger-exclusion.json",
+      "classification": "SECURITY / CONTROL",
+      "current": true,
+      "purpose": "Proposed-only minimal optimization branch exclusion on existing non-production Builds trigger; no mutation applied"
     }
   ]
 }

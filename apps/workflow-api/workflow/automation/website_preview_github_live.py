@@ -149,11 +149,12 @@ class GitHubPreviewAdapter:
     required_ci_checks = ('validate',)
     requires_draft_pr = True
 
-    def __init__(self, app, *, transport=None, clock=None, store=None, local_git=None, boundary=None):
+    def __init__(self, app, *, transport=None, clock=None, store=None, local_git=None, boundary=None, deployment_safety=None):
         self.app = app.validate()
         self.transport = transport or BoundedGitHubHTTP()
         self.clock = clock or (lambda: datetime.now(timezone.utc))
         self.store = store; self.local_git = local_git; self.boundary = boundary
+        self.deployment_safety = deployment_safety
         self._tokens = {}  # Ephemeral memory only; never serialized or logged.
         self._identity = None
         self._auth_failed = False
@@ -338,6 +339,9 @@ class GitHubPreviewAdapter:
         ProposalPreviewExecutor(self.store, self, self.boundary)._prepared(binding, self.clock())
         if os.geteuid() != 0:
             raise PermissionError('Explicit root-controlled preview execution required')
+        if self.deployment_safety is None:
+            raise PermissionError('Live Cloudflare branch-trigger safety verification required')
+        self.deployment_safety.require_safe(binding)
         return binding
 
     def _current_base(self, binding):

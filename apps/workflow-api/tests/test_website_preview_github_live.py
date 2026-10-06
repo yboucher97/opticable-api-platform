@@ -203,7 +203,7 @@ class LiveWriteTests(unittest.TestCase):
             raise AssertionError('Unexpected local Git operation')
         self.local._git.side_effect=git
         self.adapter=GitHubPreviewAdapter(ExistingPreviewApp(),transport=self.transport,clock=lambda:NOW,
-            store=self.store,local_git=self.local,boundary=self.boundary)
+            store=self.store,local_git=self.local,boundary=self.boundary,deployment_safety=Mock())
         for method in [patch.object(self.adapter,'_jwt',return_value='fake-app-jwt'),
                 patch('workflow.automation.website_preview_github_live.os.geteuid',return_value=0)]:
             method.start();self.addCleanup(method.stop)
@@ -262,6 +262,15 @@ class LiveWriteTests(unittest.TestCase):
         with patch('workflow.automation.website_preview_github_live.subprocess.run',return_value=SimpleNamespace(returncode=0)) as run:
             with self.assertRaises(ValueError):self.push()
             self.assertEqual(run.call_count,1)
+
+    def test_missing_or_unsafe_cloudflare_trigger_proof_stops_before_github_auth(self):
+        safety=self.adapter.deployment_safety
+        self.adapter.deployment_safety=None
+        with self.assertRaises(PermissionError):self.push()
+        self.adapter.deployment_safety=safety
+        safety.require_safe.side_effect=PermissionError('Production Worker upload trigger matches')
+        with self.assertRaises(PermissionError):self.push()
+        self.assertFalse(self.transport.calls)
 
     def test_draft_creation_fixed_base_exact_head_readback_and_no_auto_merge(self):
         self.remote()
