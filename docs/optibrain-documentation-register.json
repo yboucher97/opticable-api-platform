@@ -23,7 +23,7 @@
   "counts": {
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
-    "AUDIT EVIDENCE": 120,
+    "AUDIT EVIDENCE": 122,
     "AUTHORITATIVE CURRENT": 65,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
@@ -1699,6 +1699,18 @@
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "purpose": "Final integrated candidate offline regression; no provider network attempts"
+    },
+    {
+      "path": "docs/lifecycle-truth-integration/validation-focused-1.30.1.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Snapshot bound correction final candidate offline regression; no network attempts"
+    },
+    {
+      "path": "docs/lifecycle-truth-integration/validation-full-1.30.1.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Snapshot bound correction final candidate offline regression; no network attempts"
     }
   ]
 }
