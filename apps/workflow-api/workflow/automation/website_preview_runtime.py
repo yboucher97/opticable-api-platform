@@ -59,17 +59,19 @@ def _observed(operation,now,*args):
         return ReadResult('FAILED',None,None,now.isoformat(),1,0,1,'INVALID_OR_FAILED_PROVIDER_READ')
 
 
-def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_page='Security cameras',canonical_url='https://opticable.ca/fr/services/systemes-cameras-securite/'):
+def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_page='Security cameras',canonical_url='https://opticable.ca/fr/services/systemes-cameras-securite/',clock=None):
     """Callable by the existing infrastructure later. Stop denied reads, never retry."""
     if type(maximum) is not int or not 1<=maximum<=3:raise ValueError('Reconciliation bound required')
     results=[]
     for item in store.rows():
+        now=clock() if clock else now
         if item['record']['target_system']!='WEBSITE':continue
         v=store.preview(item['record']['proposal_id'],now)
         if not v or v['owner_status'] in {'REJECTED','DEFERRED','REVISION_REQUESTED'} or v['stale_state']=='SUPERSEDED':continue
         if len(results)>=maximum:break
         v=deepcopy(v);repo=v['repository'];reads=v.setdefault('provider_reads',{})
         default=_observed(github.get_branch,now,repo,v['base_ref']);reads['default_branch']=default.metadata()
+        now=clock() if clock else now
         if not _fresh(default,now) or not isinstance(default.data,dict) or default.data.get('repository')!=repo or default.data.get('branch')!=v['base_ref']:
             v['last_verified_at']=None
             _save(store,v,now,state='PROVIDER_BLOCKED' if default.state=='BLOCKED_AUTH' else 'STALE_BASE',stale_state='UNKNOWN',preview_state='BLOCKED_AUTH' if default.state=='BLOCKED_AUTH' else 'NOT_COLLECTED')
@@ -86,6 +88,7 @@ def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_pag
             results.append(v);continue
         v['stale_state']='CURRENT'
         head=_observed(github.get_branch,now,repo,v['branch']);reads['proposal_branch']=head.metadata()
+        now=clock() if clock else now
         if not _fresh(head,now) or not isinstance(head.data,dict) or head.data.get('repository')!=repo or head.data.get('branch')!=v['branch']:
             _save(store,v,now,state='PROVIDER_BLOCKED' if head.state=='BLOCKED_AUTH' else 'PREVIEW_PENDING',preview_state='BLOCKED_AUTH' if head.state=='BLOCKED_AUTH' else 'NOT_COLLECTED',last_verified_at=None)
             results.append(v);continue
@@ -100,6 +103,7 @@ def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_pag
             results.append(v);continue
         pr=_observed(github.get_pr,now,repo,v['branch']);reads['pull_request']=pr.metadata()
         workflow=_observed(github.get_workflow_status,now,repo,v['head_sha']);reads['workflow']=workflow.metadata()
+        now=clock() if clock else now
         # Live graduation requires a draft PR; legacy fake/local proof can be empty.
         if getattr(github,'requires_draft_pr',False) and (pr.state!='COMPLETE' or not isinstance(pr.data,dict)
                 or pr.data.get('state')!='open' or pr.data.get('auto_merge') is not None):
@@ -121,6 +125,7 @@ def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_pag
             _save(store,v,now,state='PREVIEW_PENDING',preview_state='PARTIAL',last_verified_at=None);results.append(v);continue
         project=_observed(cloudflare.get_project,now,v['preview_project']);reads['cloudflare_project']=project.metadata()
         config=_observed(cloudflare.get_preview_configuration,now,v['preview_project']);reads['cloudflare_configuration']=config.metadata()
+        now=clock() if clock else now
         if not _fresh(project,now) or not _fresh(config,now):
             blocked='BLOCKED_AUTH' in {project.state,config.state}
             reads['cloudflare']=config.metadata() if config.state=='BLOCKED_AUTH' else project.metadata()
@@ -129,6 +134,7 @@ def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_pag
         if not isinstance(project.data,dict) or project.data.get('project')!=v['preview_project'] or not isinstance(config.data,dict) or config.data.get('project')!=v['preview_project'] or config.data.get('environment')!='preview' or config.data.get('isolated') is not True or config.data.get('production_routes') is not False:
             _save(store,v,now,state='PROVIDER_BLOCKED',preview_state='FAILED',last_verified_at=None);results.append(v);continue
         deployment=_observed(cloudflare.find_deployment_for_sha,now,v['preview_project'],v['head_sha']);reads['cloudflare']=deployment.metadata()
+        now=clock() if clock else now
         if not _fresh(deployment,now):
             _save(store,v,now,state='PROVIDER_BLOCKED' if deployment.state=='BLOCKED_AUTH' else 'PREVIEW_PENDING',preview_state=deployment.state,last_verified_at=None)
             results.append(v);continue
@@ -140,12 +146,15 @@ def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_pag
                 _save(store,v,now,state='PREVIEW_PENDING' if d['state']=='building' else 'PROVIDER_BLOCKED',preview_state='PREVIEW_PENDING' if d['state']=='building' else 'FAILED',last_verified_at=None)
                 results.append(v);continue
             readback=_observed(cloudflare.read_deployment,now,v['preview_project'],d['id']);reads['deployment_readback']=readback.metadata()
+            now=clock() if clock else now
             if not _fresh(readback,now):
                 _save(store,v,now,state='PROVIDER_BLOCKED' if readback.state=='BLOCKED_AUTH' else 'PREVIEW_PENDING',preview_state=readback.state,last_verified_at=None)
                 results.append(v);continue
             if verify_deployment(v,readback.data,now)!=d:raise ValueError('Deployment changed during verification')
             cloudflare.validate_preview_url(d['url']);v.update(deployment=d,preview_deployment_id=d['id'],preview_url=d['url'])
             h=validate_http(v,cloudflare,http,now,expected_page=expected_page,canonical_url=canonical_url,require_forms='FORMS' in v['required_tests'])
+            now=clock() if clock else now
+            h['observed_at']=now.isoformat()
             _save(store,v,now,state='OWNER_REVIEW',preview_state='PREVIEW_READY',http_validation=h,last_verified_at=now.isoformat())
         except (ValueError,KeyError,TypeError,TimeoutError) as exc:
             _save(store,v,now,state='PROVIDER_BLOCKED',preview_state='FAILED',preview_error=str(exc)[:300],last_verified_at=None)

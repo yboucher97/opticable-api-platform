@@ -173,3 +173,27 @@ class ExecutionTests(unittest.TestCase):
         self.provider.get_branch=changed
         with self.assertRaises(ValueError):self.executor.push_proposal(self.binding,NOW)
         self.assertEqual(self.provider.writes, [])
+
+    def test_trusted_clock_checks_receipts_after_authentication_and_network_completion(self):
+        current=[NOW+timedelta(seconds=2)]
+        boundary=replace(self.boundary,verified_at=(NOW+timedelta(seconds=1)).isoformat())
+        original=self.provider.result
+        def result(value):
+            current[0]+=timedelta(seconds=1)
+            read=original(value)
+            return replace(read,source_at=current[0].isoformat(),observed_at=current[0].isoformat())
+        self.provider.result=result
+        executor=ProposalPreviewExecutor(self.store,self.provider,boundary,clock=lambda:current[0])
+        push=executor.push_proposal(self.binding,NOW)
+        draft=executor.create_draft_pr(self.binding,NOW)
+        self.assertEqual(push['provider_writes'],1);self.assertEqual(draft['provider_writes'],1)
+        self.assertEqual(draft['verified_at'],current[0].isoformat())
+
+    def test_trusted_clock_still_rejects_future_and_stale_provider_source_times(self):
+        original=self.provider.result
+        for offset in [timedelta(seconds=30),-timedelta(hours=2)]:
+            with self.subTest(offset=offset):
+                self.provider.result=lambda value:replace(original(value),source_at=(NOW+offset).isoformat())
+                executor=ProposalPreviewExecutor(self.store,self.provider,self.boundary,clock=lambda:NOW)
+                with self.assertRaises(PermissionError):executor.push_proposal(self.binding,NOW)
+                self.assertFalse(self.provider.writes)
