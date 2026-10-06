@@ -381,7 +381,7 @@ class GitHubPreviewAdapter:
         env = {'PATH':'/usr/bin:/bin', 'LANG':'C.UTF-8', 'GIT_CONFIG_NOSYSTEM':'1', 'GIT_CONFIG_GLOBAL':'/dev/null',
             'GIT_TERMINAL_PROMPT':'0', 'GIT_CONFIG_COUNT':'1', 'GIT_CONFIG_KEY_0':'http.https://github.com/.extraHeader',
             'GIT_CONFIG_VALUE_0':'Authorization: Basic '+base64.b64encode(('x-access-token:'+token).encode()).decode()}
-        argv = ['git','-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false','-c','credential.helper=',
+        argv = ['git','-c','safe.directory='+str(path),'-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false','-c','credential.helper=',
             '-c','http.followRedirects=false','-C',str(path),'push','--porcelain','--no-verify','--',
             'https://github.com/'+REPOSITORY+'.git',commit+':refs/heads/'+branch]
         with tempfile.TemporaryFile() as output:

@@ -1,6 +1,6 @@
 # OptiBrain architecture
 
-AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; Current API contract: `1.31.0`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
+AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; Current API contract: `1.32.0`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
 
 ```mermaid
 flowchart TD
@@ -57,4 +57,4 @@ Phase37 consolidates the owner intelligence surface in [Business Manager](OPTIBR
 
 ## Preview control plane
 
-API1.31.0 adds bounded local website preparation and fake-provider contracts on the shared proposal/priority/source journals. Exact SHA, preview isolation, stale detection and owner evidence binding gate hosted readiness. [Verified integration and matching recovery](preview-control-plane-integration/final-report.md) preserve completed-main/lifecycle truth and safely represent the camera as provider-blocked; [provider configuration](preview-control-plane-integration/owner-config.md) remains the next separate controlled execution. Live preview mutations and production execution are unavailable.
+API1.31.0 adds bounded local website preparation and fake-provider contracts on the shared proposal/priority/source journals. Exact SHA, preview isolation, stale detection and owner evidence binding gate hosted readiness. [Verified integration and matching recovery](preview-control-plane-integration/final-report.md) preserve completed-main/lifecycle truth and safely represent the camera as provider-blocked; [provider configuration](preview-control-plane-integration/owner-config.md) remains the next separate controlled execution. The first hosted preview adds narrowly constrained existing-App and isolated-Worker adapters in API1.32.0. Preview writes require a guarded release and exact canonical preparation/tests/CI. Production website execution remains unavailable in this adapter.
