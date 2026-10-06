@@ -62,11 +62,20 @@ def registry(inputs,now):
         r=dict(existing.get(sid,{}));observed=r.get('source_effective_at') or r.get('observed_at')
         auth='UNKNOWN';state=health_state(r.get('state'));reason=r.get('reason') or 'No independent source observation retained'
         if sid in {'crm','books'} and snapshot:
-            observed=business.get('observed_at') or snapshot.get('observed_at');state='GREEN';auth='GREEN';reason='Native bounded snapshot; native lineage gaps remain explicit'
-        if sid=='crm' and inputs.get('sales-intelligence',{}).get('crm_observed_at'):
-            observed=inputs['sales-intelligence']['crm_observed_at'];state='GREEN';reason='Fresh CRM identity read; Business/Finance snapshots retain separate original times'
+            collection=business.get('collection') or snapshot.get('collection',{})
+            names=('accounts','contacts','leads','deals','services','sites') if sid=='crm' else ('books_estimate_index','books_invoices','customers','recurring_details')
+            modules=collection.get('modules',{})
+            complete=all(modules.get(n,{}).get('state')=='COMPLETE' for n in names)
+            dates=[modules.get(n,{}).get('source_at') for n in names]
+            observed=min(dates) if all(dates) else business.get('observed_at') or snapshot.get('observed_at')
+            state='GREEN' if complete else 'PARTIAL';auth='GREEN' if any(modules.get(n,{}).get('successful_reads',0) for n in names) else 'UNKNOWN'
+            reason='Independent native module completeness; missing or reused stages cannot certify a fresh whole source'
+            r['latest_error']={n:modules.get(n,{}).get('state','NOT_COLLECTED_UNKNOWN') for n in names if modules.get(n,{}).get('state')!='COMPLETE'} or None
         if sid=='apollo' and sales.get('apollo_observed_at') and state in {'GREEN','UNKNOWN'}:
-            observed=sales['apollo_observed_at'];state='GREEN';auth='UNKNOWN';reason='Cached workspace; current entitlement and complete activity not inferred'
+            from .observation_completeness import APOLLO_REQUIRED
+            coverage=inputs.get('sales-intelligence',{}).get('module_completeness',{}).get('apollo',{})
+            observed=sales['apollo_observed_at'];state='GREEN' if all(coverage.get(n,{}).get('complete') for n in APOLLO_REQUIRED) else 'PARTIAL'
+            auth='UNKNOWN';reason='Cached workspace; bounded activity samples and missing ownership/suppression coverage remain partial'
         if sid=='mail' and sales.get('observed_at'):
             observed=sales['observed_at'];state='GREEN' if sales.get('source_health',{}).get('mail',{}).get('fresh') else 'PARTIAL'
             reason='Exact-header-bound replies only; unknown bodies retained';auth='GREEN' if sales.get('source_health',{}).get('mail',{}).get('last_read_count',0)>0 else 'UNKNOWN'

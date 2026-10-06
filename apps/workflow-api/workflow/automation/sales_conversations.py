@@ -77,10 +77,11 @@ def relationship(contact,crm):
     aids={str(r['id']) for r in accounts}
     deals=[r for r in crm.get('Deals',[]) if live(r) and not re.search('closed|lost|perdu',str(r.get('Stage','')),re.I) and
            (str((r.get('Account_Name') or {}).get('id')) in aids or str((r.get('Contact_Name') or {}).get('id')) in {str(c['id']) for c in exact['Contacts']})]
-    return {'state':'OPEN DEAL' if deals else 'EXISTING CUSTOMER CONTEXT — VERIFY' if accounts or exact['Contacts'] else 'EXISTING PROSPECT' if exact['Leads'] else 'ACTIVE OUTREACH',
+    return {'state':'OPEN DEAL' if deals else 'EXISTING CUSTOMER CONTEXT — VERIFY' if accounts or exact['Contacts'] else 'EXISTING PROSPECT' if exact['Leads'] else 'UNKNOWN — CUSTOMER CONTEXT NOT CLEARED',
             'Leads':[str(r['id']) for r in exact['Leads']],'Contacts':[str(r['id']) for r in exact['Contacts']],
             'Accounts':[str(r['id']) for r in accounts],'Deals':[str(r['id']) for r in deals],
-            'finance_lineage':'UNKNOWN UNLESS EXISTING EXACT DEAL/ESTIMATE ASSOCIATION','fuzzy_matches':0}
+            'finance_lineage':'UNKNOWN UNLESS EXISTING EXACT DEAL/ESTIMATE ASSOCIATION','fuzzy_matches':0,
+            'execution_readiness':'HOLD','module_completeness':crm.get('_modules',{})}
 
 def conversations(apollo,mail,crm,*,now):
     stages={r['id']:r.get('display_name','') for r in apollo.get('stages',[])}

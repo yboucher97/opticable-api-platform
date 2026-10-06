@@ -11,6 +11,8 @@ import sqlite3
 import stat
 import subprocess
 import tempfile
+import math
+import re
 
 TIMERS = {'optibrain-backup':172800,'optibrain-phase2a-upload':172800,
           'opticable-phase9-intake-receipts':900,'opticable-phase10-service-events':9000,
@@ -18,6 +20,74 @@ TIMERS = {'optibrain-backup':172800,'optibrain-phase2a-upload':172800,
 DB_ROOT = Path('/var/lib/opticable-workflow-api/output/automation')
 DBS = ('automation.db','phase9-form-receipts.db','phase9-intake.db',
        'phase10-service-events.db','phase12-autonomy.db')
+
+SERVICE_FIELDS = ('LoadState','ActiveState','SubState','Result','ExecMainStatus',
+                  'ExecMainStartTimestampMonotonic','ExecMainExitTimestampMonotonic',
+                  'ActiveEnterTimestampMonotonic','TimeoutStartUSec','RuntimeMaxUSec')
+
+
+def duration_seconds(value):
+    """Parse systemd's show-format durations; unknown is not zero."""
+    if value == 'infinity':return math.inf
+    if not isinstance(value,str):raise ValueError('Malformed timeout')
+    factors = {'us':.000001,'ms':.001,'s':1,'min':60,'h':3600,'d':86400}
+    matches = list(re.finditer(r'([0-9]+(?:\.[0-9]+)?)(us|ms|min|s|h|d)', value))
+    if not matches or ''.join(m.group() for m in matches) != re.sub(r'\s+','',value):
+        raise ValueError('Malformed timeout')
+    return sum(float(m[1])*factors[m[2]] for m in matches)
+
+
+def classify_job(props, *, uptime, freshness_seconds):
+    """Pure invocation health, independent of timer/authority expectations."""
+    def result(state, reason, **extra):return dict(state=state,reason=reason,**extra)
+    try:
+        if props.get('LoadState') != 'loaded':return result('UNKNOWN','Service unloaded or unreadable')
+        if not math.isfinite(uptime) or uptime<0 or freshness_seconds<0:raise ValueError('Invalid timebase')
+        times = {}
+        for field in ('ExecMainStartTimestampMonotonic','ExecMainExitTimestampMonotonic','ActiveEnterTimestampMonotonic'):
+            raw = props.get(field)
+            if not isinstance(raw,str) or not re.fullmatch(r'\d+',raw):raise ValueError('Malformed monotonic timestamp')
+            value = int(raw)/1_000_000
+            if value>uptime:raise ValueError('Future timestamp or reboot/timebase mismatch')
+            times[field] = value
+        start = times['ExecMainStartTimestampMonotonic'];end = times['ExecMainExitTimestampMonotonic']
+        active = props.get('ActiveState');sub = props.get('SubState');outcome = props.get('Result')
+        # A previous completion/result belongs to an older invocation while running.
+        running = active in {'activating','deactivating'} or active=='active' and sub in {'running','start','start-pre','start-post','stop','stop-sigterm','stop-sigkill'}
+        if running:
+            if not start:return result('UNKNOWN','Running invocation has no start evidence')
+            timeout = duration_seconds(props.get('RuntimeMaxUSec','infinity')) if active=='active' else duration_seconds(props.get('TimeoutStartUSec'))
+            age = uptime-start
+            return result('TIMED_OUT' if age>timeout else 'RUNNING',
+                          'Runtime exceeds effective timeout' if age>timeout else 'Current invocation running',
+                          runtime_age_seconds=age,effective_timeout_seconds=timeout if math.isfinite(timeout) else None)
+        if outcome=='timeout':return result('TIMED_OUT','systemd timeout result')
+        status = props.get('ExecMainStatus')
+        if not isinstance(status,str) or not re.fullmatch(r'\d+',status):raise ValueError('Malformed exit status')
+        if active=='failed' or outcome not in {'success',''} or status!='0':return result('FAILED','systemd failure result or nonzero exit')
+        if active not in {'inactive','active'} or sub not in {'dead','exited'}:return result('UNKNOWN','Invocation state not recognized')
+        if not start and not end:return result('NEVER_RUN','No invocation timestamps')
+        if not start or not end or end<start:return result('UNKNOWN','Completion timestamps inconsistent')
+        age = uptime-end
+        return result('STALE_COMPLETION' if age>freshness_seconds else 'COMPLETED_SUCCESS',
+                      'Successful completion exceeds freshness tolerance' if age>freshness_seconds else 'Successful recent completion',
+                      completion_age_seconds=age)
+    except (ValueError,TypeError,OverflowError):return result('UNKNOWN','Malformed timestamp, timeout or timebase')
+
+
+def expected_jobs(authorities):
+    expected = dict(TIMERS)
+    for kind,name in [('internal','opticable-lifecycle-internal'),('customer','opticable-customer-communications')]:
+        if authorities.get(kind,{}).get('authority')=='AUTHORIZED':expected[name]=900
+    return expected
+
+
+def timer_summary(jobs):
+    failed = [j for j in jobs if j['timer_active'] is False or j['state'] in {'FAILED','TIMED_OUT'}]
+    stale = [j for j in jobs if j['state']=='STALE_COMPLETION']
+    unknown = [j for j in jobs if j['state'] in {'UNKNOWN','NEVER_RUN'} or j['timer_active'] is None]
+    return dict(state='ACTION REQUIRED' if failed else 'UNKNOWN' if unknown else 'DEGRADED' if stale else 'OK',
+                failed=len(failed),stale=len(stale),unknown=len(unknown),running=sum(j['state']=='RUNNING' for j in jobs))
 
 
 def authority_summary(value, kind, now):
@@ -113,20 +183,23 @@ def collect(now=None):
                 'Capability and execution authority are separate; recovery never grants authority',**summary)
         except (OSError,ValueError,TypeError):
             add(label,'UNKNOWN','Authority policy unavailable; effects must fail closed',authority='UNKNOWN',operation_state='BLOCKED')
-    expected=dict(TIMERS)
-    for kind,name in [('internal','opticable-lifecycle-internal'),('customer','opticable-customer-communications')]:
-        if authorities.get(kind,{}).get('authority')=='AUTHORIZED':expected[name]=900
-    failed=[];stale=[]
+    expected=expected_jobs(authorities);jobs=[]
+    try:uptime=float(Path('/proc/uptime').read_text().split()[0])
+    except (OSError,ValueError,IndexError):uptime=None
     for name,deadline in expected.items():
-        output=subprocess.check_output(['systemctl','show',name+'.service','-p','Result','-p','ExecMainStatus','-p','ExecMainExitTimestampMonotonic'],text=True,timeout=5)
-        props=dict(line.split('=',1) for line in output.splitlines() if '=' in line)
-        active=subprocess.run(['systemctl','is-active',name+'.timer'],text=True,stdout=subprocess.PIPE,timeout=5,check=False).stdout.strip()
-        elapsed=float(Path('/proc/uptime').read_text().split()[0])-int(props.get('ExecMainExitTimestampMonotonic','0'))/1_000_000
-        if props.get('Result')!='success' or props.get('ExecMainStatus')!='0' or active!='active':failed.append(name)
-        elif elapsed>deadline:stale.append(name)
-    add('Timers','ACTION REQUIRED' if failed else 'DEGRADED' if stale else 'OK',
-        'Scheduled job failed or disabled' if failed else 'Scheduled result is stale' if stale else 'Expected authorized timers have successful recent results',
-        expected=len(expected),failed=len(failed),stale=len(stale),scoped_timers_expected=len(expected)-len(TIMERS))
+        try:
+            output=subprocess.check_output(['systemctl','show',name+'.service',*[f'--property={k}' for k in SERVICE_FIELDS]],text=True,timeout=5)
+            props=dict(line.split('=',1) for line in output.splitlines() if '=' in line)
+            invocation=classify_job(props,uptime=uptime,freshness_seconds=deadline)
+        except (OSError,subprocess.SubprocessError):invocation={'state':'UNKNOWN','reason':'Service unreadable'}
+        try:
+            active=subprocess.run(['systemctl','is-active',name+'.timer'],text=True,stdout=subprocess.PIPE,timeout=5,check=False).stdout.strip()
+            timer_active=True if active=='active' else False if active in {'inactive','failed'} else None
+        except (OSError,subprocess.SubprocessError):timer_active=None
+        jobs.append(dict(job=name,timer_active=timer_active,**invocation))
+    summary=timer_summary(jobs)
+    add('Timers',summary.pop('state'),'Timer expectation and service invocation health sampled independently',
+        expected=len(expected),jobs=jobs,scoped_timers_expected=len(expected)-len(TIMERS),**summary)
     archives=sorted(Path('/var/backups/optibrain').glob('optibrain-backup-*.tar.gz'))
     latest=archives[-1] if archives else None
     age=(now-datetime.fromtimestamp(latest.stat().st_mtime,timezone.utc)).total_seconds() if latest else None

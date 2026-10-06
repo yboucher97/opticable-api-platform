@@ -82,10 +82,10 @@ class TriggerEvidenceTests(unittest.TestCase):
     def test_apollo_collision_and_existing_customer_relationship_stay_protected(self):
         a={'at':NOW.isoformat(),'contacts_complete':True,'contacts':[{'id':'c','email':'p@buyer.test','email_status':'verified','contact_campaign_statuses':[{'status':'active'}]}]}
         view=build_sales(a,{},[trigger()],now=NOW)
-        item=next(r for r in view['rows'] if r['kind']=='trigger')
-        self.assertEqual(item['outreach_owner'],'CLAUDE_APOLLO');self.assertIn('existing Apollo',item['action']);self.assertFalse(item['contact_allowed'])
+        item=view['prospects'][0]
+        self.assertEqual(item['outreach_owner'],'CLAUDE_APOLLO');self.assertIn('Apollo',item['next_action']);self.assertFalse(item['sales_review_eligible']);self.assertEqual(item['execution_readiness'],'HOLD');self.assertFalse(item['cold_send_allowed'])
         c={'Accounts':[{'id':'a','Website':'buyer.test'}]}
-        item=next(r for r in build_sales({'at':NOW.isoformat(),'contacts_complete':True},c,[trigger()],now=NOW)['rows'] if r['kind']=='trigger')
+        item=build_sales({'at':NOW.isoformat(),'contacts_complete':True},c,[trigger()],now=NOW)['prospects'][0]
         self.assertTrue(item['existing_customer']);self.assertEqual(item['outreach_owner'],'OWNER_MANUAL')
     def test_unresolved_permit_stays_out_of_sales_and_replay_is_one_signal(self):
         r={'id_permis':'1','date_emission':'2026-09-28','description_type_batiment':'Commercial','code_type_base_demande':'CO','nature_travaux':'Nouveau commerce'}

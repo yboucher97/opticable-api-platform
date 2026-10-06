@@ -123,14 +123,14 @@ class MarketingCollectionTests(unittest.TestCase):
             def request(self,provider,method,path,query):
                 assert method=='GET'
                 if path=='/crm/v8/Leads':assert query['converted']=='both'
-                key='estimates' if path=='/books/v3/estimates' else 'invoices' if path=='/books/v3/invoices' else 'data'
+                key='estimates' if path=='/books/v3/estimates' else 'invoices' if path=='/books/v3/invoices' else 'contacts' if path=='/books/v3/contacts' else 'data'
                 return {'ok':True,'status':200,'data':{key:[],'code':0,'info':{'more_records':False},'page_context':{'has_more_page':False}}}
         s=collect_marketing(NativeReader(C()),{'customers':[],'generated':{}})
-        self.assertEqual(s['books_invoices'],[]);self.assertEqual(s['provider_reads'],6)
+        self.assertEqual(s['books_invoices'],[]);self.assertEqual(s['provider_reads'],7)
     def test_missing_customer_denies_financial_snapshot(self):
         class C:
             def request(self,provider,method,path,query):
-                key='estimates' if path.endswith('/estimates') else 'invoices' if path.endswith('/invoices') else 'data'
+                key='estimates' if path.endswith('/estimates') else 'invoices' if path.endswith('/invoices') else 'contacts' if path=='/books/v3/contacts' else 'data'
                 return {'ok':True,'status':200,'data':{key:[{'invoice_id':'11'}] if key=='invoices' else [],'code':0,'info':{'more_records':False},'page_context':{'has_more_page':False}}}
         with self.assertRaises(ValueError):collect_marketing(NativeReader(C()),{'customers':[],'generated':{}})
 

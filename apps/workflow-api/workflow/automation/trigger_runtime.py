@@ -207,11 +207,8 @@ def observe(engine, settings, *, now=None):
     if engine.dry_run: return {'state': 'DRY_RUN — NO TRIGGER PROVIDER CALLS OR WRITES', 'provider_writes': 0}
     apollo = cache_read(SALES/'apollo.json', 16777216)
     identities = cache_read(SALES/'crm.json'); business = cache_read(Path('/var/lib/optibrain/lifecycle/business-observation.json'), 16777216)
-    snapshot = business.get('snapshot', {})
-    crm = {**identities.get('crm', {}), 'Deals': snapshot.get('deals', []), 'Services': snapshot.get('services', []), 'Service_Locations': snapshot.get('sites', [])}
-    observed = stamp(business.get('observed_at')); identity_at = stamp(identities.get('at'))
-    crm['_identity_complete'] = bool(crm.get('Accounts') is not None and crm.get('Contacts') is not None and crm.get('Leads') is not None and
-                                     observed and identity_at and 0 <= (now-observed).total_seconds() <= 2*3600 and 0 <= (now-identity_at).total_seconds() <= 2*3600)
+    from .observation_completeness import crm_context
+    crm = crm_context(business, identities)
     cache = ROOT/'trigger-sources.json'; saved = cache_read(cache, 16777216)
     reader = PublicReader()
     try: rows, caches, health = collect(reader, saved, now=now, permits_cache=cache_read(SALES/'permits.json'))

@@ -29,6 +29,11 @@ def fixture():
                        'source_actor_id': 'operator1', 'source_url': 'https://company.test/project'}]}
     apollo = {'at': NOW.isoformat(), 'contacts_complete': True, 'contacts': [], 'accounts': [], 'stages': [], 'messages': [], 'replies': []}
     crm = {'Accounts': [], 'Contacts': [], 'Leads': [], 'Deals': [], 'Services': [], 'Service_Locations': [], '_identity_complete': True}
+    from workflow.automation.observation_completeness import complete, CRM_REQUIRED, APOLLO_REQUIRED
+    crm['Customer_Context']=[]
+    for name in APOLLO_REQUIRED:apollo.setdefault(name,[])
+    crm['_modules']={n:complete(crm[n],NOW.isoformat()) for n in CRM_REQUIRED}
+    apollo['modules']={n:complete(apollo[n],NOW.isoformat()) for n in APOLLO_REQUIRED}
     return row, apollo, crm
 
 

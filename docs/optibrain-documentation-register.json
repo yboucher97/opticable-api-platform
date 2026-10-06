@@ -24,7 +24,7 @@
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
     "AUDIT EVIDENCE": 105,
-    "AUTHORITATIVE CURRENT": 61,
+    "AUTHORITATIVE CURRENT": 62,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
   },
@@ -1583,6 +1583,12 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_OBSERVATION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Observation schema and completeness implementation contract; release receipts determine production state"
     }
   ]
 }
