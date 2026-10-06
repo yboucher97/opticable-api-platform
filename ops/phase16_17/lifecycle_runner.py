@@ -4,6 +4,7 @@ import hashlib,json,os,re,stat,subprocess,sys
 from pathlib import Path
 
 POLICY=Path('/etc/optibrain/lifecycle-runtime.json')
+CONTROL=Path('/etc/optibrain/mutation-control.json')
 
 def trusted(path):
     for p in (*path.parents,):
@@ -12,6 +13,21 @@ def trusted(path):
     s=path.lstat()
     if not stat.S_ISREG(s.st_mode) or s.st_uid!=0 or s.st_nlink!=1 or s.st_mode&0o022:raise ValueError('Untrusted runtime file')
     return path.read_bytes()
+
+def authority_closed(value):
+    """Recognize the documented OFF policies; never authorize an execution."""
+    if (not isinstance(value,dict) or type(value.get('schema')) is not int
+            or value.get('test_writes_enabled') is not False
+            or value.get('real_canary_allowed') is not False
+            or value.get('allowed_actions')!=['crm.task.create']):return False
+    legacy={'schema','test_writes_enabled','allowed_actions','real_canary_allowed'}
+    if value['schema']==1:return set(value)==legacy
+    if value['schema']!=2 or set(value)!=legacy|{'lifecycle'}:return False
+    control=value['lifecycle']
+    return (isinstance(control,dict) and set(control)=={
+        'enabled','test_run','test_scopes','real_scopes','activated_at','approved_sources',
+        'expires_at','source_hashes','phase16_checkpoint_sha256'}
+        and control['enabled'] is False and control['test_scopes']==[] and control['real_scopes']==[])
 
 def verify(value):
     if not re.fullmatch('[0-9a-f]{40}',value.get('sha','')):raise ValueError('Exact release SHA required')
@@ -45,6 +61,11 @@ def main():
         print('Internal lifecycle scopes OFF; canary FALSE');return
     if sys.argv[1:] not in (['--once'],['--dry-run']):raise ValueError('Use --once, --dry-run or --stop')
     policy=json.loads(trusted(POLICY));root=verify(policy)
+    # --stop closes policy before disabling the timer. A queued invocation can
+    # observe that valid OFF state; it needs no client, journal or effect state.
+    if authority_closed(json.loads(trusted(CONTROL))):
+        print(json.dumps({'state':'DISABLED','eligible_leads':0,'effects_this_cycle':0,'provider_reads':0},sort_keys=True))
+        return
     sys.dont_write_bytecode=True
     sys.path.insert(0,str(root/'apps/workflow-api'))
     from workflow.automation.real_internal import run
