@@ -119,6 +119,9 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
                                      "Pragma": "no-cache", "Referrer-Policy": "no-referrer",
                                      "X-Content-Type-Options": "nosniff"})
 
+    from .operator_manager_api import install_manager_routes
+    install_manager_routes(app,verifier=verifier,db_path=store.db_path,origin=origin,clock=now)
+
     def today_payload():
         instant=now();sources={};unavailable=[]
         for name in ('sales','lifecycle','operations'):
@@ -149,6 +152,9 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
             proposals=OptimizationStore(Path(store.db_path).with_name('phase12-autonomy.db')).rows()
             row=next((p for p in proposals if p['record']['proposal_id']==proposal_id),None)
             if not row:raise HTTPException(status_code=404,detail='Proposal unavailable')
+            if row['record']['proposal_type'] in {'WEBSITE_EVIDENCE_PREVIEW','FORM_REVISION_DRAFT'}:
+                from .automation.manager_preview import render_preview
+                return HTMLResponse(render_preview(row),headers=private_headers)
             if row['record']['proposal_type'] in {'SALES_REPLY','OUTREACH_PROPOSAL','CUSTOMER_EXPANSION','SEQUENCE_CHANGE','CONTENT_FEEDBACK'}:
                 from .automation.sales_conversations import render_proposal
             return HTMLResponse(render_proposal(row),headers={**private_headers,
@@ -325,7 +331,7 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
         if format=='csv':
             from fastapi.responses import Response
             return Response(export_csv(report),media_type='text/csv',headers={**private_headers,'Content-Disposition':'attachment; filename="optibrain-business.csv"'})
-        return HTMLResponse(render_business(report),headers=private_headers)
+        return HTMLResponse(render_business(report).replace('<h1>Business Overview</h1>',"<p><a href='/v1/operator/manager'>Open consolidated Business Manager</a></p><h1>Business Overview</h1>"),headers=private_headers)
 
     for section in ("autonomy", "approvals", "exceptions"):
         def install_section(name):

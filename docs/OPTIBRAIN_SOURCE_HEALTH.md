@@ -47,3 +47,9 @@ Native account/auth/campaign/search-term reads GREEN; auto-tagging ENABLED. Curr
 ## Phase34 current delta
 
 Phase34 separates fresh Apollo identity/current messages, exact-header-bound Mail bodies, CRM associations, role evidence, incomplete activity and dated sequence analytics. Provider reply without a body remains UNKNOWN. Failed/unmatched Mail searches persist cooldown/result and never mean no reply. Collection/preparation origins and counters are distinct; detailed period/variant snapshot expiry is seven days and does not claim automatic refresh. Optional failure cannot disable existing intake/customer scopes.
+
+## Phase37 unified registry
+
+[Manager](OPTIBRAIN_MANAGER_CONTRACT.md) provides one registry projection over current acquisition source records and native/operator observations. Source IDs/provider/purpose/access/read/write/OptiBrain authority/auth/data health/freshness/read/error/limits/observed credits/fallback/required/owner action/confidence are explicit. It covers Zoho CRM/Books/Mail/Forms/WorkDrive/Sign, GA4/Search Console/Ads/GBP, Windsor/Apollo/LinkedIn, Cloudflare/GitHub, SEAO/municipal permits/company sources, websites and current structured research. No duplicate source store or provider probe.
+
+Data statuses: GREEN, STALE, PARTIAL, BLOCKED, RATE_LIMITED, AUTH_EXPIRED, PLAN_LIMITED, NO_CREDITS, PROVIDER_ERROR, INTENTIONALLY_OPTIONAL, OWNER_DEFERRED, UNKNOWN. Auth success does not certify fresh events or native lineage. GA4 Toronto event dates and native report-read dates remain distinct; cached Windsor evidence expires30days after source observation. Original provider/source observed_at, cache age, confidence and newer-data expectation appear in recommendation evidence. Failed refresh preserves dated evidence and error; unrelated domains continue. Manager refresh >15minutes marks its projection stale; native snapshot freshness is evaluated separately.

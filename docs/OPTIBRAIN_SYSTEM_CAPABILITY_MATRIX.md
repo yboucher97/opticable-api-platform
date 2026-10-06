@@ -641,3 +641,7 @@ Phase33 completion: **GREEN for controllable preparation**. Auto-tagging read-pr
 ## Phase34 current delta
 
 API1.27.0 Phase34 adds canonical immutable conversation versions, deterministic commercial-intent classification, exact CRM context, contact pressure lower bounds, role/suppression/owner checks, actual unsent response/outreach drafts, customer expansion/list/sequence/content proposals, shared hooks and bounded Today/Sales review. Read/prepare only, no sending or Apollo/Claude takeover. Actual runtime evidence and exact release/recovery are in `/home/optibrain/phase34-evidence/final-report.json`; private text is root-only. Detailed analytics snapshot and unmatched reply-body boundaries remain explicit.
+
+## Phase37 owner manager
+
+The [Manager](OPTIBRAIN_MANAGER_CONTRACT.md) consolidates owner priorities/proposals/events, source/authority health, Sales/Acquisition/Ads/Website/Content/Customers/Recurring/Finance, daily brief, feedback and results. It OBSERVES/ANALYZES/PREPARES automatically on the existing observer; provider EXECUTION remains limited to previously authorized internal/customer families. Local editorial drafts/creative briefs are ready artifacts; native Form inventory/abandonment and new website branch/build adapters remain partial. Apollo/Claude retains its own execution, Books its financial truth, CRM its business ownership. Margin UNKNOWN. Live state and exact tested/deployed scope belong in Phase37 final evidence, not inferred from this matrix.

@@ -819,5 +819,13 @@ def run(*,dry_run=False):
         engine.attention('acquisition-observation','Acquisition observations unavailable',
             'Market research data needs review; sales and lifecycle remain available',
             'Review source health; no outbound or publication is authorized')
+    try:
+        from .manager_runtime import observe as observe_manager
+        observe_manager(engine)
+        engine.state['attention'].pop('manager-observation',None)
+    except (ValueError,OSError,KeyError,TypeError,RuntimeError,sqlite3.Error):
+        engine.attention('manager-observation','Business Manager needs refresh',
+            'Local manager evidence unavailable; independent workflows continue',
+            'Inspect manager projection and journal; no new execution authority')
     engine.save()
     return engine.publish()

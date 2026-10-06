@@ -28,3 +28,11 @@ Ads domain priorities use this shared representation and immutable research-stor
 ## Phase34 current delta
 
 Phase34 contributes concrete SALES_INTELLIGENCE priorities with exact conversation/proposal references, existing outreach owner, urgency/reason, expected value UNKNOWN where unproven, execution dependencies and an unsent preview. Today exposes at most three high-priority items; research and suppressed/negative replies remain visible in Sales without fake urgency.
+
+## Phase37 unified attention
+
+[Manager](OPTIBRAIN_MANAGER_CONTRACT.md) projects current existing proposal priorities and adds deterministic inquiry/tender/source/system/authority-review attention into the same optimization_records store. No parallel Todo store. What/target/why-now/impact/urgency/confidence/evidence/action/actor/approval/dependencies/status remain explicit. Factor values are explainable labels or UNKNOWN, never opaque AI scores.
+
+Exact resolved crosswalks group Sales/Acquisition business attention with multiple linked priority/proposal IDs and evidence. Different campaign/page/system decisions stay distinct. Current safety/source/system issues precede timely business decisions, then research. Today displays at most5 HIGH current items; stale/unknown evidence cannot masquerade as a current ready action. Rejected/irrelevant/waiting items remain stored but leave Today. Owner HIGHER/LOWER preferences are bound to the current immutable record.
+
+November1/2 scope expiry is projected separately; renewal priority starts October18 ahead of the October25 review deadline. No authority renewal occurs. Owner-deferred Google Basic and optional GBP/Holo do not create recurring Today tasks without their stated trigger.

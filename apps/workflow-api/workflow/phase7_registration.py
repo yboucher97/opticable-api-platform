@@ -31,6 +31,12 @@ _HASH = re.compile(r"[0-9a-f]{64}\Z")
 _PINNED_SOURCES = frozenset({
     "workflow/api.py", "workflow/phase7_registration.py",
     "workflow/operator_access.py", "workflow/operator_phase7_api.py",
+    "workflow/operator_manager_api.py",
+    "workflow/automation/manager_store.py", "workflow/automation/manager_sources.py",
+    "workflow/automation/manager_intelligence.py", "workflow/automation/manager_runtime.py",
+    "workflow/automation/manager_preparation.py", "workflow/automation/manager_forms.py",
+    "workflow/automation/manager_preview.py", "workflow/automation/optimization_store.py",
+    "workflow/automation/ads_runtime.py",
     "workflow/zoho_oauth.py",
     "workflow/operator_phase7_create_api.py",
     "workflow/automation/phase7_lead_create.py",
@@ -100,7 +106,7 @@ def validate_registration(manifest: dict, *, checkout_sha: str, env: dict) -> di
     if (manifest["mode"] != MODE or not isinstance(checkout_sha, str)
             or not _SHA.fullmatch(checkout_sha) or manifest["candidate_sha"] != checkout_sha
             or env.get("OPTIBRAIN_PHASE7_RELEASE_SHA") != checkout_sha
-            or manifest["api_version"] != "1.27.0"):
+            or manifest["api_version"] != "1.28.0"):
         raise ValueError("Phase 7 registration is not bound to this release")
     if not isinstance(manifest["business_actions_enabled"], bool):
         raise ValueError("Invalid Phase 7 business-action setting")
@@ -155,8 +161,8 @@ def maybe_install_phase7(app, *, client, store, engine, api_version: str,
                          manifest_path: Path = MANIFEST, readiness=None):
     if os.environ.get("OPTIBRAIN_PHASE7_REGISTRATION") is None:
         return {"registered": False, "create": False, "crm": False, "outbound": False}
-    if api_version != "1.27.0":
-        raise ValueError("Phase 7 registration requires API 1.27.0")
+    if api_version != "1.28.0":
+        raise ValueError("Phase 7 registration requires API 1.28.0")
     manifest = _trusted_manifest(manifest_path)
     plan = validate_registration(manifest, checkout_sha=manifest["candidate_sha"], env=os.environ)
     if not plan["registered"]:
