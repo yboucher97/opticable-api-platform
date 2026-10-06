@@ -53,7 +53,7 @@ def relationships(inputs,store):
                 store.link(left,field,ref(other_system,other,rid),'PROVIDER_FACT',{'reference':field,'observed_at':at})
     for c in inputs.get('sales-conversations',{}).get('conversations',[])[:150]:
         cid=c['conversation_id'];cr=c.get('CRM_references',{});canonical=None
-        for module,kind in [('Leads','LEAD'),('Contacts','CONTACT'),('Accounts','ACCOUNT'),('Deals','DEAL')]:
+        for module,kind in [('Leads','LEAD'),('Accounts','ACCOUNT'),('Contacts','CONTACT'),('Deals','DEAL')]:
             ids=cr.get(module,[])
             if len(ids)==1:
                 right=ref('CRM',kind,ids[0]);canonical=canonical or key(right)
@@ -66,6 +66,9 @@ def relationships(inputs,store):
     for t in inputs.get('trigger-intelligence',{}).get('rows',[])[:300]:
         collision=t.get('collision',{});account_ids=collision.get('crm_account_ids',[])
         canonical=key(ref('CRM','ACCOUNT',account_ids[0])) if len(account_ids)==1 and not collision.get('ambiguous') else key(ref('OPTIBRAIN','COMPANY',t.get('company_id') or t['key']))
+        people=collision.get('crm_people',[])
+        if not account_ids and len(people)==1 and not collision.get('ambiguous') and people[0].get('module') in {'Leads','Contacts'}:
+            canonical=key(ref('CRM','LEAD' if people[0]['module']=='Leads' else 'CONTACT',people[0]['id']))
         for system in ('OPTIBRAIN','ACQUISITION'):
             crosswalk[key(ref(system,'TRIGGER',t['key']))]=canonical
         if t.get('company_id'):
@@ -164,6 +167,7 @@ def intake_observation(store,now):
     output={'genuine_inquiries':None,'test_submissions':None,'coverage':'UNKNOWN'};path=store.path.with_name('phase9-form-receipts.db')
     if not path.exists():return output
     with sqlite3.connect('file:'+str(path)+'?mode=ro',uri=True) as db:
+        links={r[0]:{'system':'CRM','entity_type':'LEAD' if r[1]=='Leads' else 'CONTACT','entity_id':r[2]} for r in db.execute('SELECT event_id,canonical_module,canonical_id FROM form_receipt_links') if r[1] in {'Leads','Contacts'}}
         counts=db.execute('''SELECT CASE WHEN r.test_only=1 OR t.event_id IS NOT NULL THEN 1 ELSE 0 END is_test,count(*)
             FROM form_receipts r LEFT JOIN form_test_classifications t ON r.event_id=t.event_id GROUP BY is_test''').fetchall()
         output={'genuine_inquiries':sum(n for test,n in counts if not test),'test_submissions':sum(n for test,n in counts if test),
@@ -173,8 +177,10 @@ def intake_observation(store,now):
             LEFT JOIN form_test_classifications t ON r.event_id=t.event_id ORDER BY r.recorded_at DESC LIMIT 100'''):
             store.put_event('ZOHO_FORMS',event_id,event_id,occurred,now,{'title':'TEST submission' if test_only else 'Genuine acknowledged inquiry',
                 'kind':'FORM_SUBMISSION','classification':'TEST_ONLY' if test_only else 'NATURAL_BUSINESS_EFFECT',
-                'truth_class':'PROVIDER_FACT','source_reference':event_id,'form_id':form_id,
+                'truth_class':'PROVIDER_FACT','source_reference':event_id,'form_id':form_id,'canonical_context':links.get(event_id),
                 'change_type':'INITIAL_OBSERVATION' if now-stamp(occurred)>timedelta(days=1) else 'CHANGE','provider_data_copied':False})
+            if event_id in links:
+                store.link(ref('ZOHO_FORMS','FORM',form_id),'ACKNOWLEDGED_NATIVE_INQUIRY',links[event_id],'PROVIDER_FACT',{'receipt_reference':event_id})
     return output
 
 

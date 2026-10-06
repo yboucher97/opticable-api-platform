@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from workflow.automation.manager_store import ManagerStore
 from workflow.automation.manager_sources import registry,evidence_health
-from workflow.automation.manager_runtime import refresh,sync_events,sync_priorities,ref,key
+from workflow.automation.manager_runtime import refresh,sync_events,sync_priorities,relationships,ref,key
 from workflow.automation.manager_intelligence import build_manager,proposals,priorities,render_manager
 from workflow.automation.manager_preparation import prepare,prepare_forms
 from workflow.automation.manager_forms import models,preview
@@ -74,6 +74,11 @@ class ManagerTests(unittest.TestCase):
         self.store.record(r);cross={key(ref('OUTREACH','CONVERSATION','conversation')):key(ref('CRM','LEAD','lead'))}
         ps=priorities(self.store,[],registry(i,NOW),NOW,crosswalk=cross)
         self.assertEqual(len(ps),1);self.assertEqual(len(ps[0]['priority_ids']),2)
+    def test_exact_sales_crm_trigger_relationships_share_one_target(self):
+        i=inputs();i['sales-conversations']={'conversations':[{'conversation_id':'c','CRM_references':{'Leads':['lead']}}]}
+        i['trigger-intelligence']={'rows':[{'key':'t','company_id':'company','collision':{'crm_account_ids':[], 'crm_people':[{'module':'Leads','id':'lead'}],'ambiguous':False}}]}
+        cross=relationships(i,self.store)
+        self.assertEqual(cross[key(ref('OUTREACH','SALES_REPLY','c'))],cross[key(ref('OPTIBRAIN','TRIGGER','t'))])
     def test_h_reject_survives_identical_refresh(self):
         prepare(inputs(),self.store,NOW);r=self.store.rows()[0]
         self.store.feedback('PROPOSAL',r['record']['proposal_id'],r['payload_hash'],'REJECT','owner',NOW,reason='Not relevant',conditions='New demand evidence')
