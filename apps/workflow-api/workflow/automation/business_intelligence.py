@@ -62,6 +62,7 @@ def project_source(snapshot):
         finance_reviews=snapshot.get('finance_reviews',{}),recurring_reviews=snapshot.get('recurring_reviews',{}),accepted_work=snapshot.get('accepted_work',{}),
         finance_detail_coverage=snapshot.get('finance_detail_coverage',{}),cost_population={'rows':len(snapshot.get('expenses',[])), 'native_customer_allocated':sum(bool(r.get('customer_id')) for r in snapshot.get('expenses',[])),
                          'job_cost_completeness':'UNPROVEN'},test_excluded=excluded)
+    output['collection']=snapshot.get('collection',{'state':'UNKNOWN','modules':{}})
     output['ga4_collection_health']=snapshot.get('ga4_collection_health',{})
     output['measurement_health']=snapshot.get('measurement_health',{'forms':'PARTIAL','ga4':'PARTIAL','google_ads':'PARTIAL','offline_conversions':'OFF'})
     return output
@@ -156,6 +157,7 @@ def build_business(snapshot, *, now=None, period='month', start=None, end=None):
     from .finance_links import linkage_attention
     finance_attention=linkage_attention(snapshot, rows)
     return {'schema':1,'scope':'live','read_only':True,'observed_at':snapshot['observed_at'],'timezone':'America/Toronto',
+        'collection':snapshot.get('collection',{'state':'UNKNOWN','modules':{}}),
         'period':period,'start':str(first),'end_inclusive':str(last-timedelta(days=1)),
         'sales':{'new_leads':new_leads,'qualified_from_period_leads':qualified,'estimates_created':estimates,'sent_or_later_estimates':sent,
                  'accepted_or_invoiced_estimates':accepted,'open_deals':len(deals),'pipeline':list(pipeline.values()),'deals':deals,
@@ -166,7 +168,7 @@ def build_business(snapshot, *, now=None, period='month', start=None, end=None):
         'profitability':{'state':'NOT CURRENTLY MEASURABLE','gross_margin':None,'known_cost_population':snapshot.get('cost_population',{'rows':len(snapshot.get('expenses',[]))}),
                         'reason':'COST DATA INCOMPLETE: complete direct labour/vendor/item costs and exact Deal/Service allocation unproven'},
         'optional_read_states':snapshot.get('optional_reads',{}),'issues':dict(issues),'test_excluded':snapshot.get('test_excluded',excluded),
-        'truth':{'native_counts':'PROVEN','financial_totals':'DERIVED DETERMINISTICALLY','recurring_service_value':'PARTIAL','profitability':'UNKNOWN','advertising_return':'UNKNOWN'},
+        'truth':{'native_counts':'PROVEN' if snapshot.get('collection',{}).get('state')=='COMPLETE' else 'PARTIAL / SOURCE COVERAGE UNVERIFIED','financial_totals':'DERIVED DETERMINISTICALLY','recurring_service_value':'PARTIAL','profitability':'UNKNOWN','advertising_return':'UNKNOWN'},
         'finance_linkage':{'attention':finance_attention,'detail_coverage':snapshot.get('finance_detail_coverage',{}),'coverage':lineage,
             'owner_workflow':'CRM Deal → Zoho Finance → New Estimate; convert the same Estimate to Invoice. Choose the Deal’s Service Location in CRM. Books recurring billing remains human-owned.'},
         'ga4_collection_health':snapshot.get('ga4_collection_health',{}),
@@ -185,7 +187,8 @@ def render_business(view):
     parts=["<!doctype html><html lang='en'><meta charset='utf-8'><title>Business Overview</title><style>body{font:16px system-ui;margin:2rem;max-width:1200px}table{width:100%;border-collapse:collapse}td,th{padding:.5rem;text-align:left;border-bottom:1px solid #ddd}small{color:#555}</style>",
         "<a href='/v1/operator/today'>Today</a> · <a href='/v1/operator/recurring'>Recurring attention</a> · <a href='/v1/operator/marketing'>Marketing Sources</a><h1>Business Overview</h1>",
         '<p>Read-only · TEST excluded · '+h(view['start'])+' through '+h(view['end_inclusive'])+' · America/Toronto</p>',
-        '<p>Source observed '+h(view['observed_at'])+'</p><p>Counts: PROVEN · financial totals: DERIVED DETERMINISTICALLY · recurring Service value: PARTIAL · profitability/advertising return: UNKNOWN</p>',
+        '<p>Source observed '+h(view['observed_at'])+' · collection '+h(view.get('collection',{}).get('state','UNKNOWN'))+'</p><p>Counts: '+h(view['truth']['native_counts'])+' · financial totals: DERIVED DETERMINISTICALLY · recurring Service value: PARTIAL · profitability/advertising return: UNKNOWN</p>',
+        '<details><summary>Source collection health</summary>'+table(['Module','State','Source observed'],[(n,m.get('state'),m.get('source_at')) for n,m in view.get('collection',{}).get('modules',{}).items()])+'</details>',
         "<form method='get'><label>Period <select name='period'>"+''.join("<option value='"+p+"'"+(' selected' if view['period']==p else '')+'>'+h(p.replace('_',' ').title())+'</option>' for p in PERIODS)+"</select></label> <label>From <input type='date' name='start'></label> <label>Through <input type='date' name='end'></label> <button>Show</button></form>",
         "<p><a href='?format=csv&amp;period="+h(view['period'])+'&amp;start='+h(view['start'])+'&amp;end='+h(view['end_inclusive'])+"'>Export these metrics as CSV</a></p>",
         '<h2>Linkage and measurement</h2><p>GA4 auth / collection / last data: '+h(view.get('ga4_collection_health',{}).get('auth_status'))+' / '+h(view.get('ga4_collection_health',{}).get('collection_status'))+' / '+h(view.get('ga4_collection_health',{}).get('last_observed_data'))+'</p><p>'+h(view['finance_linkage']['owner_workflow'])+'</p>'+table(['Family','State'],list(view['measurement_health'].items()))+
@@ -217,6 +220,9 @@ def export_csv(view):
     def row(section,metric,code,value,basis):
         cells=[section,metric,code,str(value),basis,view['observed_at'],view['start'],view['end_inclusive']]
         writer.writerow(["'"+c if c.startswith(('=','+','-','@','\t','\r')) else c for c in cells])
+    row('coverage','collection_state','',view.get('collection',{}).get('state','UNKNOWN'),'Module completeness is independent of report generation')
+    for name,module in view.get('collection',{}).get('modules',{}).items():
+        row('coverage',name,'',module.get('state','UNKNOWN'),'Source observed '+str(module.get('source_at') or 'UNKNOWN'))
     for k,v in view['sales'].items():
         if isinstance(v,int):row('sales',k,'',v,'Observed period/current stock as described')
     for k,values in view['financial'].items():

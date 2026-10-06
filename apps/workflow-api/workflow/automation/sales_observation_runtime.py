@@ -29,15 +29,14 @@ def observe(engine, settings, *, now=None):
     # Complete small workspace every six hours, not all provider history every cycle.
     if not apollo or not at or not 0 <= (now-at).total_seconds() < 6*3600:
         reader = ApolloReader(settings.apollo)
-        try:apollo = reader.workspace()
+        try:apollo = reader.workspace(previous=apollo)
         finally:reader.close()
         if not engine.dry_run:atomic(source,apollo)
     saved = lc.trusted_json(Path('/var/lib/optibrain/lifecycle/business-observation.json'),16777216)
     observed=stamp(saved.get('observed_at'))
-    if not observed or not 0 <= (now-observed).total_seconds()<7200:
+    if not saved.get('collection') and (not observed or not 0 <= (now-observed).total_seconds()<7200):
         raise ValueError('CRM observation stale; no collision clearance')
     s=saved['snapshot']
-    crm={k:s.get(v,[]) for k,v in {'Leads':'leads','Contacts':'contacts','Accounts':'accounts','Deals':'deals','Cases':'cases'}.items()}
     # Reuse the full business observations; fill only missing identity fields in
     # three small CRM modules, hourly. Never repeat all Finance/provider history.
     identity_cache=ROOT/'crm.json'
@@ -48,11 +47,15 @@ def observe(engine, settings, *, now=None):
         reader=NativeReader(engine.client,limit=max(0,160-engine.reads))
         fields={'Leads':'id,Full_Name,Company,Email,Website,Lead_Status,Email_Opt_Out,OptiBrain_Test,Created_Time,Modified_Time',
                 'Contacts':'id,Full_Name,Email,Email_Opt_Out,Account_Name,OptiBrain_Test',
-                'Accounts':'id,Account_Name,Website,OptiBrain_Test'}
-        try:identities={'schema':1,'at':now.isoformat(),'crm':{m:reader.crm(m,f) for m,f in fields.items()}}
+                'Accounts':'id,Account_Name,Account_Type,Website,OptiBrain_Test'}
+        try:
+            from .observation_completeness import complete
+            rows={m:reader.crm(m,f) for m,f in fields.items()}
+            identities={'schema':1,'at':now.isoformat(),'crm':rows,'modules':{m:complete(r,now.isoformat()) for m,r in rows.items()}}
         finally:engine.reads+=reader.reads
         if not engine.dry_run:atomic(identity_cache,identities)
-    crm.update(identities['crm'])
+    from .observation_completeness import crm_context
+    crm=crm_context(saved,identities)
     signals=[]
     manifest=ROOT/'public-triggers.json'
     if manifest.exists():

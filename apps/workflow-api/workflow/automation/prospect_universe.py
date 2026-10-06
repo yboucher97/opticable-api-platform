@@ -326,7 +326,7 @@ def build_universe(store, queue, apollo, crm, *, now, crm_at, seeds=(), research
         if p['geography_class']=='UNKNOWN': reason.append('UNKNOWN_GEOGRAPHY')
         if not valid: reason.append('NO_CONTACT')
         if any(c['confidence'] == 'STALE' for c in p['contacts']): reason.append('STALE_CONTACT')
-        if check['classification'] == 'UNKNOWN': reason.append('UNKNOWN_COLLISION')
+        if check['classification'] == 'UNKNOWN' or not check['crm_fresh_complete'] or not check['apollo_fresh_complete']: reason.append('UNKNOWN_COLLISION')
         if not p['current_trigger_count']: reason.append('NO_CURRENT_TRIGGER')
         if not p['service_categories_seen']: reason.append('WEAK_SERVICE_FIT')
         if p['historical_trigger_count']: reason.append('EXPIRED_EVENT')
@@ -341,13 +341,13 @@ def build_universe(store, queue, apollo, crm, *, now, crm_at, seeds=(), research
                 'NEEDS COMPANY RESOLUTION' if 'NO_COMPANY' in reason or 'NO_DOMAIN' in reason else
                 'NEEDS CONTACT' if not valid else
                 'HISTORICAL INTELLIGENCE' if (p['historical_trigger_count'] or p.get('historical_projects')) and not p['current_trigger_count'] else
-                'PROSPECTING READY' if check['classification'] != 'UNKNOWN' and p['geography_class'] != 'UNKNOWN' else 'RESEARCH')
+                'PROSPECTING READY' if check['crm_fresh_complete'] and check['apollo_fresh_complete'] and check['classification'] != 'UNKNOWN' and p['geography_class'] != 'UNKNOWN' else 'RESEARCH')
         p['pools'] = sorted(set([pool]+(['HISTORICAL INTELLIGENCE'] if (p['historical_trigger_count'] or p.get('historical_projects')) and not terminal else [])+
             (['WATCH'] if not p['current_trigger_count'] and not terminal else [])+(['NEEDS CONTACT'] if not valid and not terminal else [])))
         p['prospecting_status'] = pool; p['why_not_ready'] = reason
         p['CRM_state'] = 'OPEN DEAL' if check['open_deal_ids'] else 'EXISTING CUSTOMER' if check['existing_customer'] else 'CRM ACCOUNT' if check['crm_account_ids'] else 'CRM CONTACT/LEAD' if check['crm_people'] else 'NEW' if check['classification'] == 'NEW COMPANY' else 'UNKNOWN'
         p['Apollo_state'] = 'ACTIVE SEQUENCE / RECENT CONTACT' if check['apollo_active'] or check['recent_apollo_send'] else 'IN APOLLO' if check['apollo_matches'] or check['apollo_account_matches'] else 'NOT IN APOLLO' if check['apollo_fresh_complete'] and check['identity_matchable'] else 'UNKNOWN'
-        p['suppression_state'] = 'SUPPRESSED' if suppressed else 'NO KNOWN SUPPRESSION; HUMAN CONSENT CHECK STILL REQUIRED' if check['classification'] != 'UNKNOWN' else 'UNKNOWN'
+        p['suppression_state'] = 'SUPPRESSED' if suppressed else 'NO KNOWN SUPPRESSION; HUMAN CONSENT CHECK STILL REQUIRED' if check['crm_fresh_complete'] and check['apollo_fresh_complete'] and check['classification'] != 'UNKNOWN' else 'UNKNOWN'
         p['research_components'] = {'service_fit': bool(p['service_categories_seen']), 'current_trigger': bool(p['current_trigger_count']),
             'repeat_buyer': p['repeat_buyer'], 'existing_relationship': check['existing_customer'] or bool(check['open_deal_ids']),
             'missing_domain': not bool(p.get('domain')), 'missing_contact': not bool(valid)}
@@ -358,7 +358,7 @@ def build_universe(store, queue, apollo, crm, *, now, crm_at, seeds=(), research
         p['revisit_reasons'] = [('MISSING_DOMAIN' if x == 'NO_DOMAIN' else 'MISSING_CONTACT' if x == 'NO_CONTACT' else 'UNKNOWN_COLLISION' if x == 'UNKNOWN_COLLISION' else 'NO_CURRENT_TRIGGER') for x in reason if x in {'NO_DOMAIN', 'NO_CONTACT', 'UNKNOWN_COLLISION', 'NO_CURRENT_TRIGGER'}]
         if p['repeat_buyer']: p['revisit_reasons'].append('HISTORICAL_REPEAT_BUYER')
         p['future_outreach_state'] = 'SUPPRESSED' if suppressed else 'RESEARCHING' if 'NO_COMPANY' in reason or 'NO_DOMAIN' in reason or 'UNKNOWN_GEOGRAPHY' in reason else 'CONTACT_REQUIRED' if not valid else 'COLLISION_REVIEW' if check['classification'] in {'UNKNOWN', 'ACTIVE OUTREACH', 'OPEN DEAL', 'EXISTING CUSTOMER OPPORTUNITY'} else 'OWNER_REVIEW'
-        p['outbound_authorized'] = False; p['crm_promote_allowed'] = False
+        p['execution_readiness'] = check['execution_readiness']; p['outbound_authorized'] = False; p['crm_promote_allowed'] = False
         p['ignore_audit'] = {'reason': 'WRONG_COUNTRY' if foreign else 'NOT_SERVICE_FIT' if terminal else None,
                              'at': now.isoformat() if terminal else None, 'source': p['source_provenance'][0]['url'], 'reconsideration': 'FINAL' if foreign else 'REVISITABLE' if terminal else None}
     records = sorted(groups.values(), key=lambda p: (p['prospecting_status'] in {'TERMINAL IGNORE', 'SUPPRESSED'}, p['research_priority'] != 'HIGH', -p['current_trigger_count'], -p['repeat_buyer_count'], p['prospect_id']))

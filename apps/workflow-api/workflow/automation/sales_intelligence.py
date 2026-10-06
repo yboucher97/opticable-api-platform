@@ -105,8 +105,9 @@ def collision(subject, apollo, crm, *, now=None):
     apollo_accounts=index['apollo_account'].get(host,[]) if host else []
     stages = {r['id']:r.get('display_name', '') for r in apollo.get('stages', [])}
     states = [contact_state(r, apollo.get('messages', []) + apollo.get('replies', []), stages, now=now) for r in matches]
-    observed = stamp(apollo.get('at'))
-    fresh = bool(observed and 0 <= (now-observed).total_seconds() <= 3600 and apollo.get('contacts_complete') is True)
+    from .observation_completeness import collision_sources
+    sources = collision_sources(apollo,crm,now=now)
+    fresh = sources['apollo_complete']
     return {'outreach_owner': 'CLAUDE_APOLLO' if matches or apollo_accounts else 'OWNER_MANUAL' if crm_people or crm_accounts else 'OPTIBRAIN_RESEARCH_ONLY',
             'apollo_matches': [r['id'] for r in matches], 'apollo_active': any(r['active'] for r in states),
             'apollo_account_matches':[r['id'] for r in apollo_accounts],
@@ -116,6 +117,9 @@ def collision(subject, apollo, crm, *, now=None):
             'crm_matches': [str(r['id']) for _,r in crm_people] + [str(r['id']) for r in crm_accounts],
             'ambiguous': len(crm_people) > 1 or len(crm_accounts) > 1,
             'identity_known': bool(address or host), 'apollo_fresh_complete': fresh,
+            'crm_fresh_complete':sources['crm_complete'], 'module_completeness':sources,
+            'negative_clearance':'UNKNOWN' if not fresh or not sources['crm_complete'] else 'REVIEW_REQUIRED',
+            'execution_readiness':'HOLD',
             'zoho_recent_mail': 'REQUIRES HUMAN CHECK', 'complaint_check': 'REQUIRES HUMAN CHECK',
             'contact_recommendation_allowed': False, 'cold_send_allowed': False,
             'next_action': 'Review existing Apollo account / conversation' if matches or apollo_accounts else 'Review current customer context' if crm_people or crm_accounts else 'Research identity and review collision/suppression before outreach'}
@@ -184,9 +188,11 @@ def build_shadow(apollo, crm, signals, *, now=None):
     for row in signals:
         row=assess_trigger(row,now=now)
         checked = collision(row,apollo,crm,now=now)
-        if checked['suppressed'] or checked['ambiguous']:row['sales_review_eligible']=False
+        if checked['suppressed'] or checked['ambiguous'] or not checked['apollo_fresh_complete'] or not checked['crm_fresh_complete']:row['sales_review_eligible']=False
         prospects.append({**row,**checked,'mode':'SHADOW','draft_send_allowed':False,'version':key(row)})
+    from .observation_completeness import collision_sources
     return {'schema':1,'scope':'live','read_only':True,'at':now.isoformat(),'observed_at':apollo.get('at'),
+            'module_completeness':collision_sources(apollo,crm,now=now), 'execution_readiness':'HOLD',
             'state':'SHADOW','provider_writes':0,'contacts':len(states),'active_contacts':sum(s['active'] for s in states),
             'suppressed_contacts':sum(s['suppressed'] for s in states),'exact_crm_contact_overlap':exact,
             'prospects':prospects[:20], 'cold_outbound':'OFF','raw_crm_promotions':0,

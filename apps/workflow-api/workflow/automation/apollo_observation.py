@@ -1,6 +1,7 @@
 """Bounded zero-credit Apollo reads. No outreach or enrichment transport."""
 from datetime import datetime, timezone
 from time import monotonic
+from copy import deepcopy
 import httpx
 
 
@@ -55,7 +56,7 @@ class ApolloReader:
         if kind=='people_research' and len(response.content)>1048576:raise ValueError('Apollo research response exceeds byte bound')
         return response.json()
 
-    def workspace(self):
+    def workspace(self, *, previous=None):
         """Complete saved identity inventory, bounded at 2,000; no partial clearance."""
         contacts = []
         total = None
@@ -72,19 +73,44 @@ class ApolloReader:
                 break
         if len({r['id'] for r in contacts}) != total or len(contacts) != total:
             raise ValueError('Apollo identity pagination incomplete')
-        accounts = self.read('accounts', page=1, per_page=100)
-        sequences = self.read('sequences', page=1, per_page=100)
-        for data in (accounts, sequences):
-            if data['pagination']['total_pages'] > 1:
-                raise ValueError('Apollo account/sequence population exceeds bounded inventory')
-        messages = self.read('messages', page=1, per_page=100)['emailer_messages']
-        replies = self.read('messages', page=1, per_page=100,
-                            **{'emailer_message_stats[]': 'replied'})['emailer_messages']
-        return {'schema': 1, 'at': datetime.now(timezone.utc).isoformat(),
-                'contacts_complete': True, 'contacts': contacts,
-                'accounts': accounts['accounts'], 'sequences': sequences['emailer_campaigns'],
-                'messages': messages, 'replies': replies, 'stages': self.read('stages')['contact_stages'],
-                'labels': self.read('labels'), 'provider_mutations': 0, 'credit_consuming_calls': 0}
+        from .observation_completeness import complete
+        at = datetime.now(timezone.utc).isoformat()
+        result = {'schema':1,'at':at,'contacts_complete':True,'contacts':contacts,
+                  'modules':{'contacts':complete(contacts,at)},'provider_mutations':0,'credit_consuming_calls':0}
+        for name,kind,key,params in [('accounts','accounts','accounts',{'page':1,'per_page':100}),
+                                     ('sequences','sequences','emailer_campaigns',{'page':1,'per_page':100}),
+                                     ('messages','messages','emailer_messages',{'page':1,'per_page':100}),
+                                     ('replies','messages','emailer_messages',{'page':1,'per_page':100,'emailer_message_stats[]':'replied'}),
+                                     ('stages','stages','contact_stages',{})]:
+            before = self.calls
+            try:
+                data = self.read(kind,**params);rows = data[key]
+                if not isinstance(rows,list):raise ValueError('Apollo module malformed')
+                result[name] = rows
+                pagination = data.get('pagination',{})
+                # A bounded activity sample cannot prove absence of sends/replies.
+                proven = name=='stages' or (type(pagination.get('total_entries')) is int and
+                    pagination['total_entries']==len(rows) and pagination.get('total_pages') in {0,1} and
+                    len({str(r['id']) for r in rows})==len(rows))
+                result['modules'][name] = complete(rows,at) if proven else {'state':'PARTIAL','completeness':'PARTIAL','source_at':at}
+            except (ValueError,KeyError,TypeError):
+                prior=(previous or {}).get(name)
+                result[name] = deepcopy(prior) if isinstance(prior,list) else []
+                source=(previous or {}).get('modules',{}).get(name,{}).get('source_at') or (previous or {}).get('at')
+                result['modules'][name] = {'state':'STALE_REUSED' if isinstance(prior,list) else 'FAILED',
+                    'completeness':'FAILED','source_at':source if isinstance(prior,list) else None,'error_type':'ReadUnavailable'}
+            result['modules'][name]['attempted_reads'] = self.calls-before
+        memberships = [c.get('contact_campaign_statuses') for c in contacts]
+        ownership = all(isinstance(m,list) and all(r.get('status') in {'active','scheduled','paused','finished','completed','failed','stopped'} for r in m) for m in memberships)
+        stage_ids={r['id'] for r in result['stages']}
+        suppression = all(all(k in c for k in ('email_unsubscribed','person_deleted','email_status','contact_stage_id')) and
+            type(c['email_unsubscribed']) is bool and type(c['person_deleted']) is bool and
+            (c['contact_stage_id'] is None or c['contact_stage_id'] in stage_ids) for c in contacts)
+        result['ownership'] = [r for m in memberships if isinstance(m,list) for r in m]
+        result['suppression'] = [{'id':c['id']} for c in contacts]
+        for name,proven in [('ownership',ownership),('suppression',suppression)]:
+            result['modules'][name] = complete(result[name],at) if proven else {'state':'PARTIAL','completeness':'PARTIAL','source_at':at}
+        return result
 
     def close(self):
         self.http.close()

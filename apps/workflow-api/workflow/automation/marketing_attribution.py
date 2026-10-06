@@ -215,6 +215,6 @@ def render_marketing(view):
     return ("<!doctype html><html lang='en'><meta charset='utf-8'><title>Marketing Sources</title>"
             "<style>body{font:16px system-ui;margin:2rem}td,th{padding:.5rem;text-align:left;border-bottom:1px solid #ddd}table{width:100%}</style>"
             "<a href='/v1/operator/today'>Today</a><h1>Marketing Sources</h1><p>Read-only · TEST activity excluded</p>"
-            '<p>'+h(view['value_policy'])+'</p><p>'+h(view['spend_state'])+'</p><p>Observed '+h(view['observed_at'])+'</p>'
+            '<p>'+h(view['value_policy'])+'</p><p>'+h(view['spend_state'])+'</p><p>Observed '+h(view['observed_at'])+' · collection '+h(view.get('collection',{}).get('state','UNKNOWN'))+'</p>'
             '<table><tr>'+''.join('<th>'+h(n)+'</th>' for n in names)+'</tr>'+rows+'</table>'
             '<h2>Attribution problems</h2><ul>'+gaps+'</ul><p>Missing source remains UNATTRIBUTED. Conversion uploads are OFF.</p></html>')

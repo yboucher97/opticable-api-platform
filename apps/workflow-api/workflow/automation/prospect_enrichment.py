@@ -280,13 +280,13 @@ def refresh_status(p):
     if p['identity_status'] not in {'EXACT','SUPPORTED'}: reasons.append('NO_COMPANY')
     if not p.get('domain') or p['domain_confidence'] not in {'OFFICIAL', 'SUPPORTED'}: reasons.append('NO_DOMAIN')
     if not valid: reasons.append('NO_CONTACT')
-    if check['classification'] == 'UNKNOWN': reasons.append('UNKNOWN_COLLISION')
+    if check['classification'] == 'UNKNOWN' or not check['crm_fresh_complete'] or not check['apollo_fresh_complete']: reasons.append('UNKNOWN_COLLISION')
     if p['geography_class'] == 'UNKNOWN': reasons.append('UNKNOWN_GEOGRAPHY')
     suppressed = check['suppressed'] or any(c.get('suppressed') and c.get('confidence') in CURRENT for c in contacts)
     if suppressed: reasons.append('SUPPRESSED')
-    p['why_not_ready'] = sorted(set(reasons)); p['outbound_authorized'] = False; p['crm_promote_allowed'] = False
+    p['why_not_ready'] = sorted(set(reasons)); p['execution_readiness'] = check['execution_readiness']; p['outbound_authorized'] = False; p['crm_promote_allowed'] = False
     active_elsewhere = check['apollo_active'] or check['recent_apollo_send'] or bool(check['open_deal_ids'])
-    ready = not suppressed and not active_elsewhere and p['identity_status'] in {'EXACT', 'SUPPORTED'} and p['domain_confidence'] in {'OFFICIAL', 'SUPPORTED'} and bool(valid) and p['geography_class'] not in {'FOREIGN', 'OTHER CANADA', 'UNKNOWN'} and check['classification'] != 'UNKNOWN' and not check['ambiguous'] and bool(p['service_categories_seen'])
+    ready = not suppressed and not active_elsewhere and p['identity_status'] in {'EXACT', 'SUPPORTED'} and p['domain_confidence'] in {'OFFICIAL', 'SUPPORTED'} and bool(valid) and p['geography_class'] not in {'FOREIGN', 'OTHER CANADA', 'UNKNOWN'} and check['crm_fresh_complete'] and check['apollo_fresh_complete'] and check['classification'] != 'UNKNOWN' and not check['ambiguous'] and bool(p['service_categories_seen'])
     p['enrichment_readiness'] = 'SUPPRESSED' if suppressed else 'ACTIVE_ELSEWHERE' if active_elsewhere else 'PROSPECTING_READY' if ready else 'COMPANY_ONLY' if 'NO_DOMAIN' in reasons else 'ROLE_NEEDED' if not valid else 'COLLISION_PENDING' if 'UNKNOWN_COLLISION' in reasons else 'CONTACT_SUPPORTED'
     p['future_outreach_state'] = 'SUPPRESSED' if suppressed else 'COLLISION_REVIEW' if active_elsewhere or check['existing_customer'] or check['classification']=='UNKNOWN' else 'OWNER_REVIEW' if ready else 'CONTACT_REQUIRED' if not valid else 'RESEARCHING'
     p['enrichment_queue'] = (['RESOLVE_ACTOR'] if p['entity_kind'] == 'UNRESOLVED PROJECT' else []) + (['RESOLVE_COMPANY'] if 'NO_COMPANY' in reasons else []) + (['RESOLVE_DOMAIN'] if 'NO_DOMAIN' in reasons else []) + (['FIND_PRIMARY_ROLE'] if not valid else ['FIND_SECONDARY_ROLE'] if len(valid) == 1 else []) + (['VERIFY_EMPLOYER'] if any(c.get('confidence') in {'LIKELY', 'STALE', 'UNRESOLVED'} for c in contacts) else []) + (['CHECK_CRM', 'CHECK_APOLLO'] if 'UNKNOWN_COLLISION' in reasons else [])

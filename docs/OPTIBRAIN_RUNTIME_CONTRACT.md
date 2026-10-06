@@ -76,3 +76,5 @@ Queue backlog: DLQ>0 or active message age>30min = ACTION REQUIRED; active count
 The existing `opticable-lifecycle-internal` runner also refreshes recurring/marketing native GET projections hourly, sharing its160-read cycle bound. No new timer/listener. Source `automation/observation_runtime.py` pins all imported code through the immutable runner manifest. Authenticated `/v1/operator/recurring` and `/v1/operator/marketing` return unavailable when root display is missing/stale; HTTP200 means a readable projection, not complete attribution or permission to bill/upload.
 
 The root internal lifecycle service also joins `opticable-workflow-api` as a supplementary group to publish the minimized owner reporting file as root:API0640. Existing capability bounding and filesystem sandbox remain unchanged; root private evidence retains0600/0700. The canonical systemd unit includes this membership on rebuild.
+
+Observation completeness and service invocation classification follow the [observation contract](OPTIBRAIN_OBSERVATION_CONTRACT.md). Aggregate generation time, native source time, timer expectation and execution authority remain independent.

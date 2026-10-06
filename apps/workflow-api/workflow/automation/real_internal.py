@@ -792,8 +792,8 @@ def run(*,dry_run=False):
         observe(engine)
         engine.state['attention'].pop('business-observation',None)
     except (ValueError, OSError, KeyError, TypeError):
-        engine.attention('business-observation','Recurring Service observation',
-            'Current recurring billing evidence is unavailable or incomplete',
+        engine.attention('business-observation','Business source observation',
+            'A required Business/Marketing or recurring source is partial, failed or stale; dated last-good evidence is retained',
             'Engineer reviews native read evidence; existing internal scopes continue')
     try:
         from .sales_observation_runtime import observe as observe_sales

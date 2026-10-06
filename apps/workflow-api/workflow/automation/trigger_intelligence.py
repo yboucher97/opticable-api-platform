@@ -77,9 +77,10 @@ def collision_state(row, identity, apollo, crm, *, now, crm_at):
                 (ref_id(s.get('Account_Name')) in account_ids or ref_id(s.get('Linked_Service_Location')) in site_ids or ref_id(s.get('Linked_Deal')) in related_deal_ids)
                 and not re.search(r'cancel|annul', str(s.get('Service_Stage', '')), re.I)]
     customer = bool(services or any(str(a.get('Account_Type', '')).casefold() == 'customer' for a in crm.get('Accounts', []) if str(a.get('id')) in account_ids))
-    observed = stamp(apollo.get('at')); checked = stamp(crm_at)
-    apollo_fresh = bool(observed and 0 <= (now-observed).total_seconds() <= 6*3600 and apollo.get('contacts_complete') is True)
-    crm_fresh = bool(checked and 0 <= (now-checked).total_seconds() <= 2*3600 and crm.get('_identity_complete') is True)
+    from .observation_completeness import collision_sources
+    sources = collision_sources(apollo,crm,now=now)
+    apollo_fresh = sources['apollo_complete'];crm_fresh = sources['crm_complete']
+    customer = bool(customer or any(ref_id(c.get('account_id')) in account_ids for c in crm.get('Customer_Context',[])))
     matchable = bool(host or account_ids)
     classification = ('SUPPRESSED' if suppressed else 'ACTIVE OUTREACH' if base['apollo_active'] or base['recent_apollo_send']
                       else 'OPEN DEAL' if deals else 'EXISTING CUSTOMER OPPORTUNITY' if customer
@@ -93,6 +94,9 @@ def collision_state(row, identity, apollo, crm, *, now, crm_at):
             'open_deal_ids': [str(d['id']) for d in deals], 'service_location_ids': [str(s['id']) for s in sites],
             'apollo_fresh_complete': apollo_fresh, 'crm_fresh_complete': crm_fresh, 'identity_matchable': matchable,
             'crm_observed_at': crm_at, 'apollo_observed_at': apollo.get('at'), 'role_candidates': candidates,
+            'module_completeness':sources,
+            'negative_clearance':'VERIFIED_NO_COLLISION' if classification=='NEW COMPANY' else 'POSITIVE_COLLISION' if classification!='UNKNOWN' else 'UNKNOWN',
+            'execution_readiness':'HOLD' if classification!='NEW COMPANY' else 'REVIEW_ONLY',
             'contact_recommendation_allowed': False, 'cold_send_allowed': False}
 
 
