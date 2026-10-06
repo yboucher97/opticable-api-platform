@@ -15,7 +15,7 @@ from workflow.automation.manager_store import ManagerStore
 from workflow.automation.manager_runtime import sync_priorities
 from workflow.automation.manager_intelligence import build_manager, render_manager
 from workflow.automation.sales_conversations import build_bundle
-from workflow.operator_manager_api import install_manager_routes
+from workflow.operator_manager_api import install_manager_routes, load_manager
 from workflow.automation.today import build_today
 
 NOW = datetime(2026, 10, 6, 14, tzinfo=timezone.utc)
@@ -218,6 +218,29 @@ class ProjectionTests(unittest.TestCase):
         row.update(priority_id='a' * 64, domain='SALES_INTELLIGENCE', targets=[target], what='Finish old quote', next_action='Finish quote')
         self.store.record(row)
         return next(p for p in self.store.rows('optibrain.business_priority') if p['record']['priority_id']=='a'*64)
+
+    def test_formatted_bounded_manager_snapshot_retains_live_queue_metadata(self):
+        # Real formatted snapshots can exceed 1 MiB while their compact
+        # producer payload remains valid. The reader must accept those bytes.
+        state = {'current_state': 'WAITING_CUSTOMER', 'next_action': 'NO_ACTION',
+                 'actionability': 'WAITING', 'confidence': 'HIGH', 'source_facts': ['native'],
+                 'latest_authoritative_event': {'source': 'BOOKS', 'event_type': 'QUOTE_SENT',
+                    'event_at': NOW.isoformat(), 'observed_at': NOW.isoformat()}}
+        saved = {'at': NOW.isoformat(), 'active_priority_ids': [],
+                 'commercial_states': {str(i): state for i in range(2700)}}
+        compact = json.dumps(saved).encode()
+        formatted = json.dumps(saved, indent=2).encode()
+        self.assertLess(len(compact), 1048576)
+        self.assertGreater(len(formatted), 1048576)
+        self.assertLess(len(formatted), 2097152)
+        def bounded_read(path, maximum):
+            if len(formatted) > maximum: raise ValueError('Bound exceeded')
+            return json.loads(formatted)
+        with patch('workflow.operator_manager_api.collect', return_value={}), \
+             patch('workflow.operator_manager_api.lc.trusted_json', side_effect=bounded_read):
+            view = load_manager(self.store.path, NOW)
+        self.assertEqual(view['state'], 'CURRENT')
+        self.assertEqual(view['projection_at'], NOW.isoformat())
 
     def test_today_and_brief_suppress_stale_sales_action_after_send(self):
         self.priority()
