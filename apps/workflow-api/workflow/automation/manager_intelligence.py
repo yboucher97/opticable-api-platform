@@ -5,6 +5,8 @@ from html import escape
 from zoneinfo import ZoneInfo
 from .acquisition_store import digest
 from .manager_sources import registry,evidence_health,stamp,health_state
+from .lifecycle_projection import collect_states,reconcile_priority
+from .lifecycle_truth import eligible_today,priority_order,context_key,reply_draft_obsolete
 
 TZ=ZoneInfo('America/Toronto')
 DOMAIN={'GOOGLE_ADS':'ads','WEBSITE':'website','SEO':'seo','ZOHO_FORM':'form','CONTENT':'content',
@@ -33,7 +35,7 @@ def proposals(store,sources,now):
         confidence='INSUFFICIENT' if stale else r['confidence']
         output.append({'proposal_id':r['proposal_id'],'revision':r['revision'],'payload_hash':item['payload_hash'],
             'domain':'customer' if r['proposal_type']=='CUSTOMER_EXPANSION' else DOMAIN.get(r['target_system'],'operations'),
-            'type':r['proposal_type'],'title':r['recommended_change'],'why':r['business_problem'],'why_now':r['why_now'],
+            'type':r['proposal_type'],'target_object':r['target_object'],'title':r['recommended_change'],'why':r['business_problem'],'why_now':r['why_now'],
             'expected_benefit':r['expected_benefit'],'risk':r['risk'],'confidence':confidence,'original_confidence':r['confidence'],
             'status':status,'readiness':'NEEDS_REFRESH' if stale else status,'evidence':evidence,
             'preview':r.get('preview_location'),'owner_action':r['owner_action_required'],
@@ -62,7 +64,7 @@ def authority_health(inputs,now):
     return output
 
 
-def priorities(store,proposal_rows,sources,now,*,active_ids=None,crosswalk=None):
+def priorities(store,proposal_rows,sources,now,*,active_ids=None,crosswalk=None,lifecycle_states=None):
     by={p['proposal_id']:p for p in proposal_rows};feedback=store.feedback_latest();groups={};crosswalk=crosswalk or {}
     for item in store.rows('optibrain.business_priority'):
         r=item['record'];pid=r['priority_id'];p=by.get(r.get('proposal_id'));status=p['status'] if p else r['status']
@@ -93,19 +95,29 @@ def priorities(store,proposal_rows,sources,now,*,active_ids=None,crosswalk=None)
                 'effort':'UNKNOWN','service_fit':'Evidence-dependent','geography':'Evidence-dependent',
                 'dependency':r.get('dependency'),'reasons':r['priority_reasons']},
             'execution_authorized':False,'preview':p.get('preview') if p else None}
+        v=reconcile_priority(v,lifecycle_states or {})
+        # Exact commercial-object state prevents separate projects at one
+        # Account from collapsing into the same action.
+        if v.get('lifecycle'):key=digest([v['lifecycle']['context'],family])
         if key in groups:
             g=groups[key];g['priority_ids'].append(pid);g['proposal_ids']+=v['proposal_ids']
             seen={digest(e) for e in g['evidence']};g['evidence'] += [e for e in evidence if digest(e) not in seen]
-            if urgency=='HIGH':g['urgency']='HIGH'
+            if priority_order(v,now)<priority_order(g,now):
+                v['priority_ids']=g['priority_ids'];v['proposal_ids']=g['proposal_ids'];groups[key]=v
         else:groups[key]=v
-    order={'HIGH':0,'MEDIUM':1,'LOW':2,'WATCH':3}
-    return sorted(groups.values(),key=lambda r:(r['readiness']!='CURRENT',not (r['domain']=='MANAGER' and r['targets'][0]['entity_id'].startswith(('source:','system:'))),order.get(r['urgency'],4),r.get('due_at') or '9999',r['priority_id']))
+    return sorted(groups.values(),key=lambda r:priority_order(r,now))
 
 
 def build_manager(inputs,store,now,*,active_ids=None,crosswalk=None):
     sources=registry(inputs,now);ps=proposals(store,sources,now)
-    priorities_all=priorities(store,ps,sources,now,active_ids=active_ids,crosswalk=crosswalk)
-    today=[r for r in priorities_all if r['readiness']=='CURRENT' and r['urgency']=='HIGH'][:5]
+    states=collect_states(inputs,now,store)
+    for p in ps:
+        if p['type']=='SALES_REPLY':
+            state=states.get(context_key(p['target_object']))
+            if state and reply_draft_obsolete(state):
+                p['status']='SUPERSEDED';p['readiness']='SUPERSEDED';p['lifecycle']=state
+    priorities_all=priorities(store,ps,sources,now,active_ids=active_ids,crosswalk=crosswalk,lifecycle_states=states)
+    today=[r for r in priorities_all if eligible_today(r,now)][:5]
     sales=inputs.get('sales-conversations',{});acq=inputs.get('acquisition-intelligence',{});trigger=inputs.get('trigger-intelligence',{})
     business=inputs.get('business',{});snapshot=business.get('snapshot',{});finance={};customers=[]
     if snapshot:
@@ -126,7 +138,8 @@ def build_manager(inputs,store,now,*,active_ids=None,crosswalk=None):
         'sales':{'attention_count':len(attention) if conversations else None,'coverage':sales.get('coverage',{}),'gaps':sales.get('coverage_gaps',{}),
             'ownership':'CLAUDE_APOLLO unchanged; manual activity completeness UNKNOWN','detail':'/v1/operator/sales',
             'attention':[{'conversation_id':c['conversation_id'],'company':c.get('company'),'person':c.get('person_name'),
-                'classification':c.get('reply_class'),'urgency':c.get('urgency'),'draft_ready':bool(c.get('draft'))} for c in attention[:5]]},
+                'classification':c.get('reply_class'),'urgency':c.get('urgency'),'draft_ready':bool(c.get('draft')),
+                'lifecycle':states.get('OUTREACH:CONVERSATION:'+c['conversation_id'],{})} for c in attention[:5]]},
         'acquisition':{'funnel':universe.get('funnel',{}),'coverage':universe.get('enrichment_metrics',{}),'signals':trigger.get('trigger_count'),
             'current_trigger_prospects':universe.get('current_trigger_prospects'),'historical_organizations':universe.get('historical_organizations'),
             'repeat_buyers':universe.get('repeat_buyers'),'detail':'/v1/operator/acquisition'},
@@ -165,10 +178,13 @@ def build_manager(inputs,store,now,*,active_ids=None,crosswalk=None):
         'customer_actions':domains['customer'],'marketing_seo_ads':dict(domains),
         'proposals_ready':sum(p['readiness'] in {'PREVIEW_READY','OWNER_REVIEW','PROPOSED'} and p['status'] not in CLOSED for p in ps),
         'system_blockers':[{'source':s['source_id'],'state':s['data_health'],'reason':s['reason']} for s in sources if s['required'] and s['data_health'] in {'BLOCKED','STALE','AUTH_EXPIRED','PROVIDER_ERROR'}][:5],
-        'top_priorities':[{'id':p['priority_id'],'what':p['what'],'why':p['why']} for p in today],
+        'top_priorities':[{'id':p['priority_id'],'what':p['what'],'why':p['why'],
+            'current_state':p.get('current_state'),'actionability':p['actionability'],'reason_code':p['reason_code'],
+            'latest_authoritative_event':p.get('lifecycle',{}).get('latest_authoritative_event'),
+            'last_event_at':p.get('lifecycle',{}).get('last_event_at'),'confidence':p['confidence']} for p in today],
         'empty_day':'No newly changed evidence recorded; retained current decisions remain available.' if not changed else None}
     return {'schema':1,'type':'optibrain.manager','scope':'live','read_only':True,'at':now.isoformat(),
-        'provider_writes':0,'execution_authorized':False,'persistent_worker':'OFF','today':today,
+        'provider_writes':0,'execution_authorized':False,'persistent_worker':'OFF','today':today,'commercial_states':states,
         'sections':sections,'proposals':ps,'priority_count':len(priorities_all),'priorities':priorities_all,
         'proposal_counts':{'total':len(ps),'by_domain':dict(domains),'by_status':dict(statuses)},'sources':sources,
         'authority':authority_health(inputs,now),'events':events,'activity':activity,'brief':brief,
@@ -197,7 +213,7 @@ def render_manager(view,*,query='',domain='',status=''):
     out="<!doctype html><html lang='en'><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>OptiBrain Business Manager</title><style>body{font:16px system-ui;background:#f4f6f8;color:#173342;max-width:1200px;margin:auto;padding:24px}section,article{background:white;padding:20px;border-radius:8px;margin:14px 0}nav a{margin-right:16px}small{color:#556}button,input,select,textarea{font:inherit;padding:6px}td,th{padding:8px;text-align:left;border-bottom:1px solid #ddd}table{width:100%}details{margin:12px 0}</style><h1>OptiBrain Business Manager</h1><nav>"
     out+=''.join('<a href="'+h(url)+'">'+h(name.title())+'</a>' for name,url in view['navigation'].items())+'</nav><p>'+h(view['at'])+' · Owner review and preparation</p>'
     out+="<form method='get'><label>Find company, person, service, proposal or page <input name='q' maxlength='100' value='"+h(query)+"'></label> <label>Domain <input name='domain' value='"+h(domain)+"'></label> <label>Status <input name='status' value='"+h(status)+"'></label> <button>Filter</button></form>"
-    out+=card('Today',''.join('<article><strong>'+h(p['what'])+'</strong><p>'+h(p['why'])+'</p><p>'+h(p['next_action'])+'</p><small>'+h(p['confidence'])+' · '+h(p['business_impact'])+'</small></article>' for p in view['today']) or '<p>No current high-urgency action. Review the prepared work below.</p>')
+    out+=card('Today',''.join('<article><strong>'+h(p['what'])+'</strong><p>'+h(p['why'])+'</p><p>'+h(p['next_action'])+'</p><small>'+h(p['confidence'])+' · '+h(p.get('current_state','Owner review'))+' · '+h(p.get('actionability'))+' · '+h(p.get('reason_code'))+'</small></article>' for p in view['today']) or '<p>No current action due. Waiting and prepared work remain available below.</p>')
     out+=card('Morning brief',short(view['brief']['what_changed'])+'<p>'+short(view['brief'].get('empty_day') or '')+'</p>')
     for name,section in view['sections'].items():
         out+=card(name.replace('_',' ').title(),short(section))
@@ -210,7 +226,7 @@ def render_manager(view,*,query='',domain='',status=''):
     out+=card('Optimization proposals',body)
     body=''
     for p in view['priorities'][:30]:
-        body+='<article><strong>'+h(p['what'])+'</strong><p>'+h(p['next_action'])+'</p><details><summary>Why / evidence / factors</summary>'+short(p['factors'])+short(p['evidence'])+'</details>'
+        body+='<article><strong>'+h(p['what'])+'</strong><p>'+h(p['status'])+' · '+h(p.get('current_state','Owner review'))+' · '+h(p['actionability'])+'</p><p>'+h(p['next_action'])+'</p><details><summary>Why / evidence / factors</summary>'+short(p.get('lifecycle'))+short(p['factors'])+short(p['evidence'])+'</details>'
         body+="<form method='post' action='/v1/operator/manager/feedback'><input type='hidden' name='kind' value='PRIORITY'><input type='hidden' name='target' value='"+h(p['priority_id'])+"'><input type='hidden' name='version' value='"+h(p['payload_hash'])+"'><select name='choice'>"+''.join('<option>'+c+'</option>' for c in ('HIGHER','LOWER','WAIT','NOT_RELEVANT','NEVER'))+"</select><button>Save preference</button></form></article>"
     out+=card('Business priorities',body)
     out+=card('Source health','<table><tr><th>Source</th><th>Auth</th><th>Data</th><th>Observed</th><th>Reason</th></tr>'+''.join('<tr>'+''.join('<td>'+h(s[k])+'</td>' for k in ('provider','authentication_health','data_health','observed_at','reason'))+'</tr>' for s in view['sources'])+'</table>')

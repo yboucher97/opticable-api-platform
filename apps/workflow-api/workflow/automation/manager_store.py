@@ -10,7 +10,7 @@ CLASSIFICATIONS = {'UNATTENDED','OWNER_INITIATED','TEST_ONLY','MANUAL_PROVIDER_A
 FEEDBACK = {'APPROVE','REJECT','REQUEST_REVISION','HIGHER','LOWER','NOT_RELEVANT','WAIT','NEVER'}
 OUTCOMES = {'SUCCESS','NEUTRAL','REGRESSION','INSUFFICIENT_DATA','BLOCKED'}
 ENTITY_TYPES = set('COMPANY PERSON LEAD CONTACT ACCOUNT DEAL CUSTOMER SERVICE_LOCATION SERVICE ESTIMATE INVOICE RECURRING_PROFILE PROJECT PERMIT TENDER TRIGGER PROSPECT CONVERSATION WEBSITE_PAGE SEARCH_QUERY KEYWORD CAMPAIGN AD_GROUP AD CREATIVE FORM REVIEW CONTENT_ASSET MARKET_OPPORTUNITY OPTIMIZATION_PROPOSAL BUSINESS_PRIORITY EXECUTION_RESULT LEARNING'.split())
-TRUTH = {'PROVIDER_FACT','PUBLIC_SOURCE_FACT','USER_CONFIRMED','DERIVED_DETERMINISTICALLY','MODEL_INFERENCE','ESTIMATE','UNKNOWN'}
+TRUTH = {'PROVIDER_FACT','PUBLIC_SOURCE_FACT','USER_CONFIRMED','OWNER_VERIFIED_FACT','DERIVED_DETERMINISTICALLY','MODEL_INFERENCE','ESTIMATE','UNKNOWN'}
 
 class ManagerStore(OptimizationStore):
     def setup(self):
@@ -62,6 +62,48 @@ class ManagerStore(OptimizationStore):
         with self.connect() as db:
             return [{**dict(r),'value':json.loads(r['value'])} for r in db.execute(
                 'SELECT * FROM manager_events ORDER BY recorded_at DESC,id LIMIT ?', (min(100,max(1,limit)),))]
+
+    def business_facts(self):
+        """Separate source facts from proposal/priority/activity events."""
+        from .lifecycle_truth import valid_event
+        if not self.path.exists():return []
+        with sqlite3.connect(self.path.resolve().as_uri()+'?mode=ro',uri=True) as db:
+            db.row_factory=sqlite3.Row
+            if not db.execute("SELECT 1 FROM sqlite_master WHERE name='manager_events'").fetchone():return []
+            rows=db.execute("SELECT value FROM manager_events WHERE json_extract(value,'$.kind')='BUSINESS_FACT' ORDER BY recorded_at DESC,id LIMIT 4000").fetchall()
+        return [e for row in rows for e in [json.loads(row['value']).get('business_event',{})] if valid_event(e)]
+
+    def record_business_fact(self,event,now):
+        from .lifecycle_truth import valid_event,stamp
+        if not valid_event(event):raise ValueError('Authoritative exact business fact required')
+        version=digest({k:v for k,v in event.items() if k!='observed_at'})
+        return self.put_event(event['source'],event['event_id'],version,event.get('observed_at'),now,
+            {'kind':'BUSINESS_FACT','classification':'OWNER_INITIATED' if event['source']=='OWNER' else 'NATURAL_BUSINESS_EFFECT',
+             'truth_class':event['truth_class'],'business_event':event,'title':event['event_type'],
+             'change_type':'OWNER_CORRECTION' if event['source']=='OWNER' else 'CHANGE' if stamp(event.get('event_at')) and now-stamp(event['event_at'])<=timedelta(days=1) else 'INITIAL_OBSERVATION'})
+
+    def correct_fact(self,kind,target,version,event_type,actor,now,*,reason_code='OWNER_CURRENT_STATE'):
+        """Owner assertion about an exact reviewed object; never a provider edit."""
+        from .lifecycle_projection import fact
+        from .lifecycle_truth import EVENTS,CORRECTION_REASONS,context_key
+        if kind not in {'PRIORITY','PROPOSAL'} or event_type not in EVENTS or reason_code not in CORRECTION_REASONS or not actor or len(actor)>200 or now.tzinfo is None:
+            raise ValueError('Verified bounded owner assertion required')
+        items=self.rows('optibrain.business_priority' if kind=='PRIORITY' else 'optibrain.optimization_proposal')
+        item=next((p for p in items if p['record'].get('priority_id' if kind=='PRIORITY' else 'proposal_id')==target),None)
+        if not item or item['payload_hash']!=version:raise ValueError('Fresh exact revision required')
+        record=item['record'];context=record['targets'][0] if kind=='PRIORITY' else record['target_object']
+        if context['entity_type'] not in {'ESTIMATE','INVOICE','DEAL','LEAD','CONVERSATION','SALES_REPLY','TENDER','PROJECT'}:
+            raise ValueError('Commercial object correction required')
+        context=dict(context)
+        if context['entity_type']=='SALES_REPLY':context['entity_type']='CONVERSATION'
+        context_key(context)
+        event=fact(context,event_type,'OWNER',None,now.isoformat(),now.isoformat(),[target,version,actor],
+            truth_class='OWNER_VERIFIED_FACT',time_basis='ASSERTION_AT',
+            detail={'actor':actor,'reviewed_target':target,'reviewed_version':version,'reason_code':reason_code,
+                    'actual_occurrence_time':'UNKNOWN'})
+        self.record_business_fact(event,now)
+        return {'state':'OWNER_VERIFIED_FACT','event_id':event['event_id'],'reason_code':reason_code,
+                'provider_writes':0,'execution_authorized':False}
 
     def feedback(self,kind,target,version,choice,actor,now,*,reason='',category='',conditions=''):
         if kind not in {'PROPOSAL','PRIORITY'} or choice not in FEEDBACK or not actor or now.tzinfo is None:

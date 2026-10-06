@@ -1,0 +1,10 @@
+{
+  "now": "2026-10-06T14:00:00+00:00",
+  "context": {"system": "BOOKS", "entity_type": "ESTIMATE", "entity_id": "fixture-estimate"},
+  "events": [
+    {"event_id": "prepared", "context": {"system": "BOOKS", "entity_type": "ESTIMATE", "entity_id": "fixture-estimate"}, "event_type": "QUOTE_DRAFTED", "source": "OWNER", "truth_class": "OWNER_VERIFIED_FACT", "identity_confidence": "EXACT", "confidence": "HIGH", "event_at": "2026-10-01T14:00:00+00:00", "source_at": null, "observed_at": "2026-10-06T14:00:00+00:00", "detail": {"completion_state": "INCOMPLETE"}},
+    {"event_id": "sent", "context": {"system": "BOOKS", "entity_type": "ESTIMATE", "entity_id": "fixture-estimate"}, "event_type": "QUOTE_SENT", "source": "MAIL", "truth_class": "PROVIDER_FACT", "proof": "EXACT_OBJECT", "identity_confidence": "EXACT", "confidence": "HIGH", "event_at": "2026-10-02T14:03:00+00:00", "source_at": null, "observed_at": "2026-10-02T15:00:00+00:00"}
+  ],
+  "coverage": {"response": {"completeness": "COMPLETE", "context_key": "BOOKS:ESTIMATE:fixture-estimate", "through_at": "2026-10-06T14:00:00+00:00"}},
+  "expected": {"current_state": "WAITING_CUSTOMER", "next_action": "NO_ACTION", "actionability": "WAITING", "followup_due_state": "POLICY_UNKNOWN"}
+}

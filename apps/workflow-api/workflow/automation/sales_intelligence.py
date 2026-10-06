@@ -199,7 +199,7 @@ def build_shadow(apollo, crm, signals, *, now=None):
             'sources':{'apollo':'READ ONLY','clay':'DEFERRED — NO CALLABLE READ CONNECTION','claude':'Private conversation history unavailable'}}
 
 
-def build_sales(apollo, crm, signals, *, now=None, recurring=None, feedback=None, estimates=None):
+def build_sales(apollo, crm, signals, *, now=None, recurring=None, feedback=None, estimates=None,lifecycle_states=None):
     """One priority universe. Reviews never recommend a second outreach controller."""
     now = now or datetime.now(timezone.utc)
     view = build_shadow(apollo, crm, signals, now=now)
@@ -250,6 +250,11 @@ def build_sales(apollo, crm, signals, *, now=None, recurring=None, feedback=None
             'Accepted work requires internal preparation' if e['status']=='accepted' else 'Sent Estimate — check reply and suppression before follow-up',
             'Review the existing Deal and operational context in CRM',2 if e['status']=='accepted' else 3,
             'OWNER_MANUAL','https://crm.zoho.com/crm/org763070937/tab/Deals/'+str(e['deal_id']))
+        from .lifecycle_projection import reconcile_priority,ref
+        row=rows[key({'kind':'estimate','record':str(e['id'])})]
+        reviewed=reconcile_priority({'targets':[ref('BOOKS','ESTIMATE',e['id'])]},lifecycle_states or {})
+        row.update(lifecycle=reviewed.get('lifecycle'),current_state=reviewed.get('current_state'),
+            actionability=reviewed['actionability'],reason_code=reviewed['reason_code'],action=reviewed['next_action'])
     for p in [r for r in view['prospects'] if r.get('sales_review_eligible')][:5]:
         add('trigger',p['key'],p['company'],p['why_now']+': '+p['trigger'],
             p['next_action']+'; '+p['who'],4,p['outreach_owner'],p['source_url'],

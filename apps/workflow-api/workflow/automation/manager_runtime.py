@@ -189,6 +189,8 @@ def refresh(inputs,store,now,*,origin='UNKNOWN'):
     form_prep=prepare_forms(inputs,store,now,maximum=3-len(prep['created']));prep['form_drafts']=form_prep['created']
     active=sync_priorities(inputs,store,now)
     crosswalk=relationships(inputs,store);added=sync_events(inputs,store,now,origin=origin);intake=intake_observation(store,now)
+    from .lifecycle_projection import collect_states
+    collect_states(inputs,now,store,record_facts=True)
     view=build_manager(inputs,store,now,active_ids=active,crosswalk=crosswalk)
     view.update(active_priority_ids=active,crosswalk=crosswalk,preparation=prep,intake=intake,forms=models(),
         input_version=digest({k:v.get('input_version') or v.get('observed_at') or v.get('captured_at') or v.get('at') for k,v in inputs.items()}))

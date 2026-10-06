@@ -1,0 +1,12 @@
+{
+  "suite": "lifecycle",
+  "tests": 41,
+  "subtests": 35,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "passed": true,
+  "network_policy": "ALL_IP_SOCKETS_DENIED",
+  "blocked_socket_attempts": 0,
+  "provider_network_writes": 0
+}

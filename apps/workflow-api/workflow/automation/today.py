@@ -15,6 +15,7 @@ from .operations import build_operations
 from .read_inventory_cache import build_lifecycle_display
 from .sales_queue import build_sales_queue
 from .sales_operator_view import CONTROLLED_LEAD_ID
+from .lifecycle_truth import eligible_today
 
 CATEGORIES=('Leads needing response','Follow-ups due','Quote-ready opportunities',
             'Projects and install work','Maintenance and renewal','Sales research','Exceptions','Approvals')
@@ -149,8 +150,8 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
         if sales_conversations.get('scope')!='live' or sales_conversations.get('read_only') is not True:
             raise ValueError('Conversation Today projection must be read-only live evidence')
         for row in sales_conversations.get('priorities',[])[:3]:
-            if row.get('status')!='OWNER_REVIEW' or row.get('urgency')!='HIGH':continue
-            add('Approvals',row['what'],row['why'],'Review exact unsent draft; coordinate with existing Apollo owner',
+            if not eligible_today({**row,'readiness':row.get('readiness','CURRENT')},now):continue
+            add('Approvals',row['what'],row['why'],row.get('next_action','Verify current conversation status'),
                 'Shared sales proposal / exact Mail evidence',LINKS['acquisition']+'?proposal_id='+row['proposal_id'],
                 priority='HIGH',freshness=sales_conversations.get('observed_at'))
     if ads_intelligence:
