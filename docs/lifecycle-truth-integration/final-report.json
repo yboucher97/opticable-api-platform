@@ -1,0 +1,3181 @@
+{
+  "schema": 1,
+  "type": "optibrain.lifecycle-truth-integration",
+  "at": "2026-10-06T17:27:29.205406+00:00",
+  "status": "PASS",
+  "source": "2a90b6c83c578abd6d5bd1eb886f9758d83a024a",
+  "source_preserved": true,
+  "integration_branch": "integration/lifecycle-truth-after-pr133-20261006",
+  "start_main": "2410c2b1e6c82a54872866291b7bc3971d6ab434",
+  "integration_head": "2187f585d5bf50917b17af8571722b963466959f",
+  "prs": [
+    "https://github.com/yboucher97/opticable-api-platform/pull/136",
+    "https://github.com/yboucher97/opticable-api-platform/pull/137"
+  ],
+  "merge_sha": "902fdab3db92c98ee70e4e0ea14beefbbc3a4bbe",
+  "production_sha": "902fdab3db92c98ee70e4e0ea14beefbbc3a4bbe",
+  "API": "1.30.1",
+  "ci": {
+    "PR136": 37500583905,
+    "main136": 37500764661,
+    "PR137": 37502004465,
+    "main137": 37502244783,
+    "all_exact_head_validation": "SUCCESS",
+    "auto_merge": false
+  },
+  "intermediate_release": {
+    "sha": "e2451046a12fbb51e266e85215a2ed757fc949fe",
+    "API": "1.30.0",
+    "reason_for_patch": "Formatted snapshot exceeded the reader file limit; corrected and revalidated in PR137"
+  },
+  "lifecycle_truth": {
+    "latest_event_precedence": "PASS; exact commercial context and fact-specific source authority",
+    "time_semantics": "event_at/source_at/observed_at distinct; unknown occurrence retained",
+    "waiting": "NO_ACTION unless an authoritative due policy and response completeness establish an action",
+    "verify_first": "Partial Mail/Books/CRM evidence never proves absence",
+    "actionability": "Shared Manager/Today/brief/Sales projection; three commercial verifications",
+    "owner_corrections": "Three retained owner quote corrections; local append-only provenance; provider records unchanged",
+    "superseded_priorities": "Projected invalidation; historical records retained",
+    "new_provider_reads_or_model_calls_for_reconciliation": 0
+  },
+  "noveco": [
+    {
+      "label": "Noveco EST-1132",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002330018"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002330018",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "c483488f99afbbf530067b2435fef124dbea71a904a0e64ade3450b726847643",
+          "de8a1b796383bff80fa11cd140d216716fd171ca98af7b8521511470afc44501"
+        ],
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING",
+        "reason_code": "FOLLOWUP_POLICY_UNKNOWN",
+        "waiting_reason": "FOLLOWUP_POLICY_UNKNOWN",
+        "followup_due_state": "POLICY_UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002330018",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "actor": "OWNER",
+            "actual_occurrence_time": "UNKNOWN",
+            "provenance": "User remediation instruction: quotes already sent",
+            "reason_code": "DERIVED_ACTION_PERSISTED"
+          },
+          "event_at": null,
+          "event_id": "de8a1b796383bff80fa11cd140d216716fd171ca98af7b8521511470afc44501",
+          "event_type": "QUOTE_SENT",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T13:09:42.524902+00:00",
+          "source": "OWNER",
+          "source_at": "2026-10-06T13:09:42.524902+00:00",
+          "time_basis": "ASSERTION_AT",
+          "truth_class": "OWNER_VERIFIED_FACT",
+          "source_context": {
+            "entity_id": "3643985000002330018",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": "QUOTE_SENT",
+        "evidence_observed_at": "2026-10-06T13:09:42.524902+00:00",
+        "context_label": "EST-1132"
+      }
+    },
+    {
+      "label": "Noveco EST-1133",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002330031"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002330031",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "9a0fb5997aca97e4b5608917b8d33c56ac4dfa69f0fac16325bbedc096b63533",
+          "d855be52b7e2256ec2d8e068a01cf7a76d9894a821751914673315782cfaf9e6"
+        ],
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING",
+        "reason_code": "FOLLOWUP_POLICY_UNKNOWN",
+        "waiting_reason": "FOLLOWUP_POLICY_UNKNOWN",
+        "followup_due_state": "POLICY_UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002330031",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "actor": "OWNER",
+            "actual_occurrence_time": "UNKNOWN",
+            "provenance": "User remediation instruction: quotes already sent",
+            "reason_code": "DERIVED_ACTION_PERSISTED"
+          },
+          "event_at": null,
+          "event_id": "d855be52b7e2256ec2d8e068a01cf7a76d9894a821751914673315782cfaf9e6",
+          "event_type": "QUOTE_SENT",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T13:09:42.524902+00:00",
+          "source": "OWNER",
+          "source_at": "2026-10-06T13:09:42.524902+00:00",
+          "time_basis": "ASSERTION_AT",
+          "truth_class": "OWNER_VERIFIED_FACT",
+          "source_context": {
+            "entity_id": "3643985000002330031",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": "QUOTE_SENT",
+        "evidence_observed_at": "2026-10-06T13:09:42.524902+00:00",
+        "context_label": "EST-1133"
+      }
+    },
+    {
+      "label": "Noveco EST-1134",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002330043"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002330043",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "77740ff6a506e9efa93e26b3b2f105d3547dc6eb6acc0e9cc408e8561e4ba522",
+          "d096539205f58ba64b57f625322916f3addb4e4b83e48519e65c63fa23623f99"
+        ],
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING",
+        "reason_code": "FOLLOWUP_POLICY_UNKNOWN",
+        "waiting_reason": "FOLLOWUP_POLICY_UNKNOWN",
+        "followup_due_state": "POLICY_UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002330043",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "actor": "OWNER",
+            "actual_occurrence_time": "UNKNOWN",
+            "provenance": "User remediation instruction: quotes already sent",
+            "reason_code": "DERIVED_ACTION_PERSISTED"
+          },
+          "event_at": null,
+          "event_id": "d096539205f58ba64b57f625322916f3addb4e4b83e48519e65c63fa23623f99",
+          "event_type": "QUOTE_SENT",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T13:09:42.524902+00:00",
+          "source": "OWNER",
+          "source_at": "2026-10-06T13:09:42.524902+00:00",
+          "time_basis": "ASSERTION_AT",
+          "truth_class": "OWNER_VERIFIED_FACT",
+          "source_context": {
+            "entity_id": "3643985000002330043",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": "QUOTE_SENT",
+        "evidence_observed_at": "2026-10-06T13:09:42.524902+00:00",
+        "context_label": "EST-1134"
+      }
+    }
+  ],
+  "business_queue": [
+    {
+      "actor": "OWNER",
+      "blocker": null,
+      "business_impact": "Preserve qualified business attention and existing service continuity; value UNKNOWN",
+      "can_prepare": true,
+      "confidence": "HIGH",
+      "dependency": null,
+      "domain": "MANAGER",
+      "due_at": "2026-10-07T14:00:00+00:00",
+      "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+      "owner_approval_required": true,
+      "priority_id": "14dc115f1ac74df1773b546dd9ca1953840044dd9a7e862279c887a9de6e0b61",
+      "proposal_id": null,
+      "status": "OWNER_REVIEW",
+      "targets": [
+        {
+          "entity_id": "7fdbb76406c1037e989186f9c3d25d4255e3847f5e801ec5ec69a4acb0cc116b",
+          "entity_type": "TRIGGER",
+          "system": "OPTIBRAIN"
+        }
+      ],
+      "urgency": "MEDIUM",
+      "what": "Verify Eligibility And Submission · Collège de Maisonneuve",
+      "why": "TENDER_DEADLINE",
+      "payload_hash": "b6556e9333ee9b88a60f7ddbe43e6306cd7146561c9c2862c5c81a6d7904e5e0",
+      "evidence": [
+        {
+          "confidence": "MODERATE",
+          "freshness": "CURRENT",
+          "limitations": [
+            "No provider write authority from owner priority."
+          ],
+          "observed_at": "2026-10-05T21:58:33.956187+00:00",
+          "provider": "SEAO",
+          "source_reference": "OPTIBRAIN:TRIGGER:7fdbb76406c1037e989186f9c3d25d4255e3847f5e801ec5ec69a4acb0cc116b",
+          "truth_class": "DERIVED_DETERMINISTIC",
+          "valid_until": "2026-10-07T10:00:00-04:00",
+          "cache_age_seconds": 69735,
+          "newer_data_expected": false,
+          "source_health": [],
+          "fact_class": "DERIVED_DETERMINISTICALLY"
+        }
+      ],
+      "readiness": "CURRENT",
+      "canonical_target": "OPTIBRAIN:COMPANY:20d3953c0cb50d037434abd61291d78c1436f0dc55f514a1e70fe0cf4f407439",
+      "priority_ids": [
+        "14dc115f1ac74df1773b546dd9ca1953840044dd9a7e862279c887a9de6e0b61"
+      ],
+      "proposal_ids": [],
+      "factors": {
+        "business_impact": "Preserve qualified business attention and existing service continuity; value UNKNOWN",
+        "deadline": "2026-10-07T10:00:00-04:00",
+        "urgency": "MEDIUM",
+        "confidence": "MODERATE",
+        "risk": "UNKNOWN",
+        "revenue_potential": "UNKNOWN",
+        "recurring_potential": "UNKNOWN",
+        "cost": "UNKNOWN",
+        "effort": "UNKNOWN",
+        "service_fit": "Evidence-dependent",
+        "geography": "Evidence-dependent",
+        "dependency": null,
+        "reasons": [
+          "Open procurement closes 2026-10-07T10:00:00-04:00"
+        ]
+      },
+      "execution_authorized": false,
+      "preview": null,
+      "lifecycle": {
+        "schema": 1,
+        "context": {
+          "entity_id": "20168879",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "source_facts": [
+          "163ff1dc792dd941762425ad99f03e8a97199e8ac837ed1027c80e212d720718",
+          "2134ab27128541cfef418e12fb22f13290ea5b48f7d279a8354c6b7a8fa7dfa2"
+        ],
+        "current_state": "TENDER_OPEN",
+        "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "TENDER_DEADLINE",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "20168879",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          },
+          "detail": {
+            "deadline": "2026-10-07T10:00:00-04:00",
+            "eligibility": "UNKNOWN",
+            "submission_status": "UNKNOWN"
+          },
+          "event_at": "2026-09-03T13:49:25-04:00",
+          "event_id": "2134ab27128541cfef418e12fb22f13290ea5b48f7d279a8354c6b7a8fa7dfa2",
+          "event_type": "TENDER_OPEN",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-05T21:58:33.956187+00:00",
+          "source": "PUBLIC",
+          "source_at": "2026-09-30T15:46:37+00:00",
+          "source_reference": "ocds-ec9k95-20168879",
+          "truth_class": "PUBLIC_SOURCE_FACT",
+          "source_context": {
+            "entity_id": "20168879",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          }
+        },
+        "last_event_at": "2026-09-03T13:49:25-04:00",
+        "source_health": {},
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-07T14:00:00+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T05:45:12.746000+00:00",
+        "context_label": "Collège de Maisonneuve"
+      },
+      "current_state": "TENDER_OPEN",
+      "actionability": "VERIFY_FIRST",
+      "reason_code": "TENDER_DEADLINE",
+      "deadline": "2026-10-07T14:00:00+00:00",
+      "original_recommendation": {
+        "what": "Review Collège de Maisonneuve project signal",
+        "next_action": "Review native tender/permit and customer/collision context; no send or bid"
+      },
+      "recommendation_state": "SUPERSEDED_BY_EVIDENCE"
+    },
+    {
+      "actor": "OWNER",
+      "blocker": null,
+      "business_impact": "Preserve qualified business attention and existing service continuity; value UNKNOWN",
+      "can_prepare": true,
+      "confidence": "HIGH",
+      "dependency": null,
+      "domain": "MANAGER",
+      "due_at": "2026-10-07T14:00:00+00:00",
+      "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+      "owner_approval_required": true,
+      "priority_id": "73478fc1bbd365a5516176f9876561031a6dfef8a3f6a38a777d4c7b2dc79ee7",
+      "proposal_id": null,
+      "status": "OWNER_REVIEW",
+      "targets": [
+        {
+          "entity_id": "64cb5ead03ed392131dc762ab5d843f029356bba40a28a3fea450335d9ef56ee",
+          "entity_type": "TRIGGER",
+          "system": "OPTIBRAIN"
+        }
+      ],
+      "urgency": "MEDIUM",
+      "what": "Verify Eligibility And Submission · Parc olympique",
+      "why": "TENDER_DEADLINE",
+      "payload_hash": "fe7c6b739bf077834b98dc47d60b801a49c12378cfb3f25c02bfd6c358e2df7f",
+      "evidence": [
+        {
+          "confidence": "MODERATE",
+          "freshness": "CURRENT",
+          "limitations": [
+            "No provider write authority from owner priority."
+          ],
+          "observed_at": "2026-10-04T21:55:39.616320+00:00",
+          "provider": "SEAO",
+          "source_reference": "OPTIBRAIN:TRIGGER:64cb5ead03ed392131dc762ab5d843f029356bba40a28a3fea450335d9ef56ee",
+          "truth_class": "DERIVED_DETERMINISTIC",
+          "valid_until": "2026-10-07T10:00:00-04:00",
+          "cache_age_seconds": 156309,
+          "newer_data_expected": false,
+          "source_health": [],
+          "fact_class": "DERIVED_DETERMINISTICALLY"
+        }
+      ],
+      "readiness": "CURRENT",
+      "canonical_target": "OPTIBRAIN:COMPANY:93a8915593a40ad06e48d5784b97a21904fa24c274e3d832179cd6c54c356092",
+      "priority_ids": [
+        "73478fc1bbd365a5516176f9876561031a6dfef8a3f6a38a777d4c7b2dc79ee7"
+      ],
+      "proposal_ids": [],
+      "factors": {
+        "business_impact": "Preserve qualified business attention and existing service continuity; value UNKNOWN",
+        "deadline": "2026-10-07T10:00:00-04:00",
+        "urgency": "MEDIUM",
+        "confidence": "MODERATE",
+        "risk": "UNKNOWN",
+        "revenue_potential": "UNKNOWN",
+        "recurring_potential": "UNKNOWN",
+        "cost": "UNKNOWN",
+        "effort": "UNKNOWN",
+        "service_fit": "Evidence-dependent",
+        "geography": "Evidence-dependent",
+        "dependency": null,
+        "reasons": [
+          "Open procurement closes 2026-10-07T10:00:00-04:00"
+        ]
+      },
+      "execution_authorized": false,
+      "preview": null,
+      "lifecycle": {
+        "schema": 1,
+        "context": {
+          "entity_id": "20160570",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "source_facts": [
+          "952e3fc1f76fcb308e8b1052c4c2d7b4817086baaf7fa918c8721982446da983"
+        ],
+        "current_state": "TENDER_OPEN",
+        "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "TENDER_DEADLINE",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "20160570",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          },
+          "detail": {
+            "deadline": "2026-10-07T10:00:00-04:00",
+            "eligibility": "UNKNOWN",
+            "submission_status": "UNKNOWN"
+          },
+          "event_at": "2026-07-21T11:23:45-04:00",
+          "event_id": "952e3fc1f76fcb308e8b1052c4c2d7b4817086baaf7fa918c8721982446da983",
+          "event_type": "TENDER_OPEN",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-04T21:55:39.616320+00:00",
+          "source": "PUBLIC",
+          "source_at": "2026-09-23T21:25:04+00:00",
+          "source_reference": "ocds-ec9k95-20160570",
+          "truth_class": "PUBLIC_SOURCE_FACT",
+          "source_context": {
+            "entity_id": "20160570",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          }
+        },
+        "last_event_at": "2026-07-21T11:23:45-04:00",
+        "source_health": {},
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-07T14:00:00+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-04T21:55:39.616320+00:00",
+        "context_label": "Parc olympique"
+      },
+      "current_state": "TENDER_OPEN",
+      "actionability": "VERIFY_FIRST",
+      "reason_code": "TENDER_DEADLINE",
+      "deadline": "2026-10-07T14:00:00+00:00",
+      "original_recommendation": {
+        "what": "Review Parc olympique project signal",
+        "next_action": "Review native tender/permit and customer/collision context; no send or bid"
+      },
+      "recommendation_state": "SUPERSEDED_BY_EVIDENCE"
+    },
+    {
+      "actor": "OWNER",
+      "blocker": null,
+      "business_impact": "More relevant owner attention and legitimate future customer coverage; revenue UNKNOWN.",
+      "can_prepare": true,
+      "confidence": "HIGH",
+      "dependency": null,
+      "domain": "SALES_INTELLIGENCE",
+      "due_at": "2026-10-07T03:59:59+00:00",
+      "next_action": "VERIFY_DELIVERABLE_STATUS",
+      "owner_approval_required": true,
+      "priority_id": "45b552aa8e011d5aa716b6f86349da2e48374c272e90f20136638fd08eea0968",
+      "proposal_id": "d3d3ee475220a4e98bb06bb53bf9f03f42cd61090f0938f9bb241d20d2a2d52d",
+      "status": "CURRENT_DERIVED_ACTION",
+      "targets": [
+        {
+          "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466",
+          "entity_type": "SALES_REPLY",
+          "system": "OUTREACH"
+        }
+      ],
+      "urgency": "HIGH",
+      "what": "Verify Deliverable Status · Art Systems Canada",
+      "why": "PROMISED_DELIVERABLE_OUTSTANDING",
+      "payload_hash": "749569c3d077e1acbb66aa745968482af72ee6cb7d6512b9335f553cfebb6689",
+      "evidence": [
+        {
+          "confidence": "MODERATE",
+          "freshness": "CURRENT",
+          "limitations": [
+            "Read-only bounded sample; not a contact or send authority."
+          ],
+          "observed_at": "2026-10-06T12:40:51.465815+00:00",
+          "provider": "APOLLO / ZOHO_MAIL",
+          "source_reference": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466",
+          "truth_class": "DERIVED_DETERMINISTIC",
+          "valid_until": null,
+          "cache_age_seconds": 16798,
+          "newer_data_expected": false,
+          "source_health": [
+            "GREEN",
+            "PARTIAL"
+          ],
+          "fact_class": "DERIVED_DETERMINISTICALLY"
+        }
+      ],
+      "readiness": "CURRENT",
+      "canonical_target": "OPTIBRAIN:CONVERSATION:d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466",
+      "priority_ids": [
+        "45b552aa8e011d5aa716b6f86349da2e48374c272e90f20136638fd08eea0968"
+      ],
+      "proposal_ids": [
+        "d3d3ee475220a4e98bb06bb53bf9f03f42cd61090f0938f9bb241d20d2a2d52d"
+      ],
+      "factors": {
+        "business_impact": "More relevant owner attention and legitimate future customer coverage; revenue UNKNOWN.",
+        "deadline": null,
+        "urgency": "HIGH",
+        "confidence": "MODERATE",
+        "risk": "Human-controlled legal/contract context. No document signature, acceptance or legal judgment is prepared/executed.",
+        "revenue_potential": "UNKNOWN",
+        "recurring_potential": "UNKNOWN",
+        "cost": {
+          "value": null,
+          "basis": "UNKNOWN"
+        },
+        "effort": "UNKNOWN",
+        "service_fit": "Evidence-dependent",
+        "geography": "Evidence-dependent",
+        "dependency": "Fresh conversation/contact/suppression/manual owner context before execution.",
+        "reasons": [
+          "OTHER from an exact message-linked reply; buying intent remains unqualified.",
+          "Preserve current outreach owner; preparation only."
+        ]
+      },
+      "execution_authorized": false,
+      "preview": null,
+      "lifecycle": {
+        "schema": 1,
+        "context": {
+          "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466",
+          "entity_type": "CONVERSATION",
+          "system": "OUTREACH"
+        },
+        "source_facts": [
+          "59447ff229fc67af4aa048bb819828abf42dc477d0698d6e2a8ab447120cbd85",
+          "c4b4b290b4f22cf8486a08bedbc6bb40e2d44c4646388d410ed96e1d87bee2ea",
+          "cac9c05b9496e5590cbb91265174770fec1b4782f78ff9162784e97042071482",
+          "8fd6d188111c4a07b9a01e2120b1edc48e6911562a85907afd6275975538a436",
+          "032e66bd26c6cdad4dfd6717fa05aa704949e79073e786e47d60df3b75f44711",
+          "52c6753ba2f8a04f3420dfebf7ec2035c1b5191c598679adf596149022713440"
+        ],
+        "current_state": "DELIVERABLE_PROMISED",
+        "next_action": "VERIFY_DELIVERABLE_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "PROMISED_DELIVERABLE_OUTSTANDING",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          },
+          "detail": {
+            "actual_send_time": "UNKNOWN",
+            "commitment": "Handwritten document correction",
+            "due_at": "2026-10-06T23:59:59-04:00",
+            "due_date": "2026-10-06",
+            "due_precision": "DAY",
+            "linkage": "Exact native Mail thread ID and exact owner/recipient identities",
+            "message_reference": "1791234807945144400",
+            "native_thread_id": "1790188756344152600",
+            "reason_code": "MISSING_REPLY_DETECTION"
+          },
+          "event_at": null,
+          "event_id": "52c6753ba2f8a04f3420dfebf7ec2035c1b5191c598679adf596149022713440",
+          "event_type": "DELIVERABLE_PROMISED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T05:44:09.259Z",
+          "proof": "EXACT_THREAD",
+          "source": "MAIL",
+          "source_at": "2026-10-05T21:13:29.478000+00:00",
+          "time_basis": "SENT_COPY_RECEIPT_AT",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-07T03:59:59+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T05:44:09.259000+00:00",
+        "deadline_precision": "DAY",
+        "context_label": "Art Systems Canada"
+      },
+      "current_state": "DELIVERABLE_PROMISED",
+      "actionability": "VERIFY_FIRST",
+      "reason_code": "PROMISED_DELIVERABLE_OUTSTANDING",
+      "deadline": "2026-10-07T03:59:59+00:00",
+      "original_recommendation": {
+        "what": "Review VERIFY RESPONSE STATUS · Art Systems Canada",
+        "next_action": "Review exact draft and source context; no send action."
+      },
+      "recommendation_state": "SUPERSEDED_BY_EVIDENCE"
+    }
+  ],
+  "other_contexts": [
+    {
+      "label": "Noveco EST-1132",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002330018"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002330018",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "c483488f99afbbf530067b2435fef124dbea71a904a0e64ade3450b726847643",
+          "de8a1b796383bff80fa11cd140d216716fd171ca98af7b8521511470afc44501"
+        ],
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING",
+        "reason_code": "FOLLOWUP_POLICY_UNKNOWN",
+        "waiting_reason": "FOLLOWUP_POLICY_UNKNOWN",
+        "followup_due_state": "POLICY_UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002330018",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "actor": "OWNER",
+            "actual_occurrence_time": "UNKNOWN",
+            "provenance": "User remediation instruction: quotes already sent",
+            "reason_code": "DERIVED_ACTION_PERSISTED"
+          },
+          "event_at": null,
+          "event_id": "de8a1b796383bff80fa11cd140d216716fd171ca98af7b8521511470afc44501",
+          "event_type": "QUOTE_SENT",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T13:09:42.524902+00:00",
+          "source": "OWNER",
+          "source_at": "2026-10-06T13:09:42.524902+00:00",
+          "time_basis": "ASSERTION_AT",
+          "truth_class": "OWNER_VERIFIED_FACT",
+          "source_context": {
+            "entity_id": "3643985000002330018",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": "QUOTE_SENT",
+        "evidence_observed_at": "2026-10-06T13:09:42.524902+00:00",
+        "context_label": "EST-1132"
+      }
+    },
+    {
+      "label": "Noveco EST-1133",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002330031"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002330031",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "9a0fb5997aca97e4b5608917b8d33c56ac4dfa69f0fac16325bbedc096b63533",
+          "d855be52b7e2256ec2d8e068a01cf7a76d9894a821751914673315782cfaf9e6"
+        ],
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING",
+        "reason_code": "FOLLOWUP_POLICY_UNKNOWN",
+        "waiting_reason": "FOLLOWUP_POLICY_UNKNOWN",
+        "followup_due_state": "POLICY_UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002330031",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "actor": "OWNER",
+            "actual_occurrence_time": "UNKNOWN",
+            "provenance": "User remediation instruction: quotes already sent",
+            "reason_code": "DERIVED_ACTION_PERSISTED"
+          },
+          "event_at": null,
+          "event_id": "d855be52b7e2256ec2d8e068a01cf7a76d9894a821751914673315782cfaf9e6",
+          "event_type": "QUOTE_SENT",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T13:09:42.524902+00:00",
+          "source": "OWNER",
+          "source_at": "2026-10-06T13:09:42.524902+00:00",
+          "time_basis": "ASSERTION_AT",
+          "truth_class": "OWNER_VERIFIED_FACT",
+          "source_context": {
+            "entity_id": "3643985000002330031",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": "QUOTE_SENT",
+        "evidence_observed_at": "2026-10-06T13:09:42.524902+00:00",
+        "context_label": "EST-1133"
+      }
+    },
+    {
+      "label": "Noveco EST-1134",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002330043"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002330043",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "77740ff6a506e9efa93e26b3b2f105d3547dc6eb6acc0e9cc408e8561e4ba522",
+          "d096539205f58ba64b57f625322916f3addb4e4b83e48519e65c63fa23623f99"
+        ],
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING",
+        "reason_code": "FOLLOWUP_POLICY_UNKNOWN",
+        "waiting_reason": "FOLLOWUP_POLICY_UNKNOWN",
+        "followup_due_state": "POLICY_UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002330043",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "actor": "OWNER",
+            "actual_occurrence_time": "UNKNOWN",
+            "provenance": "User remediation instruction: quotes already sent",
+            "reason_code": "DERIVED_ACTION_PERSISTED"
+          },
+          "event_at": null,
+          "event_id": "d096539205f58ba64b57f625322916f3addb4e4b83e48519e65c63fa23623f99",
+          "event_type": "QUOTE_SENT",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T13:09:42.524902+00:00",
+          "source": "OWNER",
+          "source_at": "2026-10-06T13:09:42.524902+00:00",
+          "time_basis": "ASSERTION_AT",
+          "truth_class": "OWNER_VERIFIED_FACT",
+          "source_context": {
+            "entity_id": "3643985000002330043",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": "QUOTE_SENT",
+        "evidence_observed_at": "2026-10-06T13:09:42.524902+00:00",
+        "context_label": "EST-1134"
+      }
+    },
+    {
+      "label": "Anjou 80",
+      "context": {
+        "system": "CRM",
+        "entity_type": "LEAD",
+        "entity_id": "5062683000007975083"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "5062683000007975083",
+          "entity_type": "LEAD",
+          "system": "CRM"
+        },
+        "source_facts": [
+          "2e4a088a118071ceadaba19efc910de9b8a89af84a15de91eae5c2abd79f8f67"
+        ],
+        "current_state": "INQUIRY_RESPONSE_UNKNOWN",
+        "next_action": "VERIFY_RESPONSE_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_REPLY_STATUS",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "5062683000007975083",
+            "entity_type": "LEAD",
+            "system": "CRM"
+          },
+          "event_at": "2026-10-05T16:12:55-04:00",
+          "event_id": "2e4a088a118071ceadaba19efc910de9b8a89af84a15de91eae5c2abd79f8f67",
+          "event_type": "INQUIRY_RECEIVED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T11:51:44.580238+00:00",
+          "source": "CRM",
+          "source_at": null,
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "5062683000007975083",
+            "entity_type": "LEAD",
+            "system": "CRM"
+          }
+        },
+        "last_event_at": "2026-10-05T16:12:55-04:00",
+        "source_health": {},
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T16:37:22.442344+00:00",
+        "context_label": "5062683000007975083"
+      }
+    },
+    {
+      "label": "Support Ti",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "7fbc5e55c84c4668a615a144d325902d6ccfcbdd56075a4499faaf0419fb767e"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "7fbc5e55c84c4668a615a144d325902d6ccfcbdd56075a4499faaf0419fb767e",
+          "entity_type": "CONVERSATION",
+          "system": "OUTREACH"
+        },
+        "source_facts": [
+          "49ec0f3b18c9477b82a5712d56af1abdf9d4931b527c17ba4c1ec13d38374cc3",
+          "17446e23198183bed1d6dcf9e2b5aeb8f47c94ce4e3cd80047683c442d2d2c38",
+          "6e74aec87d4a0c31043c04c7faef6fe62c287eec4726832eda08fd1e24e07129"
+        ],
+        "current_state": "DELIVERABLE_PROMISED",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING",
+        "reason_code": "PROMISE_NOT_DUE",
+        "waiting_reason": "PROMISE_NOT_DUE",
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "7fbc5e55c84c4668a615a144d325902d6ccfcbdd56075a4499faaf0419fb767e",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          },
+          "detail": {
+            "actual_send_time": "UNKNOWN",
+            "commitment": "Tuesday afternoon contact; exact call time unknown",
+            "daypart": "AFTERNOON",
+            "due_at": "2026-10-06T23:59:59-04:00",
+            "due_date": "2026-10-06",
+            "due_precision": "DAYPART",
+            "linkage": "Exact native Mail thread ID and exact owner/recipient identities",
+            "message_reference": "1791227294978144400",
+            "native_thread_id": "1790890900849152600",
+            "not_before": "2026-10-06T12:00:00-04:00",
+            "not_before_basis": "Owner explicitly promised Tuesday PM; daypart boundary, not appointment time",
+            "reason_code": "MISSING_REPLY_DETECTION"
+          },
+          "event_at": null,
+          "event_id": "6e74aec87d4a0c31043c04c7faef6fe62c287eec4726832eda08fd1e24e07129",
+          "event_type": "DELIVERABLE_PROMISED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T05:44:09.242Z",
+          "proof": "EXACT_THREAD",
+          "source": "MAIL",
+          "source_at": "2026-10-05T19:08:15.848000+00:00",
+          "time_basis": "SENT_COPY_RECEIPT_AT",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "7fbc5e55c84c4668a615a144d325902d6ccfcbdd56075a4499faaf0419fb767e",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-07T03:59:59+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T05:44:09.242000+00:00",
+        "deadline_precision": "DAYPART",
+        "context_label": "Support Ti"
+      }
+    },
+    {
+      "label": "Art Systems Canada",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466",
+          "entity_type": "CONVERSATION",
+          "system": "OUTREACH"
+        },
+        "source_facts": [
+          "59447ff229fc67af4aa048bb819828abf42dc477d0698d6e2a8ab447120cbd85",
+          "c4b4b290b4f22cf8486a08bedbc6bb40e2d44c4646388d410ed96e1d87bee2ea",
+          "cac9c05b9496e5590cbb91265174770fec1b4782f78ff9162784e97042071482",
+          "8fd6d188111c4a07b9a01e2120b1edc48e6911562a85907afd6275975538a436",
+          "032e66bd26c6cdad4dfd6717fa05aa704949e79073e786e47d60df3b75f44711",
+          "52c6753ba2f8a04f3420dfebf7ec2035c1b5191c598679adf596149022713440"
+        ],
+        "current_state": "DELIVERABLE_PROMISED",
+        "next_action": "VERIFY_DELIVERABLE_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "PROMISED_DELIVERABLE_OUTSTANDING",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          },
+          "detail": {
+            "actual_send_time": "UNKNOWN",
+            "commitment": "Handwritten document correction",
+            "due_at": "2026-10-06T23:59:59-04:00",
+            "due_date": "2026-10-06",
+            "due_precision": "DAY",
+            "linkage": "Exact native Mail thread ID and exact owner/recipient identities",
+            "message_reference": "1791234807945144400",
+            "native_thread_id": "1790188756344152600",
+            "reason_code": "MISSING_REPLY_DETECTION"
+          },
+          "event_at": null,
+          "event_id": "52c6753ba2f8a04f3420dfebf7ec2035c1b5191c598679adf596149022713440",
+          "event_type": "DELIVERABLE_PROMISED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T05:44:09.259Z",
+          "proof": "EXACT_THREAD",
+          "source": "MAIL",
+          "source_at": "2026-10-05T21:13:29.478000+00:00",
+          "time_basis": "SENT_COPY_RECEIPT_AT",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-07T03:59:59+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T05:44:09.259000+00:00",
+        "deadline_precision": "DAY",
+        "context_label": "Art Systems Canada"
+      }
+    },
+    {
+      "label": "Alsys - audio alarme",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "07dfe2b9dda9171349cca5f2ccb92a87e58cd3d15f14ced7e7ef2bfc7389386e"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "07dfe2b9dda9171349cca5f2ccb92a87e58cd3d15f14ced7e7ef2bfc7389386e",
+          "entity_type": "CONVERSATION",
+          "system": "OUTREACH"
+        },
+        "source_facts": [
+          "dcb35c9c25d79d5ce1b4714a83e894f417ac019a56b0e774671296a81f3a6c02",
+          "44f65220e61dcc7ade0a87a8bf20cada30dff4b18305d7cc47d8c21216d74a4f"
+        ],
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING",
+        "reason_code": "FOLLOWUP_POLICY_UNKNOWN",
+        "waiting_reason": "FOLLOWUP_POLICY_UNKNOWN",
+        "followup_due_state": "POLICY_UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "07dfe2b9dda9171349cca5f2ccb92a87e58cd3d15f14ced7e7ef2bfc7389386e",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          },
+          "detail": {
+            "actual_send_time": "UNKNOWN",
+            "linkage": "Exact native Mail thread ID and exact owner/recipient identities",
+            "message_reference": "1790680974266144400",
+            "native_thread_id": "1790178293613152600",
+            "reason_code": "MISSING_REPLY_DETECTION"
+          },
+          "event_at": null,
+          "event_id": "44f65220e61dcc7ade0a87a8bf20cada30dff4b18305d7cc47d8c21216d74a4f",
+          "event_type": "RESPONSE_SENT",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T05:44:09.271Z",
+          "proof": "EXACT_THREAD",
+          "source": "MAIL",
+          "source_at": "2026-09-29T11:22:55.511000+00:00",
+          "time_basis": "SENT_COPY_RECEIPT_AT",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "07dfe2b9dda9171349cca5f2ccb92a87e58cd3d15f14ced7e7ef2bfc7389386e",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T05:44:09.271000+00:00",
+        "context_label": "Alsys - audio alarme"
+      }
+    },
+    {
+      "label": "G.S.D Group INC.",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "7bb7908bc4e84dd9344d8d0f18465cda087c564d99eb8fadd702be9269ffd0bf"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "7bb7908bc4e84dd9344d8d0f18465cda087c564d99eb8fadd702be9269ffd0bf",
+          "entity_type": "CONVERSATION",
+          "system": "OUTREACH"
+        },
+        "source_facts": [
+          "2df5614ad16ba02b0464c984122b0e1eabc76d869591f9ab335bc727fc8a7e3c",
+          "7296f0d8691e5189bba62a93b480a447ee0d69f344a4504f1eb492a14ff3248b"
+        ],
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING",
+        "reason_code": "FOLLOWUP_POLICY_UNKNOWN",
+        "waiting_reason": "FOLLOWUP_POLICY_UNKNOWN",
+        "followup_due_state": "POLICY_UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "7bb7908bc4e84dd9344d8d0f18465cda087c564d99eb8fadd702be9269ffd0bf",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          },
+          "detail": {
+            "actual_send_time": "UNKNOWN",
+            "linkage": "Exact native Mail thread ID and exact owner/recipient identities",
+            "message_reference": "1790873855029144400",
+            "native_thread_id": "1790872427077152600",
+            "reason_code": "MISSING_REPLY_DETECTION"
+          },
+          "event_at": null,
+          "event_id": "7296f0d8691e5189bba62a93b480a447ee0d69f344a4504f1eb492a14ff3248b",
+          "event_type": "RESPONSE_SENT",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T05:44:09.284Z",
+          "proof": "EXACT_THREAD",
+          "source": "MAIL",
+          "source_at": "2026-10-01T16:57:36.327000+00:00",
+          "time_basis": "SENT_COPY_RECEIPT_AT",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "7bb7908bc4e84dd9344d8d0f18465cda087c564d99eb8fadd702be9269ffd0bf",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T05:44:09.284000+00:00",
+        "context_label": "G.S.D Group INC."
+      }
+    },
+    {
+      "label": "Maisonneuve",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20168879"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "20168879",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "source_facts": [
+          "163ff1dc792dd941762425ad99f03e8a97199e8ac837ed1027c80e212d720718",
+          "2134ab27128541cfef418e12fb22f13290ea5b48f7d279a8354c6b7a8fa7dfa2"
+        ],
+        "current_state": "TENDER_OPEN",
+        "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "TENDER_DEADLINE",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "20168879",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          },
+          "detail": {
+            "deadline": "2026-10-07T10:00:00-04:00",
+            "eligibility": "UNKNOWN",
+            "submission_status": "UNKNOWN"
+          },
+          "event_at": "2026-09-03T13:49:25-04:00",
+          "event_id": "2134ab27128541cfef418e12fb22f13290ea5b48f7d279a8354c6b7a8fa7dfa2",
+          "event_type": "TENDER_OPEN",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-05T21:58:33.956187+00:00",
+          "source": "PUBLIC",
+          "source_at": "2026-09-30T15:46:37+00:00",
+          "source_reference": "ocds-ec9k95-20168879",
+          "truth_class": "PUBLIC_SOURCE_FACT",
+          "source_context": {
+            "entity_id": "20168879",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          }
+        },
+        "last_event_at": "2026-09-03T13:49:25-04:00",
+        "source_health": {},
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-07T14:00:00+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T05:45:12.746000+00:00",
+        "context_label": "Collège de Maisonneuve"
+      }
+    },
+    {
+      "label": "Mont-Royal",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20172194"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "20172194",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "source_facts": [
+          "d33bdec3cdcb25fa872cd118c3a9df87b1022c3a5eada0e0599d6c571fc49bcd",
+          "3ac87c46ade4da7d37cc2aa65c5c7580a8a9b7ef87684e5d96138f85f68175fb"
+        ],
+        "current_state": "TENDER_OPEN",
+        "next_action": "REVIEW_TENDER_FIT",
+        "actionability": "OPTIONAL",
+        "reason_code": "TENDER_RESEARCH",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "20172194",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          },
+          "detail": {
+            "deadline": "2026-10-27T11:00:00-04:00",
+            "eligibility": "UNKNOWN",
+            "submission_status": "UNKNOWN"
+          },
+          "event_at": "2026-09-23T07:51:56-04:00",
+          "event_id": "3ac87c46ade4da7d37cc2aa65c5c7580a8a9b7ef87684e5d96138f85f68175fb",
+          "event_type": "TENDER_OPEN",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-05T21:58:33.956187+00:00",
+          "source": "PUBLIC",
+          "source_at": "2026-09-30T20:24:00+00:00",
+          "source_reference": "ocds-ec9k95-20172194",
+          "truth_class": "PUBLIC_SOURCE_FACT",
+          "source_context": {
+            "entity_id": "20172194",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          }
+        },
+        "last_event_at": "2026-09-23T07:51:56-04:00",
+        "source_health": {},
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-27T15:00:00+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T05:45:12.763000+00:00",
+        "context_label": "Ville de Mont-Royal."
+      }
+    },
+    {
+      "label": "Gille Tanguay EST-1129",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002080009"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002080009",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "f1ba216ceeb7edd048cb80ba426ca1832bbf27020a84ec3abe55126eefe7049a"
+        ],
+        "current_state": "ACCEPTED_WORK",
+        "next_action": "VERIFY_ACCEPTED_WORK_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_WORK_PROGRESSION",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002080009",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "status": "accepted"
+          },
+          "event_at": null,
+          "event_id": "f1ba216ceeb7edd048cb80ba426ca1832bbf27020a84ec3abe55126eefe7049a",
+          "event_type": "QUOTE_ACCEPTED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T16:37:22.442344+00:00",
+          "source": "BOOKS",
+          "source_at": "2026-09-23T14:12:15-0400",
+          "source_reference": "3643985000002080009",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "3643985000002080009",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": "QUOTE_ACCEPTED",
+        "evidence_observed_at": "2026-10-06T16:37:22.442344+00:00",
+        "context_label": "EST-1129"
+      }
+    },
+    {
+      "label": "Gille Tanguay EST-1124",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002006102"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002006102",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "26ac7bd5e4e3aa74248f5d5ac6ecc86dd2e3c23e99b7d389b402a4969d08c8a9"
+        ],
+        "current_state": "SENT_RECORDED_DELIVERY_UNKNOWN",
+        "next_action": "VERIFY_DELIVERY_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_QUOTE_DELIVERY",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002006102",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "status": "sent"
+          },
+          "event_at": null,
+          "event_id": "26ac7bd5e4e3aa74248f5d5ac6ecc86dd2e3c23e99b7d389b402a4969d08c8a9",
+          "event_type": "QUOTE_SENT_RECORDED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T16:37:22.442344+00:00",
+          "source": "BOOKS",
+          "source_at": "2026-09-15T11:57:01-0400",
+          "source_reference": "3643985000002006102",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "3643985000002006102",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": "QUOTE_SENT_RECORDED",
+        "evidence_observed_at": "2026-10-06T16:37:22.442344+00:00",
+        "context_label": "EST-1124"
+      }
+    },
+    {
+      "label": "Accès pharma chez Walmart",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "00c6d46ecb3845143ea6132f3d3d330648ba1969e1554d13d8ede8212edb54e5"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "system": "OUTREACH",
+          "entity_type": "CONVERSATION",
+          "entity_id": "00c6d46ecb3845143ea6132f3d3d330648ba1969e1554d13d8ede8212edb54e5"
+        },
+        "source_facts": [],
+        "current_state": "UNKNOWN",
+        "next_action": "VERIFY_CURRENT_STATE",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_CURRENT_STATE",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "INSUFFICIENT",
+        "latest_authoritative_event": null,
+        "last_event_at": null,
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "context_label": "Accès pharma chez Walmart"
+      }
+    },
+    {
+      "label": "Passion informatique",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "42e86dc5f9ecdf24afe4f80c5e15c23d9978b05a289f5c7588fe71ab70fe3c79"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "42e86dc5f9ecdf24afe4f80c5e15c23d9978b05a289f5c7588fe71ab70fe3c79",
+          "entity_type": "CONVERSATION",
+          "system": "OUTREACH"
+        },
+        "source_facts": [
+          "d6159e4693a029231c0aeb25a0c8f82911d9055a68781e1ffc1e6a01b3348cfa"
+        ],
+        "current_state": "CUSTOMER_REPLIED",
+        "next_action": "VERIFY_RESPONSE_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_REPLY_STATUS",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "REPLY_OBSERVED",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "42e86dc5f9ecdf24afe4f80c5e15c23d9978b05a289f5c7588fe71ab70fe3c79",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          },
+          "detail": {
+            "intent_confidence": "INSUFFICIENT",
+            "reply_kind": "OTHER"
+          },
+          "event_at": "2026-10-01T18:44:19.116000+00:00",
+          "event_id": "d6159e4693a029231c0aeb25a0c8f82911d9055a68781e1ffc1e6a01b3348cfa",
+          "event_type": "CUSTOMER_REPLIED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T12:40:51.465815+00:00",
+          "proof": "EXACT_THREAD",
+          "source": "MAIL",
+          "source_at": null,
+          "source_reference": "1790880259123162800",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "42e86dc5f9ecdf24afe4f80c5e15c23d9978b05a289f5c7588fe71ab70fe3c79",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          }
+        },
+        "last_event_at": "2026-10-01T18:44:19.116000+00:00",
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T12:40:51.465815+00:00",
+        "context_label": "Passion informatique"
+      }
+    },
+    {
+      "label": "Les Experts en gestion immobilière inc.",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "3ce5667a14e6a4d6cf7a544131a6d07421111d444405d4bd7199b0bbae7ec6ca"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "system": "OUTREACH",
+          "entity_type": "CONVERSATION",
+          "entity_id": "3ce5667a14e6a4d6cf7a544131a6d07421111d444405d4bd7199b0bbae7ec6ca"
+        },
+        "source_facts": [],
+        "current_state": "UNKNOWN",
+        "next_action": "VERIFY_CURRENT_STATE",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_CURRENT_STATE",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "INSUFFICIENT",
+        "latest_authoritative_event": null,
+        "last_event_at": null,
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "context_label": "Les Experts en gestion immobilière inc."
+      }
+    },
+    {
+      "label": "Le Vet Club - Clinique Vétérinaire",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "3ce72d52a0c8f7d6c68fdbf56c1221466c5bbd3fc63f395021ac54a883eb9d7a"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3ce72d52a0c8f7d6c68fdbf56c1221466c5bbd3fc63f395021ac54a883eb9d7a",
+          "entity_type": "CONVERSATION",
+          "system": "OUTREACH"
+        },
+        "source_facts": [
+          "1ae12c8cab8111cf415d174baf0d91fa239fa8f8339a8531e0b1e147f2dc7fa3"
+        ],
+        "current_state": "CUSTOMER_REPLIED",
+        "next_action": "VERIFY_RESPONSE_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_REPLY_STATUS",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "REPLY_OBSERVED",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3ce72d52a0c8f7d6c68fdbf56c1221466c5bbd3fc63f395021ac54a883eb9d7a",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          },
+          "detail": {
+            "intent_confidence": "INSUFFICIENT",
+            "reply_kind": "OTHER"
+          },
+          "event_at": "2026-09-29T19:55:44.227000+00:00",
+          "event_id": "1ae12c8cab8111cf415d174baf0d91fa239fa8f8339a8531e0b1e147f2dc7fa3",
+          "event_type": "CUSTOMER_REPLIED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T12:40:51.465815+00:00",
+          "proof": "EXACT_THREAD",
+          "source": "MAIL",
+          "source_at": null,
+          "source_reference": "1790711744236162800",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "3ce72d52a0c8f7d6c68fdbf56c1221466c5bbd3fc63f395021ac54a883eb9d7a",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          }
+        },
+        "last_event_at": "2026-09-29T19:55:44.227000+00:00",
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T12:40:51.465815+00:00",
+        "context_label": "Le Vet Club - Clinique Vétérinaire"
+      }
+    },
+    {
+      "label": "CBN IT Solutions",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "98380fd6155382eb1adcfd2ee1eb2dfce84dd967ba335c1e12ed62ca9caacfca"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "system": "OUTREACH",
+          "entity_type": "CONVERSATION",
+          "entity_id": "98380fd6155382eb1adcfd2ee1eb2dfce84dd967ba335c1e12ed62ca9caacfca"
+        },
+        "source_facts": [],
+        "current_state": "UNKNOWN",
+        "next_action": "VERIFY_CURRENT_STATE",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_CURRENT_STATE",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "INSUFFICIENT",
+        "latest_authoritative_event": null,
+        "last_event_at": null,
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "context_label": "CBN IT Solutions"
+      }
+    },
+    {
+      "label": "SGC MONTREAL INC.",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "d7abdc9b1ffa53d94a0b7677d1914a4b5c6a39e78d84a0a88081d691123c809c"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "system": "OUTREACH",
+          "entity_type": "CONVERSATION",
+          "entity_id": "d7abdc9b1ffa53d94a0b7677d1914a4b5c6a39e78d84a0a88081d691123c809c"
+        },
+        "source_facts": [],
+        "current_state": "UNKNOWN",
+        "next_action": "VERIFY_CURRENT_STATE",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_CURRENT_STATE",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "INSUFFICIENT",
+        "latest_authoritative_event": null,
+        "last_event_at": null,
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "context_label": "SGC MONTREAL INC."
+      }
+    },
+    {
+      "label": "FSecur",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "66006a5bbe27840f2fbdcc02f5f0ff03d436c57f45e7f8c37e4334936bd22828"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "system": "OUTREACH",
+          "entity_type": "CONVERSATION",
+          "entity_id": "66006a5bbe27840f2fbdcc02f5f0ff03d436c57f45e7f8c37e4334936bd22828"
+        },
+        "source_facts": [],
+        "current_state": "UNKNOWN",
+        "next_action": "VERIFY_CURRENT_STATE",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_CURRENT_STATE",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "INSUFFICIENT",
+        "latest_authoritative_event": null,
+        "last_event_at": null,
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "context_label": "FSecur"
+      }
+    },
+    {
+      "label": "io4 Technologies",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "8bffbc882b7737cfc0125cc0966bef2e36eb4d9cbf564b2a6174a1e157bfafce"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "8bffbc882b7737cfc0125cc0966bef2e36eb4d9cbf564b2a6174a1e157bfafce",
+          "entity_type": "CONVERSATION",
+          "system": "OUTREACH"
+        },
+        "source_facts": [
+          "277b61995ea12f8f712c882fcb1cfb8a14509a89c0d173122fc07a4eaa282ac2"
+        ],
+        "current_state": "CUSTOMER_REPLIED",
+        "next_action": "VERIFY_RESPONSE_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_REPLY_STATUS",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "REPLY_OBSERVED",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "8bffbc882b7737cfc0125cc0966bef2e36eb4d9cbf564b2a6174a1e157bfafce",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          },
+          "detail": {
+            "intent_confidence": "INSUFFICIENT",
+            "reply_kind": "OTHER"
+          },
+          "event_at": "2026-09-24T18:49:48.246000+00:00",
+          "event_id": "277b61995ea12f8f712c882fcb1cfb8a14509a89c0d173122fc07a4eaa282ac2",
+          "event_type": "CUSTOMER_REPLIED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T12:40:51.465815+00:00",
+          "proof": "EXACT_THREAD",
+          "source": "MAIL",
+          "source_at": null,
+          "source_reference": "1790275788264162800",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "8bffbc882b7737cfc0125cc0966bef2e36eb4d9cbf564b2a6174a1e157bfafce",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          }
+        },
+        "last_event_at": "2026-09-24T18:49:48.246000+00:00",
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T12:40:51.465815+00:00",
+        "context_label": "io4 Technologies"
+      }
+    },
+    {
+      "label": "Protect-IP Global Solutions",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "713f3608ad712737ab0fe466f03ba42606dd39fd98b9f1f3775d0c3be4c6ce0f"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "713f3608ad712737ab0fe466f03ba42606dd39fd98b9f1f3775d0c3be4c6ce0f",
+          "entity_type": "CONVERSATION",
+          "system": "OUTREACH"
+        },
+        "source_facts": [
+          "690e4c7004c4ce995d86c37d0562052bf90c0a914b8983fcc3efdf2278b2a835"
+        ],
+        "current_state": "CUSTOMER_REPLIED",
+        "next_action": "VERIFY_RESPONSE_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_REPLY_STATUS",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "REPLY_OBSERVED",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "713f3608ad712737ab0fe466f03ba42606dd39fd98b9f1f3775d0c3be4c6ce0f",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          },
+          "detail": {
+            "intent_confidence": "INSUFFICIENT",
+            "reply_kind": "OTHER"
+          },
+          "event_at": "2026-09-23T19:53:25.722000+00:00",
+          "event_id": "690e4c7004c4ce995d86c37d0562052bf90c0a914b8983fcc3efdf2278b2a835",
+          "event_type": "CUSTOMER_REPLIED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T12:40:51.465815+00:00",
+          "proof": "EXACT_THREAD",
+          "source": "MAIL",
+          "source_at": null,
+          "source_reference": "1790193205733162800",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "713f3608ad712737ab0fe466f03ba42606dd39fd98b9f1f3775d0c3be4c6ce0f",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          }
+        },
+        "last_event_at": "2026-09-23T19:53:25.722000+00:00",
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T12:40:51.465815+00:00",
+        "context_label": "Protect-IP Global Solutions"
+      }
+    },
+    {
+      "label": "System Center Dudes",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "e06c6c733c04dd6e8a09ea95d4a4cf4dd3ee9a6f49ce3dcefeffb3e3786fb1ee"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "e06c6c733c04dd6e8a09ea95d4a4cf4dd3ee9a6f49ce3dcefeffb3e3786fb1ee",
+          "entity_type": "CONVERSATION",
+          "system": "OUTREACH"
+        },
+        "source_facts": [
+          "46c0385f7e7eada9eb05ce785f389aa0117a1a018008bfc748aa2888574f9cf7"
+        ],
+        "current_state": "CUSTOMER_REPLIED",
+        "next_action": "VERIFY_RESPONSE_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_REPLY_STATUS",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "REPLY_OBSERVED",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "e06c6c733c04dd6e8a09ea95d4a4cf4dd3ee9a6f49ce3dcefeffb3e3786fb1ee",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          },
+          "detail": {
+            "intent_confidence": "INSUFFICIENT",
+            "reply_kind": "OTHER"
+          },
+          "event_at": "2026-09-23T15:59:07.934000+00:00",
+          "event_id": "46c0385f7e7eada9eb05ce785f389aa0117a1a018008bfc748aa2888574f9cf7",
+          "event_type": "CUSTOMER_REPLIED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T12:40:51.465815+00:00",
+          "proof": "EXACT_THREAD",
+          "source": "MAIL",
+          "source_at": null,
+          "source_reference": "1790179147941162800",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "e06c6c733c04dd6e8a09ea95d4a4cf4dd3ee9a6f49ce3dcefeffb3e3786fb1ee",
+            "entity_type": "CONVERSATION",
+            "system": "OUTREACH"
+          }
+        },
+        "last_event_at": "2026-09-23T15:59:07.934000+00:00",
+        "source_health": {
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "mail": {
+            "completeness": "PARTIAL"
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T12:40:51.465815+00:00",
+        "context_label": "System Center Dudes"
+      }
+    },
+    {
+      "label": "Valmont Construction EST-1131",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002209016"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002209016",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "1d80a615dedb66fd865d4b05f7982b6e23f94a1208d4b852fe32032a45065101"
+        ],
+        "current_state": "QUOTE_DRAFTED",
+        "next_action": "VERIFY_QUOTE_STATE",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_QUOTE_COMPLETENESS",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002209016",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "completion_state": "UNKNOWN",
+            "status": "draft"
+          },
+          "event_at": null,
+          "event_id": "1d80a615dedb66fd865d4b05f7982b6e23f94a1208d4b852fe32032a45065101",
+          "event_type": "QUOTE_DRAFTED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T16:37:22.442344+00:00",
+          "source": "BOOKS",
+          "source_at": "2026-09-30T19:36:55-0400",
+          "source_reference": "3643985000002209016",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "3643985000002209016",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T16:37:22.442344+00:00",
+        "context_label": "EST-1131"
+      }
+    },
+    {
+      "label": "Rufio inc EST-1126",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002052095"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002052095",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "0d0e496749860fb1353c10f7bf7f6e6d990ed6a400704c76297e872cfaa6a7d6"
+        ],
+        "current_state": "SENT_RECORDED_DELIVERY_UNKNOWN",
+        "next_action": "VERIFY_DELIVERY_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_QUOTE_DELIVERY",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002052095",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "status": "sent"
+          },
+          "event_at": null,
+          "event_id": "0d0e496749860fb1353c10f7bf7f6e6d990ed6a400704c76297e872cfaa6a7d6",
+          "event_type": "QUOTE_SENT_RECORDED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T16:37:22.442344+00:00",
+          "source": "BOOKS",
+          "source_at": "2026-09-21T14:02:10-0400",
+          "source_reference": "3643985000002052095",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "3643985000002052095",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": "QUOTE_SENT_RECORDED",
+        "evidence_observed_at": "2026-10-06T16:37:22.442344+00:00",
+        "context_label": "EST-1126"
+      }
+    },
+    {
+      "label": "Rufio inc EST-1127",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002052112"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002052112",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "59cd722d70232ac0f4b0a665a2145be1bc5ac029661e7cb344dd0a3533be789e"
+        ],
+        "current_state": "SENT_RECORDED_DELIVERY_UNKNOWN",
+        "next_action": "VERIFY_DELIVERY_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_QUOTE_DELIVERY",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002052112",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "status": "sent"
+          },
+          "event_at": null,
+          "event_id": "59cd722d70232ac0f4b0a665a2145be1bc5ac029661e7cb344dd0a3533be789e",
+          "event_type": "QUOTE_SENT_RECORDED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T16:37:22.442344+00:00",
+          "source": "BOOKS",
+          "source_at": "2026-09-21T14:01:40-0400",
+          "source_reference": "3643985000002052112",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "3643985000002052112",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": "QUOTE_SENT_RECORDED",
+        "evidence_observed_at": "2026-10-06T16:37:22.442344+00:00",
+        "context_label": "EST-1127"
+      }
+    },
+    {
+      "label": "Rufio inc EST-1128",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002052126"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002052126",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "5ff7bdf12f48f3619b0a032cc052732be4aa8ae94028eec60130750df47ee32a"
+        ],
+        "current_state": "SENT_RECORDED_DELIVERY_UNKNOWN",
+        "next_action": "VERIFY_DELIVERY_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_QUOTE_DELIVERY",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002052126",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "status": "sent"
+          },
+          "event_at": null,
+          "event_id": "5ff7bdf12f48f3619b0a032cc052732be4aa8ae94028eec60130750df47ee32a",
+          "event_type": "QUOTE_SENT_RECORDED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T16:37:22.442344+00:00",
+          "source": "BOOKS",
+          "source_at": "2026-09-21T14:01:28-0400",
+          "source_reference": "3643985000002052126",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "3643985000002052126",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": "QUOTE_SENT_RECORDED",
+        "evidence_observed_at": "2026-10-06T16:37:22.442344+00:00",
+        "context_label": "EST-1128"
+      }
+    },
+    {
+      "label": "Valmont Construction EST-1125",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002022012"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000002022012",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "d536454d1e8b34ebdb64a4d937fba44b1f90bd55c9a75e16ab11d3280441cc08"
+        ],
+        "current_state": "ESTIMATE_EXISTS",
+        "next_action": "VERIFY_QUOTE_STATE",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_QUOTE_STATE",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002022012",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "status": "invoiced"
+          },
+          "event_at": null,
+          "event_id": "d536454d1e8b34ebdb64a4d937fba44b1f90bd55c9a75e16ab11d3280441cc08",
+          "event_type": "ESTIMATE_EXISTS",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T16:37:22.442344+00:00",
+          "source": "BOOKS",
+          "source_at": "2026-09-28T07:07:32-0400",
+          "source_reference": "3643985000002022012",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "3643985000002022012",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T16:37:22.442344+00:00",
+        "context_label": "EST-1125"
+      }
+    },
+    {
+      "label": "Valmont Construction EST-1123",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000001978101"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "3643985000001978101",
+          "entity_type": "ESTIMATE",
+          "system": "BOOKS"
+        },
+        "source_facts": [
+          "6f8e94bdea5dfee36a61a649a772e3868f814cb5c5068ff71b50e3a2ef948d8c"
+        ],
+        "current_state": "QUOTE_DRAFTED",
+        "next_action": "VERIFY_QUOTE_STATE",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "VERIFY_QUOTE_COMPLETENESS",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000001978101",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "completion_state": "UNKNOWN",
+            "status": "draft"
+          },
+          "event_at": null,
+          "event_id": "6f8e94bdea5dfee36a61a649a772e3868f814cb5c5068ff71b50e3a2ef948d8c",
+          "event_type": "QUOTE_DRAFTED",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T16:37:22.442344+00:00",
+          "source": "BOOKS",
+          "source_at": "2026-09-22T09:39:35-0400",
+          "source_reference": "3643985000001978101",
+          "truth_class": "PROVIDER_FACT",
+          "source_context": {
+            "entity_id": "3643985000001978101",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "last_event_at": null,
+        "source_health": {
+          "books": {
+            "attempted_reads": 1,
+            "completeness": "COMPLETE_WITH_RECORDS",
+            "failed_reads": 0,
+            "observed_at": "2026-10-06T16:37:22.442344+00:00",
+            "provider_reads": 1,
+            "source_at": "2026-10-06T16:37:22.442344+00:00",
+            "state": "COMPLETE",
+            "successful_reads": 1
+          }
+        },
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": null,
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-06T16:37:22.442344+00:00",
+        "context_label": "EST-1123"
+      }
+    },
+    {
+      "label": "Parc olympique 20160570",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20160570"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "20160570",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "source_facts": [
+          "952e3fc1f76fcb308e8b1052c4c2d7b4817086baaf7fa918c8721982446da983"
+        ],
+        "current_state": "TENDER_OPEN",
+        "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "TENDER_DEADLINE",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "20160570",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          },
+          "detail": {
+            "deadline": "2026-10-07T10:00:00-04:00",
+            "eligibility": "UNKNOWN",
+            "submission_status": "UNKNOWN"
+          },
+          "event_at": "2026-07-21T11:23:45-04:00",
+          "event_id": "952e3fc1f76fcb308e8b1052c4c2d7b4817086baaf7fa918c8721982446da983",
+          "event_type": "TENDER_OPEN",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-04T21:55:39.616320+00:00",
+          "source": "PUBLIC",
+          "source_at": "2026-09-23T21:25:04+00:00",
+          "source_reference": "ocds-ec9k95-20160570",
+          "truth_class": "PUBLIC_SOURCE_FACT",
+          "source_context": {
+            "entity_id": "20160570",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          }
+        },
+        "last_event_at": "2026-07-21T11:23:45-04:00",
+        "source_health": {},
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-07T14:00:00+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-04T21:55:39.616320+00:00",
+        "context_label": "Parc olympique"
+      }
+    },
+    {
+      "label": "MRC d'Argenteuil 20171612",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20171612"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "20171612",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "source_facts": [
+          "8109b1dffacb2910c2f2cc1a6617d4997b6f2c715e22d48914efcb14d3ffd1e0"
+        ],
+        "current_state": "TENDER_OPEN",
+        "next_action": "REVIEW_TENDER_FIT",
+        "actionability": "OPTIONAL",
+        "reason_code": "TENDER_RESEARCH",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "20171612",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          },
+          "detail": {
+            "deadline": "2026-10-09T10:00:00-04:00",
+            "eligibility": "UNKNOWN",
+            "submission_status": "UNKNOWN"
+          },
+          "event_at": "2026-09-17T14:05:53-04:00",
+          "event_id": "8109b1dffacb2910c2f2cc1a6617d4997b6f2c715e22d48914efcb14d3ffd1e0",
+          "event_type": "TENDER_OPEN",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-05T21:58:33.956187+00:00",
+          "source": "PUBLIC",
+          "source_at": "2026-09-29T14:05:15+00:00",
+          "source_reference": "ocds-ec9k95-20171612",
+          "truth_class": "PUBLIC_SOURCE_FACT",
+          "source_context": {
+            "entity_id": "20171612",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          }
+        },
+        "last_event_at": "2026-09-17T14:05:53-04:00",
+        "source_health": {},
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-09T14:00:00+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-05T21:58:33.956187+00:00",
+        "context_label": "MRC d'Argenteuil"
+      }
+    },
+    {
+      "label": "Centre de services scolaire de Montréal / BDA 20170780",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20170780"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "20170780",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "source_facts": [
+          "d52a6e1290b7c317c127568d7c2f032c662e8dabe38455887a2203d9bc533386"
+        ],
+        "current_state": "TENDER_OPEN",
+        "next_action": "REVIEW_TENDER_FIT",
+        "actionability": "OPTIONAL",
+        "reason_code": "TENDER_RESEARCH",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "20170780",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          },
+          "detail": {
+            "deadline": "2026-10-14T14:00:00-04:00",
+            "eligibility": "UNKNOWN",
+            "submission_status": "UNKNOWN"
+          },
+          "event_at": "2026-09-15T16:26:48-04:00",
+          "event_id": "d52a6e1290b7c317c127568d7c2f032c662e8dabe38455887a2203d9bc533386",
+          "event_type": "TENDER_OPEN",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-04T21:55:39.616320+00:00",
+          "source": "PUBLIC",
+          "source_at": "2026-09-22T14:49:49+00:00",
+          "source_reference": "ocds-ec9k95-20170780",
+          "truth_class": "PUBLIC_SOURCE_FACT",
+          "source_context": {
+            "entity_id": "20170780",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          }
+        },
+        "last_event_at": "2026-09-15T16:26:48-04:00",
+        "source_health": {},
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-14T18:00:00+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-04T21:55:39.616320+00:00",
+        "context_label": "Centre de services scolaire de Montréal / BDA"
+      }
+    },
+    {
+      "label": "Institut de tourisme et d'hôtellerie du Québec 20163358",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20163358"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "20163358",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "source_facts": [
+          "08b8e0710b3e429c5afc011dbabebcabd04bb215e9bcad0cc20cf34f872a1852"
+        ],
+        "current_state": "TENDER_OPEN",
+        "next_action": "REVIEW_TENDER_FIT",
+        "actionability": "OPTIONAL",
+        "reason_code": "TENDER_RESEARCH",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "20163358",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          },
+          "detail": {
+            "deadline": "2026-10-19T14:00:00-04:00",
+            "eligibility": "UNKNOWN",
+            "submission_status": "UNKNOWN"
+          },
+          "event_at": "2026-09-18T10:31:09-04:00",
+          "event_id": "08b8e0710b3e429c5afc011dbabebcabd04bb215e9bcad0cc20cf34f872a1852",
+          "event_type": "TENDER_OPEN",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-04T21:55:39.616320+00:00",
+          "source": "PUBLIC",
+          "source_at": "2026-09-18T14:31:09+00:00",
+          "source_reference": "ocds-ec9k95-20163358",
+          "truth_class": "PUBLIC_SOURCE_FACT",
+          "source_context": {
+            "entity_id": "20163358",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          }
+        },
+        "last_event_at": "2026-09-18T10:31:09-04:00",
+        "source_health": {},
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-19T18:00:00+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-04T21:55:39.616320+00:00",
+        "context_label": "Institut de tourisme et d'hôtellerie du Québec"
+      }
+    },
+    {
+      "label": "Cegep du Vieux-Montréal 20174184",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20174184"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "20174184",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "source_facts": [
+          "2b095c997d09d31a6e48658e33a9d1e5c712ac37c5543ef5eff4c7a1b3a44a64"
+        ],
+        "current_state": "TENDER_OPEN",
+        "next_action": "REVIEW_TENDER_FIT",
+        "actionability": "OPTIONAL",
+        "reason_code": "TENDER_RESEARCH",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "20174184",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          },
+          "detail": {
+            "deadline": "2026-10-20T11:00:00-04:00",
+            "eligibility": "UNKNOWN",
+            "submission_status": "UNKNOWN"
+          },
+          "event_at": "2026-10-01T16:49:10-04:00",
+          "event_id": "2b095c997d09d31a6e48658e33a9d1e5c712ac37c5543ef5eff4c7a1b3a44a64",
+          "event_type": "TENDER_OPEN",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-05T21:58:33.956187+00:00",
+          "source": "PUBLIC",
+          "source_at": "2026-10-01T20:49:10+00:00",
+          "source_reference": "ocds-ec9k95-20174184",
+          "truth_class": "PUBLIC_SOURCE_FACT",
+          "source_context": {
+            "entity_id": "20174184",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          }
+        },
+        "last_event_at": "2026-10-01T16:49:10-04:00",
+        "source_health": {},
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-20T15:00:00+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-05T21:58:33.956187+00:00",
+        "context_label": "Cegep du Vieux-Montréal"
+      }
+    },
+    {
+      "label": "Centre de services scolaire de la région de Sherbrooke. 20171360",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20171360"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "20171360",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "source_facts": [
+          "852a9da8af97486d39e6bd1fad747f42676df4f633761724c3a5c56fdbd46952"
+        ],
+        "current_state": "TENDER_OPEN",
+        "next_action": "REVIEW_TENDER_FIT",
+        "actionability": "OPTIONAL",
+        "reason_code": "TENDER_RESEARCH",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "20171360",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          },
+          "detail": {
+            "deadline": "2026-10-20T10:00:00-04:00",
+            "eligibility": "UNKNOWN",
+            "submission_status": "UNKNOWN"
+          },
+          "event_at": "2026-09-16T14:48:05-04:00",
+          "event_id": "852a9da8af97486d39e6bd1fad747f42676df4f633761724c3a5c56fdbd46952",
+          "event_type": "TENDER_OPEN",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-05T21:58:33.956187+00:00",
+          "source": "PUBLIC",
+          "source_at": "2026-09-30T19:01:15+00:00",
+          "source_reference": "ocds-ec9k95-20171360",
+          "truth_class": "PUBLIC_SOURCE_FACT",
+          "source_context": {
+            "entity_id": "20171360",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          }
+        },
+        "last_event_at": "2026-09-16T14:48:05-04:00",
+        "source_health": {},
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-20T14:00:00+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-05T21:58:33.956187+00:00",
+        "context_label": "Centre de services scolaire de la région de Sherbrooke."
+      }
+    },
+    {
+      "label": "Société québécoise des infrastructures 20174160",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20174160"
+      },
+      "state": {
+        "schema": 1,
+        "context": {
+          "entity_id": "20174160",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "source_facts": [
+          "354c883f2a7abbfd54cb5962b9123548769d76832f2037f7b57fcaeb3073c952"
+        ],
+        "current_state": "TENDER_OPEN",
+        "next_action": "REVIEW_TENDER_FIT",
+        "actionability": "OPTIONAL",
+        "reason_code": "TENDER_RESEARCH",
+        "waiting_reason": null,
+        "followup_due_state": "UNKNOWN",
+        "response_status": "UNKNOWN",
+        "confidence": "HIGH",
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "20174160",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          },
+          "detail": {
+            "deadline": "2026-10-21T15:00:00-04:00",
+            "eligibility": "UNKNOWN",
+            "submission_status": "UNKNOWN"
+          },
+          "event_at": "2026-10-01T10:47:11-04:00",
+          "event_id": "354c883f2a7abbfd54cb5962b9123548769d76832f2037f7b57fcaeb3073c952",
+          "event_type": "TENDER_OPEN",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-05T21:58:33.956187+00:00",
+          "source": "PUBLIC",
+          "source_at": "2026-10-01T14:47:11+00:00",
+          "source_reference": "ocds-ec9k95-20174160",
+          "truth_class": "PUBLIC_SOURCE_FACT",
+          "source_context": {
+            "entity_id": "20174160",
+            "entity_type": "TENDER",
+            "system": "PUBLIC"
+          }
+        },
+        "last_event_at": "2026-10-01T10:47:11-04:00",
+        "source_health": {},
+        "truth_class": "DERIVED_DETERMINISTICALLY",
+        "execution_authorized": false,
+        "deadline": "2026-10-21T19:00:00+00:00",
+        "commercial_stage": null,
+        "evidence_observed_at": "2026-10-05T21:58:33.956187+00:00",
+        "context_label": "Société québécoise des infrastructures"
+      }
+    }
+  ],
+  "operational_queue": [
+    {
+      "actor": "OWNER",
+      "blocker": null,
+      "business_impact": "Preserve qualified business attention and existing service continuity; value UNKNOWN",
+      "can_prepare": true,
+      "confidence": "MODERATE",
+      "dependency": null,
+      "domain": "MANAGER",
+      "due_at": null,
+      "next_action": "Inspect current system evidence",
+      "owner_approval_required": true,
+      "priority_id": "a1f81485e940f4c53bea49fac0a92cf889081b04e0bb67b231f4000d80e35f7d",
+      "proposal_id": null,
+      "status": "OWNER_REVIEW",
+      "targets": [
+        {
+          "entity_id": "system:Growth",
+          "entity_type": "BUSINESS_PRIORITY",
+          "system": "OPTIBRAIN"
+        }
+      ],
+      "urgency": "HIGH",
+      "what": "Growth needs attention",
+      "why": "Backup, database, application logs and bounded system journal sampled",
+      "payload_hash": "f2f360c1b839af0bfafcf151aff2cade54fc93d7f527699c122a9316de7d329c",
+      "evidence": [
+        {
+          "confidence": "MODERATE",
+          "freshness": "CURRENT",
+          "limitations": [
+            "No provider write authority from owner priority."
+          ],
+          "observed_at": "2026-10-06T17:12:59.333224+00:00",
+          "provider": "SYSTEM_HEALTH",
+          "source_reference": "OPTIBRAIN:BUSINESS_PRIORITY:system:Growth",
+          "truth_class": "DERIVED_DETERMINISTIC",
+          "valid_until": "2026-10-07T17:12:59.333224+00:00",
+          "cache_age_seconds": 470,
+          "newer_data_expected": false,
+          "source_health": [],
+          "fact_class": "DERIVED_DETERMINISTICALLY"
+        }
+      ],
+      "readiness": "CURRENT",
+      "canonical_target": "OPTIBRAIN:BUSINESS_PRIORITY:system:Growth",
+      "priority_ids": [
+        "a1f81485e940f4c53bea49fac0a92cf889081b04e0bb67b231f4000d80e35f7d"
+      ],
+      "proposal_ids": [],
+      "factors": {
+        "business_impact": "Preserve qualified business attention and existing service continuity; value UNKNOWN",
+        "deadline": null,
+        "urgency": "HIGH",
+        "confidence": "MODERATE",
+        "risk": "UNKNOWN",
+        "revenue_potential": "UNKNOWN",
+        "recurring_potential": "UNKNOWN",
+        "cost": "UNKNOWN",
+        "effort": "UNKNOWN",
+        "service_fit": "Evidence-dependent",
+        "geography": "Evidence-dependent",
+        "dependency": null,
+        "reasons": [
+          "Backup, database, application logs and bounded system journal sampled"
+        ]
+      },
+      "execution_authorized": false,
+      "preview": null,
+      "actionability": "ACTIONABLE_NOW",
+      "reason_code": "OWNER_REVIEW_REQUIRED"
+    }
+  ],
+  "G001": "RESOLVED",
+  "G002": "RESOLVED",
+  "G003": "RESOLVED",
+  "G004": "RESOLVED",
+  "RED": 0,
+  "PARTIAL_CONTROLLABLE": 0,
+  "tests": {
+    "lifecycle": 44,
+    "focused": 265,
+    "focused_subtests": 153,
+    "full": 1681,
+    "full_subtests": 1378,
+    "failures": 0,
+    "errors": 0,
+    "unexpected_skips": 0,
+    "network_attempts": 0,
+    "network_writes": 0
+  },
+  "safety": {
+    "protected": "123/123",
+    "CRM_writes": 0,
+    "Books_writes": 0,
+    "Emails": 0,
+    "Apollo_sends": 0,
+    "Ads_writes": 0,
+    "Conversions": 0,
+    "customer_authority": "CLOSED",
+    "customer_timer": "DISABLED/INACTIVE",
+    "renewals": 0,
+    "effect_resets": 0,
+    "internal_effects": 2,
+    "historical_customer_effects": 12,
+    "persistent_worker": "OFF",
+    "English_real_automation": "DISABLED"
+  },
+  "internal": {
+    "authority": "ACTIVE",
+    "scopes": 12,
+    "cutoff": "2026-10-02T22:09:41+00:00",
+    "expiry": "2026-11-01T22:09:41+00:00",
+    "timer": "ENABLED/ACTIVE, unchanged five-minute cadence"
+  },
+  "natural_execution": {
+    "invocation_id": "4c835382ae114331ab3b3279eedd31bb",
+    "state": "READY",
+    "service_result": "success",
+    "effects": 0,
+    "provider_reads": 24,
+    "Manager": "CURRENT",
+    "timer_health": "OK"
+  },
+  "recovery": {
+    "generation": "20261006T172050Z",
+    "archive": "/var/backups/optibrain/optibrain-backup-20261006T172050Z.tar.gz",
+    "sha256": "26eecb62c11625853e9e575f9d8c61ee4eeab51d2c5d6592b32bbb588dabc453",
+    "production_sha": "902fdab3db92c98ee70e4e0ea14beefbbc3a4bbe",
+    "api_version": "1.30.1",
+    "database_snapshots": 8,
+    "remote": {
+      "encrypted_sha256": "4304cce07c261d019f18679396d72ad0e2f3c5ece05cead627b18945a3cd6fb4",
+      "format_version": 2,
+      "generation": "20261006T172050Z",
+      "object_key": "backups/2026/10/06/20261006T172050Z.tar.gz.age",
+      "offline_restore_verified": false,
+      "recipient_sha256": "d3593cf7f443701fe9d863b6fa2b7ba7ff17ed216f6a6f463e1333589cd8a96f",
+      "source_sha256": "26eecb62c11625853e9e575f9d8c61ee4eeab51d2c5d6592b32bbb588dabc453",
+      "verification_status": "download_hash_verified",
+      "verified_at": "2026-10-06T17:24:00.915505+00:00"
+    },
+    "isolated_restore": {
+      "archive_sha256": "26eecb62c11625853e9e575f9d8c61ee4eeab51d2c5d6592b32bbb588dabc453",
+      "conversion_authority": {
+        "authorized": false,
+        "configured_destinations": 3,
+        "fresh_recovery_default": "OFF",
+        "provider_calls": 0
+      },
+      "databases": {
+        "automation.db": "ok",
+        "form-receipts-stage.db": "ok",
+        "lifecycle-events.db": "ok",
+        "phase10-service-events.db": "ok",
+        "phase12-autonomy.db": "ok",
+        "phase9-form-receipts.db": "ok",
+        "phase9-intake.before-permission-fix.db": "ok",
+        "phase9-intake.db": "ok"
+      },
+      "generation": "20261006T172050Z",
+      "omitted": "SSH host identity, live units/enables, browser cache, old execution authorizations",
+      "provider_calls": 0,
+      "restored_files": 2026,
+      "safety_defaults": "PASS",
+      "schema": 1,
+      "source_strategy": "Exact repository/bundle checkout; old source archive remains recovery evidence",
+      "timers": "MASKED",
+      "writers_enabled": false
+    },
+    "source_and_manager": {
+      "source_sha": "902fdab3db92c98ee70e4e0ea14beefbbc3a4bbe",
+      "api_version": "1.30.1",
+      "source_bundle": "/var/lib/optibrain/lifecycle-truth-integration/recovery-source-902fdab.bundle",
+      "source_bundle_sha256": "cbdc5b3895dea15af387722309fff92e3b82820444d98d034b7071ece0f94502",
+      "complete_history_bundle_verified": true,
+      "archived_exact_source_files_verified": 837,
+      "manager_tables": {
+        "manager_events": 524,
+        "manager_briefs": 14,
+        "manager_links": 757,
+        "manager_feedback": 0,
+        "manager_receipts": 140,
+        "optimization_records": 312
+      },
+      "owner_corrections_retained": 3,
+      "effects_retained": {
+        "internal": 2,
+        "customer": 12
+      },
+      "authority_on_restore": "OFF",
+      "replacement_OS_boot": false,
+      "provider_calls": 0
+    },
+    "Golden": "UNCHANGED",
+    "owner_private_AGE_identity_used": false,
+    "offline_owner_decryption": "NOT PERFORMED; ciphertext download/hash and plaintext isolated restore are separate proofs"
+  },
+  "next": {
+    "branch": "integration/local-preview-control-plane-20261006",
+    "head": "75c6a2b69dcbfc28ccb4eebcedae020c1f4d1738",
+    "old_parent": "c22d409d96671e8b78e21ca72a4a76ea4c80879b",
+    "integrated_in_this_mission": false
+  },
+  "final_questions": {
+    "1_clean_integration": "YES",
+    "2_Noveco_fixed_in_production": "YES",
+    "3_later_events_supersede_tasks": "YES",
+    "4_waiting_can_produce_no_action": "YES",
+    "5_VERIFY_FIRST_protects_unknown_response": "YES",
+    "6_G001_G004_preserved": "YES",
+    "7_RED_and_PARTIAL_remain_zero": "YES",
+    "8_customer_authority_timer_closed": "YES",
+    "9_matching_recovery_created": "YES",
+    "10_another_foundation_phase": "NO",
+    "11_next_branch": "integration/local-preview-control-plane-20261006"
+  }
+}
