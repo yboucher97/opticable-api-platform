@@ -23,7 +23,7 @@
   "counts": {
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
-    "AUDIT EVIDENCE": 135,
+    "AUDIT EVIDENCE": 137,
     "AUTHORITATIVE CURRENT": 66,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
@@ -1715,20 +1715,23 @@
     {
       "path": "docs/lifecycle-truth-integration/final-report.json",
       "classification": "AUDIT EVIDENCE",
-      "current": true,
-      "purpose": "Verified lifecycle-only release, current completion/recovery truth and next-mission handoff; no provider authority"
+      "current": false,
+      "purpose": "Preserved historical lifecycle release/recovery and completed handoff; current capability release/recovery superseded by preview integration report",
+      "superseded_by": "docs/preview-control-plane-integration/final-report.md"
     },
     {
       "path": "docs/lifecycle-truth-integration/final-report.md",
       "classification": "AUDIT EVIDENCE",
-      "current": true,
-      "purpose": "Verified lifecycle-only release, current completion/recovery truth and next-mission handoff; no provider authority"
+      "current": false,
+      "purpose": "Preserved historical lifecycle release/recovery and completed handoff; current capability release/recovery superseded by preview integration report",
+      "superseded_by": "docs/preview-control-plane-integration/final-report.md"
     },
     {
       "path": "docs/lifecycle-truth-integration/next-preview-integration.md",
       "classification": "AUDIT EVIDENCE",
-      "current": true,
-      "purpose": "Verified lifecycle-only release, current completion/recovery truth and next-mission handoff; no provider authority"
+      "current": false,
+      "purpose": "Preserved historical lifecycle release/recovery and completed handoff; current capability release/recovery superseded by preview integration report",
+      "superseded_by": "docs/preview-control-plane-integration/final-report.md"
     },
     {
       "path": "docs/preview-integration/architecture.md",
@@ -1803,6 +1806,18 @@
       "classification": "AUDIT EVIDENCE",
       "current": true,
       "purpose": "Passing integration focused/full/security validation; source-bound full receipt remains root-private"
+    },
+    {
+      "path": "docs/preview-control-plane-integration/final-report.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "purpose": "Verified current preview control-plane release, matching recovery, preserved lifecycle/completion and separate owner provider configuration; no provider authority"
+    },
+    {
+      "path": "docs/preview-control-plane-integration/final-report.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "purpose": "Verified current preview control-plane release, matching recovery, preserved lifecycle/completion and separate owner provider configuration; no provider authority"
     }
   ]
 }
