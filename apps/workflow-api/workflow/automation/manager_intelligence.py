@@ -129,7 +129,8 @@ def build_manager(inputs,store,now,*,active_ids=None,crosswalk=None):
             customers=b['customer_value'][:10]
         except (ValueError,TypeError,KeyError):finance={'state':'UNKNOWN','profitability':{'state':'UNKNOWN'}}
     conversations=sales.get('conversations',[])
-    attention=[c for c in conversations if c.get('urgency') in {'HOT','HIGH'} and c.get('next_best_action')!='SUPPRESS']
+    attention=[c for c in conversations if c.get('urgency') in {'HOT','HIGH'} and c.get('next_best_action')!='SUPPRESS'
+               and states.get('OUTREACH:CONVERSATION:'+c['conversation_id'],{}).get('actionability') in {'ACTIONABLE_NOW','VERIFY_FIRST'}]
     domains=Counter(p['domain'] for p in ps);statuses=Counter(p['readiness'] for p in ps)
     events=store.events();nowday=now.astimezone(TZ).date().isoformat()
     changed=[e for e in events if stamp(e['recorded_at']) and now-stamp(e['recorded_at'])<=timedelta(days=1) and e['value'].get('change_type')!='INITIAL_OBSERVATION']

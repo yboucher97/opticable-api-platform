@@ -16,6 +16,7 @@ from workflow.automation.manager_runtime import sync_priorities
 from workflow.automation.manager_intelligence import build_manager, render_manager
 from workflow.automation.sales_conversations import build_bundle
 from workflow.operator_manager_api import install_manager_routes
+from workflow.automation.today import build_today
 
 NOW = datetime(2026, 10, 6, 14, tzinfo=timezone.utc)
 CONTEXT = ref('BOOKS', 'ESTIMATE', '123')
@@ -217,6 +218,27 @@ class ProjectionTests(unittest.TestCase):
         row.update(priority_id='a' * 64, domain='SALES_INTELLIGENCE', targets=[target], what='Finish old quote', next_action='Finish quote')
         self.store.record(row)
         return next(p for p in self.store.rows('optibrain.business_priority') if p['record']['priority_id']=='a'*64)
+
+    def test_today_and_brief_suppress_stale_sales_action_after_send(self):
+        self.priority()
+        inputs = {'business_events': [event('QUOTE_DRAFTED', 3), event('QUOTE_SENT', 2)]}
+        manager = build_manager(inputs, self.store, NOW)
+        today = build_today({'rows': [{'id': '123', 'name': 'Old quote',
+            'quote': 'READY FOR QUOTE', 'action': 'Finish quote'}]}, {}, {}, {},
+            {'signals': []}, now=NOW, manager=manager)
+        self.assertFalse(manager['today'])
+        self.assertFalse(manager['brief']['top_priorities'])
+        self.assertEqual(today['attention_count'], 0)
+
+    def test_today_uses_the_same_actionable_queue_as_owner_brief(self):
+        self.priority()
+        inputs = {'business_events': [event('QUOTE_DRAFTED', 2)]}
+        manager = build_manager(inputs, self.store, NOW)
+        today = build_today({}, {}, {}, {}, {'signals': []}, now=NOW, manager=manager)
+        rows = today['sections']['Approvals']
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['next_action'], 'FINISH_QUOTE')
+        self.assertEqual(rows[0]['context'], manager['brief']['top_priorities'][0]['what'])
 
     def test_multi_estimate_separation_and_exact_revision(self):
         a = {'estimate_id': '123', 'status': 'draft', 'last_modified_time': (NOW - timedelta(days=3)).isoformat(), 'customer_id': 'same'}

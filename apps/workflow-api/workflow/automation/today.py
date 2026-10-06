@@ -57,7 +57,7 @@ def read_internal_attention(now,path=None):
         return value
     except (OSError,ValueError,KeyError,TypeError):return None
 
-def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None,communications=None,recurring=None,sales_intelligence=None,ads_intelligence=None,sales_conversations=None):
+def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavailable=(),internal=None,communications=None,recurring=None,sales_intelligence=None,ads_intelligence=None,sales_conversations=None,manager=None):
     now=now or datetime.now(timezone.utc)
     sections={name:[] for name in CATEGORIES}
     def add(category,context,why,next_action,source,link,*,priority='MEDIUM',due=None,freshness=None):
@@ -66,7 +66,15 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
     # Require the already-filtered live models; never render Lab data as urgency.
     for model in (sales,lifecycle,operations):
         if model and model.get('scope','live')!='live':raise ValueError('Today requires live display scope')
-    for row in sales.get('rows',[]):
+    if manager is not None:
+        if manager.get('scope')!='live' or manager.get('read_only') is not True:
+            raise ValueError('Today requires the shared live Manager projection')
+        for row in manager.get('today',[]):
+            if not eligible_today(row,now):continue
+            add('Approvals',row['what'],row['why'],row['next_action'],
+                'Shared current business evidence', '/v1/operator/manager',
+                priority=row.get('urgency','MEDIUM'),due=row.get('due_at'),freshness=manager.get('at'))
+    for row in ([] if manager is not None else sales.get('rows',[])):
         if row.get('test_only') or str(row.get('name','')).startswith('OPTIBRAIN TEST'):continue
         context=row.get('name') or row.get('company') or 'Lead needing review'
         identity=str(row.get('id',''))
@@ -86,7 +94,7 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
         elif guard.get('suppressed'):
             add(category,context,'Sales contact is suppressed','Review suppression; no outreach','Apollo suppression evidence',LINKS['sales'],**details)
         else:add(category,context,row.get('reason'),row.get('action'),'CRM and verified Mail evidence',link,**details)
-    for row in lifecycle.get('rows',[]):
+    for row in ([] if manager is not None else lifecycle.get('rows',[])):
         if row.get('test_only'):continue
         if row.get('maintenance_due') or row.get('renewal_due'):
             add('Maintenance and renewal',row.get('account'),row.get('reason'),row.get('action'),
@@ -95,7 +103,7 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
         elif row.get('stage') in {'ACTIVE PROJECT','ACTIVE OPPORTUNITY'}:
             add('Projects and install work',row.get('account'),row.get('reason'),row.get('action'),
                 'CRM lifecycle',LINKS['lifecycle'],freshness=lifecycle.get('read_at'))
-    for row in operations.get('projects',[]):
+    for row in ([] if manager is not None else operations.get('projects',[])):
         if row.get('test_only') or row.get('action')=='No action':continue
         # Current project registry is TEST_ONLY; keep it out of Today even if a
         # future producer accidentally labels its outer response live.
@@ -138,7 +146,7 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
             link='https://crm.zoho.com/crm/org763070937/tab/'+module+'/'+identity if module in {'Services','Service_Locations','Accounts'} and identity.isdecimal() else LINKS['recurring']
             add('Maintenance and renewal',row.get('context'),row.get('why'),row.get('next_action'),
                 'Native CRM and Books recurring observations',link,priority=row.get('priority','MEDIUM'),freshness=recurring.get('observed_at'))
-    if sales_intelligence:
+    if sales_intelligence and manager is None:
         if sales_intelligence.get('scope')!='live' or sales_intelligence.get('read_only') is not True:raise ValueError('Sales projection must be read-only live evidence')
         for row in sales_intelligence.get('rows',[]):
             if row.get('kind') not in {'apollo_reply','trigger'}:continue
@@ -146,7 +154,7 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
             add('Leads needing response' if row['kind']=='apollo_reply' else 'Sales research',
                 row['title'],row['why'],row['action'],'Apollo reply / public project evidence',LINKS['today sales'],
                 priority='HIGH' if row['kind']=='apollo_reply' else 'MEDIUM',freshness=sales_intelligence.get('observed_at'))
-    if sales_conversations:
+    if sales_conversations and manager is None:
         if sales_conversations.get('scope')!='live' or sales_conversations.get('read_only') is not True:
             raise ValueError('Conversation Today projection must be read-only live evidence')
         for row in sales_conversations.get('priorities',[])[:3]:
@@ -154,7 +162,7 @@ def build_today(sales,lifecycle,operations,journal,readiness,*,now=None,unavaila
             add('Approvals',row['what'],row['why'],row.get('next_action','Verify current conversation status'),
                 'Shared sales proposal / exact Mail evidence',LINKS['acquisition']+'?proposal_id='+row['proposal_id'],
                 priority='HIGH',freshness=sales_conversations.get('observed_at'))
-    if ads_intelligence:
+    if ads_intelligence and manager is None:
         if ads_intelligence.get('scope')!='live' or ads_intelligence.get('read_only') is not True:
             raise ValueError('Ads Today projection must be read-only live evidence')
         for row in sorted(ads_intelligence.get('priorities',[]),key=lambda r:r.get('urgency')!='HIGH')[:3]:
