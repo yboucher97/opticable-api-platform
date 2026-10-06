@@ -56,3 +56,8 @@ Examples and schema validation are format proof only. They are not provider-back
 ## Ads completion operations
 
 [Pilot readiness](OPTIBRAIN_ADS_PILOT_READINESS_CONTRACT.md) binds complete campaign details into the existing immutable revision hash. CREATE_PAUSED/OWNER_ACTIVATE are future domain operations within EXECUTING/DEPLOYED; they do not add incompatible proposal states. Local REVIEWED or fixture APPROVED never grants transport. Exact approval/expiry/account/spec, off-host idempotency, readback and unknown-effect hold precede any future provider operation.
+
+
+## Phase34 current delta
+
+Phase34 implements SALES_REPLY, OUTREACH_PROPOSAL, CUSTOMER_EXPANSION, SEQUENCE_CHANGE and CONTENT_FEEDBACK using existing OUTREACH/SALES_PROCESS/CONTENT target categories and the same immutable revision/local-review store. Conversation versions reuse the existing database. Owner preview, rejection and learning are retained; approved fixtures cannot grant outreach authority. Ads projections filter their own proposal/asset/priority IDs so Sales integration does not inflate Ads counters.

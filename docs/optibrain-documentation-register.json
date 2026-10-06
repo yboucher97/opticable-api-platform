@@ -24,7 +24,7 @@
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
     "AUDIT EVIDENCE": 103,
-    "AUTHORITATIVE CURRENT": 56,
+    "AUTHORITATIVE CURRENT": 59,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
   },
@@ -133,6 +133,13 @@
       "purpose": "Current contract"
     },
     {
+      "path": "docs/OPTIBRAIN_ACQUISITION_COVERAGE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Acquisition coverage expansion contract",
+      "superseded_by": null
+    },
+    {
       "path": "docs/OPTIBRAIN_ACQUISITION_INTELLIGENCE_CONTRACT.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
@@ -140,11 +147,32 @@
       "purpose": "Current acquisition research / SEO / content / source / cost contract"
     },
     {
+      "path": "docs/OPTIBRAIN_ADS_INTELLIGENCE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Fixed read-only Ads evidence, shared immutable campaign previews, local review, measurement and future separate graduation",
+      "superseded_by": null
+    },
+    {
+      "path": "docs/OPTIBRAIN_ADS_PILOT_READINESS_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Phase33 pilot completion, exact goal target, click lineage, total-budget safety and non-executing graduation contract",
+      "superseded_by": null
+    },
+    {
       "path": "docs/OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
       "superseded_by": null,
       "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_AUTHORITY_CLASSES.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
     },
     {
       "path": "docs/OPTIBRAIN_AUTONOMOUS_PROGRESS.md",
@@ -160,11 +188,30 @@
       "purpose": "Current measurement/reporting contract"
     },
     {
+      "path": "docs/OPTIBRAIN_BUSINESS_PRIORITY_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
+    },
+    {
       "path": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
       "superseded_by": null,
       "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_COLLISION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "reason": "Prospect enrichment source-native confidence, bounded research and execution separation."
+    },
+    {
+      "path": "docs/OPTIBRAIN_COMPANY_RESOLUTION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "reason": "Prospect enrichment source-native confidence, bounded research and execution separation."
     },
     {
       "path": "docs/OPTIBRAIN_CONFIGURATION_INVENTORY.md",
@@ -174,6 +221,13 @@
       "purpose": "Current contract"
     },
     {
+      "path": "docs/OPTIBRAIN_CONTACT_RESOLUTION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Acquisition coverage expansion contract",
+      "superseded_by": null
+    },
+    {
       "path": "docs/OPTIBRAIN_CONTENT_ENGINE_CONTRACT.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
@@ -181,11 +235,25 @@
       "purpose": "Current acquisition research / SEO / content / source / cost contract"
     },
     {
+      "path": "docs/OPTIBRAIN_CONTINUOUS_OPTIMIZATION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
+    },
+    {
       "path": "docs/OPTIBRAIN_CUSTOMER_COMMUNICATION_CONTRACT.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
       "superseded_by": null,
       "purpose": "Current specialist communication contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_DATA_INTELLIGENCE_ARCHITECTURE.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
     },
     {
       "path": "docs/OPTIBRAIN_DEPLOYMENT_GUIDE.md",
@@ -202,6 +270,12 @@
       "purpose": "Current contract"
     },
     {
+      "path": "docs/OPTIBRAIN_ENRICHMENT_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "reason": "Prospect enrichment source-native confidence, bounded research and execution separation."
+    },
+    {
       "path": "docs/OPTIBRAIN_FINANCE_INTEGRATION_CONTRACT.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
@@ -213,6 +287,34 @@
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
       "purpose": "Current completion-remediation contract/classification"
+    },
+    {
+      "path": "docs/OPTIBRAIN_HOOK_CONTENT_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Phase34 shared sales context/preparation contract; no provider execution authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_IDENTITY_RESOLUTION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Deterministic company, actor and role identity and collision boundaries"
+    },
+    {
+      "path": "docs/OPTIBRAIN_IMMUTABLE_RECEIPT_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Forms replay, immutable evidence and message-level fault isolation"
+    },
+    {
+      "path": "docs/OPTIBRAIN_KEYWORD_ECONOMICS_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Foundation authority, provider access and bounded economics contract"
     },
     {
       "path": "docs/OPTIBRAIN_LIFECYCLE_AUTOMATION_MATRIX.md",
@@ -254,6 +356,20 @@
       "current": true,
       "superseded_by": null,
       "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_OPTIMIZATION_PROPOSAL_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
+    },
+    {
+      "path": "docs/OPTIBRAIN_OUTREACH_INTELLIGENCE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Phase34 shared sales context/preparation contract; no provider execution authority"
     },
     {
       "path": "docs/OPTIBRAIN_OWNER_ACTIONS_CURRENT.md",
@@ -379,6 +495,20 @@
       "purpose": "Current completion-remediation contract/classification"
     },
     {
+      "path": "docs/OPTIBRAIN_PROSPECT_UNIVERSE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Acquisition coverage expansion contract",
+      "superseded_by": null
+    },
+    {
+      "path": "docs/OPTIBRAIN_PROVIDER_ACCESS_ARCHITECTURE.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Foundation authority, provider access and bounded economics contract"
+    },
+    {
       "path": "docs/OPTIBRAIN_PROVIDER_COST_POLICY.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
@@ -391,6 +521,13 @@
       "current": true,
       "superseded_by": null,
       "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
+    },
+    {
+      "path": "docs/OPTIBRAIN_RECOVERY_AUTHORITY_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Foundation authority, provider access and bounded economics contract"
     },
     {
       "path": "docs/OPTIBRAIN_RECOVERY_GUIDE.md",
@@ -407,11 +544,25 @@
       "purpose": "Current recurring/attribution operational contract"
     },
     {
+      "path": "docs/OPTIBRAIN_REPLAY_IDEMPOTENCY_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Forms replay, immutable evidence and message-level fault isolation"
+    },
+    {
       "path": "docs/OPTIBRAIN_RUNTIME_CONTRACT.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
       "superseded_by": null,
       "purpose": "Current contract"
+    },
+    {
+      "path": "docs/OPTIBRAIN_SALES_CONVERSATION_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Phase34 shared sales context/preparation contract; no provider execution authority"
     },
     {
       "path": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
@@ -452,6 +603,13 @@
       "current": true,
       "superseded_by": null,
       "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
+    },
+    {
+      "path": "docs/OPTIBRAIN_TRIGGER_INTELLIGENCE_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Phase30 shadow source/version/queue/safety contract"
     },
     {
       "path": "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md",
@@ -506,39 +664,39 @@
       "path": "docs/PHASE22_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE22_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE23_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE23_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE24_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/PHASE24_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/PHASE25_CHECKPOINT.json",
@@ -681,6 +839,12 @@
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
     },
     {
+      "path": "docs/marketing/phase32-camera-ai-content-pack.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Phase32 owner-review marketing drafts; no publication authority"
+    },
+    {
       "path": "docs/omada-operation-strategy.md",
       "classification": "HISTORICAL",
       "current": false,
@@ -700,6 +864,13 @@
       "current": true,
       "superseded_by": null,
       "purpose": "Complete document classification"
+    },
+    {
+      "path": "docs/optibrain-optimization.schema.json",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
     },
     {
       "path": "docs/phase10-lifecycle-foundation.md",
@@ -1258,14 +1429,14 @@
       "path": "docs/phase22-provider-observations.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/phase25-owner-actions.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/phase26-27-final-report.md",
@@ -1384,156 +1555,6 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_CODEX_ONBOARDING.md",
       "purpose": "Historical rationale/schema/test/recovery evidence; never current operational authority"
-    },
-    {
-      "path": "docs/OPTIBRAIN_RECOVERY_AUTHORITY_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Foundation authority, provider access and bounded economics contract"
-    },
-    {
-      "path": "docs/OPTIBRAIN_KEYWORD_ECONOMICS_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Foundation authority, provider access and bounded economics contract"
-    },
-    {
-      "path": "docs/OPTIBRAIN_PROVIDER_ACCESS_ARCHITECTURE.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Foundation authority, provider access and bounded economics contract"
-    },
-    {
-      "path": "docs/OPTIBRAIN_TRIGGER_INTELLIGENCE_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Phase30 shadow source/version/queue/safety contract"
-    },
-    {
-      "path": "docs/OPTIBRAIN_IDENTITY_RESOLUTION_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Deterministic company, actor and role identity and collision boundaries"
-    },
-    {
-      "path": "docs/OPTIBRAIN_PROSPECT_UNIVERSE_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "purpose": "Acquisition coverage expansion contract",
-      "superseded_by": null
-    },
-    {
-      "path": "docs/OPTIBRAIN_ACQUISITION_COVERAGE_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "purpose": "Acquisition coverage expansion contract",
-      "superseded_by": null
-    },
-    {
-      "path": "docs/OPTIBRAIN_CONTACT_RESOLUTION_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "purpose": "Acquisition coverage expansion contract",
-      "superseded_by": null
-    },
-    {
-      "path": "docs/OPTIBRAIN_COMPANY_RESOLUTION_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "reason": "Prospect enrichment source-native confidence, bounded research and execution separation."
-    },
-    {
-      "path": "docs/OPTIBRAIN_ENRICHMENT_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "reason": "Prospect enrichment source-native confidence, bounded research and execution separation."
-    },
-    {
-      "path": "docs/OPTIBRAIN_COLLISION_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "reason": "Prospect enrichment source-native confidence, bounded research and execution separation."
-    },
-    {
-      "path": "docs/OPTIBRAIN_IMMUTABLE_RECEIPT_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Forms replay, immutable evidence and message-level fault isolation"
-    },
-    {
-      "path": "docs/OPTIBRAIN_REPLAY_IDEMPOTENCY_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Forms replay, immutable evidence and message-level fault isolation"
-    },
-    {
-      "path": "docs/marketing/phase32-camera-ai-content-pack.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "purpose": "Phase32 owner-review marketing drafts; no publication authority"
-    },
-    {
-      "path": "docs/OPTIBRAIN_CONTINUOUS_OPTIMIZATION_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
-    },
-    {
-      "path": "docs/OPTIBRAIN_OPTIMIZATION_PROPOSAL_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
-    },
-    {
-      "path": "docs/OPTIBRAIN_AUTHORITY_CLASSES.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
-    },
-    {
-      "path": "docs/OPTIBRAIN_DATA_INTELLIGENCE_ARCHITECTURE.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
-    },
-    {
-      "path": "docs/OPTIBRAIN_BUSINESS_PRIORITY_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
-    },
-    {
-      "path": "docs/optibrain-optimization.schema.json",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "superseded_by": null,
-      "purpose": "Shared optimization contract/data format; no installed manager or execution authority"
-    },
-    {
-      "path": "docs/OPTIBRAIN_ADS_INTELLIGENCE_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "purpose": "Fixed read-only Ads evidence, shared immutable campaign previews, local review, measurement and future separate graduation",
-      "superseded_by": null
-    },
-    {
-      "path": "docs/OPTIBRAIN_ADS_PILOT_READINESS_CONTRACT.md",
-      "classification": "AUTHORITATIVE CURRENT",
-      "current": true,
-      "purpose": "Phase33 pilot completion, exact goal target, click lineage, total-budget safety and non-executing graduation contract",
-      "superseded_by": null
     }
   ]
 }
