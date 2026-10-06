@@ -1,0 +1,433 @@
+{
+  "schema": 1,
+  "type": "optibrain.preview-control-plane-integration",
+  "at": "2026-10-06T18:28:31.901903+00:00",
+  "status": "PASS",
+  "source_preview_head": "75c6a2b69dcbfc28ccb4eebcedae020c1f4d1738",
+  "source_parent_and_original_base": "c22d409d96671e8b78e21ca72a4a76ea4c80879b",
+  "source_unique_commits": [
+    "75c6a2b69dcbfc28ccb4eebcedae020c1f4d1738"
+  ],
+  "source_later_commits": [],
+  "source_delta": {
+    "files": 23,
+    "insertions": 2580,
+    "deletions": 3,
+    "implementation_files": 11,
+    "test_fixture_files": 3,
+    "documentation_files": 9
+  },
+  "source_branch_and_worktree_preserved": true,
+  "start_main": "611a3a2d3f16648953e0c1e9e08574afdd1d378c",
+  "integration_branch": "integration/preview-control-plane-after-lifecycle-20261006",
+  "integration_executable_head": "f3bf397170d9f1cfe20beab8181d2d34bb6ac9a2",
+  "PR": "https://github.com/yboucher97/opticable-api-platform/pull/139",
+  "merge_sha": "9501fe3c52fc80270d8aeaa0684abae297206f25",
+  "production_sha": "9501fe3c52fc80270d8aeaa0684abae297206f25",
+  "API": "1.31.0",
+  "source_integration": {
+    "conflicts": [
+      "Manager priority projection",
+      "documentation register"
+    ],
+    "resolution": "Retain lifecycle reconciliation/context/Today eligibility; add domain-scoped website priorities and merged inventory; import only verified unique source delta",
+    "duplicate_old_code_avoided": true
+  },
+  "control_plane": {
+    "repository_state": "PASS; existing Acquisition SOURCE facts; explicit health, source_at, SHA/ref/auth/provider/project/clone/worktree metadata",
+    "proposal_preview_state": "PASS; canonical Optimization Proposal ID/revision/hash; two additive observation/replay tables in shared journal",
+    "git_adapter": "PASS; bounded allowlist, branch/path/repository checks; no push/main merge/force push",
+    "worktrees": "PASS; isolated proposal/repository/base-SHA links; approved root and maximum3",
+    "change_package": "PASS; structured proposal/revision/repository/base/files/change/evidence/tests; payload commands rejected",
+    "build_tests": "PASS; pinned repository definitions and thirteen independent test classes",
+    "github_provider": "PASS; interface/fake contracts; live mutations unavailable/deny by default",
+    "cloudflare_provider": "PASS; bounded read interface/fake contracts; upload absent; auth failures BLOCKED_AUTH",
+    "SHA_binding": "PASS; exact proposal/revision/repository/branch/head/deployment/HTTP evidence tuple; wrong or missing SHA not ready",
+    "production_preview_filter": "PASS; production/unknown environments, production refs/hosts and spoofed URLs rejected",
+    "stale_detection": "PASS; current, needs rebase, conflicted and superseded states; Manager projection",
+    "approval_binding": "PASS; exact revision/SHA/test/preview evidence; change/expiry invalidates approval; APPROVED is not DEPLOYED",
+    "Manager": "PASS; repository/base/head/build/tests/provider/stale/owner and verified URL projection",
+    "priorities": "PASS; shared Business Priority; website manual actions independent of customer lifecycle/Today eligibility",
+    "webhooks": "PASS; HMAC signature, event/repository allowlists,64KiB bounds, persistent replay protection; receiver route not installed",
+    "reconciliation": "PASS; bounded max3 proposal reads/main/branch/PR/workflow/deployment; no automatic preview scheduler",
+    "repository_efficiency": "PASS; clone once/incremental fetch/SHA invalidation/bounded worktrees; no daily reclone",
+    "production_executor": "NOT IMPLEMENTED; handoff contract only"
+  },
+  "provider_execution": {
+    "GitHub_website_live_writes": "DISABLED",
+    "Cloudflare_preview_live_writes": "DISABLED",
+    "production_executor": "NOT IMPLEMENTED",
+    "provider_configuration_changes": 0,
+    "hosted_previews": 0,
+    "website_deployments": 0
+  },
+  "camera": {
+    "proposal_id": "49d2893d1498325eb5ae8f5a7304d1e3d199d03afcb4c6d0383dd7ed6ab32c17",
+    "original_proposal_sha": "a0650b92007f197d68c252363362e2066f9db063",
+    "canonical_revision": 3,
+    "historical_prepared_tested_sha": "2db20ef78fef1f30e5e7a8afaf3d0ac099d4f3d7",
+    "historical_report_only_head": "91e36b551d61e9b6a8796b24fe3b7222ef99e66e",
+    "source_revision2_retained": true,
+    "historical_local_preparation": "PASS reference-only evidence",
+    "current_build_and_tests": "NOT_RUN",
+    "stale_state": "UNKNOWN",
+    "repository_health": "NOT_COLLECTED",
+    "state": "PROVIDER_BLOCKED",
+    "hosted_preview": "NOT CONFIGURED / BLOCKED_AUTH",
+    "owner_status": "PENDING; not ready for hosted review",
+    "preview_url": null,
+    "approval": null,
+    "published": false
+  },
+  "regressions": {
+    "G001": "RESOLVED",
+    "G002": "RESOLVED",
+    "G003": "RESOLVED",
+    "G004": "RESOLVED",
+    "lifecycle_truth": "PASS",
+    "Noveco_suppression": "PASS",
+    "RED": 0,
+    "PARTIAL_CONTROLLABLE": 0
+  },
+  "tests": {
+    "focused": {
+      "tests": 334,
+      "subtests": 290,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "blocked_network_attempts": 0,
+      "passed": true
+    },
+    "full": {
+      "tests": 1769,
+      "subtests": 1539,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "blocked_network_attempts": 0,
+      "passed": true
+    },
+    "additional_backup_admin": {
+      "tests": 48,
+      "subtests": 63,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "blocked_network_attempts": 0,
+      "passed": true
+    },
+    "worker": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "security": {
+      "suite": "test_website_preview.py (84 tests including adversarial subtests)",
+      "passed": true,
+      "network_writes": 0
+    },
+    "api": "1.31.0",
+    "provider_mutations": "DISABLED",
+    "production_executor": "CONTRACT_ONLY",
+    "source_preview_head": "75c6a2b69dcbfc28ccb4eebcedae020c1f4d1738",
+    "start_main": "611a3a2d3f16648953e0c1e9e08574afdd1d378c"
+  },
+  "released_preview_contracts": {
+    "tests": 84,
+    "subtests": 157,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "blocked_network_attempts": 0
+  },
+  "CI": {
+    "exact_PR_head": 37509200363,
+    "exact_main_head": 37509510698,
+    "all_validation_jobs": "SUCCESS",
+    "guarded_deploy_verification": 37509657878,
+    "guarded_deploy_attempt": 2,
+    "auto_merge": false,
+    "fresh_exact_SHA_root_authorization": true
+  },
+  "natural_verification": {
+    "at": "2026-10-06T18:18:27.741268+00:00",
+    "Manager": "CURRENT",
+    "projection_at": "2026-10-06T18:17:47.482287+00:00",
+    "natural_invocation": "a2fa1d5f1acd41ebbc2ee17ae2c82d19",
+    "natural_messages": [
+      {
+        "effects_this_cycle": 0,
+        "eligible_leads": 1,
+        "provider_reads": 38,
+        "state": "READY"
+      }
+    ],
+    "Noveco_suppression": true,
+    "Noveco_states": [
+      {
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING"
+      },
+      {
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING"
+      },
+      {
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING"
+      }
+    ],
+    "camera_state": "PROVIDER_BLOCKED",
+    "camera_hosted": "BLOCKED_AUTH",
+    "verified_url": null,
+    "repository_count": 1,
+    "effects_unchanged": true,
+    "provider_writes": 0,
+    "queue": [
+      {
+        "what": "Verify Eligibility And Submission · Collège de Maisonneuve",
+        "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "TENDER_DEADLINE"
+      },
+      {
+        "what": "Verify Eligibility And Submission · Parc olympique",
+        "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "TENDER_DEADLINE"
+      },
+      {
+        "what": "Verify Deliverable Status · Art Systems Canada",
+        "next_action": "VERIFY_DELIVERABLE_STATUS",
+        "actionability": "VERIFY_FIRST",
+        "reason_code": "PROMISED_DELIVERABLE_OUTSTANDING"
+      },
+      {
+        "what": "Growth needs attention",
+        "next_action": "Inspect current system evidence",
+        "actionability": "ACTIONABLE_NOW",
+        "reason_code": "OWNER_REVIEW_REQUIRED"
+      }
+    ]
+  },
+  "end_runtime": {
+    "captured_at": "2026-10-06T18:26:35.181635+00:00",
+    "sha": "9501fe3c52fc80270d8aeaa0684abae297206f25",
+    "timer_health": {
+      "expected": 6,
+      "failed": 0,
+      "jobs": [
+        {
+          "completion_age_seconds": 386.41936699999496,
+          "job": "optibrain-backup",
+          "reason": "Successful recent completion",
+          "state": "COMPLETED_SUCCESS",
+          "timer_active": true
+        },
+        {
+          "completion_age_seconds": 186.64062700001523,
+          "job": "optibrain-phase2a-upload",
+          "reason": "Successful recent completion",
+          "state": "COMPLETED_SUCCESS",
+          "timer_active": true
+        },
+        {
+          "completion_age_seconds": 54.36771000002045,
+          "job": "opticable-phase9-intake-receipts",
+          "reason": "Successful recent completion",
+          "state": "COMPLETED_SUCCESS",
+          "timer_active": true
+        },
+        {
+          "completion_age_seconds": 2599.748064000043,
+          "job": "opticable-phase10-service-events",
+          "reason": "Successful recent completion",
+          "state": "COMPLETED_SUCCESS",
+          "timer_active": true
+        },
+        {
+          "completion_age_seconds": 1568.499579000054,
+          "job": "opticable-phase12-test-runner",
+          "reason": "Successful recent completion",
+          "state": "COMPLETED_SUCCESS",
+          "timer_active": true
+        },
+        {
+          "completion_age_seconds": 188.29012100002728,
+          "job": "opticable-lifecycle-internal",
+          "reason": "Successful recent completion",
+          "state": "COMPLETED_SUCCESS",
+          "timer_active": true
+        }
+      ],
+      "name": "Timers",
+      "reason": "Timer expectation and service invocation health sampled independently",
+      "running": 0,
+      "scoped_timers_expected": 1,
+      "stale": 0,
+      "state": "OK",
+      "unknown": 0
+    },
+    "DB": "OK",
+    "release": "OK",
+    "backup": "OK",
+    "off_host": "OK",
+    "disk": "OK",
+    "internal_scopes": 12,
+    "original_cutoff": "2026-10-02T22:09:41+00:00",
+    "expiry": "2026-11-01T22:09:41+00:00",
+    "customer_policy_bytes_unchanged": true,
+    "units": {
+      "opticable-lifecycle-internal.timer": {
+        "enabled": "enabled",
+        "active": "active"
+      },
+      "opticable-customer-communications.timer": {
+        "enabled": "disabled",
+        "active": "inactive"
+      }
+    }
+  },
+  "safety": {
+    "protected": "123/123",
+    "CRM_writes": 0,
+    "Books_writes": 0,
+    "Emails": 0,
+    "Apollo_sends": 0,
+    "Ads_writes": 0,
+    "Conversions": 0,
+    "customer_authority": "CLOSED",
+    "customer_timer": "DISABLED/INACTIVE",
+    "authority_renewals": 0,
+    "effect_resets": 0,
+    "internal_effect_inventory": 2,
+    "historical_customer_effect_inventory": 12,
+    "internal_authority": "ACTIVE, original12 scopes",
+    "original_cutoff": "2026-10-02T22:09:41+00:00",
+    "expiry": "2026-11-01T22:09:41+00:00",
+    "internal_timer": "ENABLED/ACTIVE, existing five-minute cadence",
+    "persistent_development_worker": "OFF",
+    "English_real_automation": "DISABLED",
+    "preview_provider_network_writes": 0,
+    "technical_release_and_backup_writes": "Authorized API-platform PR/merge/release and recovery upload only"
+  },
+  "recovery": {
+    "generation": "20261006T181841Z",
+    "archive": "/var/backups/optibrain/optibrain-backup-20261006T181841Z.tar.gz",
+    "sha256": "3b478fa2a73333de864df1dc8eb77b09d0efd51cd0afe1f9d88aa3748105e36a",
+    "production_sha": "9501fe3c52fc80270d8aeaa0684abae297206f25",
+    "api_version": "1.31.0",
+    "database_snapshots": 8,
+    "remote": {
+      "encrypted_sha256": "de53e81a74404f27031949271f503fcf0d4377c07e3b78ad4bb82ec8c068399d",
+      "format_version": 2,
+      "generation": "20261006T181841Z",
+      "object_key": "backups/2026/10/06/20261006T181841Z.tar.gz.age",
+      "offline_restore_verified": false,
+      "recipient_sha256": "d3593cf7f443701fe9d863b6fa2b7ba7ff17ed216f6a6f463e1333589cd8a96f",
+      "source_sha256": "3b478fa2a73333de864df1dc8eb77b09d0efd51cd0afe1f9d88aa3748105e36a",
+      "verification_status": "download_hash_verified",
+      "verified_at": "2026-10-06T18:23:28.417518+00:00"
+    },
+    "isolated_restore": {
+      "archive_sha256": "3b478fa2a73333de864df1dc8eb77b09d0efd51cd0afe1f9d88aa3748105e36a",
+      "conversion_authority": {
+        "authorized": false,
+        "configured_destinations": 3,
+        "fresh_recovery_default": "OFF",
+        "provider_calls": 0
+      },
+      "databases": {
+        "automation.db": "ok",
+        "form-receipts-stage.db": "ok",
+        "lifecycle-events.db": "ok",
+        "phase10-service-events.db": "ok",
+        "phase12-autonomy.db": "ok",
+        "phase9-form-receipts.db": "ok",
+        "phase9-intake.before-permission-fix.db": "ok",
+        "phase9-intake.db": "ok"
+      },
+      "generation": "20261006T181841Z",
+      "omitted": "SSH host identity, live units/enables, browser cache, old execution authorizations",
+      "provider_calls": 0,
+      "restored_files": 2088,
+      "safety_defaults": "PASS",
+      "schema": 1,
+      "source_strategy": "Exact repository/bundle checkout; old source archive remains recovery evidence",
+      "timers": "MASKED",
+      "writers_enabled": false
+    },
+    "source_and_manager": {
+      "source_sha": "9501fe3c52fc80270d8aeaa0684abae297206f25",
+      "api_version": "1.31.0",
+      "source_bundle": "/var/lib/optibrain/preview-control-plane-integration/recovery-source-9501fe3.bundle",
+      "source_bundle_sha256": "44504a91e440083989985e882d46816331c250f91efc7bd75a8522f2af67b3a4",
+      "complete_history_bundle_verified": true,
+      "archived_exact_source_files_verified": 863,
+      "manager_tables": {
+        "manager_events": 527,
+        "manager_briefs": 16,
+        "manager_links": 1106,
+        "manager_feedback": 0,
+        "manager_receipts": 157,
+        "optimization_records": 325,
+        "website_preview_observations": 1,
+        "website_preview_webhooks": 0
+      },
+      "owner_corrections_retained": 3,
+      "effects_retained": {
+        "internal": 2,
+        "customer": 12
+      },
+      "camera": {
+        "proposal_id": "49d2893d1498325eb5ae8f5a7304d1e3d199d03afcb4c6d0383dd7ed6ab32c17",
+        "canonical_revision": 3,
+        "original_proposal_sha": "a0650b92007f197d68c252363362e2066f9db063",
+        "state": "PROVIDER_BLOCKED",
+        "preview_state": "BLOCKED_AUTH",
+        "owner": "PENDING",
+        "approval": null,
+        "repository_count": 1
+      },
+      "authority_on_restore": "OFF",
+      "masked_units": 16,
+      "Golden": "UNCHANGED",
+      "replacement_OS_boot": false,
+      "provider_calls": 0
+    },
+    "Golden": "UNCHANGED",
+    "owner_private_AGE_identity_used": false,
+    "offline_owner_decryption": "NOT PERFORMED; independent ciphertext readback and plaintext isolated restore are separate proofs"
+  },
+  "current_truth_path": "/var/lib/optibrain/post37-remediation/release/current-truth.json",
+  "executable_receipt_path": "/var/lib/optibrain/releases/current.json",
+  "private_evidence_directory": "/var/lib/optibrain/preview-control-plane-integration",
+  "owner_config": "docs/preview-control-plane-integration/owner-config.md",
+  "accepted_limitations": [
+    "Live preview adapters, webhook HTTP ingress, native website build policy and isolated target remain the next controlled execution.",
+    "Hosted camera review is blocked; historical preparation is not current test/preview readiness.",
+    "Existing backup growth attention and queue diagnostics remain visible; no recovery history was pruned.",
+    "Recovery verifies state/source and independent ciphertext bytes; no replacement OS/service boot or owner-private-key decryption was performed."
+  ],
+  "final_answers": {
+    "1": "YES; the one unique source delta is integrated and released on completed main.",
+    "2": "YES; G001–G004 remain RESOLVED.",
+    "3": "YES; latest authoritative precedence, WAITING/NO_ACTION/VERIFY_FIRST, owner corrections and shared next-action semantics passed.",
+    "4": "YES; production safely loads repository/preview state and shows camera provider-blocked status.",
+    "5": "YES; live website GitHub and Cloudflare preview writes remain DISABLED.",
+    "6": "YES;401/403/missing authority yield BLOCKED_AUTH, never verified empty.",
+    "7": "YES; PREVIEW_READY requires the exact SHA-bound proposal/deployment/HTTP evidence tuple.",
+    "8": "YES; stale base/conflict/supersession and evidence expiry are detected.",
+    "9": "YES; owner approval binds to exact revision/head SHA/tests/preview evidence and becomes stale after material change.",
+    "10": "YES;20261006T181841Z matches production9501fe3/API1.31.0 and has independent remote hash, isolated restore and source proofs.",
+    "11": "Selected-repository OptiBrain Website Preview App, minimum read permissions, later bounded Contents/PR write, enforceable main/CI boundary and signed receiver; see owner-config.md.",
+    "12": "Effective user-scoped Workers CI Read for trigger discovery, isolated preview Worker with no production routes/bindings, separate selected-Worker Editor for later uploads; see owner-config.md.",
+    "13": "NO; foundation/completion stays finished; no new numbered phase.",
+    "14": "Configure the provider preview boundary and perform ONE hosted commercial-camera preview; no production website merge/deploy."
+  }
+}
