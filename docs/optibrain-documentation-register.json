@@ -23,7 +23,7 @@
   "counts": {
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
-    "AUDIT EVIDENCE": 122,
+    "AUDIT EVIDENCE": 125,
     "AUTHORITATIVE CURRENT": 65,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
@@ -1711,6 +1711,24 @@
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "purpose": "Snapshot bound correction final candidate offline regression; no network attempts"
+    },
+    {
+      "path": "docs/lifecycle-truth-integration/final-report.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "purpose": "Verified lifecycle-only release, current completion/recovery truth and next-mission handoff; no provider authority"
+    },
+    {
+      "path": "docs/lifecycle-truth-integration/final-report.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "purpose": "Verified lifecycle-only release, current completion/recovery truth and next-mission handoff; no provider authority"
+    },
+    {
+      "path": "docs/lifecycle-truth-integration/next-preview-integration.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "purpose": "Verified lifecycle-only release, current completion/recovery truth and next-mission handoff; no provider authority"
     }
   ]
 }
