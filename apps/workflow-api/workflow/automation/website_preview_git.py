@@ -52,7 +52,7 @@ class LocalGitAdapter:
              'GIT_CONFIG_GLOBAL':'/dev/null','GIT_TERMINAL_PROMPT':'0','GIT_AUTHOR_NAME':'OptiBrain Local Preview',
              'GIT_AUTHOR_EMAIL':'preview@localhost','GIT_COMMITTER_NAME':'OptiBrain Local Preview','GIT_COMMITTER_EMAIL':'preview@localhost'}
         with tempfile.TemporaryFile() as out:
-            r=subprocess.run(['git','-c','core.hooksPath=/dev/null','-c','commit.gpgsign=false','-c','core.fsmonitor=false',
+            r=subprocess.run(['git','-c','safe.directory='+str(cwd),'-c','core.hooksPath=/dev/null','-c','commit.gpgsign=false','-c','core.fsmonitor=false',
                 '-c','diff.external=','-C',str(cwd),*args],env=env,stdout=out,stderr=subprocess.STDOUT,timeout=30,shell=False)
             if out.tell()>1048576:raise ValueError('Git output exceeds bound')
             out.seek(0);value=out.read().decode('utf-8','replace')

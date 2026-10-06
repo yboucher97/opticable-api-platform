@@ -156,6 +156,7 @@ class PageEvidence(HTMLParser):
     def handle_starttag(self,tag,attrs):
         a=dict(attrs)
         if tag=='form' or tag=='iframe' and a.get('data-preview-form')=='present':self.form=True
+        if tag=='a' and a.get('data-preview-forms-reference')=='contact' and a.get('href')=='/fr/contact/?origin_service=security-camera-systems':self.form=True
         if tag=='a' and a.get('data-preview-cta')=='quote':self.cta=True
         if tag=='meta' and a.get('name','').lower()=='robots' and 'noindex' in a.get('content','').lower():self.noindex=True
         if tag=='link' and a.get('rel')=='canonical':self.canonical.append(a.get('href'))

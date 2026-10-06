@@ -100,7 +100,11 @@ def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_pag
             results.append(v);continue
         pr=_observed(github.get_pr,now,repo,v['branch']);reads['pull_request']=pr.metadata()
         workflow=_observed(github.get_workflow_status,now,repo,v['head_sha']);reads['workflow']=workflow.metadata()
-        # Missing PR is an honest empty result; fake/local preparation does not require one.
+        # Live graduation requires a draft PR; legacy fake/local proof can be empty.
+        if getattr(github,'requires_draft_pr',False) and (pr.state!='COMPLETE' or not isinstance(pr.data,dict)
+                or pr.data.get('state')!='open' or pr.data.get('auto_merge') is not None):
+            _save(store,v,now,state='PROVIDER_BLOCKED',preview_state='BLOCKED_AUTH' if pr.state=='BLOCKED_AUTH' else 'FAILED',last_verified_at=None)
+            results.append(v);continue
         if pr.state=='COMPLETE':
             p=pr.data
             if not isinstance(p,dict) or p.get('repository')!=repo or p.get('head_sha')!=v['head_sha'] or p.get('branch')!=v['branch'] or p.get('base_ref')!=v['base_ref'] or p.get('draft') is not True or type(p.get('number')) is not int:
@@ -110,7 +114,10 @@ def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_pag
             _save(store,v,now,state='PROVIDER_BLOCKED' if 'BLOCKED_AUTH' in {pr.state,workflow.state} else 'PREVIEW_PENDING',preview_state='BLOCKED_AUTH' if 'BLOCKED_AUTH' in {pr.state,workflow.state} else 'PARTIAL',last_verified_at=None)
             results.append(v);continue
         w=workflow.data
-        if not isinstance(w,dict) or w.get('repository')!=repo or w.get('head_sha')!=v['head_sha'] or w.get('branch')!=v['branch'] or not all(w.get('checks',{}).get(k)=='PASS' for k in v['required_tests']):
+        # Native CI checks are distinct from the separately pinned local test
+        # classes. A live port must never relabel one CI job as every test class.
+        ci_checks=getattr(github,'required_ci_checks',v['required_tests'])
+        if not ci_checks or not isinstance(w,dict) or w.get('repository')!=repo or w.get('head_sha')!=v['head_sha'] or w.get('branch')!=v['branch'] or not all(w.get('checks',{}).get(k)=='PASS' for k in ci_checks):
             _save(store,v,now,state='PREVIEW_PENDING',preview_state='PARTIAL',last_verified_at=None);results.append(v);continue
         project=_observed(cloudflare.get_project,now,v['preview_project']);reads['cloudflare_project']=project.metadata()
         config=_observed(cloudflare.get_preview_configuration,now,v['preview_project']);reads['cloudflare_configuration']=config.metadata()
