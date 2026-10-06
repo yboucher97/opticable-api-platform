@@ -23,8 +23,8 @@
   "counts": {
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
-    "AUDIT EVIDENCE": 125,
-    "AUTHORITATIVE CURRENT": 65,
+    "AUDIT EVIDENCE": 135,
+    "AUTHORITATIVE CURRENT": 66,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
   },
@@ -671,39 +671,39 @@
       "path": "docs/PHASE22_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE22_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE23_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE23_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE24_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/PHASE24_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/PHASE25_CHECKPOINT.json",
@@ -1443,14 +1443,14 @@
       "path": "docs/phase22-provider-observations.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/phase25-owner-actions.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/phase26-27-final-report.md",
@@ -1729,6 +1729,80 @@
       "classification": "AUDIT EVIDENCE",
       "current": true,
       "purpose": "Verified lifecycle-only release, current completion/recovery truth and next-mission handoff; no provider authority"
+    },
+    {
+      "path": "docs/preview-integration/architecture.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": null,
+      "purpose": "Unreleased local preview integration contract/evidence; no production authority or G004 release closure"
+    },
+    {
+      "path": "docs/preview-integration/final-night-report.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": null,
+      "purpose": "Unreleased local preview integration contract/evidence; no production authority or G004 release closure"
+    },
+    {
+      "path": "docs/preview-integration/final-night-report.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": null,
+      "purpose": "Unreleased local preview integration contract/evidence; no production authority or G004 release closure"
+    },
+    {
+      "path": "docs/preview-integration/operator-runbook.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": null,
+      "purpose": "Unreleased local preview integration contract/evidence; no production authority or G004 release closure"
+    },
+    {
+      "path": "docs/preview-integration/owner-actions.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": null,
+      "purpose": "Unreleased local preview integration contract/evidence; no production authority or G004 release closure"
+    },
+    {
+      "path": "docs/preview-integration/provider-contracts.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": null,
+      "purpose": "Unreleased local preview integration contract/evidence; no production authority or G004 release closure"
+    },
+    {
+      "path": "docs/preview-integration/security.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": null,
+      "purpose": "Unreleased local preview integration contract/evidence; no production authority or G004 release closure"
+    },
+    {
+      "path": "docs/preview-integration/validation.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "superseded_by": null,
+      "purpose": "Unreleased local preview integration contract/evidence; no production authority or G004 release closure"
+    },
+    {
+      "path": "docs/preview-control-plane-integration/release-plan.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "purpose": "Reviewed preview integration release and separate future provider configuration; runtime receipts determine live state"
+    },
+    {
+      "path": "docs/preview-control-plane-integration/owner-config.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Reviewed preview integration release and separate future provider configuration; runtime receipts determine live state"
+    },
+    {
+      "path": "docs/preview-control-plane-integration/validation.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "purpose": "Passing integration focused/full/security validation; source-bound full receipt remains root-private"
     }
   ]
 }

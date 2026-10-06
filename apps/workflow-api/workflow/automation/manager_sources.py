@@ -123,6 +123,8 @@ def registry(inputs,now):
             'owner_action':'Optional GBP native read scope' if sid=='gbp' else None,
             'source_confidence':'MODERATE' if state=='GREEN' else 'INSUFFICIENT' if state in {'STALE','BLOCKED','UNKNOWN'} else 'TENTATIVE',
             'reason':reason,'truth_class':'DERIVED_DETERMINISTICALLY'})
+        if sid=='website':
+            output[-1]['repositories']=inputs.get('website-repositories',[])[:10]
     # Retain other active structured sources; optional vendors never become dependencies.
     known={r['source_id'] for r in output}
     for sid,r in sorted(existing.items()):

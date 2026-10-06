@@ -1,0 +1,246 @@
+{
+  "schema": 1,
+  "lane_status": "PARTIAL",
+  "observed_at": "2026-10-06T04:05:10.904211+00:00",
+  "repository": "yboucher97/opticable-website",
+  "worktree": "/home/optibrain/worktrees/opticable-website-preview",
+  "branch": "optimization/preview-automation",
+  "start_base_sha": "fc67ddc8c76b7527a620a93ca216b038f210b895",
+  "starting_head_sha": "1d1388584cb6b872822470a2db67f2897073089b",
+  "existing_preview_commit": "a0650b92007f197d68c252363362e2066f9db063",
+  "prepared_tested_head_sha": "2db20ef78fef1f30e5e7a8afaf3d0ac099d4f3d7",
+  "final_head_ref": "refs/heads/optimization/preview-automation",
+  "final_head_resolution": "git rev-parse HEAD; report-only commit follows prepared/tested revision",
+  "final_git_receipt": "output/preview-automation/final-git-state.json",
+  "production_main_sha": "fc67ddc8c76b7527a620a93ca216b038f210b895",
+  "stale_state": "CURRENT",
+  "remote_branch_pushed": false,
+  "pr_number": null,
+  "production_affected": false,
+  "existing_work_recovered": {
+    "commits": [
+      "a0650b9",
+      "1d13885"
+    ],
+    "artifacts": [
+      "preview-automation/run-local-checks.py",
+      "preview-automation/local-browser-check.cjs",
+      "output/baseline-preview",
+      "dist-preview",
+      "output/preview-automation/build logs",
+      "/tmp/opticable-preview-read-audit.py",
+      "/tmp/opticable-preview-read-audit.json"
+    ],
+    "reused": [
+      "camera proposal",
+      "test runners",
+      "venv/Playwright cache",
+      "baseline build",
+      "read-audit code and metadata"
+    ],
+    "duplicated_work": "NONE; incomplete tests completed and failed check assumptions corrected; later committed revision rebuilt for exact-SHA evidence"
+  },
+  "github": {
+    "production_branch": "main (normal GitHub CI)",
+    "current_git_auth": "Dedicated writable repository deploy key via github-opticable-website",
+    "api_read_auth": "Existing GitHub App; repository-only short-lived read tokens and read-only connected app metadata",
+    "read": "VERIFIED",
+    "proposal_branch_write": "WRITABLE KEY + DRY RUN VERIFIED; actual ref write withheld",
+    "draft_pr": "BLOCKED pending Cloudflare trigger safety audit",
+    "workflow_read": "VERIFIED",
+    "auto_merge_enabled": false,
+    "main_protected": false,
+    "ruleset_read": "403: Upgrade to GitHub Pro or make this repository public to enable this feature",
+    "webhook_design": "push/pull_request/workflow_run with HMAC, dedupe, exact-SHA reconciliation; documented only",
+    "current_webhooks": "App subscriptions empty; repository hooks empty",
+    "future_auth": "Separate selected-repository preview GitHub App; no production/admin/workflow-write privileges"
+  },
+  "cloudflare": {
+    "project": "opticable-website",
+    "project_type": "Worker with static assets",
+    "production_branch": "main in GitHub CI; independent Builds branch config unreadable",
+    "shared_test_worker": "opticable-website-preview",
+    "pages_project_for_this_website": false,
+    "preview_support": "Shared main-built test site only; proposal version URLs disabled; isolated target not provisioned",
+    "preview_branch": "optimization/preview-automation (local only)",
+    "preview_deployment_id": null,
+    "preview_url": null,
+    "preview_commit": null,
+    "production_affected": false,
+    "production_active_deployment_id": "6ee734f2-c2a8-4b50-a6e8-3fc57ee4dca1",
+    "production_active_version_id": "fee39430-14f1-4dac-98f7-aeb716baae9f",
+    "production_visible_history_unchanged": true,
+    "builds_trigger_read": "HTTP 401 / code 12006 / Invalid token"
+  },
+  "camera": {
+    "proposal_id": "49d2893d1498325eb5ae8f5a7304d1e3d199d03afcb4c6d0383dd7ed6ab32c17",
+    "source_revision": 2,
+    "current_page": "https://opticable.ca/fr/services/systemes-cameras-securite/",
+    "proposed": "Exact preserved FR commercial IP-camera copy, scope FAQ and quote CTA; EN/runtime attribution/Form paths unchanged",
+    "proposal_sha": "a0650b92007f197d68c252363362e2066f9db063",
+    "prepared_sha": "2db20ef78fef1f30e5e7a8afaf3d0ac099d4f3d7",
+    "preview_url": null,
+    "tests": "PASSED_LOCAL",
+    "owner_review": "BLOCKED"
+  },
+  "pipeline": {
+    "detect": "Evidence-led design documented; no autonomous detection service added",
+    "propose": "Existing Phase33 camera revision 2 reused",
+    "branch": "Existing local branch preserved; deterministic future naming tested",
+    "worktree": "Existing isolated worktree reused",
+    "modify": "Existing camera patch retained; test race/check assumptions fixed",
+    "build": "PASS, preview and production-equivalent local builds",
+    "test": "PASS local native/static/browser/policy checks; remote CI absent",
+    "push": "BLOCKED; no actual push",
+    "pr": "BLOCKED; no draft PR created",
+    "cloudflare_preview": "BLOCKED; no upload/deploy",
+    "validate": "Local PASS; hosted not run",
+    "owner_review": "Local evidence package PARTIAL; ready gate BLOCKED",
+    "production": "NOT AUTHORIZED"
+  },
+  "testing": {
+    "dependency_integrity": "PASS; existing Pillow 11.3.0 meets >=10,<12; pip check clean",
+    "build": "PASS; each validates 100 sitemap routes + 404",
+    "lint": "PASS syntax/diff; no dedicated linter",
+    "routes": "PASS 115 HTML pages; 246 generated files compared",
+    "fr": "PASS current/proposed camera/home/contact",
+    "en": "PASS; unchanged after asset-version normalization",
+    "forms": "PASS local shells/reference regression and isolated native fixtures; genuine submits=0",
+    "ga4": "G-ZEQXVSZWRL preserved; preview destinations disabled",
+    "ob_attribution": "PASS consented click-lineage/native handoff fixtures",
+    "links_assets": "PASS native validator and generated comparison; no broken browser images",
+    "schema": "111 JSON-LD blocks parse; unchanged schema content except asset SHA; full vocabulary audit not performed",
+    "responsive_accessibility": "48 fixture checks at 320/390/768/1440; basic language/H1/alt/keyboard CTA checks",
+    "policy_tests": "5 PASS; blocked record cannot pass readiness",
+    "secret_scan": "PASS bounded known-pattern scan of generated output; not a comprehensive certification",
+    "preview_http": "NOT RUN — no proposal preview URL",
+    "production_http": "200; original camera copy and body hash unchanged",
+    "unresolved_test_failures": [],
+    "resolved_test_findings": "Regional language tags/lazy images check assumptions and consent-driven iframe navigation race corrected",
+    "warnings": [
+      "Pre-existing sitegen_data.py:5608 SyntaxWarning for invalid escape sequence"
+    ],
+    "build_output_paths": [
+      "dist-preview",
+      "output/production-check"
+    ],
+    "test_logs": "output/preview-automation",
+    "schema_evidence": "evidence/schema-regression.json"
+  },
+  "future_optibrain": {
+    "daily_reclone_required": false,
+    "webhook_driven": "DESIGNED; not installed",
+    "git_fetch_reconciliation": "Incremental fetch and 6–12h active-proposal reconciliation plus fresh checks at owner/handoff",
+    "hash_change_detection": "commit/file/semantic hashes with last analyzed/proposal SHA; unchanged source skipped",
+    "worktree_lifecycle": "bounded active worktrees and controlled clean/inactive archive; current worktree retained",
+    "automatic_preparation": "local READY; complete remote pipeline blocked",
+    "owner_approval": "Exact revision/SHA/evidence/expiry receipt; never auto-merge",
+    "production_executor": "SEPARATE / NOT IMPLEMENTED",
+    "persistent_development_worker": false
+  },
+  "missing_access": {
+    "github": "Narrow preview runtime App/webhook/main-protection architecture; no added broad grants needed",
+    "cloudflare": "Builds triggers read capability and an independently provisioned isolated preview target/upload principal",
+    "other": "No live Forms/Ads/CRM/Apollo/OptiBrain access requested or modified"
+  },
+  "autonomy": {
+    "automatic_read": "PARTIAL",
+    "automatic_branch_creation": "PARTIAL",
+    "automatic_local_preparation": "READY",
+    "automatic_testing": "PARTIAL",
+    "automatic_branch_push": "BLOCKED",
+    "automatic_draft_pr": "BLOCKED",
+    "automatic_cloudflare_preview": "BLOCKED",
+    "automatic_owner_review_package": "PARTIAL",
+    "production_deployment": "NOT AUTHORIZED"
+  },
+  "safety": {
+    "production_website_deploys": 0,
+    "main_merges": 0,
+    "direct_main_pushes": 0,
+    "production_cloudflare_config_changes": 0,
+    "production_dns_changes": 0,
+    "optibrain_backend_changes": 0,
+    "zoho_forms_changes": 0,
+    "ads_changes": 0,
+    "crm_changes": 0,
+    "apollo_changes": 0,
+    "published_content": 0
+  },
+  "safety_evidence": [
+    "evidence/provider-audit-start.json",
+    "evidence/provider-audit-finish.json",
+    "evidence/production-http-start.json",
+    "evidence/production-http-finish.json",
+    "evidence/source-inventory.json"
+  ],
+  "owner_review_record": "owner-review.md",
+  "preview_record": "preview-record.json",
+  "final_questions": [
+    {
+      "number": 1,
+      "question": "Can OptiBrain safely prepare website changes without touching production?",
+      "answer": "YES for isolated local preparation; remote preview automation remains gated."
+    },
+    {
+      "number": 2,
+      "question": "Can GitHub proposal branches be created safely?",
+      "answer": "Local branches YES. Remote branch creation is a push/API ref write and remains BLOCKED until independent deployment triggers are audited."
+    },
+    {
+      "number": 3,
+      "question": "Can proposal branches be pushed safely?",
+      "answer": "NOT PROVEN today. SSH write capability/dry run pass, but Cloudflare Builds discovery fails; actual push withheld."
+    },
+    {
+      "number": 4,
+      "question": "Can Cloudflare create an isolated preview?",
+      "answer": "Supported by the provider, but NOT READY on the current active website setup. A separate isolated preview target/configuration proposal is documented and not applied."
+    },
+    {
+      "number": 5,
+      "question": "Can the preview be tied to the exact Git SHA?",
+      "answer": "YES by design using provider version annotations plus generated manifest/artifact digest and CI SHA. Local build is tied to 2db20ef; no hosted SHA proof exists yet."
+    },
+    {
+      "number": 6,
+      "question": "Can the existing camera proposal now be reviewed through a real preview?",
+      "answer": "NO. Local current/proposed screenshots and content exist; no real Cloudflare proposal URL."
+    },
+    {
+      "number": 7,
+      "question": "Is a draft PR safe?",
+      "answer": "Repository PR workflow is read-only build/test and auto-merge is disabled. Overall safety is unproven because Cloudflare triggers are unreadable; no PR opened."
+    },
+    {
+      "number": 8,
+      "question": "What GitHub permissions are still missing?",
+      "answer": "No extra broad grants demonstrated missing. Deploy key alone lacks REST abilities. A separately scoped preview App, webhook subscriptions/receiver and enforceable main protections are still needed; current App is excessive."
+    },
+    {
+      "number": 9,
+      "question": "What Cloudflare permissions are still missing?",
+      "answer": "Successful Workers Builds trigger READ (documented Workers CI Read, current role mapping Content Read-Only), plus separately scoped upload authority on a pre-provisioned isolated preview Worker. No DNS/production edit permission requested."
+    },
+    {
+      "number": 10,
+      "question": "What prevents full automatic preview preparation today?",
+      "answer": "Unaudited Cloudflare integration, disabled active Worker version URLs/no isolated proposal target, missing exact-head proposal CI/hosted evidence, and incomplete credential/main-protection isolation for unattended integration."
+    },
+    {
+      "number": 11,
+      "question": "Should GitHub eventually use a GitHub App instead of deploy keys?",
+      "answer": "YES: a separate selected-repository preview App with least privilege and short-lived installation tokens."
+    },
+    {
+      "number": 12,
+      "question": "Should OptiBrain clone repositories every day?",
+      "answer": "NO — use event-driven updates plus bounded reconciliation."
+    },
+    {
+      "number": 13,
+      "question": "Is this adapter ready for integration into OptiBrain after the post-Phase37 remediation finishes?",
+      "answer": "Contract and local preparation evidence are ready for integration review. Full unattended adapter integration is NOT READY until the safety/access/preview gaps are resolved. Backend integration and production executor are not implemented."
+    }
+  ]
+}

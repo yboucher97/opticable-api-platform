@@ -54,3 +54,15 @@ class LifecycleTruthReleasePreservationTests(unittest.TestCase):
             with self.subTest(field=field):
                 prior = deepcopy(self.prior); prior['internal_policy']['lifecycle'][field].append('new')
                 with self.assertRaises(ValueError): stage.preserved(prior, self.source, self.helper)
+
+
+preview_spec=importlib.util.spec_from_file_location('preview_control_plane_stage',
+    Path(__file__).resolve().parents[3] / 'ops/preview_control_plane/stage_runtime.py')
+preview_stage=importlib.util.module_from_spec(preview_spec)
+preview_spec.loader.exec_module(preview_stage)
+
+class PreviewReleasePreservationTests(LifecycleTruthReleasePreservationTests):
+    def test_preview_release_uses_the_same_preserving_transform(self):
+        self.assertEqual(stage.preserved(self.prior,self.source,self.helper),
+                         preview_stage.preserved(self.prior,self.source,self.helper))
+        self.assertIn('preview-control-plane-integration',str(preview_stage.ROOT))

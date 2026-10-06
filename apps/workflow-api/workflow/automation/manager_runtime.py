@@ -159,6 +159,18 @@ def sync_priorities(inputs,store,now):
             'Review native tender/permit and customer/collision context; no send or bid',
             t.get('last_verified_at') or t.get('observed_at') or t.get('source_effective_at'),provider='SEAO' if 'tender' in str(t.get('kind','')).lower() or due else 'PUBLIC_TRIGGER',due=due,deadline=due,
             urgency='HIGH' if t.get('priority_class')=='ACT NOW' else 'MEDIUM')
+    from .website_preview_runtime import manager_projection,priority_action
+    for item in store.rows():
+        if item['record']['target_system']!='WEBSITE':continue
+        r=item['record'];v=store.preview(r['proposal_id'],now)
+        if not v:continue
+        action=priority_action(manager_projection(item,v,now))
+        if not action:continue
+        add(r['target_object'],action+' · '+r['recommended_change'],r['business_problem'],action,v['updated_at'],provider='WEBSITE_PREVIEW')
+        if candidates and candidates[-1]['record']['targets']==[r['target_object']]:
+            candidates[-1]['record'].update(proposal_id=r['proposal_id'],domain='WEBSITE_SEO',
+                priority_id=digest(['website-preview-priority',r['proposal_id']]))
+            candidates[-1]['detail']={'website_preview_priority':True}
     persist({'proposals':[],'priorities':candidates,'assets':[]},store)
     return [c['record']['priority_id'] for c in candidates]
 

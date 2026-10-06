@@ -1,6 +1,6 @@
 # OptiBrain architecture
 
-AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; Current API contract: `1.30.1`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
+AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; Current API contract: `1.31.0`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
 
 ```mermaid
 flowchart TD
@@ -54,3 +54,7 @@ Read [sales intelligence contract](OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md) and
 Completion remediation1–2 adds source-auth/collection freshness separation, strict versioned Forms context, sample/geography evidence and current trigger-actor safeguards. Derived research remains outside CRM; no additional provider-write authority.
 
 Phase37 consolidates the owner intelligence surface in [Business Manager](OPTIBRAIN_MANAGER_CONTRACT.md), using current proposal/priority stores and the existing internal observer. Local intent and recovered records grant no provider execution authority.
+
+## Preview control plane
+
+API1.31.0 adds bounded local website preparation and fake-provider contracts on the shared proposal/priority/source journals. Exact SHA, preview isolation, stale detection and owner evidence binding gate hosted readiness. [Integration](preview-control-plane-integration/release-plan.md) preserves completed-main/lifecycle truth; [provider configuration](preview-control-plane-integration/owner-config.md) remains the next separate controlled execution. Live preview mutations and production execution are unavailable.
