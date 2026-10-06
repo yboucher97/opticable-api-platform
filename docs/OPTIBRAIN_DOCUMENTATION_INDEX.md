@@ -64,3 +64,5 @@ Phase34 specialists: [Sales Conversation](OPTIBRAIN_SALES_CONVERSATION_CONTRACT.
 [Lifecycle integration release preparation](lifecycle-truth-integration/release-plan.md) preserves completed-main contracts and the existing internal-active/customer-closed policy. Historical PR133 and source remediation reports do not override the later trusted natural-completion aggregate.
 
 Effective current lifecycle release/recovery/completion truth: [verified final report](lifecycle-truth-integration/final-report.md) and [machine report](lifecycle-truth-integration/final-report.json). [Next preview handoff](lifecycle-truth-integration/next-preview-integration.md) is instructions only; the preview branch remains unchanged. Earlier candidate and PR133 reports are historical snapshots.
+
+Preview control plane: [reviewed release plan](preview-control-plane-integration/release-plan.md) and [owner provider configuration](preview-control-plane-integration/owner-config.md). The old local preview reports remain historical. Canonical root release/current-truth receipts determine live integration/recovery completion.

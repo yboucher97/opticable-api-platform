@@ -1,0 +1,270 @@
+{
+  "schema": 1,
+  "status": "PASS",
+  "scope": "FINAL-NIGHT LOCAL INTEGRATION ONLY",
+  "observed_at": "2026-10-06T04:58:02.590562+00:00",
+  "base_candidate": "c22d409d96671e8b78e21ca72a4a76ea4c80879b",
+  "start_sha": "fb7bf58ee016ff4bfdfd1010b49ea616a53ebf53",
+  "branch": "integration/local-preview-control-plane-20261006",
+  "final_head_ref": "refs/heads/integration/local-preview-control-plane-20261006",
+  "final_head_resolution": "git rev-parse HEAD in the dedicated integration worktree; exact SHA included in final completion message and /tmp/optibrain-final-night-final-git-state.json",
+  "push": false,
+  "pr": false,
+  "merge": false,
+  "deploy": false,
+  "base_verification": {
+    "clean_initial_worktree": true,
+    "exact_candidate_branch": "remediation/post37-g001-g003-20261006",
+    "candidate_branch_sha": "c22d409d96671e8b78e21ca72a4a76ea4c80879b",
+    "cached_origin_main": "fb7bf58ee016ff4bfdfd1010b49ea616a53ebf53",
+    "remote_fetch_attempts": 0
+  },
+  "production": {
+    "sha": "205b217546372dfd37850da7721d9bba61a0746a",
+    "api": "1.28.0",
+    "unchanged": true
+  },
+  "candidate_api": "1.29.0",
+  "candidate_version_overwritten": false,
+  "next_release_version": "UNASSIGNED / plan after PR133 closure",
+  "remediation": {
+    "G001": "PASS candidate",
+    "G002": "PASS candidate",
+    "G003": "PASS candidate",
+    "G004": "WAITING FOR FINAL PRODUCTION RELEASE / recovery",
+    "current_state_metadata_modified": false,
+    "regression_introduced": false
+  },
+  "control_plane": {
+    "Repository model": "PASS",
+    "Preview model": "PASS",
+    "Git adapter": "PASS",
+    "Worktree model": "PASS",
+    "Build/test model": "PASS",
+    "GitHub interface": "PASS",
+    "Cloudflare interface": "PASS",
+    "Preview SHA binding": "PASS",
+    "Stale detection": "PASS",
+    "Approval binding": "PASS",
+    "Manager": "PASS",
+    "Priority integration": "PASS",
+    "Event intake": "PASS",
+    "Bounded reconciliation": "PASS",
+    "Structured website import": "PASS",
+    "Backward compatibility": "PASS"
+  },
+  "production_executor": "CONTRACT ONLY / no deployment implementation",
+  "camera": {
+    "proposal_id": "49d2893d1498325eb5ae8f5a7304d1e3d199d03afcb4c6d0383dd7ed6ab32c17",
+    "revision": 2,
+    "repository": "yboucher97/opticable-website",
+    "base_sha": "fc67ddc8c76b7527a620a93ca216b038f210b895",
+    "proposal_sha": "a0650b92007f197d68c252363362e2066f9db063",
+    "prepared_tested_sha": "2db20ef78fef1f30e5e7a8afaf3d0ac099d4f3d7",
+    "evidence_final_head": "91e36b551d61e9b6a8796b24fe3b7222ef99e66e",
+    "current_page": "https://opticable.ca/fr/services/systemes-cameras-securite/",
+    "required_tests": [
+      "BUILD",
+      "LINT",
+      "ROUTES",
+      "FR",
+      "EN",
+      "FORMS",
+      "GA4",
+      "ATTRIBUTION",
+      "LINKS",
+      "SCHEMA",
+      "ACCESSIBILITY",
+      "RESPONSIVE",
+      "SECRET_SCAN"
+    ],
+    "source": "Read-only website lane final JSON report; historical local test evidence is not hosted readiness",
+    "cloudflare": "BLOCKED_AUTH",
+    "owner_review": "BLOCKED",
+    "published": false,
+    "local_preparation": "PASS in temporary repository, all 13 classes modelled independently",
+    "historical_local_checks": "PASSED_LOCAL, preserved as reference evidence",
+    "cloudflare_blocked_auth_correct": true,
+    "owner_status": "PENDING",
+    "hosted_owner_review": "BLOCKED",
+    "normalized_branch": "optimization/49d2893d1498325eb5ae8f5a7304d1e3d199d03afcb4c6d0383dd7ed6ab32c17-camera-cta"
+  },
+  "website_evidence": {
+    "head": "91e36b551d61e9b6a8796b24fe3b7222ef99e66e",
+    "worktree": "/home/optibrain/worktrees/opticable-website-preview",
+    "modified": false,
+    "copied_report_sha256": "4dc475170ffd10ffaf35b102972f5a2e06ecbe71f930ef1ef0ce979c86e0cc51"
+  },
+  "tests": {
+    "schema": 1,
+    "observed_at": "2026-10-06T04:58:02.590562+00:00",
+    "new_test_methods": 81,
+    "focused": {
+      "tests": 159,
+      "subtests": 178,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "blocked_network_attempts": 0,
+      "passed": true
+    },
+    "full_kernel": {
+      "tests": 1710,
+      "subtests": 1474,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "blocked_network_attempts": 0,
+      "passed": true
+    },
+    "root_backup_admin_tests": {
+      "tests": 48,
+      "subtests": 63,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "blocked_network_attempts": 0,
+      "passed": true
+    },
+    "worker_tests": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "passed": true
+    },
+    "worker_bundle_dry_run": "PASS — no upload",
+    "omada_typescript_build": "PASS",
+    "dependency_installation": "OFFLINE_ONLY / ignore-scripts / no-audit",
+    "documentation_contracts": {
+      "bootstrap_check": "PASS",
+      "configuration_sources": 97,
+      "current_links": 268,
+      "documents": 234,
+      "issues": [],
+      "passed": true,
+      "primary_documents": 10,
+      "secret_references": 59,
+      "unknown_documents": 0
+    },
+    "total_distinct_tests": 1762,
+    "total_python_subtests": 1537,
+    "commands": {
+      "focused": "python -I ops/phase6/validate.py --suite focused --pattern test_website_preview.py --pattern test_phase37_manager.py --pattern test_post37*.py",
+      "full": "python -I ops/phase6/validate.py --suite full",
+      "contracts": "python -I ops/phase15/validate_contracts.py",
+      "root": "Network-blocked counted unittest discovery of tests and tests/ops; temporary output directory",
+      "worker": "node --test apps/control-plane-worker/tests/*.test.js",
+      "worker_bundle": "WRANGLER_SEND_METRICS=false npm run check (wrangler deploy --dry-run)",
+      "omada": "npm run build"
+    },
+    "python_interpreter": "/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python",
+    "execution_checkout": "/home/optibrain/worktrees/optibrain-final-night-preview-integration",
+    "production_checkout_used_as_source_or_workdir": false,
+    "log_sha256": {
+      "focused": "cdeacb5e47b4d862f5c86b3c1dc53d52415b44c321bd326f3dea17a3c5e042ef",
+      "full": "55a8a53c6aa155c4125d806128b0f63e82f1368b03fd2238a4763af25ff010bb",
+      "root-tests": "f6c74cc39d7acfdb532062a41a893c24f7c79cdb5e896b34e282a8e3b3a37522",
+      "worker": "95cc08347047c9d4a35ebb59e347a5584048963c87b831b2ccbdc4052accba13",
+      "worker-check": "5293baec0e772f738097941f82e82664db25008fd278c5ae09535f8836b1e55a",
+      "omada-build": "386673dcd38428d3b75b3fc71e42d24f56b3721db792dd3c3b8019c2cd4f017f"
+    },
+    "network_writes": 0,
+    "provider_mutations": 0
+  },
+  "security": {
+    "Branch injection": "PASS",
+    "Path traversal": "PASS",
+    "Cross-repo": "PASS",
+    "Webhook signature": "PASS",
+    "Replay": "PASS",
+    "Preview spoof": "PASS",
+    "Wrong SHA": "PASS",
+    "Command injection": "PASS",
+    "Malicious build definition": "PASS",
+    "Production redirect": "PASS",
+    "Proposal spoof": "PASS",
+    "Worktree collision": "PASS"
+  },
+  "live_providers": {
+    "GitHub mutations": 0,
+    "Cloudflare mutations": 0,
+    "CRM writes": 0,
+    "Books writes": 0,
+    "Ads writes": 0,
+    "Apollo sends": 0,
+    "Website deployments": 0
+  },
+  "owner_action_status": "OWNER ACTION / PROVIDER CONFIG REQUIRED",
+  "owner_actions_document": "docs/preview-integration/owner-actions.md",
+  "morning_execution_order_document": "docs/preview-integration/operator-runbook.md",
+  "remaining_graduation_work": [
+    "Close PR133 production verification/recovery/G004",
+    "Rebase and revalidate integration on completed main",
+    "Configure separately scoped GitHub/Cloudflare preview boundary",
+    "Implement/validate live provider ports, pinned website policy, callback and preview-only exact-head executor",
+    "Perform first controlled hosted camera preview without production deployment"
+  ],
+  "optional_secondary_analysis": "SKIPPED — no cleanup or deletion performed",
+  "final_questions": [
+    {
+      "number": 1,
+      "question": "Is the local preview integration implemented?",
+      "answer": "YES — local control plane and Manager extension implemented."
+    },
+    {
+      "number": 2,
+      "question": "Can it operate fully with fake providers?",
+      "answer": "YES — temporary Git, fake GitHub/Cloudflare/HTTP and signed webhook fixtures exercise the full local path."
+    },
+    {
+      "number": 3,
+      "question": "Does Cloudflare 401 become BLOCKED_AUTH rather than empty?",
+      "answer": "YES — failed/auth reads preserve uncertainty; NOT COLLECTED is distinct from VERIFIED EMPTY."
+    },
+    {
+      "number": 4,
+      "question": "Can it link exact proposal/repo/base/head SHAs?",
+      "answer": "YES — canonical ID/revision/hash and exact repository/ref/base/head are required."
+    },
+    {
+      "number": 5,
+      "question": "Can it detect stale main?",
+      "answer": "YES — CURRENT / NEEDS_REBASE / CONFLICTED / SUPERSEDED with isolated comparison."
+    },
+    {
+      "number": 6,
+      "question": "Can it safely model proposal worktrees?",
+      "answer": "YES — private configured root, deterministic repo/ID path, identity/branch/base checks, collision/dirty protection and active cap."
+    },
+    {
+      "number": 7,
+      "question": "Can Manager expose preview state?",
+      "answer": "YES — existing proposal cards, review package and owner priorities."
+    },
+    {
+      "number": 8,
+      "question": "Does approval remain revision/SHA-bound?",
+      "answer": "YES — also bound to checks and preview evidence; material changes or expiry invalidate it."
+    },
+    {
+      "number": 9,
+      "question": "Are all live provider writes zero?",
+      "answer": "YES — no GitHub, Cloudflare, CRM, Books, Ads, Apollo or website mutation."
+    },
+    {
+      "number": 10,
+      "question": "What owner actions prevent the first hosted preview?",
+      "answer": "PR133 production/recovery/G004 closure; scoped preview GitHub App, enforceable main protection and safe triggers/callback; effective Cloudflare Builds trigger READ and isolated preview Worker/upload authority."
+    },
+    {
+      "number": 11,
+      "question": "What is the shortest path after closure/configuration?",
+      "answer": "Rebase and revalidate this branch; validate live ports/pinned website policy; prepare camera revision 2 at current main; one proposal-only push/draft PR, exact-head CI and isolated version upload; verify manifest/HTTP and unchanged production, then Manager owner review."
+    },
+    {
+      "number": 12,
+      "question": "Is another foundation phase required?",
+      "answer": "NO — proceed to controlled execution graduation after current remediation closure. Live adapter implementation/validation and provider setup remain execution work."
+    }
+  ]
+}

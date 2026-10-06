@@ -1,0 +1,45 @@
+{
+  "focused": {
+    "tests": 334,
+    "subtests": 290,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "blocked_network_attempts": 0,
+    "passed": true
+  },
+  "full": {
+    "tests": 1769,
+    "subtests": 1539,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "blocked_network_attempts": 0,
+    "passed": true
+  },
+  "additional_backup_admin": {
+    "tests": 48,
+    "subtests": 63,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "blocked_network_attempts": 0,
+    "passed": true
+  },
+  "worker": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "security": {
+    "suite": "test_website_preview.py (84 tests including adversarial subtests)",
+    "passed": true,
+    "network_writes": 0
+  },
+  "api": "1.31.0",
+  "provider_mutations": "DISABLED",
+  "production_executor": "CONTRACT_ONLY",
+  "source_preview_head": "75c6a2b69dcbfc28ccb4eebcedae020c1f4d1738",
+  "start_main": "611a3a2d3f16648953e0c1e9e08574afdd1d378c"
+}

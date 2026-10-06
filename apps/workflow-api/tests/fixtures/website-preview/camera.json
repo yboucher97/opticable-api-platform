@@ -1,0 +1,15 @@
+{
+  "proposal_id": "49d2893d1498325eb5ae8f5a7304d1e3d199d03afcb4c6d0383dd7ed6ab32c17",
+  "revision": 2,
+  "repository": "yboucher97/opticable-website",
+  "base_sha": "fc67ddc8c76b7527a620a93ca216b038f210b895",
+  "proposal_sha": "a0650b92007f197d68c252363362e2066f9db063",
+  "prepared_tested_sha": "2db20ef78fef1f30e5e7a8afaf3d0ac099d4f3d7",
+  "evidence_final_head": "91e36b551d61e9b6a8796b24fe3b7222ef99e66e",
+  "current_page": "https://opticable.ca/fr/services/systemes-cameras-securite/",
+  "required_tests": ["BUILD", "LINT", "ROUTES", "FR", "EN", "FORMS", "GA4", "ATTRIBUTION", "LINKS", "SCHEMA", "ACCESSIBILITY", "RESPONSIVE", "SECRET_SCAN"],
+  "source": "Read-only website lane final JSON report; historical local test evidence is not hosted readiness",
+  "cloudflare": "BLOCKED_AUTH",
+  "owner_review": "BLOCKED",
+  "published": false
+}

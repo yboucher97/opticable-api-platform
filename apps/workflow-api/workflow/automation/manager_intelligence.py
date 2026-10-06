@@ -26,6 +26,10 @@ def proposals(store,sources,now):
     feedback=store.feedback_latest();output=[]
     for item in store.rows():
         r=item['record'];status=item['effective_status'];f=feedback.get(('PROPOSAL',r['proposal_id']))
+        website=None
+        if r['target_system']=='WEBSITE':
+            from .website_preview_runtime import manager_projection
+            website=manager_projection(item,store.preview(r['proposal_id'],now),now)
         evidence=evidence_health(r['source_evidence'],sources,now)
         signature=semantic_evidence(r,item['detail'])
         if f and (f['version']==item['payload_hash'] or f['choice']=='NEVER' or
@@ -46,6 +50,12 @@ def proposals(store,sources,now):
             'feedback':{'choice':f['choice'],'at':f['at'],'reason':f['value'].get('reason'),'category':f['value'].get('category'),
                         'conditions':f['value'].get('reconsideration_conditions')} if f else None,
             'approval':'OWNER_INTENT_ONLY' if status=='APPROVED' else None})
+        if website:
+            output[-1]['website_preview']=website
+            if website.get('repository'):
+                output[-1].update(status=website['state'],readiness=website['state'],
+                    preview=website['verified_url'] or r.get('preview_location'),
+                    approval='EXACT_PREVIEW_OWNER_INTENT' if website['approval_bound'] else None)
     return output
 
 
@@ -68,6 +78,11 @@ def priorities(store,proposal_rows,sources,now,*,active_ids=None,crosswalk=None,
     by={p['proposal_id']:p for p in proposal_rows};feedback=store.feedback_latest();groups={};crosswalk=crosswalk or {}
     for item in store.rows('optibrain.business_priority'):
         r=item['record'];pid=r['priority_id'];p=by.get(r.get('proposal_id'));status=p['status'] if p else r['status']
+        website_action=None
+        if p and p.get('website_preview',{}).get('repository'):
+            from .website_preview_runtime import priority_action
+            website_action=priority_action(p['website_preview'])
+            if item['detail'].get('website_preview_priority') and not website_action:continue
         if r['domain']=='MANAGER' and active_ids is not None and pid not in active_ids:continue
         f=feedback.get(('PRIORITY',pid))
         if f and (f['version']==item['payload_hash'] or f['choice']=='NEVER'):
@@ -95,6 +110,11 @@ def priorities(store,proposal_rows,sources,now,*,active_ids=None,crosswalk=None,
                 'effort':'UNKNOWN','service_fit':'Evidence-dependent','geography':'Evidence-dependent',
                 'dependency':r.get('dependency'),'reasons':r['priority_reasons']},
             'execution_authorized':False,'preview':p.get('preview') if p else None}
+        if website_action and target.get('system')=='WEBSITE' and target.get('entity_type') in {'WEBSITE_PAGE','LANDING_PAGE'}:
+            v.update(what=website_action+' · '+p['title'],next_action=website_action,
+                preview=p['website_preview']['verified_url'],website_preview=p['website_preview'],
+                actionability='VERIFY_FIRST' if website_action in {'PROVIDER ACCESS REQUIRED','STALE PREVIEW'} else 'ACTIONABLE_NOW',
+                reason_code='WEBSITE_PREVIEW_OWNER_REVIEW')
         v=reconcile_priority(v,lifecycle_states or {})
         # Exact commercial-object state prevents separate projects at one
         # Account from collapsing into the same action.
@@ -109,6 +129,7 @@ def priorities(store,proposal_rows,sources,now,*,active_ids=None,crosswalk=None,
 
 
 def build_manager(inputs,store,now,*,active_ids=None,crosswalk=None):
+    inputs={**inputs,'website-repositories':store.repository_states()}
     sources=registry(inputs,now);ps=proposals(store,sources,now)
     states=collect_states(inputs,now,store)
     for p in ps:
@@ -223,6 +244,8 @@ def render_manager(view,*,query='',domain='',status=''):
     for p in rows[:50]:
         url='/v1/operator/acquisition?proposal_id='+p['proposal_id']
         body+='<article><h3><a href="'+h(url)+'">'+h(p['title'])+'</a></h3><p>'+h(p['domain'])+' · '+h(p['status'])+' · '+h(p['readiness'])+' · confidence '+h(p['confidence'])+'</p><p>'+h(p['why'])+'</p><p>Benefit: '+h(p['expected_benefit'])+' · Cost: '+h(p['cost'])+'</p><p>Risk: '+h(p['risk'])+'</p><details><summary>Why this?</summary>'+short(p['evidence'])+'</details><p>'+h(p['owner_action'])+'</p>'
+        if p.get('website_preview'):
+            body+='<details><summary>Website preparation / preview / review</summary>'+short(p['website_preview'])+'</details>'
         body+="<form method='post' action='/v1/operator/manager/feedback'><input type='hidden' name='kind' value='PROPOSAL'><input type='hidden' name='target' value='"+h(p['proposal_id'])+"'><input type='hidden' name='version' value='"+h(p['payload_hash'])+"'><label>Decision <select name='choice'>"+''.join('<option>'+c+'</option>' for c in ('APPROVE','REJECT','REQUEST_REVISION','WAIT','NOT_RELEVANT','NEVER'))+"</select></label><label> Reason <input name='reason' maxlength='1000'></label><label> Reconsider when <input name='conditions' maxlength='1000'></label><button>Record owner intent</button></form><small>Approval records intent. Provider execution still requires separate authority.</small></article>"
     out+=card('Optimization proposals',body)
     body=''

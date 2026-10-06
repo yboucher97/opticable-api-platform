@@ -2,7 +2,7 @@
 from datetime import timedelta
 import json
 import sqlite3
-from .optimization_store import OptimizationStore
+from .website_preview_store import WebsitePreviewStore
 from .acquisition_store import digest, safe
 
 CLASSIFICATIONS = {'UNATTENDED','OWNER_INITIATED','TEST_ONLY','MANUAL_PROVIDER_ACTION',
@@ -12,7 +12,7 @@ OUTCOMES = {'SUCCESS','NEUTRAL','REGRESSION','INSUFFICIENT_DATA','BLOCKED'}
 ENTITY_TYPES = set('COMPANY PERSON LEAD CONTACT ACCOUNT DEAL CUSTOMER SERVICE_LOCATION SERVICE ESTIMATE INVOICE RECURRING_PROFILE PROJECT PERMIT TENDER TRIGGER PROSPECT CONVERSATION WEBSITE_PAGE SEARCH_QUERY KEYWORD CAMPAIGN AD_GROUP AD CREATIVE FORM REVIEW CONTENT_ASSET MARKET_OPPORTUNITY OPTIMIZATION_PROPOSAL BUSINESS_PRIORITY EXECUTION_RESULT LEARNING'.split())
 TRUTH = {'PROVIDER_FACT','PUBLIC_SOURCE_FACT','USER_CONFIRMED','OWNER_VERIFIED_FACT','DERIVED_DETERMINISTICALLY','MODEL_INFERENCE','ESTIMATE','UNKNOWN'}
 
-class ManagerStore(OptimizationStore):
+class ManagerStore(WebsitePreviewStore):
     def setup(self):
         if getattr(self,'manager_initialized',False):return
         with self.connect() as db:
@@ -120,8 +120,23 @@ class ManagerStore(OptimizationStore):
         self.setup();evidence={'semantic_evidence':semantic_evidence(r,item['detail']),'reason':reason,'category':category,'reconsideration_conditions':conditions,
             'evidence_hash':digest([r.get('source_evidence'),item['detail']]),
             'proposal_revision':r.get('revision'),'source_evidence':r.get('source_evidence',[])}
+        if kind=='PROPOSAL' and r.get('target_system')=='WEBSITE':
+            preview=self.preview(target,now)
+            if preview:
+                from .website_preview_model import owner_receipt,approval_binding
+                evidence['website_preview_binding']=approval_binding(preview)
+                if choice=='APPROVE':
+                    evidence['website_preview_approval']=owner_receipt(preview,actor,now)
         key=digest([kind,target,version,choice,actor,now.isoformat(),evidence])
         with self.connect() as db:
+            if evidence.get('website_preview_binding'):
+                # Serialize owner receipt against the canonical revision and
+                # exact preview observation used to assemble it.
+                db.execute('BEGIN IMMEDIATE')
+                current=db.execute("SELECT payload_hash FROM optimization_records WHERE kind='optibrain.optimization_proposal' AND id=? ORDER BY revision DESC LIMIT 1",(target,)).fetchone()
+                latest=db.execute('SELECT revision,sequence FROM website_preview_observations WHERE proposal_id=? ORDER BY revision DESC,sequence DESC LIMIT 1',(target,)).fetchone()
+                if not current or current['payload_hash']!=version or not latest or latest['revision']!=preview['proposal_revision'] or latest['sequence']!=preview['sequence']:
+                    raise ValueError('Preview changed during owner feedback')
             db.execute('INSERT OR IGNORE INTO manager_feedback VALUES (?,?,?,?,?,?,?,?)',
                 (key,kind,target,version,choice,actor,now.isoformat(),json.dumps(evidence)))
         return {'state':choice,'execution_authorized':False,'provider_writes':0,'feedback_id':key}
