@@ -1,1 +1,675 @@
-{"schema":1,"phase":37,"status":"IN_PROGRESS","baseline_sha":"d48a6462cc5ac510a7838d2d4b8a2650bdfe2ec8","baseline_api":"1.27.0","new_provider_mutation_authority":0}
+{
+  "schema": 1,
+  "phase": 37,
+  "status": "PASS",
+  "production_sha": "205b217546372dfd37850da7721d9bba61a0746a",
+  "api": "1.28.0",
+  "snapshot_at": "2026-10-06T01:46:04.690346+00:00",
+  "implementation_pr": "https://github.com/yboucher97/opticable-api-platform/pull/131",
+  "PR_CI": 37400039130,
+  "main_CI": 37400136845,
+  "business_manager": {
+    "endpoint": "https://optibrain.opticable.ca/v1/operator/manager",
+    "machine_endpoint": "https://optibrain.opticable.ca/v1/operator/manager?format=json",
+    "schema": "urn:opticable:optibrain:manager:1",
+    "today_limit": 5,
+    "domains": [
+      "acquisition",
+      "ads",
+      "content",
+      "customers",
+      "finance",
+      "marketing",
+      "owner_actions",
+      "recurring",
+      "sales",
+      "system",
+      "website_seo"
+    ],
+    "source_store": "Existing acquisition source records",
+    "proposal_priority_asset_store": "Existing phase12-autonomy.db / optimization_records",
+    "new_orchestrators": 0,
+    "new_timers": 0,
+    "new_provider_writers": 0
+  },
+  "current_snapshot": {
+    "genuine_acknowledged_inquiries": 2,
+    "test_submissions": 7,
+    "inquiry_population": "Retained immutable acknowledged native Forms receipts; not all CRM Leads or website visitors",
+    "sales_conversations_requiring_high_attention": 3,
+    "draft_ready_conversation_contexts": 8,
+    "prospects": {
+      "coverage": {
+        "domains_missing": 64,
+        "domains_resolved": 55,
+        "equivalent_records_retained": 2,
+        "one_step_away": 31,
+        "organizations": 119,
+        "organizations_needing_contacts": 107,
+        "projects_retained": 152,
+        "projects_with_supported_actors": 5,
+        "prospecting_ready": 11,
+        "unknown_collisions": 68,
+        "useful_contact_organizations": 12
+      },
+      "current_trigger_prospects": 18,
+      "detail": "/v1/operator/acquisition",
+      "funnel": {
+        "existing_relationship": 1,
+        "organizations": 119,
+        "prospecting_ready": 11,
+        "raw_signals": 291,
+        "relevant_organizations": 118,
+        "resolved": 118,
+        "sales_actionable": 2,
+        "suppressed": 0,
+        "with_contacts": 12
+      },
+      "historical_organizations": 90,
+      "repeat_buyers": 26,
+      "signals": 291
+    },
+    "observed_CRM_accounts": 42,
+    "paying_customer_count": null,
+    "native_open_deals_observed": 1,
+    "business_finance_observed_at": "2026-10-05T19:42:43.989030+00:00",
+    "proposals": 31,
+    "proposal_types": {
+      "OUTREACH_PROPOSAL": 8,
+      "GOOGLE_ADS_CAMPAIGN": 4,
+      "WEBSITE_EVIDENCE_PREVIEW": 6,
+      "SEQUENCE_CHANGE": 3,
+      "SALES_REPLY": 4,
+      "LANDING_PAGE": 2,
+      "CONTENT_FEEDBACK": 1,
+      "GOOGLE_ADS_CLEANUP": 1,
+      "CUSTOMER_EXPANSION": 1,
+      "MEASUREMENT": 1
+    },
+    "priorities": 44,
+    "assets": 24,
+    "manager_records": {
+      "events": 249,
+      "links": 396,
+      "feedback": 0,
+      "briefs": 2,
+      "learning": 0,
+      "receipts": 7
+    },
+    "prepared_work": {
+      "CONTENT_FEEDBACK": [
+        {
+          "proposal_id": "71c959e511a266b3bca99008e4ea8fcbb7476bdd636b0dc2537cd3331c249981",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=71c959e511a266b3bca99008e4ea8fcbb7476bdd636b0dc2537cd3331c249981",
+          "confidence": "MODERATE"
+        }
+      ],
+      "CUSTOMER_EXPANSION": [
+        {
+          "proposal_id": "b4727a1dbffb1f0089cfdc1e12185ffeefc6c2148b43df8fe1b6e0f3d4d2193a",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=b4727a1dbffb1f0089cfdc1e12185ffeefc6c2148b43df8fe1b6e0f3d4d2193a",
+          "confidence": "MODERATE"
+        }
+      ],
+      "GOOGLE_ADS_CAMPAIGN": [
+        {
+          "proposal_id": "099a0e160c16b315316de1597225a38802ecfca44d6de57088ae71732f35d14a",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=099a0e160c16b315316de1597225a38802ecfca44d6de57088ae71732f35d14a",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "98cfe05e245335ae2e99c2ef8d9d0f36559db4f878197c294f10ed290c28e9b4",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=98cfe05e245335ae2e99c2ef8d9d0f36559db4f878197c294f10ed290c28e9b4",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "abf00b179eddc277d40958630978a5e9c0908bab53ca0842c7f3de1850dc2477",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=abf00b179eddc277d40958630978a5e9c0908bab53ca0842c7f3de1850dc2477",
+          "confidence": "TENTATIVE"
+        },
+        {
+          "proposal_id": "ceb551fda219aabec07920251d23287555386f51a97e86bd2e7e88ab916aca5b",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=ceb551fda219aabec07920251d23287555386f51a97e86bd2e7e88ab916aca5b",
+          "confidence": "TENTATIVE"
+        }
+      ],
+      "GOOGLE_ADS_CLEANUP": [
+        {
+          "proposal_id": "909ab7581646827b095f069ead898129effa97920671f543f532c4df6892f13a",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=909ab7581646827b095f069ead898129effa97920671f543f532c4df6892f13a",
+          "confidence": "MODERATE"
+        }
+      ],
+      "LANDING_PAGE": [
+        {
+          "proposal_id": "49d2893d1498325eb5ae8f5a7304d1e3d199d03afcb4c6d0383dd7ed6ab32c17",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=49d2893d1498325eb5ae8f5a7304d1e3d199d03afcb4c6d0383dd7ed6ab32c17",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "788e5102cb012dd55e1d03875ec3350d906d923382b201ca2c153f959d40f8cd",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=788e5102cb012dd55e1d03875ec3350d906d923382b201ca2c153f959d40f8cd",
+          "confidence": "MODERATE"
+        }
+      ],
+      "MEASUREMENT": [
+        {
+          "proposal_id": "ba2034781dbcc80a6981f626fdfd09b571adecd51e46c996a4e2c3bcd6260115",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=ba2034781dbcc80a6981f626fdfd09b571adecd51e46c996a4e2c3bcd6260115",
+          "confidence": "MODERATE"
+        }
+      ],
+      "OUTREACH_PROPOSAL": [
+        {
+          "proposal_id": "03dc0df088a2163c46795013cdd37e0426c00e48de920aade1e5ca03a8586301",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=03dc0df088a2163c46795013cdd37e0426c00e48de920aade1e5ca03a8586301",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "13e809ea896fc7b858fedcd28103cb034bd9ee275d82d48bb1cbdf387c33adeb",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=13e809ea896fc7b858fedcd28103cb034bd9ee275d82d48bb1cbdf387c33adeb",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "68af20edfe7d3161e9c78fe713edf000e7a29a6ca26ae874a55cec68b57bc191",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=68af20edfe7d3161e9c78fe713edf000e7a29a6ca26ae874a55cec68b57bc191",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "8a6d7821d38097d8cee25539a57783c8e72378a0d1d1bd6636c4fb5f4d6bd83d",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=8a6d7821d38097d8cee25539a57783c8e72378a0d1d1bd6636c4fb5f4d6bd83d",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "9646aca0d2bbdf34bb66feab9723e0824caf397d387f3a966d444778a4900109",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=9646aca0d2bbdf34bb66feab9723e0824caf397d387f3a966d444778a4900109",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "b3612e8b8ea049b8250a3c4042a1b2a75dcbf9eb24fca67a1d9ae998b8637760",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=b3612e8b8ea049b8250a3c4042a1b2a75dcbf9eb24fca67a1d9ae998b8637760",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "b93d169eaeab669cf2fe221cf7130682d288a023fe5961031a822872ac0c25d6",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=b93d169eaeab669cf2fe221cf7130682d288a023fe5961031a822872ac0c25d6",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "c69aeebf722fcea328bff7aae64e80e548a3aa7cf29ffdb02097716fb4dbdc5b",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=c69aeebf722fcea328bff7aae64e80e548a3aa7cf29ffdb02097716fb4dbdc5b",
+          "confidence": "MODERATE"
+        }
+      ],
+      "SALES_REPLY": [
+        {
+          "proposal_id": "19075190840d123e9c22d25f0ea64d8b0cf561e24760e933f266b06faafb1685",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=19075190840d123e9c22d25f0ea64d8b0cf561e24760e933f266b06faafb1685",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "a24dfe3067e5968bb9de545fe4b20c6532d475d53c04c8d3e285e9e827c0e353",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=a24dfe3067e5968bb9de545fe4b20c6532d475d53c04c8d3e285e9e827c0e353",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "d3d3ee475220a4e98bb06bb53bf9f03f42cd61090f0938f9bb241d20d2a2d52d",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=d3d3ee475220a4e98bb06bb53bf9f03f42cd61090f0938f9bb241d20d2a2d52d",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "de411e5d42a8e678682f690dbf6455f1d5fe8b471794253e74c036e31e7badf7",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=de411e5d42a8e678682f690dbf6455f1d5fe8b471794253e74c036e31e7badf7",
+          "confidence": "MODERATE"
+        }
+      ],
+      "SEQUENCE_CHANGE": [
+        {
+          "proposal_id": "135dd77e12196e41ab69c7e4a510722dd5e90ad3d751eea8a419032c1310adb0",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=135dd77e12196e41ab69c7e4a510722dd5e90ad3d751eea8a419032c1310adb0",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "7d3309a4c33300ae828cfffd092e16497234bbe8d245a30864b6ea62b74a8d58",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=7d3309a4c33300ae828cfffd092e16497234bbe8d245a30864b6ea62b74a8d58",
+          "confidence": "MODERATE"
+        },
+        {
+          "proposal_id": "88042d87cd93125c57e68b514077494014dcf2b2148f0f99afa8b90f26bfd5a8",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=88042d87cd93125c57e68b514077494014dcf2b2148f0f99afa8b90f26bfd5a8",
+          "confidence": "MODERATE"
+        }
+      ],
+      "WEBSITE_EVIDENCE_PREVIEW": [
+        {
+          "proposal_id": "0b782abd9ec73efa81df0f1e173833313a3c3a1bacae8c93519beca8af752fc3",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=0b782abd9ec73efa81df0f1e173833313a3c3a1bacae8c93519beca8af752fc3",
+          "confidence": "TENTATIVE"
+        },
+        {
+          "proposal_id": "0e67804f9f852da39802f7954224a01b870be0005175064d21cdddf6adeb6de1",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=0e67804f9f852da39802f7954224a01b870be0005175064d21cdddf6adeb6de1",
+          "confidence": "TENTATIVE"
+        },
+        {
+          "proposal_id": "4b3ed1bba8a4f98037e7dc4d430df5e7f647803c993657a9c100f5e72690c8fd",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=4b3ed1bba8a4f98037e7dc4d430df5e7f647803c993657a9c100f5e72690c8fd",
+          "confidence": "TENTATIVE"
+        },
+        {
+          "proposal_id": "52fff2e49347d77c30483f0418ff5c447aeafcef5d650e7400a8ea512252efbc",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=52fff2e49347d77c30483f0418ff5c447aeafcef5d650e7400a8ea512252efbc",
+          "confidence": "TENTATIVE"
+        },
+        {
+          "proposal_id": "7475831025904c68c065abc7f0e9f384f79eaee316e4831eaa09d3e6bc0832f4",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=7475831025904c68c065abc7f0e9f384f79eaee316e4831eaa09d3e6bc0832f4",
+          "confidence": "TENTATIVE"
+        },
+        {
+          "proposal_id": "f3ef9f5f5a83601af078e1c74b07a831cdf5c4ed51aeb4c29e97f71039f12e7b",
+          "preview": "https://optibrain.opticable.ca/v1/operator/acquisition?proposal_id=f3ef9f5f5a83601af078e1c74b07a831cdf5c4ed51aeb4c29e97f71039f12e7b",
+          "confidence": "TENTATIVE"
+        }
+      ]
+    },
+    "source_health": {
+      "GREEN": [
+        "crm",
+        "mail",
+        "forms",
+        "ga4",
+        "search_console",
+        "google_ads",
+        "windsor_keyword_planner",
+        "apollo",
+        "cloudflare",
+        "github",
+        "seao",
+        "montreal_permit",
+        "quebec_permit",
+        "company_announcement",
+        "website",
+        "ai_website",
+        "apollo_roles",
+        "lovo",
+        "montoni",
+        "prospect_enrichment",
+        "saq_gc"
+      ],
+      "INTENTIONALLY_OPTIONAL": [
+        "workdrive",
+        "sign",
+        "gbp",
+        "holo",
+        "ahrefs",
+        "clay",
+        "semrush"
+      ],
+      "OWNER_DEFERRED": [
+        "keyword_planner"
+      ],
+      "PARTIAL": [
+        "linkedin_organic",
+        "laval_permit",
+        "competitors",
+        "facebook_organic",
+        "instagram",
+        "permits",
+        "registry"
+      ],
+      "STALE": [
+        "books",
+        "windsor"
+      ]
+    },
+    "data_completeness": {
+      "acquisition": "PARTIAL",
+      "ads": "GREEN — WAITING NATURAL DATA",
+      "content": "GREEN",
+      "customers": "GREEN",
+      "finance": "PARTIAL",
+      "holo": "GREEN — INTENTIONALLY OPTIONAL",
+      "profitability": "BLOCKED",
+      "recurring": "PARTIAL",
+      "sales": "GREEN",
+      "website_seo": "GREEN"
+    }
+  },
+  "autonomy": {
+    "unattended_manager_receipts": [
+      {
+        "at": "2026-10-06T01:46:04.690346+00:00",
+        "origin": "UNATTENDED",
+        "preparation": {
+          "considered": 8,
+          "created": [
+            "0b782abd9ec73efa81df0f1e173833313a3c3a1bacae8c93519beca8af752fc3",
+            "f3ef9f5f5a83601af078e1c74b07a831cdf5c4ed51aeb4c29e97f71039f12e7b",
+            "52fff2e49347d77c30483f0418ff5c447aeafcef5d650e7400a8ea512252efbc"
+          ],
+          "form_drafts": [],
+          "maximum": 3,
+          "model_calls": 0,
+          "provider_writes": 0,
+          "reused": 3
+        }
+      }
+    ],
+    "ingests": "Existing scheduled Forms receipt/service/native CRM and provider cache observers",
+    "analyzes": "Deterministic Sales/Ads/acquisition/source/authority/freshness projections",
+    "prepares": "Unsent sales/outreach/customer proposals; Ads campaign/landing/measurement previews; bounded local website copy/FAQ/link/creative/repurposing drafts; daily owner brief",
+    "executes_existing_authority": {
+      "internal_scopes": 12,
+      "customer_scopes": 4,
+      "original_cutoffs_preserved": true,
+      "original_expiries_preserved": true,
+      "effects_unchanged_since_release": true
+    },
+    "requires_owner_approval": [
+      "Website publication",
+      "Production Form replacement",
+      "GBP change",
+      "Ads creation/activation",
+      "Cold outreach graduation",
+      "Content publication",
+      "Major operational change"
+    ],
+    "not_authorized": [
+      "Financial/legal/destructive automation",
+      "Ads mutation",
+      "New outreach mutation",
+      "Conversion export",
+      "English real automation",
+      "Persistent development worker"
+    ],
+    "Apollo_Claude_sends_attributed_to_OptiBrain": false,
+    "history": "1d/7d totals cover retained observed invocations since Phase37; no reconstructed history"
+  },
+  "optimization": {
+    "website_proposals": 8,
+    "form_proposals": 0,
+    "ads_proposals": 6,
+    "sales_outreach_proposals": 15,
+    "content_proposals": 1,
+    "customer_proposals": 1,
+    "measured_proposals": 0,
+    "learning_records": 0,
+    "local_approval_is_execution_authority": false
+  },
+  "top_owner_priorities": [
+    "Resolve stale Business/Books observation before using current Finance stocks",
+    "Review protected backup/archive staging growth without deleting Golden/evidence",
+    "Review Collège de Maisonneuve tender closing October7 at10:00 America/Toronto",
+    "Coordinate high-priority meeting/reply drafts through existing Apollo/Claude ownership",
+    "Review FR camera landing/measurement/pilot preview and useful website drafts"
+  ],
+  "owner_actions": {
+    "deferred": [
+      {
+        "action": "Google Basic",
+        "trigger": "Native fresh Planner economics required for later quantitative optimization"
+      },
+      {
+        "action": "AI vendor hosting/legal proof",
+        "trigger": "Before approving provider-specific public AI claims"
+      }
+    ],
+    "optional": [
+      {
+        "action": "GBP native read scope",
+        "trigger": "Only when native profile verification is desired"
+      }
+    ],
+    "upcoming": [
+      {
+        "authority": "internal",
+        "automatic_renewal": false,
+        "expires_at": "2026-11-01T22:09:41+00:00",
+        "review_by": "2026-10-25",
+        "scopes": 12,
+        "state": "ACTIVE",
+        "truth_class": "DERIVED_DETERMINISTICALLY"
+      },
+      {
+        "authority": "customer_communication",
+        "automatic_renewal": false,
+        "expires_at": "2026-11-02T02:46:02.366351+00:00",
+        "review_by": "2026-10-25",
+        "scopes": 4,
+        "state": "ACTIVE",
+        "truth_class": "DERIVED_DETERMINISTICALLY"
+      }
+    ],
+    "waiting_natural_event": [
+      "Genuine consented paid click/outcome evidence; conversion exports remain OFF"
+    ],
+    "blocking": [
+      "Refresh stale Books/Business observation before treating Finance stocks as current",
+      "Resolve exact identity, employer, suppression and manual-contact context for any selected outreach graduation",
+      "Complete supported repository branch/build or native Form draft mapping for the selected production proposal",
+      "Obtain deterministic job-cost allocation before profitability optimization"
+    ]
+  },
+  "finance_observation": {
+    "as_of": "2026-10-05T19:42:43.989030+00:00",
+    "stock_warning": "STALE — historical observed stock, not current financial truth",
+    "profitability": "UNKNOWN",
+    "canonical_truth": "Zoho Books",
+    "gross_billing": {
+      "invoiced_gross": {
+        "CAD": "2787.00"
+      },
+      "outstanding": {
+        "CAD": "5373.94"
+      },
+      "overdue": {
+        "CAD": "287.44"
+      },
+      "paid_invoice_value": {},
+      "payment_refunds": {},
+      "recorded_payments_gross": {}
+    },
+    "recurring": {
+      "active_billing_profiles": 19,
+      "active_recurring_services": 0,
+      "annualized_net": {
+        "CAD": "12450.0"
+      },
+      "confidence": "PARTIAL",
+      "normalized_monthly_net": {
+        "CAD": "1037.5"
+      },
+      "renewals_90d": 0,
+      "service_linkage": "See recurring view; billing profile is not a Service"
+    },
+    "native_profiles": 23,
+    "native_service_profile_links": 0
+  },
+  "cost_efficiency": {
+    "apollo_last_observed_credits": 0,
+    "apollo_last_observed_reads": 0,
+    "new_provider_reads": 0,
+    "policy": "Reuse bounded provider caches; incremental semantic hashes; <=3 preparations/cycle; no persistent model worker",
+    "provider_cost": "Observed credits only; unmetered invoices/costs UNKNOWN",
+    "runtime_model_calls": 0,
+    "usage": {
+      "coverage": "Existing per-job metrics only; uninstrumented reads, invoices and model cost UNKNOWN",
+      "jobs": {
+        "phase12-test-runner": 201
+      },
+      "observed_metric_receipts": 201,
+      "provider_calls": {
+        "books_get": 0,
+        "books_write": 0,
+        "cloudflare": 0,
+        "crm_get": 0,
+        "crm_write": 0,
+        "forms_get": 0,
+        "forms_mutation": 0,
+        "github": 0,
+        "google": 0,
+        "mail_get": 0,
+        "mail_mutation": 0,
+        "oauth_refresh": 0,
+        "other_zoho": 0,
+        "r2": 0,
+        "sign_get": 0,
+        "sign_mutation": 0
+      },
+      "window": "7d"
+    }
+  },
+  "safety": {
+    "protected_records": 123,
+    "protected_unchanged": true,
+    "new_financial_mutation_authority": 0,
+    "new_ads_mutation_authority": 0,
+    "new_outreach_mutation_authority": 0,
+    "conversion_exports": "OFF",
+    "persistent_development_worker": "OFF",
+    "English_real_automation": "DISABLED",
+    "unauthorized_sends": 0,
+    "scope_renewals": 0,
+    "effect_resets": 0
+  },
+  "testing": {
+    "focused_manager": 29,
+    "focused_integration": 86,
+    "full_regression": 1559,
+    "subtests": 1292,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "network_attempts": 0,
+    "documentation_contracts": "PASS (225 documents / 262 current links; finalized evidence)",
+    "resolved_initial_failures": [
+      "Timestamp-only rejected Ads evidence revision preserved with rejection",
+      "Architecture API contract updated to1.28.0"
+    ],
+    "operator_origin_unauthenticated": 401,
+    "operator_public_Access": 302,
+    "live_owner_JWT_impersonation": false
+  },
+  "recovery": {
+    "generation": "20261006T014111Z",
+    "sha": "205b217546372dfd37850da7721d9bba61a0746a",
+    "api": "1.28.0",
+    "archive_sha256": "df2f94787dd0516b400cc8fcb8b6844f180e7de06d05f46ceb715289589e8541",
+    "databases": {
+      "automation.db": "ok",
+      "lifecycle-events.db": "ok",
+      "phase9-intake.before-permission-fix.db": "ok",
+      "form-receipts-stage.db": "ok",
+      "phase10-service-events.db": "ok",
+      "phase12-autonomy.db": "ok",
+      "phase9-form-receipts.db": "ok",
+      "phase9-intake.db": "ok"
+    },
+    "restored_manager_tables": {
+      "manager_briefs": 1,
+      "manager_events": 246,
+      "manager_feedback": 0,
+      "manager_learning": 0,
+      "manager_links": 393,
+      "manager_receipts": 7,
+      "optimization_records": 97,
+      "optimization_reviews": 0
+    },
+    "restore": "PASS — isolated prepared target; no services/OS or DNS cutover",
+    "R2": {
+      "status": "download_hash_verified",
+      "object_key": "backups/2026/10/06/20261006T014111Z.tar.gz.age",
+      "encrypted_sha256": "fcf38157b7720ec6135356bde82c3995234cd7423ca49d37c8b08832fda6336f",
+      "verified_at": "2026-10-06T01:43:33.052435+00:00",
+      "private_AGE_identity_used": false
+    },
+    "fresh_authority": "OFF",
+    "ads_authority": "ABSENT",
+    "outreach_authority": "ABSENT",
+    "conversion_exports": "OFF",
+    "Golden": "UNCHANGED",
+    "backup_path": "Existing preserve-existing backup service; manual admin retention-headroom refusal diagnosed; no archives removed",
+    "snapshot_cutoff": "Recovered manager DB contains28 proposals/41 priorities/21 assets at backup cutoff; later bounded observer preparation is retained in live DB and subsequent normal backups"
+  },
+  "genuine_gaps": [
+    "Stale Business/Books consolidated snapshot and incomplete native financial lineage",
+    "Unknown job cost allocation; margin/causal profitability unavailable",
+    "Missing domains/contact/employer/collision coverage for many legitimate prospects",
+    "Five exact reply bodies unresolved; private Claude/manual activity completeness unavailable",
+    "Native full Form required-field/design/abandonment inventory not proven",
+    "New local website editorial drafts need exact repository branch/build mapping before production preview graduation",
+    "Detailed sequence analytics is a dated connector snapshot, not continuously refreshed",
+    "No executed optimization outcomes yet"
+  ],
+  "final_verdict": {
+    "1_primary_control_center": "Yes for daily intelligence, attention, proposals and owner decisions; retain the explicit partial/stale labels",
+    "2_direct_provider_data": "Fresh Books state/full financial transaction context, unmatched Apollo/Mail threads and private/manual Claude history, native Forms design/abandonment, optional GBP configuration; native execution remains in providers",
+    "3_unattended": "Existing Forms/service/internal/customer observers and scoped workflows; scheduled Sales/Ads preparation and Manager refresh/brief/preview preparation; normal backup/upload timers have prior execution receipts",
+    "4_auto_prepared": "Sales reply/outreach/customer/sequence proposals, Ads campaign/landing/measurement previews, local website copy/FAQ/link drafts and creative/repurposing briefs, daily brief",
+    "5_owner_gated": "Website/Form/GBP/content production changes, Ads CREATE_PAUSED/activation, outreach graduation, communication scope expansion; finance/legal/destructive human-controlled",
+    "6_missing": "Reliable fresh consolidated Finance/job costs, complete identity/manual-thread coverage, native Form design/performance coverage, supported branch/build/provider draft automation across every website/Form, measured executed optimization results",
+    "7_first_approvals": "Current high-priority reply drafts after Apollo/manual-contact verification; FR camera landing and measurement previews; evidence-backed existing service-page improvements. Ads approval is intent only",
+    "8_lead_opportunity": "Convert verified project/permit/tender intelligence into exact supported contacts:119 organizations,107 need contacts,64 need domains,68 collisions unknown,11 shadow-prospecting-ready; FR camera pilot is the next bounded paid experiment, not proven ROI",
+    "9_operational_weakness": "Incomplete/stale business-finance data and relationship lineage; current root observation attention is explicit. Backup staging growth needs controlled housekeeping",
+    "10_next_graduation": "Selected supported website preview and sealed Ads CREATE_PAUSED; separately approve spending/stop and a small outreach batch only after current collision/suppression checks",
+    "11_continuous_optimization_ready": "Yes for controlled observation, automatic preparation, owner review and future measurement; unrestricted execution remains prohibited",
+    "12_post_phase37_order": [
+      "Close controllable freshness/thread/identity and cost-lineage partials",
+      "Approve selected concrete previews",
+      "Complete branch/build/provider draft preparation",
+      "Owner chooses bounded Ads pilot and spend-stop authorization",
+      "Graduate separately sealed outreach batch",
+      "Extend worthwhile preparation coverage",
+      "Measure qualified outcomes in matched windows",
+      "Graduate only proven low-risk automatic actions"
+    ]
+  },
+  "stopped_after_phase37": true,
+  "system_health": {
+    "API": "GREEN — API1.28.0 exact production source verified",
+    "database": "GREEN — five active checks and eight isolated restore integrity checks passed",
+    "forms": "GREEN — immutable acknowledged native FR/EN intake and success telemetry; detailed design/abandonment UNKNOWN",
+    "mail": "GREEN — existing authenticated observation; five exact reply bodies unresolved",
+    "CRM": "GREEN — native canonical identity reads; selected historical lineage/collision coverage PARTIAL",
+    "Books": "STALE — aggregate Business/Finance observation dated2026-10-05T19:42:43.989030Z; native Books remains truth",
+    "GA4": "GREEN — authentication and recent observed events assessed separately",
+    "Search Console": "GREEN — dated native evidence and website opportunities available",
+    "Ads": "GREEN — read/intelligence/preparation; campaigns unlaunched; mutation authority ABSENT",
+    "Apollo": "GREEN — bounded cached research/conversation context; private/manual activity coverage PARTIAL",
+    "backups": "GREEN — generation20261006T014111Z local/isolated/encrypted readback verified; retained staging growth requires attention",
+    "schedulers": "GREEN — existing bounded internal/customer observers resumed; new Manager unattended receipts verified; no new timer",
+    "authority": "ACTIVE12 internal/4 customer original scopes; Ads/outreach ABSENT; exports OFF; English DISABLED; worker OFF"
+  },
+  "authority_health": {
+    "internal": "ACTIVE",
+    "customer_communication": "ACTIVE",
+    "Ads": "ABSENT",
+    "outreach": "ABSENT",
+    "conversion_export": "DISABLED",
+    "financial_write": "ABSENT",
+    "publication": "WAITING OWNER — separate exact execution authority required",
+    "English_real_automation": "DISABLED",
+    "persistent_development_worker": "OFF"
+  },
+  "implementation_controls": {
+    "test_scenarios_A_to_N": "PASS — focused fake-provider tests plus production read-only verification",
+    "feedback": "Immutable version-bound approval/reject/revision/wait/priority feedback; semantic rejection and NEVER persist",
+    "collisions": "Exact provider IDs/crosswalks combine linked evidence; unknown collisions retained",
+    "facts": "PROVIDER_FACT/PUBLIC_SOURCE_FACT/USER_CONFIRMED/DERIVED_DETERMINISTICALLY/MODEL_INFERENCE/ESTIMATE/UNKNOWN",
+    "autonomy_classes": [
+      "UNATTENDED",
+      "OWNER_INITIATED",
+      "TEST_ONLY",
+      "MANUAL_PROVIDER_ACTION",
+      "NATURAL_BUSINESS_EFFECT",
+      "AUTOMATIC_EXISTING_WORKFLOW"
+    ],
+    "source_auth_is_data_health": false,
+    "proposal_execution_allowed": false,
+    "measurement": "Execution receipt and baseline/post windows, guardrails and limitations required; no tiny-sample causal claim",
+    "model_budget": "No new model calls; at most3 changed local website drafts and10 considered opportunities per scheduled invocation",
+    "recovery_of_feedback_results": "All durable manager tables covered by existing SQLite backup; populated-feedback isolated backup test and live isolated table integrity checks passed"
+  },
+  "evidence_delivery": "Final report documentation records the verified executable production SHA. Subsequent evidence-only documentation commits do not change production executable source or its recovery generation."
+}
