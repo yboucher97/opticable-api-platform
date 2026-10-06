@@ -23,8 +23,8 @@
   "counts": {
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
-    "AUDIT EVIDENCE": 107,
-    "AUTHORITATIVE CURRENT": 62,
+    "AUDIT EVIDENCE": 120,
+    "AUTHORITATIVE CURRENT": 65,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
   },
@@ -671,39 +671,39 @@
       "path": "docs/PHASE22_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE22_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE23_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE23_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE24_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/PHASE24_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/PHASE25_CHECKPOINT.json",
@@ -1443,14 +1443,14 @@
       "path": "docs/phase22-provider-observations.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/phase25-owner-actions.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/phase26-27-final-report.md",
@@ -1593,16 +1593,112 @@
     {
       "path": "docs/pr133-release-recovery/final-report.md",
       "classification": "AUDIT EVIDENCE",
-      "current": true,
+      "current": false,
       "superseded_by": null,
-      "purpose": "Current matching PR133 release/recovery/gap/authority aggregate; G001 natural proof pending; no execution grant"
+      "purpose": "Historical PR133 release/recovery evidence; later G001 natural completion is retained in the trusted root aggregate"
     },
     {
       "path": "docs/pr133-release-recovery/final-report.json",
       "classification": "AUDIT EVIDENCE",
-      "current": true,
+      "current": false,
       "superseded_by": null,
-      "purpose": "Current matching PR133 release/recovery/gap/authority aggregate; G001 natural proof pending; no execution grant"
+      "purpose": "Historical PR133 release/recovery evidence; later G001 natural completion is retained in the trusted root aggregate"
+    },
+    {
+      "path": "docs/lifecycle-truth/current-business-revalidation.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Sanitized local lifecycle-truth evidence and validation; not production state or execution authority"
+    },
+    {
+      "path": "docs/lifecycle-truth/current-evidence.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Sanitized local lifecycle-truth evidence and validation; not production state or execution authority"
+    },
+    {
+      "path": "docs/lifecycle-truth/event-precedence.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Commercial lifecycle-truth candidate contract; release receipts determine production state; no provider authority"
+    },
+    {
+      "path": "docs/lifecycle-truth/final-report.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Sanitized local lifecycle-truth evidence and validation; not production state or execution authority"
+    },
+    {
+      "path": "docs/lifecycle-truth/final-report.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Sanitized local lifecycle-truth evidence and validation; not production state or execution authority"
+    },
+    {
+      "path": "docs/lifecycle-truth/next-action-contract.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Commercial lifecycle-truth candidate contract; release receipts determine production state; no provider authority"
+    },
+    {
+      "path": "docs/lifecycle-truth/owner-feedback.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Commercial lifecycle-truth candidate contract; release receipts determine production state; no provider authority"
+    },
+    {
+      "path": "docs/lifecycle-truth/revalidation.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Sanitized local lifecycle-truth evidence and validation; not production state or execution authority"
+    },
+    {
+      "path": "docs/lifecycle-truth/root-cause.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Sanitized local lifecycle-truth evidence and validation; not production state or execution authority"
+    },
+    {
+      "path": "docs/lifecycle-truth/source-integrity.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Sanitized local lifecycle-truth evidence and validation; not production state or execution authority"
+    },
+    {
+      "path": "docs/lifecycle-truth/validation-focused.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Sanitized local lifecycle-truth evidence and validation; not production state or execution authority"
+    },
+    {
+      "path": "docs/lifecycle-truth/validation-full.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Sanitized local lifecycle-truth evidence and validation; not production state or execution authority"
+    },
+    {
+      "path": "docs/lifecycle-truth/validation-lifecycle.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Sanitized local lifecycle-truth evidence and validation; not production state or execution authority"
+    },
+    {
+      "path": "docs/lifecycle-truth-integration/release-plan.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Lifecycle-only integration and preserving guarded release preparation; trusted receipts establish deployment"
+    },
+    {
+      "path": "docs/lifecycle-truth-integration/validation-focused.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Final integrated candidate offline regression; no provider network attempts"
+    },
+    {
+      "path": "docs/lifecycle-truth-integration/validation-full.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Final integrated candidate offline regression; no provider network attempts"
     }
   ]
 }

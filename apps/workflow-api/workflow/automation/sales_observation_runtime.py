@@ -93,7 +93,10 @@ def observe(engine, settings, *, now=None):
         if live(deals[did]) and live(b):estimates.append({'id':eid,'title':b.get('estimate_number'),'status':b.get('status'),'deal_id':did})
     # Phase30 supplies versioned, collision-checked trigger rows independently.
     # Never publish an older manually staged trigger as a fresh sales action.
-    view=build_sales(apollo,crm,[],now=now,recurring=saved.get('recurring'),feedback=feedback,estimates=estimates)
+    from .lifecycle_projection import collect_states
+    from .manager_store import ManagerStore
+    states=collect_states({'business':{'snapshot':s}},now,None if engine.dry_run else ManagerStore(DATABASE))
+    view=build_sales(apollo,crm,[],now=now,recurring=saved.get('recurring'),feedback=feedback,estimates=estimates,lifecycle_states=states)
     view['crm_observed_at']=saved['observed_at']
     view['identity_observed_at']=identities['at']
     view['public_permits_observed_at']=old.get('at')

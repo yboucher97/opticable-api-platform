@@ -96,7 +96,7 @@ class SalesIntentTests(unittest.TestCase):
         rows=conversations(a,m,c,now=NOW);self.assertEqual(len(rows),1);self.assertEqual(len(rows[0]['Apollo_references']['contact_ids']),2)
 
     def test_o_quote_context_no_invented_financial_lineage(self):
-        c=conversations(*fixture(),now=NOW)[0];self.assertEqual(c['next_best_action'],'PREPARE QUOTE');self.assertIn('UNKNOWN',c['CRM_references']['finance_lineage'])
+        c=conversations(*fixture(),now=NOW)[0];self.assertEqual(c['next_best_action'],'VERIFY RESPONSE STATUS');self.assertIn('UNKNOWN',c['CRM_references']['finance_lineage'])
 
     def test_quoted_outbound_and_css_do_not_create_intent(self):
         for body in ['Not interested.\nFrom: seller@example.invalid\nPlease send a quote?', '<style>quotes are great</style>Bonjour\nDe : Sales\nUnsubscribe and quote request']:
@@ -198,7 +198,7 @@ class SalesIntentTests(unittest.TestCase):
     def test_legal_step_not_a_signature_footer_question(self):
         b=build_bundle(*fixture('Voici le NDA à signer.\nFixture Person\nCEO\nVous appréciez nos services ?'),[],now=NOW)
         c=b['conversations'][0];self.assertEqual(c['reply_class'],'OTHER');self.assertEqual(c['urgency'],'HIGH')
-        self.assertEqual(c['next_best_action'],'OWNER REVIEW');self.assertEqual(b['proposals'][0]['record']['authority_class'],'D')
+        self.assertEqual(c['next_best_action'],'VERIFY RESPONSE STATUS');self.assertEqual(b['proposals'][0]['record']['authority_class'],'D')
         self.assertIn('No signature',c['draft']['review_notes'][0])
 
     def test_earlier_project_context_preserved_separately_from_current_nda(self):

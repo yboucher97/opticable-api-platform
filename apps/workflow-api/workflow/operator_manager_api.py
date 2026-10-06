@@ -73,3 +73,23 @@ def install_manager_routes(app,*,verifier,db_path,origin,clock=None):
         except (ValueError,UnicodeError):raise HTTPException(status_code=409,detail='Fresh exact local review required; no execution authority')
         if mime=='application/json':return JSONResponse(result,headers=headers)
         return HTMLResponse('<p>Owner intent saved. Provider execution still requires separate authority.</p><a href="/v1/operator/manager">Business Manager</a>',headers=headers)
+
+    @app.post('/v1/operator/manager/correction',tags=['operator'])
+    async def correction(request:Request,cf_access_jwt_assertion:str|None=Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        person=identity(cf_access_jwt_assertion)
+        if request.headers.get('origin')!=origin or request.headers.get('sec-fetch-site') not in {None,'same-origin','none'}:
+            raise HTTPException(status_code=403,detail='Same-origin owner correction required')
+        if request.headers.get('content-type','').split(';')[0]!='application/json':
+            raise HTTPException(status_code=415,detail='JSON owner fact required')
+        body=b''
+        async for chunk in request.stream():
+            body+=chunk
+            if len(body)>4096:raise HTTPException(status_code=413,detail='Correction exceeds bound')
+        try:
+            fields=json.loads(body)
+            required={'kind','target','version','event_type','reason_code'}
+            if not isinstance(fields,dict) or set(fields)!=required or not all(isinstance(v,str) for v in fields.values()):raise ValueError('Exact assertion required')
+            if any(not re.fullmatch('[0-9a-f]{64}',fields[k]) for k in ('target','version')):raise ValueError('Exact revision required')
+            result=await run_in_threadpool(ManagerStore(path).correct_fact,fields['kind'],fields['target'],fields['version'],fields['event_type'],person.actor,now(),reason_code=fields['reason_code'])
+        except (ValueError,TypeError,UnicodeError):raise HTTPException(status_code=409,detail='Fresh exact commercial correction required')
+        return JSONResponse(result,headers=headers)

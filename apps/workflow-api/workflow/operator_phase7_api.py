@@ -119,7 +119,7 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
                                      "Pragma": "no-cache", "Referrer-Policy": "no-referrer",
                                      "X-Content-Type-Options": "nosniff"})
 
-    from .operator_manager_api import install_manager_routes
+    from .operator_manager_api import install_manager_routes,load_manager
     install_manager_routes(app,verifier=verifier,db_path=store.db_path,origin=origin,clock=now)
 
     def today_payload():
@@ -134,7 +134,8 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
                            recurring=read_internal_attention(instant,Path('/run/optibrain-readiness/recurring.json')),
                            sales_intelligence=read_internal_attention(instant,Path('/run/optibrain-readiness/sales-intelligence.json')),
                            ads_intelligence=read_internal_attention(instant,Path('/run/optibrain-readiness/ads-intelligence.json')),
-                           sales_conversations=read_internal_attention(instant,Path('/run/optibrain-readiness/sales-conversations.json')))
+                           sales_conversations=read_internal_attention(instant,Path('/run/optibrain-readiness/sales-conversations.json')),
+                           manager=load_manager(Path(store.db_path).with_name('phase12-autonomy.db'),instant))
 
     def sales_snapshot():
         view=read_internal_attention(now(),Path('/run/optibrain-readiness/sales-intelligence.json'))

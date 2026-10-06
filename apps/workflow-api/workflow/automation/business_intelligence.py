@@ -46,12 +46,12 @@ def project_source(snapshot):
     fields={
         'accounts':('id','Account_Name'), 'contacts':('id','Account_Name'),
         'leads':('id','Lead_Status','$converted','Created_Time','First_Source','First_Medium','First_Campaign','Lead_Source'),
-        'deals':('id','Deal_Name','Account_Name','Contact_Name','Stage','Amount','Currency','Created_Time','Closing_Date','Service_Location','Next_Step','First_Source','First_Medium','First_Campaign','Lead_Source'),
+        'deals':('id','Deal_Name','Account_Name','Contact_Name','Stage','stage_event_at','Modified_Time','Amount','Currency','Created_Time','Closing_Date','Service_Location','Next_Step','First_Source','First_Medium','First_Campaign','Lead_Source'),
         'sites':('id','Name','Linked_Account'), 'services':('id','Name','Linked_Service_Location','Linked_Deal','Service_Type','Service_Stage','Contract_Type','OptiBrain_Renewal_On'),
         'finance_estimates':('id','Estimate_ID','Account_Name','Potential_Name'), 'finance_invoices':('id','Invoice_ID','Account_Name','Potential_Name'),
         'customers':('contact_id','zcrm_account_id','contact_name','currency_code'),
         'invoices':('invoice_id','customer_id','customer_name','invoice_number','last_modified_time','estimate_id','zcrm_potential_id','recurring_invoice_id','date','due_date','status','total','balance','currency_code'),
-        'estimates':('estimate_id','estimate_number','last_modified_time','invoice_ids','customer_id','date','status','total','currency_code','zcrm_potential_id'),
+        'estimates':('estimate_id','estimate_number','last_modified_time','created_time','status_event_at','native_sent_evidence','supersedes_estimate_id','invoice_ids','customer_id','date','status','total','currency_code','zcrm_potential_id'),
         'profiles':('recurring_invoice_id','recurrence_name','customer_id','status','start_date','next_invoice_date','recurrence_frequency','repeat_every','sub_total','currency_code','zcrm_potential_id'),
         'payments':('payment_id','customer_id','date','payment_status','status','bcy_amount','bcy_refunded_amount'),
         'cases':('id','Status','Account_Name','Deal_Name'), 'installations':('id','Installation_Status','Linked_Service','Installation_Date_Time')}

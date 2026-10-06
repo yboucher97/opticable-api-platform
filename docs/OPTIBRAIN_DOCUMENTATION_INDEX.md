@@ -56,3 +56,9 @@ Phase33 domain specialist: [Ads intelligence](OPTIBRAIN_ADS_INTELLIGENCE_CONTRAC
 ## Phase34 current delta
 
 Phase34 specialists: [Sales Conversation](OPTIBRAIN_SALES_CONVERSATION_CONTRACT.md), [Outreach Preparation](OPTIBRAIN_OUTREACH_INTELLIGENCE_CONTRACT.md), [Hook/Content](OPTIBRAIN_HOOK_CONTENT_CONTRACT.md). They extend the current coexistence/shared proposal contracts rather than replace them.
+
+## Commercial current-state remediation
+
+[Event precedence](lifecycle-truth/event-precedence.md), [shared next-action contract](lifecycle-truth/next-action-contract.md) and [owner correction](lifecycle-truth/owner-feedback.md) describe the lifecycle-truth candidate. [Root cause](lifecycle-truth/root-cause.md), [current business revalidation](lifecycle-truth/current-business-revalidation.md) and [final report](lifecycle-truth/final-report.md) are sanitized local audit evidence. This targeted remediation adds no numbered phase or provider authority. Release receipts continue to determine production state.
+
+[Lifecycle integration release preparation](lifecycle-truth-integration/release-plan.md) preserves completed-main contracts and the existing internal-active/customer-closed policy. Historical PR133 and source remediation reports do not override the later trusted natural-completion aggregate.

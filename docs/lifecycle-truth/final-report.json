@@ -1,0 +1,852 @@
+{
+  "mission": "BUSINESS LIFECYCLE TRUTH REMEDIATION",
+  "status": "PASS",
+  "validation_scope": "LOCAL_CANDIDATE_AND_READ_ONLY_CACHED_EVIDENCE",
+  "start_sha": "c22d409d96671e8b78e21ca72a4a76ea4c80879b",
+  "branch": "remediation/lifecycle-truth-priorities-20261006",
+  "final_head": "HEAD",
+  "final_head_semantics": "The local commit containing this report; resolve git rev-parse HEAD after commit.",
+  "exact_commit_receipt": "/tmp/optibrain-lifecycle-current-20261006/commit-receipt.json",
+  "push": "NO",
+  "deploy": "NO",
+  "merge": "NO",
+  "production_updated": false,
+  "new_numbered_phase": false,
+  "version": {
+    "candidate_api": "1.29.0",
+    "changed": false,
+    "separate_later_release_proposal_only": "1.30.0"
+  },
+  "preview_relationship": {
+    "commit": "75c6a2b69dcbfc28ccb4eebcedae020c1f4d1738",
+    "start_is_ancestor": true,
+    "descendant_commits": 1,
+    "present_in_this_branch": false,
+    "merged_or_recreated": false
+  },
+  "as_of": "2026-10-06T13:09:42.524902+00:00",
+  "noveco_root_cause": {
+    "old_evidence": "October 2 inquiry and unchanged October 5 draft projection; potential scope concern promoted into mandatory work.",
+    "newer_evidence": "October 6 Books native reads already showed sent on three exact estimates; owner current-state correction proves sent with actual send time unknown.",
+    "sent_record_available_overnight": true,
+    "actual_send_timestamp_proven": false,
+    "persisted_noveco_priority_found": false,
+    "why_old_action_survived": "Standalone narrative lacked lifecycle/actionability reconciliation; cache stayed draft, Deal-linked estimate and Apollo-linked conversation paths missed exact objects.",
+    "reason_codes": [
+      "STALE_CACHE",
+      "MISSING_EVENT",
+      "FAILED_IDENTITY_LINK",
+      "DERIVED_ACTION_PERSISTED"
+    ],
+    "failure_classes": [
+      "STALE_PROJECTION",
+      "LINKAGE_GAP",
+      "LIFECYCLE_MODEL_GAP",
+      "PRECEDENCE_RECONCILIATION_GAP",
+      "PRIORITY_ACTIONABILITY_GAP"
+    ]
+  },
+  "generic_fix": {
+    "engine": "workflow.automation.lifecycle_truth.derive",
+    "adapters": "workflow.automation.lifecycle_projection",
+    "authority": "FACT_SPECIFIC",
+    "chronology": [
+      "event_at",
+      "fact_authority",
+      "source_version",
+      "compatible_progression"
+    ],
+    "observation_is_event_time": false,
+    "source_fact_distinct_from_derived_action": true,
+    "derived_state_persisted_as_provider_truth": false,
+    "identity": "EXACT_OR_VERIFIED_COMMERCIAL_OBJECT",
+    "fuzzy_company_join": false,
+    "waiting_no_action": true,
+    "followup": "Exact current authoritative task/rule with actual send anchor; no invented due date; existing business-day scope preserved.",
+    "response": "Exact-context inbound and outbound completeness through decision time; otherwise verification.",
+    "invalidation": "PROJECTION_ONLY_SUPERSESSION_OR_CURRENT_REPLACEMENT",
+    "owner_feedback": "OWNER_VERIFIED_FACT, authenticated actor, exact revision, assertion time, reason code; existing journal.",
+    "llm_required": false,
+    "provider_read_added": false,
+    "bounded_cache_only": true,
+    "apollo_ownership_preserved": true
+  },
+  "noveco_after": {
+    "contexts": [
+      {
+        "label": "Noveco EST-1132",
+        "context": {
+          "system": "BOOKS",
+          "entity_type": "ESTIMATE",
+          "entity_id": "3643985000002330018"
+        },
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING",
+        "reason_code": "FOLLOWUP_POLICY_UNKNOWN",
+        "confidence": "HIGH",
+        "last_event_at": null,
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002330018",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "actor": "OWNER",
+            "actual_occurrence_time": "UNKNOWN",
+            "provenance": "User remediation instruction: quotes already sent",
+            "reason_code": "DERIVED_ACTION_PERSISTED"
+          },
+          "event_at": null,
+          "event_id": "de8a1b796383bff80fa11cd140d216716fd171ca98af7b8521511470afc44501",
+          "event_type": "QUOTE_SENT",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T13:09:42.524902+00:00",
+          "source": "OWNER",
+          "source_at": "2026-10-06T13:09:42.524902+00:00",
+          "time_basis": "ASSERTION_AT",
+          "truth_class": "OWNER_VERIFIED_FACT",
+          "source_context": {
+            "entity_id": "3643985000002330018",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "response_status": "UNKNOWN",
+        "followup_due_state": "POLICY_UNKNOWN",
+        "source_health": {
+          "mail": {
+            "completeness": "PARTIAL"
+          },
+          "books": {
+            "completeness": "PARTIAL"
+          },
+          "crm": {
+            "completeness": "PARTIAL"
+          },
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "response": {
+            "completeness": "UNKNOWN"
+          },
+          "downstream": {
+            "completeness": "UNKNOWN"
+          }
+        },
+        "eligible_today": false
+      },
+      {
+        "label": "Noveco EST-1133",
+        "context": {
+          "system": "BOOKS",
+          "entity_type": "ESTIMATE",
+          "entity_id": "3643985000002330031"
+        },
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING",
+        "reason_code": "FOLLOWUP_POLICY_UNKNOWN",
+        "confidence": "HIGH",
+        "last_event_at": null,
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002330031",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "actor": "OWNER",
+            "actual_occurrence_time": "UNKNOWN",
+            "provenance": "User remediation instruction: quotes already sent",
+            "reason_code": "DERIVED_ACTION_PERSISTED"
+          },
+          "event_at": null,
+          "event_id": "d855be52b7e2256ec2d8e068a01cf7a76d9894a821751914673315782cfaf9e6",
+          "event_type": "QUOTE_SENT",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T13:09:42.524902+00:00",
+          "source": "OWNER",
+          "source_at": "2026-10-06T13:09:42.524902+00:00",
+          "time_basis": "ASSERTION_AT",
+          "truth_class": "OWNER_VERIFIED_FACT",
+          "source_context": {
+            "entity_id": "3643985000002330031",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "response_status": "UNKNOWN",
+        "followup_due_state": "POLICY_UNKNOWN",
+        "source_health": {
+          "mail": {
+            "completeness": "PARTIAL"
+          },
+          "books": {
+            "completeness": "PARTIAL"
+          },
+          "crm": {
+            "completeness": "PARTIAL"
+          },
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "response": {
+            "completeness": "UNKNOWN"
+          },
+          "downstream": {
+            "completeness": "UNKNOWN"
+          }
+        },
+        "eligible_today": false
+      },
+      {
+        "label": "Noveco EST-1134",
+        "context": {
+          "system": "BOOKS",
+          "entity_type": "ESTIMATE",
+          "entity_id": "3643985000002330043"
+        },
+        "current_state": "SENT_RESPONSE_UNKNOWN",
+        "next_action": "NO_ACTION",
+        "actionability": "WAITING",
+        "reason_code": "FOLLOWUP_POLICY_UNKNOWN",
+        "confidence": "HIGH",
+        "last_event_at": null,
+        "latest_authoritative_event": {
+          "confidence": "HIGH",
+          "context": {
+            "entity_id": "3643985000002330043",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          },
+          "detail": {
+            "actor": "OWNER",
+            "actual_occurrence_time": "UNKNOWN",
+            "provenance": "User remediation instruction: quotes already sent",
+            "reason_code": "DERIVED_ACTION_PERSISTED"
+          },
+          "event_at": null,
+          "event_id": "d096539205f58ba64b57f625322916f3addb4e4b83e48519e65c63fa23623f99",
+          "event_type": "QUOTE_SENT",
+          "identity_confidence": "EXACT",
+          "observed_at": "2026-10-06T13:09:42.524902+00:00",
+          "source": "OWNER",
+          "source_at": "2026-10-06T13:09:42.524902+00:00",
+          "time_basis": "ASSERTION_AT",
+          "truth_class": "OWNER_VERIFIED_FACT",
+          "source_context": {
+            "entity_id": "3643985000002330043",
+            "entity_type": "ESTIMATE",
+            "system": "BOOKS"
+          }
+        },
+        "response_status": "UNKNOWN",
+        "followup_due_state": "POLICY_UNKNOWN",
+        "source_health": {
+          "mail": {
+            "completeness": "PARTIAL"
+          },
+          "books": {
+            "completeness": "PARTIAL"
+          },
+          "crm": {
+            "completeness": "PARTIAL"
+          },
+          "apollo": {
+            "completeness": "PARTIAL"
+          },
+          "response": {
+            "completeness": "UNKNOWN"
+          },
+          "downstream": {
+            "completeness": "UNKNOWN"
+          }
+        },
+        "eligible_today": false
+      }
+    ],
+    "current_state": "SENT_RESPONSE_UNKNOWN",
+    "next_action": "NO_ACTION",
+    "actionable": "NO",
+    "confidence": "HIGH",
+    "confidence_scope": "Quotes sent; actual send time, later response and applicable due policy unknown."
+  },
+  "other_overnight_top_items": [
+    {
+      "label": "Anjou 80",
+      "context": {
+        "system": "CRM",
+        "entity_type": "LEAD",
+        "entity_id": "5062683000007975083"
+      },
+      "current_state": "INQUIRY_RESPONSE_UNKNOWN",
+      "next_action": "VERIFY_RESPONSE_STATUS",
+      "actionability": "VERIFY_FIRST",
+      "reason_code": "VERIFY_REPLY_STATUS",
+      "confidence": "HIGH",
+      "last_event_at": "2026-10-05T16:12:55-04:00",
+      "latest_authoritative_event": {
+        "confidence": "HIGH",
+        "context": {
+          "entity_id": "5062683000007975083",
+          "entity_type": "LEAD",
+          "system": "CRM"
+        },
+        "event_at": "2026-10-05T16:12:55-04:00",
+        "event_id": "2e4a088a118071ceadaba19efc910de9b8a89af84a15de91eae5c2abd79f8f67",
+        "event_type": "INQUIRY_RECEIVED",
+        "identity_confidence": "EXACT",
+        "observed_at": "2026-10-06T11:51:44.580238+00:00",
+        "source": "CRM",
+        "source_at": null,
+        "truth_class": "PROVIDER_FACT",
+        "source_context": {
+          "entity_id": "5062683000007975083",
+          "entity_type": "LEAD",
+          "system": "CRM"
+        }
+      },
+      "response_status": "UNKNOWN",
+      "followup_due_state": "UNKNOWN",
+      "source_health": {
+        "mail": {
+          "completeness": "PARTIAL"
+        },
+        "books": {
+          "completeness": "PARTIAL"
+        },
+        "crm": {
+          "completeness": "PARTIAL"
+        },
+        "apollo": {
+          "completeness": "PARTIAL"
+        },
+        "response": {
+          "completeness": "UNKNOWN"
+        },
+        "downstream": {
+          "completeness": "UNKNOWN"
+        }
+      },
+      "eligible_today": false
+    },
+    {
+      "label": "Art Systems Canada",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466"
+      },
+      "current_state": "DELIVERABLE_PROMISED",
+      "next_action": "VERIFY_DELIVERABLE_STATUS",
+      "actionability": "VERIFY_FIRST",
+      "reason_code": "PROMISED_DELIVERABLE_OUTSTANDING",
+      "confidence": "HIGH",
+      "last_event_at": null,
+      "latest_authoritative_event": {
+        "confidence": "HIGH",
+        "context": {
+          "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466",
+          "entity_type": "CONVERSATION",
+          "system": "OUTREACH"
+        },
+        "detail": {
+          "actual_send_time": "UNKNOWN",
+          "commitment": "Handwritten document correction",
+          "due_at": "2026-10-06T23:59:59-04:00",
+          "due_date": "2026-10-06",
+          "due_precision": "DAY",
+          "linkage": "Exact native Mail thread ID and exact owner/recipient identities",
+          "message_reference": "1791234807945144400",
+          "native_thread_id": "1790188756344152600",
+          "reason_code": "MISSING_REPLY_DETECTION"
+        },
+        "event_at": null,
+        "event_id": "52c6753ba2f8a04f3420dfebf7ec2035c1b5191c598679adf596149022713440",
+        "event_type": "DELIVERABLE_PROMISED",
+        "identity_confidence": "EXACT",
+        "observed_at": "2026-10-06T05:44:09.259Z",
+        "proof": "EXACT_THREAD",
+        "source": "MAIL",
+        "source_at": "2026-10-05T21:13:29.478000+00:00",
+        "time_basis": "SENT_COPY_RECEIPT_AT",
+        "truth_class": "PROVIDER_FACT",
+        "source_context": {
+          "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466",
+          "entity_type": "CONVERSATION",
+          "system": "OUTREACH"
+        }
+      },
+      "response_status": "UNKNOWN",
+      "followup_due_state": "UNKNOWN",
+      "source_health": {
+        "mail": {
+          "completeness": "PARTIAL"
+        },
+        "books": {
+          "completeness": "PARTIAL"
+        },
+        "crm": {
+          "completeness": "PARTIAL"
+        },
+        "apollo": {
+          "completeness": "PARTIAL"
+        },
+        "response": {
+          "completeness": "UNKNOWN"
+        },
+        "downstream": {
+          "completeness": "UNKNOWN"
+        }
+      },
+      "eligible_today": true
+    },
+    {
+      "label": "Maisonneuve",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20168879"
+      },
+      "current_state": "TENDER_OPEN",
+      "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+      "actionability": "VERIFY_FIRST",
+      "reason_code": "TENDER_DEADLINE",
+      "confidence": "HIGH",
+      "last_event_at": "2026-09-03T13:49:25-04:00",
+      "latest_authoritative_event": {
+        "confidence": "HIGH",
+        "context": {
+          "entity_id": "20168879",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "detail": {
+          "deadline": "2026-10-07T10:00:00-04:00",
+          "eligibility": "UNKNOWN",
+          "submission_status": "UNKNOWN"
+        },
+        "event_at": "2026-09-03T13:49:25-04:00",
+        "event_id": "2134ab27128541cfef418e12fb22f13290ea5b48f7d279a8354c6b7a8fa7dfa2",
+        "event_type": "TENDER_OPEN",
+        "identity_confidence": "EXACT",
+        "observed_at": "2026-10-05T21:58:33.956187+00:00",
+        "source": "PUBLIC",
+        "source_at": "2026-09-30T15:46:37+00:00",
+        "source_reference": "ocds-ec9k95-20168879",
+        "truth_class": "PUBLIC_SOURCE_FACT",
+        "source_context": {
+          "entity_id": "20168879",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        }
+      },
+      "response_status": "UNKNOWN",
+      "followup_due_state": "UNKNOWN",
+      "source_health": {
+        "mail": {
+          "completeness": "PARTIAL"
+        },
+        "books": {
+          "completeness": "PARTIAL"
+        },
+        "crm": {
+          "completeness": "PARTIAL"
+        },
+        "apollo": {
+          "completeness": "PARTIAL"
+        },
+        "response": {
+          "completeness": "UNKNOWN"
+        },
+        "downstream": {
+          "completeness": "UNKNOWN"
+        }
+      },
+      "eligible_today": true
+    },
+    {
+      "label": "Mont-Royal",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20172194"
+      },
+      "current_state": "TENDER_OPEN",
+      "next_action": "REVIEW_TENDER_FIT",
+      "actionability": "OPTIONAL",
+      "reason_code": "TENDER_RESEARCH",
+      "confidence": "HIGH",
+      "last_event_at": "2026-09-23T07:51:56-04:00",
+      "latest_authoritative_event": {
+        "confidence": "HIGH",
+        "context": {
+          "entity_id": "20172194",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        },
+        "detail": {
+          "deadline": "2026-10-27T11:00:00-04:00",
+          "eligibility": "UNKNOWN",
+          "submission_status": "UNKNOWN"
+        },
+        "event_at": "2026-09-23T07:51:56-04:00",
+        "event_id": "3ac87c46ade4da7d37cc2aa65c5c7580a8a9b7ef87684e5d96138f85f68175fb",
+        "event_type": "TENDER_OPEN",
+        "identity_confidence": "EXACT",
+        "observed_at": "2026-10-05T21:58:33.956187+00:00",
+        "source": "PUBLIC",
+        "source_at": "2026-09-30T20:24:00+00:00",
+        "source_reference": "ocds-ec9k95-20172194",
+        "truth_class": "PUBLIC_SOURCE_FACT",
+        "source_context": {
+          "entity_id": "20172194",
+          "entity_type": "TENDER",
+          "system": "PUBLIC"
+        }
+      },
+      "response_status": "UNKNOWN",
+      "followup_due_state": "UNKNOWN",
+      "source_health": {
+        "mail": {
+          "completeness": "PARTIAL"
+        },
+        "books": {
+          "completeness": "PARTIAL"
+        },
+        "crm": {
+          "completeness": "PARTIAL"
+        },
+        "apollo": {
+          "completeness": "PARTIAL"
+        },
+        "response": {
+          "completeness": "UNKNOWN"
+        },
+        "downstream": {
+          "completeness": "UNKNOWN"
+        }
+      },
+      "eligible_today": false
+    }
+  ],
+  "corrected_owner_top_five": [
+    {
+      "rank": 1,
+      "label": "Maisonneuve",
+      "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+      "actionability": "VERIFY_FIRST",
+      "reason_code": "TENDER_DEADLINE",
+      "deadline": "2026-10-07T14:00:00+00:00",
+      "confidence": "HIGH",
+      "state": "TENDER_OPEN"
+    },
+    {
+      "rank": 2,
+      "label": "Parc olympique 20160570",
+      "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+      "actionability": "VERIFY_FIRST",
+      "reason_code": "TENDER_DEADLINE",
+      "deadline": "2026-10-07T14:00:00+00:00",
+      "confidence": "HIGH",
+      "state": "TENDER_OPEN"
+    },
+    {
+      "rank": 3,
+      "label": "Art Systems Canada",
+      "next_action": "VERIFY_DELIVERABLE_STATUS",
+      "actionability": "VERIFY_FIRST",
+      "reason_code": "PROMISED_DELIVERABLE_OUTSTANDING",
+      "deadline": "2026-10-07T03:59:59+00:00",
+      "confidence": "HIGH",
+      "state": "DELIVERABLE_PROMISED"
+    }
+  ],
+  "context_count": 35,
+  "retained_priority_count": 46,
+  "retained_proposal_count": 33,
+  "manager_today": {
+    "total": 5,
+    "commercial": 3,
+    "independent_operational_diagnostics": 2,
+    "items": [
+      {
+        "what": "Verify Eligibility And Submission · Collège de Maisonneuve",
+        "targets": [
+          {
+            "entity_id": "7fdbb76406c1037e989186f9c3d25d4255e3847f5e801ec5ec69a4acb0cc116b",
+            "entity_type": "TRIGGER",
+            "system": "OPTIBRAIN"
+          }
+        ],
+        "domain": "MANAGER",
+        "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+        "reason_code": "TENDER_DEADLINE",
+        "actionability": "VERIFY_FIRST",
+        "due_at": "2026-10-07T14:00:00+00:00"
+      },
+      {
+        "what": "Verify Eligibility And Submission · Parc olympique",
+        "targets": [
+          {
+            "entity_id": "64cb5ead03ed392131dc762ab5d843f029356bba40a28a3fea450335d9ef56ee",
+            "entity_type": "TRIGGER",
+            "system": "OPTIBRAIN"
+          }
+        ],
+        "domain": "MANAGER",
+        "next_action": "VERIFY_ELIGIBILITY_AND_SUBMISSION",
+        "reason_code": "TENDER_DEADLINE",
+        "actionability": "VERIFY_FIRST",
+        "due_at": "2026-10-07T14:00:00+00:00"
+      },
+      {
+        "what": "Verify Deliverable Status · Art Systems Canada",
+        "targets": [
+          {
+            "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466",
+            "entity_type": "SALES_REPLY",
+            "system": "OUTREACH"
+          }
+        ],
+        "domain": "SALES_INTELLIGENCE",
+        "next_action": "VERIFY_DELIVERABLE_STATUS",
+        "reason_code": "PROMISED_DELIVERABLE_OUTSTANDING",
+        "actionability": "VERIFY_FIRST",
+        "due_at": "2026-10-07T03:59:59+00:00"
+      },
+      {
+        "what": "Review Zoho Books data health",
+        "targets": [
+          {
+            "entity_id": "source:books",
+            "entity_type": "BUSINESS_PRIORITY",
+            "system": "OPTIBRAIN"
+          }
+        ],
+        "domain": "MANAGER",
+        "next_action": "Resolve source limitation; independent domains continue",
+        "reason_code": "OWNER_REVIEW_REQUIRED",
+        "actionability": "ACTIONABLE_NOW",
+        "due_at": null
+      },
+      {
+        "what": "Growth needs attention",
+        "targets": [
+          {
+            "entity_id": "system:Growth",
+            "entity_type": "BUSINESS_PRIORITY",
+            "system": "OPTIBRAIN"
+          }
+        ],
+        "domain": "MANAGER",
+        "next_action": "Inspect current system evidence",
+        "reason_code": "OWNER_REVIEW_REQUIRED",
+        "actionability": "ACTIONABLE_NOW",
+        "due_at": null
+      }
+    ],
+    "projection_bytes": 828533
+  },
+  "metrics": {
+    "stale_recommendation_contexts": {
+      "before": 5,
+      "after_old_action_active": 0,
+      "grain": "One report-only Noveco quote group and four cached reply contexts, not five SQL priority rows."
+    },
+    "duplicate_reply_recommendations": {
+      "before": 4,
+      "after": 0
+    },
+    "waiting_contexts_with_old_actionable_wording": {
+      "before": 4,
+      "after": 0,
+      "contexts": [
+        "Noveco quote group",
+        "Support-TI morning",
+        "Alsys",
+        "G.S.D"
+      ]
+    },
+    "verify_first_converted_to_send_cleared": {
+      "before": 0,
+      "after": 0,
+      "grain": "Five conditional overnight texts; no send-cleared actions existed."
+    },
+    "priority_projection_superseded": 3,
+    "priority_projection_current_replacement": 1,
+    "sales_reply_projections_superseded": 4
+  },
+  "tests": {
+    "lifecycle": {
+      "suite": "lifecycle",
+      "tests": 41,
+      "subtests": 35,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "network_policy": "ALL_IP_SOCKETS_DENIED",
+      "blocked_socket_attempts": 0,
+      "provider_network_writes": 0
+    },
+    "focused": {
+      "suite": "focused",
+      "tests": 240,
+      "subtests": 125,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "network_policy": "ALL_IP_SOCKETS_DENIED",
+      "blocked_socket_attempts": 0,
+      "provider_network_writes": 0
+    },
+    "full": {
+      "suite": "full",
+      "tests": 1670,
+      "subtests": 1352,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": true,
+      "network_policy": "ALL_IP_SOCKETS_DENIED",
+      "blocked_socket_attempts": 0,
+      "provider_network_writes": 0
+    }
+  },
+  "test_counts_overlap": true,
+  "full_regression_scope": "apps/workflow-api/tests unittest discovery; all IP sockets denied",
+  "post37_preservation": {
+    "G001": "PASS",
+    "G002": "PASS",
+    "G003": "PASS",
+    "release_preservation": "PASS"
+  },
+  "source_integrity": {
+    "artifacts": 12,
+    "all_match": true,
+    "report": "source-integrity.json"
+  },
+  "safety": {
+    "emails_sent": 0,
+    "apollo_sends": 0,
+    "crm_writes": 0,
+    "books_writes": 0,
+    "ads_writes": 0,
+    "conversion_uploads": 0,
+    "website_deployments": 0,
+    "cloudflare_mutations": 0,
+    "authority_changes": 0,
+    "native_provider_reads": 0,
+    "provider_network_writes": 0,
+    "pushes": 0,
+    "merges": 0,
+    "deployments": 0
+  },
+  "limitations": [
+    "Mail address queries returned empty despite a known inbound; no absence-of-response conclusion is supported.",
+    "Books SENT status alone is not delivery proof; owner correction establishes Noveco sent state, not actual send time.",
+    "Provider caches/overnight snapshots are bounded, not complete current manual history.",
+    "Mail sentDateInGMT and receivedTime differ; no precise actual send time is claimed from these metadata.",
+    "DATE commitments use an end-of-day sorting bound, not an invented promised appointment time.",
+    "Tender notice freshness is October 6 05:45 UTC; full latest addenda/submission/eligibility proof remains an owner check.",
+    "Runtime journals and historical reports remain unchanged; replay uses only an isolated temporary copy.",
+    "Parc olympique deadline is retained feed evidence, not an October 6 direct notice read; deadline/addenda/current participation verification is the action.",
+    "Authoritative exact-context Task due dates and complete CRM activity not retained; absence not inferred.",
+    "Candidate Manager and owner correction validated locally only; production not deployed."
+  ],
+  "next_controlled_execution": "Private urgent tender verification/go-no-go. Any later customer execution: one separately owner-approved Anjou80 qualification reply only after fresh bounded Sent/phone/Apollo checks prove still needed; record receipt and stop.",
+  "final_questions": [
+    {
+      "number": 1,
+      "question": "Why did OptiBrain incorrectly tell the owner to finish Noveco's quotes?",
+      "answer": "It promoted an old inquiry/scope concern into mandatory work without reconciling fresh sent facts or applying a current actionability gate; the product's business projection also remained draft and missed native Deal/conversation linkage."
+    },
+    {
+      "number": 2,
+      "question": "Was “quote sent” already available?",
+      "answer": "Yes, Books sent record states were already available and acknowledged in the overnight report. They alone do not prove actual Mail delivery/time; the owner's correction establishes sent state."
+    },
+    {
+      "number": 3,
+      "question": "Is the bug now fixed generically?",
+      "answer": "Yes in this locally validated candidate: no company-specific production condition, one deterministic exact-object event/next-action contract."
+    },
+    {
+      "number": 4,
+      "question": "Can later sent/replied/accepted evidence supersede an older draft task?",
+      "answer": "Yes; sent, replies, accepted work and exact downstream invoice/payment events supersede preparation or change the action. Explicit revisions can reopen the appropriate cycle."
+    },
+    {
+      "number": 5,
+      "question": "Can WAITING CUSTOMER produce NO ACTION?",
+      "answer": "Yes. Unknown reply coverage is distinguished from proven waiting; both can avoid work when no due policy is established."
+    },
+    {
+      "number": 6,
+      "question": "Can unknown reply status produce VERIFY FIRST rather than FOLLOW UP?",
+      "answer": "Yes. A due follow-up with incomplete response history becomes verification; no due policy remains no action/policy unknown."
+    },
+    {
+      "number": 7,
+      "question": "Can stale priorities be suppressed without deleting history?",
+      "answer": "Yes. Current projections suppress or replace old recommendations; canonical history and historical reports remain intact."
+    },
+    {
+      "number": 8,
+      "question": "Does owner correction update derived state?",
+      "answer": "Yes through authenticated exact-version local business facts, tested with immediate Manager recomputation. This mission applied the Noveco facts only to the isolated replay, not production."
+    },
+    {
+      "number": 9,
+      "question": "Did other top-five items have the same flaw?",
+      "answer": "Anjou's qualification need and Art's promised completion were not proven still outstanding. Art now verifies delivery; Anjou verifies reply status. Four canonical cached Sales replies also had later owner responses, already recognized by the standalone overnight report. Mont-Royal was useful research, not a due-today action. Tender eligibility/submission remains verification."
+    },
+    {
+      "number": 10,
+      "question": "What is the corrected top action?",
+      "answer": "Maisonneuve's current submission/eligibility/addenda go/no-go, supported by a fresh native notice and October 7 10:00 EDT deadline. Parc olympique shares that recorded deadline but has older evidence."
+    },
+    {
+      "number": 11,
+      "question": "Does Manager explain why an action is current?",
+      "answer": "Yes in the candidate: current state, reason, latest source fact, actual event date or explicit unknown, confidence, waiting/follow-up and completeness details. Live Manager awaits separately controlled release."
+    },
+    {
+      "number": 12,
+      "question": "Were G001/G002/G003 preserved?",
+      "answer": "Yes; all focused preservation regressions and the full suite pass."
+    },
+    {
+      "number": 13,
+      "question": "Any customer-facing action?",
+      "answer": "NO. No customer message, provider write, deployment, merge or authority change."
+    },
+    {
+      "number": 14,
+      "question": "Another foundation phase required?",
+      "answer": "NO. The shared contract uses the existing storage, observations and owner surfaces; no numbered phase was added."
+    },
+    {
+      "number": 15,
+      "question": "Next controlled real-world execution?",
+      "answer": "First perform the private urgent tender verification/go-no-go. The next possible customer execution remains exactly one separately owner-approved Anjou80 qualification reply, only after a fresh bounded Mail/Sent/phone/Apollo ownership check proves it remains needed. Record its receipt and stop. This mission authorizes and performs no send; release/recovery of this candidate remains a separate controlled process."
+    }
+  ],
+  "artifacts": [
+    "root-cause.md",
+    "event-precedence.md",
+    "next-action-contract.md",
+    "owner-feedback.md",
+    "current-business-revalidation.md",
+    "current-evidence.json",
+    "revalidation.json",
+    "final-report.md",
+    "source-integrity.json"
+  ]
+}

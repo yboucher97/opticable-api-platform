@@ -10,6 +10,7 @@ import json, re, sqlite3, unicodedata
 from .acquisition_store import digest, safe
 from .sales_intelligence import email, domain, stamp, live, contact_state
 from .prospect_enrichment import useful_role
+from .lifecycle_projection import conversation_state,fact,ref
 
 OWNERS={'APOLLO_CLAUDE','OPTIBRAIN_FUTURE','OWNER_MANUAL','CRM_INBOUND','CUSTOMER_RELATIONSHIP','OTHER'}
 CLASSES={'POSITIVE_INTEREST','ASKING_QUESTION','MEETING_INTEREST','QUOTE_INTEREST','REFERRAL','FOLLOW_UP_LATER','NOT_NOW','NOT_INTERESTED','WRONG_PERSON','LEFT_COMPANY','AUTO_REPLY','OUT_OF_OFFICE','UNSUBSCRIBE','BOUNCE','OTHER','UNKNOWN'}
@@ -144,6 +145,16 @@ def conversations(apollo,mail,crm,*,now):
                 'body_hash':digest(reply['body']) if reply else None,'provider_reply_class':sent.get('reply_class')},
             'last_verified_at':mail.get('at') if reply else apollo.get('at'),'reply_excerpt':excerpt[:800],
             'prior_message':plain(sent.get('body_text'))[:1400],'draft':None,'execution_authorized':False})
+    for row in output:
+        trusted=mail_rows.get(str(next(iter(row['Apollo_references']['contact_ids']),'')),{})
+        row['lifecycle_coverage']=trusted.get('lifecycle_coverage',{'mail':{'completeness':'PARTIAL'},'apollo':{'completeness':'PARTIAL'}})
+        row['business_events']=trusted.get('business_events',[])
+        row['followup_policy']=trusted.get('followup_policy')
+        state=conversation_state(row,now);row['lifecycle']=state
+        if state['actionability'] in {'WAITING','NO_ACTION'} and row['next_best_action']!='SUPPRESS':
+            row['next_best_action']='NO ACTION'
+        elif row['next_best_action'] not in {'SUPPRESS','NO ACTION','RESEARCH FIRST'}:
+            row['next_best_action']=state['next_action'].replace('_',' ')
     return output
 
 def service_context(text):
@@ -153,6 +164,7 @@ def service_context(text):
 
 def reply_draft(c):
     if c.get('identity_ambiguity'):return None
+    if c.get('lifecycle',{}).get('actionability') in {'WAITING','NO_ACTION','BLOCKED'}:return None
     if c.get('human_controlled_commitment') and not c['suppression']:
         return {'language':'FR','subject':'Re: existing partner conversation',
                 'body':'Merci pour le document. Je vais revoir les modalités avant de confirmer la suite de la collaboration. Nous pourrons ensuite préciser le périmètre de la visite et des travaux envisagés.',
@@ -228,7 +240,7 @@ def add_proposal(bundle,kind,target,title,why,detail,sources,now,urgency='MEDIUM
         'urgency':urgency,'due_at':None,'confidence':record['confidence'],'data_quality':record['data_quality'],'source_evidence':sources,
         'priority_reasons':[why,'Preserve current outreach owner; preparation only.'],'dependency':'Fresh conversation/contact/suppression/manual owner context before execution.',
         'blocker':None,'actor':'OWNER','can_prepare':True,'owner_approval_required':True,'status':'OWNER_REVIEW','created_at':at,'updated_at':at,
-        'next_action':'Review exact draft and source context; no send action.'},'detail':{}})
+        'next_action':'Review exact draft and source context; no send action.'},'detail':{'lifecycle':detail.get('conversation',{}).get('lifecycle')}})
 
 def build_bundle(apollo,mail,crm,prospects,*,now,sequence_evidence=None):
     rows=conversations(apollo,mail,crm,now=now);bundle={'proposals':[],'priorities':[],'assets':[]}

@@ -45,7 +45,8 @@ class ManagerTests(unittest.TestCase):
         i=inputs();i['business']['snapshot']['leads']=[{'id':'native-lead','Created_Time':NOW.isoformat(),'Lead_Status':'New'}]
         refresh(i,self.store,NOW);v=build_manager(i,self.store,NOW)
         self.assertTrue(any(e['value']['kind']=='LEAD' for e in v['events']))
-        self.assertTrue(any('inquiry' in p['what'] for p in v['today']))
+        self.assertFalse(v['today'])  # incomplete later-response history cannot prove an unanswered inquiry
+        self.assertTrue(any(p['reason_code']=='VERIFY_REPLY_STATUS' for p in v['priorities']))
         self.assertTrue(all(e['value']['classification']=='NATURAL_BUSINESS_EFFECT' for e in v['events'] if e['value']['kind']=='LEAD'))
     def test_b_apollo_hot_reply_owner_unchanged(self):
         i=inputs();i['sales-conversations']={'conversations':[{'conversation_id':'c','company':'Customer','urgency':'HOT','next_best_action':'REPLY','draft':{'body':'Quote clarification'},'current_owner':'APOLLO_CLAUDE'}]}

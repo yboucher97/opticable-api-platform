@@ -1,0 +1,1365 @@
+{
+  "as_of": "2026-10-06T13:09:42.524902+00:00",
+  "events": [
+    {
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002330018"
+      },
+      "event_type": "QUOTE_SENT",
+      "source": "OWNER",
+      "event_at": null,
+      "source_at": "2026-10-06T13:09:42.524902+00:00",
+      "observed_at": "2026-10-06T13:09:42.524902+00:00",
+      "event_id": "de8a1b796383bff80fa11cd140d216716fd171ca98af7b8521511470afc44501",
+      "identity_confidence": "EXACT",
+      "confidence": "HIGH",
+      "truth_class": "OWNER_VERIFIED_FACT",
+      "time_basis": "ASSERTION_AT",
+      "detail": {
+        "actor": "OWNER",
+        "provenance": "User remediation instruction: quotes already sent",
+        "reason_code": "DERIVED_ACTION_PERSISTED",
+        "actual_occurrence_time": "UNKNOWN"
+      }
+    },
+    {
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002330031"
+      },
+      "event_type": "QUOTE_SENT",
+      "source": "OWNER",
+      "event_at": null,
+      "source_at": "2026-10-06T13:09:42.524902+00:00",
+      "observed_at": "2026-10-06T13:09:42.524902+00:00",
+      "event_id": "d855be52b7e2256ec2d8e068a01cf7a76d9894a821751914673315782cfaf9e6",
+      "identity_confidence": "EXACT",
+      "confidence": "HIGH",
+      "truth_class": "OWNER_VERIFIED_FACT",
+      "time_basis": "ASSERTION_AT",
+      "detail": {
+        "actor": "OWNER",
+        "provenance": "User remediation instruction: quotes already sent",
+        "reason_code": "DERIVED_ACTION_PERSISTED",
+        "actual_occurrence_time": "UNKNOWN"
+      }
+    },
+    {
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002330043"
+      },
+      "event_type": "QUOTE_SENT",
+      "source": "OWNER",
+      "event_at": null,
+      "source_at": "2026-10-06T13:09:42.524902+00:00",
+      "observed_at": "2026-10-06T13:09:42.524902+00:00",
+      "event_id": "d096539205f58ba64b57f625322916f3addb4e4b83e48519e65c63fa23623f99",
+      "identity_confidence": "EXACT",
+      "confidence": "HIGH",
+      "truth_class": "OWNER_VERIFIED_FACT",
+      "time_basis": "ASSERTION_AT",
+      "detail": {
+        "actor": "OWNER",
+        "provenance": "User remediation instruction: quotes already sent",
+        "reason_code": "DERIVED_ACTION_PERSISTED",
+        "actual_occurrence_time": "UNKNOWN"
+      }
+    },
+    {
+      "context": {
+        "system": "CRM",
+        "entity_type": "LEAD",
+        "entity_id": "5062683000007975083"
+      },
+      "event_type": "INQUIRY_RECEIVED",
+      "source": "CRM",
+      "event_at": "2026-10-05T16:12:55-04:00",
+      "source_at": null,
+      "observed_at": "2026-10-06T11:51:44.580238+00:00",
+      "event_id": "2e4a088a118071ceadaba19efc910de9b8a89af84a15de91eae5c2abd79f8f67",
+      "identity_confidence": "EXACT",
+      "confidence": "HIGH",
+      "truth_class": "PROVIDER_FACT"
+    },
+    {
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "7fbc5e55c84c4668a615a144d325902d6ccfcbdd56075a4499faaf0419fb767e"
+      },
+      "event_type": "DELIVERABLE_PROMISED",
+      "source": "MAIL",
+      "event_at": null,
+      "source_at": "2026-10-05T19:08:15.848000+00:00",
+      "observed_at": "2026-10-06T05:44:09.242Z",
+      "event_id": "6e74aec87d4a0c31043c04c7faef6fe62c287eec4726832eda08fd1e24e07129",
+      "identity_confidence": "EXACT",
+      "confidence": "HIGH",
+      "truth_class": "PROVIDER_FACT",
+      "proof": "EXACT_THREAD",
+      "time_basis": "SENT_COPY_RECEIPT_AT",
+      "detail": {
+        "message_reference": "1791227294978144400",
+        "linkage": "Exact native Mail thread ID and exact owner/recipient identities",
+        "actual_send_time": "UNKNOWN",
+        "reason_code": "MISSING_REPLY_DETECTION",
+        "due_at": "2026-10-06T23:59:59-04:00",
+        "due_precision": "DAYPART",
+        "due_date": "2026-10-06",
+        "commitment": "Tuesday afternoon contact; exact call time unknown",
+        "native_thread_id": "1790890900849152600",
+        "not_before": "2026-10-06T12:00:00-04:00",
+        "daypart": "AFTERNOON",
+        "not_before_basis": "Owner explicitly promised Tuesday PM; daypart boundary, not appointment time"
+      }
+    },
+    {
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466"
+      },
+      "event_type": "DELIVERABLE_PROMISED",
+      "source": "MAIL",
+      "event_at": null,
+      "source_at": "2026-10-05T21:13:29.478000+00:00",
+      "observed_at": "2026-10-06T05:44:09.259Z",
+      "event_id": "52c6753ba2f8a04f3420dfebf7ec2035c1b5191c598679adf596149022713440",
+      "identity_confidence": "EXACT",
+      "confidence": "HIGH",
+      "truth_class": "PROVIDER_FACT",
+      "proof": "EXACT_THREAD",
+      "time_basis": "SENT_COPY_RECEIPT_AT",
+      "detail": {
+        "message_reference": "1791234807945144400",
+        "linkage": "Exact native Mail thread ID and exact owner/recipient identities",
+        "actual_send_time": "UNKNOWN",
+        "reason_code": "MISSING_REPLY_DETECTION",
+        "due_at": "2026-10-06T23:59:59-04:00",
+        "due_precision": "DAY",
+        "due_date": "2026-10-06",
+        "commitment": "Handwritten document correction",
+        "native_thread_id": "1790188756344152600"
+      }
+    },
+    {
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "07dfe2b9dda9171349cca5f2ccb92a87e58cd3d15f14ced7e7ef2bfc7389386e"
+      },
+      "event_type": "RESPONSE_SENT",
+      "source": "MAIL",
+      "event_at": null,
+      "source_at": "2026-09-29T11:22:55.511000+00:00",
+      "observed_at": "2026-10-06T05:44:09.271Z",
+      "event_id": "44f65220e61dcc7ade0a87a8bf20cada30dff4b18305d7cc47d8c21216d74a4f",
+      "identity_confidence": "EXACT",
+      "confidence": "HIGH",
+      "truth_class": "PROVIDER_FACT",
+      "proof": "EXACT_THREAD",
+      "time_basis": "SENT_COPY_RECEIPT_AT",
+      "detail": {
+        "message_reference": "1790680974266144400",
+        "linkage": "Exact native Mail thread ID and exact owner/recipient identities",
+        "actual_send_time": "UNKNOWN",
+        "reason_code": "MISSING_REPLY_DETECTION",
+        "native_thread_id": "1790178293613152600"
+      }
+    },
+    {
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "7bb7908bc4e84dd9344d8d0f18465cda087c564d99eb8fadd702be9269ffd0bf"
+      },
+      "event_type": "RESPONSE_SENT",
+      "source": "MAIL",
+      "event_at": null,
+      "source_at": "2026-10-01T16:57:36.327000+00:00",
+      "observed_at": "2026-10-06T05:44:09.284Z",
+      "event_id": "7296f0d8691e5189bba62a93b480a447ee0d69f344a4504f1eb492a14ff3248b",
+      "identity_confidence": "EXACT",
+      "confidence": "HIGH",
+      "truth_class": "PROVIDER_FACT",
+      "proof": "EXACT_THREAD",
+      "time_basis": "SENT_COPY_RECEIPT_AT",
+      "detail": {
+        "message_reference": "1790873855029144400",
+        "linkage": "Exact native Mail thread ID and exact owner/recipient identities",
+        "actual_send_time": "UNKNOWN",
+        "reason_code": "MISSING_REPLY_DETECTION",
+        "native_thread_id": "1790872427077152600"
+      }
+    },
+    {
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20168879"
+      },
+      "event_type": "TENDER_OPEN",
+      "source": "PUBLIC",
+      "event_at": "2026-09-03T13:49:25-04:00",
+      "source_at": null,
+      "observed_at": "2026-10-06T05:45:12.746Z",
+      "event_id": "163ff1dc792dd941762425ad99f03e8a97199e8ac837ed1027c80e212d720718",
+      "identity_confidence": "EXACT",
+      "confidence": "HIGH",
+      "truth_class": "PUBLIC_SOURCE_FACT",
+      "detail": {
+        "deadline": "2026-10-07T10:00:00-04:00",
+        "notice_url": "https://seao.gouv.qc.ca/avis-resultat-recherche/consulter?ItemId=29174049-fd4f-4be3-8fc1-493aafdb5a4c",
+        "eligibility": "UNKNOWN",
+        "submission_status": "UNKNOWN"
+      }
+    },
+    {
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20172194"
+      },
+      "event_type": "TENDER_OPEN",
+      "source": "PUBLIC",
+      "event_at": "2026-09-23T07:51:56-04:00",
+      "source_at": null,
+      "observed_at": "2026-10-06T05:45:12.763Z",
+      "event_id": "d33bdec3cdcb25fa872cd118c3a9df87b1022c3a5eada0e0599d6c571fc49bcd",
+      "identity_confidence": "EXACT",
+      "confidence": "HIGH",
+      "truth_class": "PUBLIC_SOURCE_FACT",
+      "detail": {
+        "deadline": "2026-10-27T11:00:00-04:00",
+        "notice_url": "https://seao.gouv.qc.ca/avis-resultat-recherche/consulter?ItemId=b908dc00-844f-4c81-9fd5-c0acf82b3e99",
+        "eligibility": "UNKNOWN",
+        "submission_status": "UNKNOWN"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "label": "Noveco EST-1132",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002330018"
+      },
+      "before_action": "FINISH_QUOTE",
+      "audit_class": "SUPERSEDED"
+    },
+    {
+      "label": "Noveco EST-1133",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002330031"
+      },
+      "before_action": "FINISH_QUOTE",
+      "audit_class": "SUPERSEDED"
+    },
+    {
+      "label": "Noveco EST-1134",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002330043"
+      },
+      "before_action": "FINISH_QUOTE",
+      "audit_class": "SUPERSEDED"
+    },
+    {
+      "label": "Anjou 80",
+      "context": {
+        "system": "CRM",
+        "entity_type": "LEAD",
+        "entity_id": "5062683000007975083"
+      },
+      "before_action": "QUALIFY_INQUIRY",
+      "audit_class": "VERIFY_FIRST",
+      "evidence_summary": "Genuine October 5 building-link inquiry; later owner reply/call status unknown"
+    },
+    {
+      "label": "Support Ti",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "7fbc5e55c84c4668a615a144d325902d6ccfcbdd56075a4499faaf0419fb767e"
+      },
+      "before_action": "REVIEW_OLD_REPLY_DRAFT",
+      "audit_class": "WAITING",
+      "evidence_summary": "Later owner response is proven; later calls/final document delivery are not collected"
+    },
+    {
+      "label": "Art Systems Canada",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466"
+      },
+      "before_action": "REVIEW_OLD_REPLY_DRAFT",
+      "audit_class": "VERIFY_FIRST",
+      "evidence_summary": "Later owner response is proven; later calls/final document delivery are not collected",
+      "urgency": "HIGH"
+    },
+    {
+      "label": "Alsys - audio alarme",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "07dfe2b9dda9171349cca5f2ccb92a87e58cd3d15f14ced7e7ef2bfc7389386e"
+      },
+      "before_action": "REVIEW_OLD_REPLY_DRAFT",
+      "audit_class": "WAITING",
+      "evidence_summary": "Later owner response is proven; later calls/final document delivery are not collected"
+    },
+    {
+      "label": "G.S.D Group INC.",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "7bb7908bc4e84dd9344d8d0f18465cda087c564d99eb8fadd702be9269ffd0bf"
+      },
+      "before_action": "REVIEW_OLD_REPLY_DRAFT",
+      "audit_class": "WAITING",
+      "evidence_summary": "Later owner response is proven; later calls/final document delivery are not collected"
+    },
+    {
+      "label": "Maisonneuve",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20168879"
+      },
+      "before_action": "TENDER_TRIAGE",
+      "audit_class": "VERIFY_FIRST",
+      "evidence_summary": "Primary notice read October 6; eligibility, latest addenda and prior submission status unknown"
+    },
+    {
+      "label": "Mont-Royal",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20172194"
+      },
+      "before_action": "TENDER_TRIAGE",
+      "audit_class": "VERIFY_FIRST",
+      "evidence_summary": "Primary notice read October 6; eligibility, latest addenda and prior submission status unknown"
+    },
+    {
+      "label": "Gille Tanguay EST-1129",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002080009"
+      },
+      "before_action": "ESTIMATE_REVIEW",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Bounded recent Books listing; subsequent work/response history unknown"
+    },
+    {
+      "label": "Gille Tanguay EST-1124",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002006102"
+      },
+      "before_action": "ESTIMATE_REVIEW",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Bounded recent Books listing; subsequent work/response history unknown"
+    },
+    {
+      "label": "Accès pharma chez Walmart",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "00c6d46ecb3845143ea6132f3d3d330648ba1969e1554d13d8ede8212edb54e5"
+      },
+      "before_action": "RESEARCH FIRST",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Cached conversation is not complete inbound/outbound/call history"
+    },
+    {
+      "label": "Passion informatique",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "42e86dc5f9ecdf24afe4f80c5e15c23d9978b05a289f5c7588fe71ab70fe3c79"
+      },
+      "before_action": "NO ACTION",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Cached conversation is not complete inbound/outbound/call history"
+    },
+    {
+      "label": "Les Experts en gestion immobilière inc.",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "3ce5667a14e6a4d6cf7a544131a6d07421111d444405d4bd7199b0bbae7ec6ca"
+      },
+      "before_action": "SUPPRESS",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Cached conversation is not complete inbound/outbound/call history"
+    },
+    {
+      "label": "Le Vet Club - Clinique Vétérinaire",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "3ce72d52a0c8f7d6c68fdbf56c1221466c5bbd3fc63f395021ac54a883eb9d7a"
+      },
+      "before_action": "NO ACTION",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Cached conversation is not complete inbound/outbound/call history"
+    },
+    {
+      "label": "CBN IT Solutions",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "98380fd6155382eb1adcfd2ee1eb2dfce84dd967ba335c1e12ed62ca9caacfca"
+      },
+      "before_action": "RESEARCH FIRST",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Cached conversation is not complete inbound/outbound/call history"
+    },
+    {
+      "label": "SGC MONTREAL INC.",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "d7abdc9b1ffa53d94a0b7677d1914a4b5c6a39e78d84a0a88081d691123c809c"
+      },
+      "before_action": "RESEARCH FIRST",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Cached conversation is not complete inbound/outbound/call history"
+    },
+    {
+      "label": "FSecur",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "66006a5bbe27840f2fbdcc02f5f0ff03d436c57f45e7f8c37e4334936bd22828"
+      },
+      "before_action": "RESEARCH FIRST",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Cached conversation is not complete inbound/outbound/call history"
+    },
+    {
+      "label": "io4 Technologies",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "8bffbc882b7737cfc0125cc0966bef2e36eb4d9cbf564b2a6174a1e157bfafce"
+      },
+      "before_action": "NO ACTION",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Cached conversation is not complete inbound/outbound/call history"
+    },
+    {
+      "label": "Protect-IP Global Solutions",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "713f3608ad712737ab0fe466f03ba42606dd39fd98b9f1f3775d0c3be4c6ce0f"
+      },
+      "before_action": "RESEARCH FIRST",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Cached conversation is not complete inbound/outbound/call history"
+    },
+    {
+      "label": "System Center Dudes",
+      "context": {
+        "system": "OUTREACH",
+        "entity_type": "CONVERSATION",
+        "entity_id": "e06c6c733c04dd6e8a09ea95d4a4cf4dd3ee9a6f49ce3dcefeffb3e3786fb1ee"
+      },
+      "before_action": "RESEARCH FIRST",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Cached conversation is not complete inbound/outbound/call history"
+    },
+    {
+      "label": "Valmont Construction EST-1131",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002209016"
+      },
+      "before_action": "ESTIMATE_REVIEW",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Current native listing is bounded; actual delivery and downstream work history unknown"
+    },
+    {
+      "label": "Rufio inc EST-1126",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002052095"
+      },
+      "before_action": "ESTIMATE_REVIEW",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Current native listing is bounded; actual delivery and downstream work history unknown"
+    },
+    {
+      "label": "Rufio inc EST-1127",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002052112"
+      },
+      "before_action": "ESTIMATE_REVIEW",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Current native listing is bounded; actual delivery and downstream work history unknown"
+    },
+    {
+      "label": "Rufio inc EST-1128",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002052126"
+      },
+      "before_action": "ESTIMATE_REVIEW",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Current native listing is bounded; actual delivery and downstream work history unknown"
+    },
+    {
+      "label": "Valmont Construction EST-1125",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000002022012"
+      },
+      "before_action": "ESTIMATE_REVIEW",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Current native listing is bounded; actual delivery and downstream work history unknown"
+    },
+    {
+      "label": "Valmont Construction EST-1123",
+      "context": {
+        "system": "BOOKS",
+        "entity_type": "ESTIMATE",
+        "entity_id": "3643985000001978101"
+      },
+      "before_action": "ESTIMATE_REVIEW",
+      "audit_class": "UNKNOWN",
+      "evidence_summary": "Current native listing is bounded; actual delivery and downstream work history unknown"
+    },
+    {
+      "label": "Parc olympique 20160570",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20160570"
+      },
+      "before_action": "TENDER_RESEARCH",
+      "audit_class": "VERIFY_FIRST",
+      "evidence_summary": "Exact OCDS native record; latest public notice/addenda, qualifications and existing submission are unknown; date retained from October 5 verified cache"
+    },
+    {
+      "label": "MRC d'Argenteuil 20171612",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20171612"
+      },
+      "before_action": "TENDER_RESEARCH",
+      "audit_class": "OPTIONAL",
+      "evidence_summary": "Exact OCDS native record; latest public notice/addenda, qualifications and existing submission are unknown; date retained from October 5 verified cache"
+    },
+    {
+      "label": "Centre de services scolaire de Montréal / BDA 20170780",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20170780"
+      },
+      "before_action": "TENDER_RESEARCH",
+      "audit_class": "OPTIONAL",
+      "evidence_summary": "Exact OCDS native record; latest public notice/addenda, qualifications and existing submission are unknown; date retained from October 5 verified cache"
+    },
+    {
+      "label": "Institut de tourisme et d'hôtellerie du Québec 20163358",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20163358"
+      },
+      "before_action": "TENDER_RESEARCH",
+      "audit_class": "OPTIONAL",
+      "evidence_summary": "Exact OCDS native record; latest public notice/addenda, qualifications and existing submission are unknown; date retained from October 5 verified cache"
+    },
+    {
+      "label": "Cegep du Vieux-Montréal 20174184",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20174184"
+      },
+      "before_action": "TENDER_RESEARCH",
+      "audit_class": "OPTIONAL",
+      "evidence_summary": "Exact OCDS native record; latest public notice/addenda, qualifications and existing submission are unknown; date retained from October 5 verified cache"
+    },
+    {
+      "label": "Centre de services scolaire de la région de Sherbrooke. 20171360",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20171360"
+      },
+      "before_action": "TENDER_RESEARCH",
+      "audit_class": "OPTIONAL",
+      "evidence_summary": "Exact OCDS native record; latest public notice/addenda, qualifications and existing submission are unknown; date retained from October 5 verified cache"
+    },
+    {
+      "label": "Société québécoise des infrastructures 20174160",
+      "context": {
+        "system": "PUBLIC",
+        "entity_type": "TENDER",
+        "entity_id": "20174160"
+      },
+      "before_action": "TENDER_RESEARCH",
+      "audit_class": "OPTIONAL",
+      "evidence_summary": "Exact OCDS native record; latest public notice/addenda, qualifications and existing submission are unknown; date retained from October 5 verified cache"
+    }
+  ],
+  "supplemental_estimates": {
+    "3643985000002330018": {
+      "estimate_id": "3643985000002330018",
+      "estimate_number": "EST-1132",
+      "customer_id": "3643985000002330001",
+      "status": "sent",
+      "last_modified_time": "2026-10-05T17:14:03-0400",
+      "created_time": "2026-10-05T15:31:26-0400",
+      "invoice_ids": [],
+      "zcrm_potential_id": ""
+    },
+    "3643985000002330031": {
+      "estimate_id": "3643985000002330031",
+      "estimate_number": "EST-1133",
+      "customer_id": "3643985000002330001",
+      "status": "sent",
+      "last_modified_time": "2026-10-05T17:13:39-0400",
+      "created_time": "2026-10-05T15:33:53-0400",
+      "invoice_ids": [],
+      "zcrm_potential_id": ""
+    },
+    "3643985000002330043": {
+      "estimate_id": "3643985000002330043",
+      "estimate_number": "EST-1134",
+      "customer_id": "3643985000002330001",
+      "status": "sent",
+      "last_modified_time": "2026-10-05T17:22:58-0400",
+      "created_time": "2026-10-05T15:37:51-0400",
+      "invoice_ids": [],
+      "zcrm_potential_id": ""
+    },
+    "3643985000002080009": {
+      "estimate_id": "3643985000002080009",
+      "estimate_number": "EST-1129",
+      "customer_id": "3643985000002006085",
+      "status": "accepted",
+      "last_modified_time": "2026-09-23T14:12:15-0400",
+      "created_time": "2026-09-22T08:41:40-0400",
+      "zcrm_potential_id": ""
+    },
+    "3643985000002006102": {
+      "estimate_id": "3643985000002006102",
+      "estimate_number": "EST-1124",
+      "customer_id": "3643985000002006085",
+      "status": "sent",
+      "last_modified_time": "2026-09-15T11:57:01-0400",
+      "created_time": "2026-09-15T11:56:58-0400",
+      "zcrm_potential_id": ""
+    },
+    "3643985000002209016": {
+      "estimate_id": "3643985000002209016",
+      "estimate_number": "EST-1131",
+      "customer_id": "3643985000000654001",
+      "status": "draft",
+      "last_modified_time": "2026-09-30T19:36:55-0400",
+      "created_time": "2026-09-30T19:33:50-0400",
+      "zcrm_potential_id": ""
+    },
+    "3643985000002052095": {
+      "estimate_id": "3643985000002052095",
+      "estimate_number": "EST-1126",
+      "customer_id": "3643985000000387001",
+      "status": "sent",
+      "last_modified_time": "2026-09-21T14:02:10-0400",
+      "created_time": "2026-09-21T09:29:46-0400",
+      "zcrm_potential_id": ""
+    },
+    "3643985000002052112": {
+      "estimate_id": "3643985000002052112",
+      "estimate_number": "EST-1127",
+      "customer_id": "3643985000000387001",
+      "status": "sent",
+      "last_modified_time": "2026-09-21T14:01:40-0400",
+      "created_time": "2026-09-21T09:37:36-0400",
+      "zcrm_potential_id": ""
+    },
+    "3643985000002052126": {
+      "estimate_id": "3643985000002052126",
+      "estimate_number": "EST-1128",
+      "customer_id": "3643985000000387001",
+      "status": "sent",
+      "last_modified_time": "2026-09-21T14:01:28-0400",
+      "created_time": "2026-09-21T09:47:36-0400",
+      "zcrm_potential_id": ""
+    },
+    "3643985000002022012": {
+      "estimate_id": "3643985000002022012",
+      "estimate_number": "EST-1125",
+      "customer_id": "3643985000000654001",
+      "status": "invoiced",
+      "last_modified_time": "2026-09-28T07:07:32-0400",
+      "created_time": "2026-09-16T14:16:03-0400",
+      "zcrm_potential_id": ""
+    },
+    "3643985000001978101": {
+      "estimate_id": "3643985000001978101",
+      "estimate_number": "EST-1123",
+      "customer_id": "3643985000000654001",
+      "status": "draft",
+      "last_modified_time": "2026-09-22T09:39:35-0400",
+      "created_time": "2026-09-10T19:38:31-0400",
+      "zcrm_potential_id": ""
+    }
+  },
+  "coverage": {
+    "BOOKS:ESTIMATE:3643985000002330018": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "BOOKS:ESTIMATE:3643985000002330031": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "BOOKS:ESTIMATE:3643985000002330043": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "CRM:LEAD:5062683000007975083": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:7fbc5e55c84c4668a615a144d325902d6ccfcbdd56075a4499faaf0419fb767e": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:d50a6217ce0dd5aa5fc0113a0fbb5456fe5c9c619c30c019fc314f656ae72466": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:07dfe2b9dda9171349cca5f2ccb92a87e58cd3d15f14ced7e7ef2bfc7389386e": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:7bb7908bc4e84dd9344d8d0f18465cda087c564d99eb8fadd702be9269ffd0bf": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "PUBLIC:TENDER:20168879": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "PUBLIC:TENDER:20172194": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "BOOKS:ESTIMATE:3643985000002080009": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "BOOKS:ESTIMATE:3643985000002006102": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:00c6d46ecb3845143ea6132f3d3d330648ba1969e1554d13d8ede8212edb54e5": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:42e86dc5f9ecdf24afe4f80c5e15c23d9978b05a289f5c7588fe71ab70fe3c79": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:3ce5667a14e6a4d6cf7a544131a6d07421111d444405d4bd7199b0bbae7ec6ca": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:3ce72d52a0c8f7d6c68fdbf56c1221466c5bbd3fc63f395021ac54a883eb9d7a": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:98380fd6155382eb1adcfd2ee1eb2dfce84dd967ba335c1e12ed62ca9caacfca": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:d7abdc9b1ffa53d94a0b7677d1914a4b5c6a39e78d84a0a88081d691123c809c": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:66006a5bbe27840f2fbdcc02f5f0ff03d436c57f45e7f8c37e4334936bd22828": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:8bffbc882b7737cfc0125cc0966bef2e36eb4d9cbf564b2a6174a1e157bfafce": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:713f3608ad712737ab0fe466f03ba42606dd39fd98b9f1f3775d0c3be4c6ce0f": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "OUTREACH:CONVERSATION:e06c6c733c04dd6e8a09ea95d4a4cf4dd3ee9a6f49ce3dcefeffb3e3786fb1ee": {
+      "mail": {
+        "completeness": "PARTIAL"
+      },
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "crm": {
+        "completeness": "PARTIAL"
+      },
+      "apollo": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "BOOKS:ESTIMATE:3643985000002209016": {
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "BOOKS:ESTIMATE:3643985000002052095": {
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "BOOKS:ESTIMATE:3643985000002052112": {
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "BOOKS:ESTIMATE:3643985000002052126": {
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "BOOKS:ESTIMATE:3643985000002022012": {
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "BOOKS:ESTIMATE:3643985000001978101": {
+      "books": {
+        "completeness": "PARTIAL"
+      },
+      "response": {
+        "completeness": "UNKNOWN"
+      },
+      "downstream": {
+        "completeness": "UNKNOWN"
+      }
+    },
+    "PUBLIC:TENDER:20160570": {
+      "public_notice": {
+        "completeness": "PARTIAL",
+        "observed_at": "2026-10-04T21:55:39.616320+00:00"
+      },
+      "submission_status": {
+        "completeness": "NOT_COLLECTED_UNKNOWN"
+      }
+    },
+    "PUBLIC:TENDER:20171612": {
+      "public_notice": {
+        "completeness": "PARTIAL",
+        "observed_at": "2026-10-05T21:58:33.956187+00:00"
+      },
+      "submission_status": {
+        "completeness": "NOT_COLLECTED_UNKNOWN"
+      }
+    },
+    "PUBLIC:TENDER:20170780": {
+      "public_notice": {
+        "completeness": "PARTIAL",
+        "observed_at": "2026-10-04T21:55:39.616320+00:00"
+      },
+      "submission_status": {
+        "completeness": "NOT_COLLECTED_UNKNOWN"
+      }
+    },
+    "PUBLIC:TENDER:20163358": {
+      "public_notice": {
+        "completeness": "PARTIAL",
+        "observed_at": "2026-10-04T21:55:39.616320+00:00"
+      },
+      "submission_status": {
+        "completeness": "NOT_COLLECTED_UNKNOWN"
+      }
+    },
+    "PUBLIC:TENDER:20174184": {
+      "public_notice": {
+        "completeness": "PARTIAL",
+        "observed_at": "2026-10-05T21:58:33.956187+00:00"
+      },
+      "submission_status": {
+        "completeness": "NOT_COLLECTED_UNKNOWN"
+      }
+    },
+    "PUBLIC:TENDER:20171360": {
+      "public_notice": {
+        "completeness": "PARTIAL",
+        "observed_at": "2026-10-05T21:58:33.956187+00:00"
+      },
+      "submission_status": {
+        "completeness": "NOT_COLLECTED_UNKNOWN"
+      }
+    },
+    "PUBLIC:TENDER:20174160": {
+      "public_notice": {
+        "completeness": "PARTIAL",
+        "observed_at": "2026-10-05T21:58:33.956187+00:00"
+      },
+      "submission_status": {
+        "completeness": "NOT_COLLECTED_UNKNOWN"
+      }
+    }
+  },
+  "source_files": [
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/noveco-estimate-0.json",
+      "sha256": "77ebbdb952f27eacea74e1f9014db58933bbfccefd54bf3aedb5f1ce8758ecbd"
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/noveco-estimate-1.json",
+      "sha256": "030bd8b1f9444a7cf23463df28a63fe75f0464711b9d2e7e936cc3246f2d1b9c"
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/noveco-estimate-2.json",
+      "sha256": "959526feac21a3a521f0ccdedf40e9153ef3743d2499c059c21eabb9df4161c3"
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/crm-sales.json",
+      "sha256": "58708d35f4646b0c1c620f31e4fa163351546668ebdba4f2508e3a09cdb73655"
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/sales-conversations.json",
+      "sha256": "63ab72a87d6eddc4f147f4f95013be1740440e18790b1ca15d62205888198704"
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/mail-search-0.json",
+      "sha256": "55404c03fe9c0402d5991d1454b4f73257e1c61f7ca26e7d6c971fd67bd1ea5d"
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/mail-search-1.json",
+      "sha256": "5e120a9410cd00fd9b3915d9d5e8e5961da3b56dd22b89249027e4036f70943a"
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/mail-search-2.json",
+      "sha256": "053819de9df24eb95ea9c7dc77ae0b9ef9f5f81ac109b7c8ac80b33a412e3a6c"
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/mail-search-3.json",
+      "sha256": "aa5a2b5d619901a59f845b0c76bd73298c691c121d9cca86e750d1306f09ec0c"
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/tender-live-0.json",
+      "sha256": "1be49366aa77bfde9a8fae43b5954421afac92ff7540711d6b47a6ac89417069"
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/tender-live-1.json",
+      "sha256": "19ecd37a5c8b53e2d0f9a609848658f8f2bf072556beea70c2f90b0a1b525b60"
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/books-estimates-recent.json",
+      "sha256": "f56a8d3602c4b21161857b168b265c803bb7a2ebb202571ed33562501cb62606"
+    }
+  ],
+  "limitations": [
+    "Mail address queries returned empty despite a known inbound; no absence-of-response conclusion is supported.",
+    "Books SENT status alone is not delivery proof; owner correction establishes Noveco sent state, not actual send time.",
+    "Provider caches/overnight snapshots are bounded, not complete current manual history.",
+    "Mail sentDateInGMT and receivedTime differ; no precise actual send time is claimed from these metadata.",
+    "DATE commitments use an end-of-day sorting bound, not an invented promised appointment time.",
+    "Tender notice freshness is October 6 05:45 UTC; full latest addenda/submission/eligibility proof remains an owner check.",
+    "Runtime journals and historical reports remain unchanged; replay uses only an isolated temporary copy.",
+    "Parc olympique deadline is retained feed evidence, not an October 6 direct notice read; deadline/addenda/current participation verification is the action."
+  ]
+}

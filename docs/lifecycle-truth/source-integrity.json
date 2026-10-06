@@ -1,0 +1,66 @@
+{
+  "source_artifacts_verified": 12,
+  "all_match": true,
+  "files": [
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/noveco-estimate-0.json",
+      "sha256": "77ebbdb952f27eacea74e1f9014db58933bbfccefd54bf3aedb5f1ce8758ecbd",
+      "matched": true
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/noveco-estimate-1.json",
+      "sha256": "030bd8b1f9444a7cf23463df28a63fe75f0464711b9d2e7e936cc3246f2d1b9c",
+      "matched": true
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/noveco-estimate-2.json",
+      "sha256": "959526feac21a3a521f0ccdedf40e9153ef3743d2499c059c21eabb9df4161c3",
+      "matched": true
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/crm-sales.json",
+      "sha256": "58708d35f4646b0c1c620f31e4fa163351546668ebdba4f2508e3a09cdb73655",
+      "matched": true
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/sales-conversations.json",
+      "sha256": "63ab72a87d6eddc4f147f4f95013be1740440e18790b1ca15d62205888198704",
+      "matched": true
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/mail-search-0.json",
+      "sha256": "55404c03fe9c0402d5991d1454b4f73257e1c61f7ca26e7d6c971fd67bd1ea5d",
+      "matched": true
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/mail-search-1.json",
+      "sha256": "5e120a9410cd00fd9b3915d9d5e8e5961da3b56dd22b89249027e4036f70943a",
+      "matched": true
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/mail-search-2.json",
+      "sha256": "053819de9df24eb95ea9c7dc77ae0b9ef9f5f81ac109b7c8ac80b33a412e3a6c",
+      "matched": true
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/mail-search-3.json",
+      "sha256": "aa5a2b5d619901a59f845b0c76bd73298c691c121d9cca86e750d1306f09ec0c",
+      "matched": true
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/tender-live-0.json",
+      "sha256": "1be49366aa77bfde9a8fae43b5954421afac92ff7540711d6b47a6ac89417069",
+      "matched": true
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/tender-live-1.json",
+      "sha256": "19ecd37a5c8b53e2d0f9a609848658f8f2bf072556beea70c2f90b0a1b525b60",
+      "matched": true
+    },
+    {
+      "path": "/home/optibrain/worktrees/optibrain-final-night-preview-integration/overnight-intelligence/evidence/books-estimates-recent.json",
+      "sha256": "f56a8d3602c4b21161857b168b265c803bb7a2ebb202571ed33562501cb62606",
+      "matched": true
+    }
+  ]
+}
