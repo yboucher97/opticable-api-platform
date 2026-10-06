@@ -1,0 +1,336 @@
+{
+  "G001": {
+    "classification": "RED (retained conservatively until required natural proof)",
+    "implementation": "deployed and source-bound regression PASS",
+    "manager_projection": "readable local Manager view explicitly STALE; projection timestamp 2026-10-06T14:56:23.770349+00:00 retained",
+    "natural_proof": "not collected; normal lifecycle requires enabled internal execution authority before observation; DISABLED run proves containment/service health only",
+    "state": "WAITING NATURAL VERIFICATION",
+    "verified_offline": [
+      "bounded fair Marketing/recurring stage budgets",
+      "explicit stage/module states and dates",
+      "last-good preservation",
+      "Marketing reservation prevents silent starvation",
+      "partial cannot imply complete",
+      "classified error evidence retained"
+    ]
+  },
+  "G002": {
+    "cases": [
+      "missing Deals/module: UNKNOWN/HOLD",
+      "explicit complete present empty list: verified empty",
+      "positive collision retained",
+      "partial/failed/stale: no negative clearance"
+    ],
+    "classification": "GREEN",
+    "native_empty_inventory_claimed": false,
+    "proof": "deployed source equals tested merge tree; post37 completeness regression PASS",
+    "state": "RESOLVED"
+  },
+  "G003": {
+    "classification": "GREEN",
+    "critical_case": "RUNNING plus exit=0 remains RUNNING; completed-state age never applies",
+    "installed_local_sample": "PASS; expected five timers OK with scoped authority OFF",
+    "sampler": {
+      "installed_sha256": "31e2c36ea7a5ce1af0c6246529ba8c1fcde12a84ea17f78a1074ff6a43917f29",
+      "preserved": "/var/lib/optibrain/pr133-release-recovery/runtime-sampler-before.py",
+      "previous_sha256": "d287da277bc08468f9c07c7477492aa02fc2cd9ce52414433fb3432c917e2761",
+      "release_sha": "0d320d5a98575f5fed62f794342881ef613433b4"
+    },
+    "state": "RESOLVED",
+    "verified_states": [
+      "RUNNING",
+      "COMPLETED_SUCCESS",
+      "FAILED",
+      "TIMED_OUT",
+      "NEVER_RUN",
+      "STALE_COMPLETION",
+      "UNKNOWN"
+    ]
+  },
+  "G004": {
+    "classification": "GREEN",
+    "effective_truth": "this aggregate, derived from canonical exact release receipt and verified matching recovery; same logical report in Markdown/JSON",
+    "historical_receipts": "preserved byte-for-byte",
+    "state": "CLOSED",
+    "superseded_metadata": "docs/phase37-evidence/final-report.{md,json} current=false; superseded by this matching recovery report"
+  },
+  "another_foundation_phase_required": false,
+  "at": "2026-10-06T15:34:16.259723+00:00",
+  "current": true,
+  "final_counts": {
+    "PARTIAL_CONTROLLABLE": 0,
+    "RED": 1,
+    "reason": "G001 natural verification remains open; no false zero-count assertion",
+    "scope": [
+      "G001",
+      "G002",
+      "G003",
+      "G004"
+    ]
+  },
+  "fix": {
+    "PR133_already_fixes_it": false,
+    "additional_hotfix_required": true,
+    "behavior": "Verified launcher treats canonical OFF policies as DISABLED before importing clients/engine/state/DB; transport authority gate unchanged",
+    "hotfix_PR": 134,
+    "hotfix_url": "https://github.com/yboucher97/opticable-api-platform/pull/134",
+    "merge_sha": "0d320d5a98575f5fed62f794342881ef613433b4",
+    "patch_sha": "a7c14be5319a3cc511474f4301dba719621fedba"
+  },
+  "mission": "PR133 release blocker diagnosis and safe completion",
+  "next_lifecycle_truth": "Keep branch 2a90b6c read only during this mission; consider a separate authorized integration after remaining natural verification, with fresh exact-head gates",
+  "operational_limitations": [
+    "Manager projection remains honestly stale while internal family is closed",
+    "Inherited backup growth alert remains visible; no archive pruning or unrelated remediation performed",
+    "Isolated archive/state restore does not claim replacement-OS/service boot or owner offline decryption"
+  ],
+  "owner_actions": [
+    "For G001 natural verification only: explicitly authorize repinning/resuming the original unexpired internal scopes and its existing timer under the established contract, then retain natural collection evidence. No renewal or customer-family reopening is included."
+  ],
+  "recovery": {
+    "API": "1.29.0",
+    "Golden": "UNCHANGED, plaintext archive and Golden receipt hashes rechecked",
+    "archive": {
+      "api": "1.29.0",
+      "archive": "/var/backups/optibrain/optibrain-backup-20261006T152813Z.tar.gz",
+      "db_snapshots": 8,
+      "generation": "20261006T152813Z",
+      "sha256": "7907b9a6887f78944a97b1c53f9cf37b486cda25202348a28581c3fa5d6b6d9e",
+      "source_sha": "0d320d5a98575f5fed62f794342881ef613433b4"
+    },
+    "authority_on_restore": "OFF; 16 masks; conversion destinations retained without execution authority",
+    "databases": {
+      "automation.db": "ok",
+      "form-receipts-stage.db": "ok",
+      "lifecycle-events.db": "ok",
+      "phase10-service-events.db": "ok",
+      "phase12-autonomy.db": "ok",
+      "phase9-form-receipts.db": "ok",
+      "phase9-intake.before-permission-fix.db": "ok",
+      "phase9-intake.db": "ok"
+    },
+    "effects_retained": {
+      "customer": true,
+      "internal": true
+    },
+    "generation": "20261006T152813Z",
+    "isolated_restore": "PASS: 1876 files; prepared private target; no services, OS boot or DNS cutover",
+    "manager_tables": {
+      "manager_briefs": 12,
+      "manager_events": 273,
+      "manager_feedback": 0,
+      "manager_learning": 0,
+      "manager_links": 411,
+      "manager_receipts": 126,
+      "optimization_records": 298,
+      "optimization_reviews": 0
+    },
+    "offline_owner_decryption": "not performed; ciphertext download/hash and plaintext isolated restore proved separately",
+    "private_AGE_identity_used": false,
+    "remote": {
+      "encrypted_sha256": "c2afec6310b7eea4610479ec395810a89d9aae5d73b8ee0370552ca3d64e3eb9",
+      "format_version": 2,
+      "generation": "20261006T152813Z",
+      "object_key": "backups/2026/10/06/20261006T152813Z.tar.gz.age",
+      "offline_restore_verified": false,
+      "recipient_sha256": "d3593cf7f443701fe9d863b6fa2b7ba7ff17ed216f6a6f463e1333589cd8a96f",
+      "source_sha256": "7907b9a6887f78944a97b1c53f9cf37b486cda25202348a28581c3fa5d6b6d9e",
+      "verification_status": "download_hash_verified",
+      "verified_at": "2026-10-06T15:31:18.014479+00:00"
+    },
+    "source_sha": "0d320d5a98575f5fed62f794342881ef613433b4"
+  },
+  "release": {
+    "API": "1.29.0",
+    "PR133_merge_sha": "d07c0229639ea347af0eb1f8b78006be79e54ff4",
+    "PR_CI": 37486661153,
+    "approved_hotfix_merge_sha": "0d320d5a98575f5fed62f794342881ef613433b4",
+    "authorization": {
+      "bypass": false,
+      "expires_at": "2026-10-06T17:25:31.641550+00:00",
+      "old_receipt_preserved": true,
+      "release_id": "pr133-recovery-20261006T152531Z",
+      "state": "NEW through canonical deployment guide step 5 in user-authorized manual root session"
+    },
+    "exact_main_CI": {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "0d320d5a98575f5fed62f794342881ef613433b4",
+      "html_url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/37486868312",
+      "id": 37486868312,
+      "name": "Validate API Platform",
+      "status": "completed"
+    },
+    "guarded_release_receipt": "/var/lib/optibrain/releases/current.json",
+    "production_after": "0d320d5a98575f5fed62f794342881ef613433b4",
+    "production_before": "205b217546372dfd37850da7721d9bba61a0746a",
+    "runtime_source_and_manifests": "exact same SHA; PREPARED_TIMERS_OFF; --activate not used"
+  },
+  "root_cause": {
+    "cache_repair_required": false,
+    "classes": [
+      "A: existing production OFF-state handling defect",
+      "C: intentional closed policy; no authority corruption or renewal",
+      "F: release shutdown/timer race"
+    ],
+    "failed_service": "opticable-lifecycle-internal.service",
+    "input": "Canonical schema-1 OFF mutation policy, written by --stop before the timer was disabled",
+    "invocation_id": "c74e4e47eb7e42b3a073c97834a1daba",
+    "offline_reconstructed_traceback": {
+      "caller_file": "apps/workflow-api/workflow/automation/real_internal.py",
+      "caller_function": "Engine.__init__",
+      "caller_line": 138,
+      "exception": "ValueError: Lifecycle requires strict scoped mutation policy",
+      "file": "apps/workflow-api/workflow/automation/lifecycle_control.py",
+      "function": "read_policy",
+      "line": 95
+    },
+    "original_journal": "Internal lifecycle stopped: ValueError; original launcher suppressed exception message/traceback",
+    "predates_PR133": true,
+    "provider_read_or_database_failure": false,
+    "runtime_API_at_failure": "1.28.0",
+    "runtime_sha_at_failure": "205b217546372dfd37850da7721d9bba61a0746a",
+    "runtime_verified": "Pinned immutable source and interpreter manifest plus matching installed source hashes; last successful scheduled run 14:56 UTC; no intervening deployment",
+    "timeline_UTC": {
+      "closed_policy_mtime": "2026-10-06T15:01:36.911085+00:00",
+      "policy_snapshot": "2026-10-06T15:01:17.672219+00:00",
+      "python_failure": "2026-10-06T15:01:37.771266+00:00",
+      "stop_command": "2026-10-06T15:01:36.727815+00:00",
+      "systemd_start_log": "2026-10-06T15:01:36.936640+00:00"
+    }
+  },
+  "safety": {
+    "Ads_writes": 0,
+    "Books_writes": 0,
+    "CRM_writes": 0,
+    "English_real_automation": "DISABLED",
+    "Golden": "UNCHANGED",
+    "authority_renewals": 0,
+    "conversion_uploads": 0,
+    "customer_effects": 12,
+    "effect_resets": 0,
+    "effects_unchanged": true,
+    "financial_ads_outreach_authority": "ABSENT/OFF",
+    "internal_effects": 2,
+    "later_branches": "unchanged, read only; neither integrated",
+    "outreach_sends": 0,
+    "persistent_worker": "OFF",
+    "protected": "123/123 unchanged"
+  },
+  "schema": 1,
+  "service": {
+    "after": "INACTIVE/DEAD following successful controlled CLOSED-policy invocation",
+    "authority": "both CLOSED; original policies retained in immutable pre-deploy snapshot",
+    "before": "FAILED",
+    "closed_invocation": {
+      "at": "2026-10-06T15:27:54.080169+00:00",
+      "effects_unchanged": {
+        "customer": true,
+        "internal": true
+      },
+      "invocation_id": "1e524b129084472b906d3162cd9a902f",
+      "journal_pid": "564935",
+      "limitation": "Successful inactive unit was unloaded after completion; systemctl no longer retains invocation timestamps. Exact journal retains completion proof.",
+      "provider_writes": 0,
+      "result": {
+        "effects_this_cycle": 0,
+        "eligible_leads": 0,
+        "provider_reads": 0,
+        "state": "DISABLED"
+      },
+      "sha": "0d320d5a98575f5fed62f794342881ef613433b4",
+      "state_after": "INACTIVE/DEAD",
+      "systemd_completion": "SUCCESS (exact invocation and unit journal)",
+      "timers_started": 0
+    },
+    "evidence_retained": "/var/lib/optibrain/pr133-release-recovery",
+    "failed_latch": "cleared only after evidence, offline reproduction, reviewed fix, green exact-head/main CI, new authorization and rollback prerequisites",
+    "original_customer_cutoff": "2026-10-03T02:46:02.366351+00:00",
+    "original_customer_expiry": "2026-11-02T02:46:02.366351+00:00",
+    "original_internal_cutoff": "2026-10-02T22:09:41+00:00",
+    "original_internal_expiry": "2026-11-01T22:09:41+00:00",
+    "timers": "both INACTIVE/DISABLED; cadence unchanged"
+  },
+  "status": "PARTIAL",
+  "validation": {
+    "focused": {
+      "blocked_network_attempts": 0,
+      "errors": 0,
+      "failures": 0,
+      "passed": true,
+      "skipped": 0,
+      "subtests": 58,
+      "tests": 66
+    },
+    "full": {
+      "blocked_network_attempts": 0,
+      "errors": 0,
+      "failures": 0,
+      "passed": true,
+      "skipped": 0,
+      "subtests": 1339,
+      "tests": 1634
+    },
+    "live_databases": {
+      "automation.db": "ok",
+      "phase10-service-events.db": "ok",
+      "phase12-autonomy.db": "ok",
+      "phase9-form-receipts.db": "ok",
+      "phase9-intake.db": "ok"
+    },
+    "merge_tree_identical_to_tested_patch": true,
+    "protected": {
+      "calls": 7,
+      "missing": 0,
+      "modified": 0,
+      "modules": {
+        "Accounts": {
+          "missing": 0,
+          "modified": 0,
+          "records": 41,
+          "test_spoof": 0
+        },
+        "Contacts": {
+          "missing": 0,
+          "modified": 0,
+          "records": 45,
+          "test_spoof": 0
+        },
+        "Deals": {
+          "missing": 0,
+          "modified": 0,
+          "records": 1,
+          "test_spoof": 0
+        },
+        "Leads": {
+          "missing": 0,
+          "modified": 0,
+          "records": 11,
+          "test_spoof": 0
+        },
+        "Service_Locations": {
+          "missing": 0,
+          "modified": 0,
+          "records": 12,
+          "test_spoof": 0
+        },
+        "Services": {
+          "missing": 0,
+          "modified": 0,
+          "records": 12,
+          "test_spoof": 0
+        },
+        "Tasks": {
+          "missing": 0,
+          "modified": 0,
+          "records": 1,
+          "test_spoof": 0
+        }
+      },
+      "records": 123,
+      "test_spoof": 0,
+      "unchanged": true
+    }
+  }
+}
