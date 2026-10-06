@@ -166,6 +166,22 @@ class ModelTests(PreviewCase):
 
 
 class ProviderTests(PreviewCase):
+    def test_live_reconciliation_uses_operator_time_after_each_read(self):
+        from dataclasses import replace
+        v=self.prepared_value();g,c,h=provider_fixtures(v);current=[NOW]
+        github=FakeGitHubProvider(REPO,g,NOW,max_reads=30)
+        cloud=FakeCloudflareProvider(v['preview_project'],c,NOW,allowed_hosts=[HOST],production_hosts=['opticable.ca'],max_reads=30)
+        for provider in (github,cloud):
+            original=provider._read
+            def later(key,original=original):
+                current[0]+=timedelta(seconds=2)
+                result=original(key)
+                return replace(result,source_at=current[0].isoformat(),observed_at=current[0].isoformat())
+            provider._read=later
+        reconcile(self.store,github,cloud,FakeHTTP(h),NOW,clock=lambda:current[0])
+        value=self.store.preview(PID,current[0])
+        self.assertTrue(preview_ready(value,current[0]));self.assertEqual(value['last_verified_at'],current[0].isoformat())
+
     def test_exact_sha_preview_ready_and_owner_package(self):
         v=self.ready();self.assertTrue(preview_ready(v,NOW));p=manager_projection(self.store.website_proposal(PID),v,NOW)
         self.assertEqual(p['verified_url'],URL)

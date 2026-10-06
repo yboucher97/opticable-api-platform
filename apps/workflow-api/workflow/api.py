@@ -114,7 +114,7 @@ register_lifecycle_actions(automation_engine, zoho_gateway_client, automation_st
 register_lifecycle_extended_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_phase2_actions(automation_engine, zoho_gateway_client, ai_router, automation_store)
 register_lifecycle_mailbox_actions(automation_engine, zoho_gateway_client, automation_store)
-API_VERSION = "1.32.0"
+API_VERSION = "1.32.1"
 PRIMARY_WEBHOOK_PATH = "/v1/site-and-password/webhooks/zoho"
 PRIMARY_JOB_CREATE_PATH = "/v1/site-and-password/jobs"
 PRIMARY_JOB_STATUS_PATH = "/v1/site-and-password/jobs/{job_id}"

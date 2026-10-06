@@ -75,12 +75,19 @@ class ProposalPreviewExecutor:
     The provider's live transport must independently restrict its write endpoints
     and credentials. A boundary receipt alone cannot make a fake provider live.
     """
-    def __init__(self, store, github, boundary):
+    def __init__(self, store, github, boundary, *, clock=None):
         self.store = store
         self.github = github
         self.boundary = boundary
+        self.clock = clock
+
+    def _now(self, now):
+        # Trusted operator clock, never provider/payload supplied. Authentication
+        # and network reads can complete after the invocation's initial time.
+        return self.clock() if self.clock else now
 
     def _prepared(self, binding, now):
+        now = self._now(now)
         self.boundary.validate(now)
         if not isinstance(binding, dict) or set(binding) != set(BINDING_FIELDS):
             raise ValueError('Exact proposal execution tuple required')
@@ -114,6 +121,7 @@ class ProposalPreviewExecutor:
     def _read(self, operation, now, *args, empty=False):
         from .website_preview_providers import ReadResult
         read = operation(*args)
+        now = self._now(now)
         if not isinstance(read, ReadResult) or not _fresh(read, now):
             raise PermissionError('Fresh authenticated provider read required')
         if read.state == 'VERIFIED_EMPTY':
@@ -148,7 +156,7 @@ class ProposalPreviewExecutor:
         self._branch(binding, now)  # Mandatory authenticated readback, even replay.
         self._prepared(binding, now)
         return {**binding, 'state': 'REMOTE_REF_VERIFIED', 'provider_writes': writes,
-                'verified_at': now.isoformat(), 'force': False}
+                'verified_at': self._now(now).isoformat(), 'force': False}
 
     def _pr(self, binding, now, *, empty=False):
         value = self._read(self.github.get_pr, now, binding['repository'], binding['branch'], empty=empty)
@@ -173,4 +181,4 @@ class ProposalPreviewExecutor:
         self._branch(binding, now)
         self._prepared(binding, now)
         return {**binding, 'state': 'DRAFT_PR_VERIFIED', 'pr_number': pr['number'],
-                'provider_writes': writes, 'draft': True, 'verified_at': now.isoformat()}
+                'provider_writes': writes, 'draft': True, 'verified_at': self._now(now).isoformat()}

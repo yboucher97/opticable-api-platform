@@ -22,7 +22,7 @@ from workflow.automation.website_preview_git import LocalGitAdapter
 from workflow.automation.website_preview_github_live import ExistingPreviewApp, GitHubPreviewAdapter, PROPOSAL_ID, REPOSITORY
 from workflow.automation.website_preview_cloudflare_safety import CloudflarePushSafety, PREVIEW_WORKER
 from workflow.automation.website_preview_cloudflare_live import CloudflarePreviewAdapter, PreviewHTTP
-from workflow.automation.website_preview_native import NativeWebsiteRunner, content_proposal, BASE, TOOLS, BROWSER
+from workflow.automation.website_preview_native import NativeWebsiteRunner, content_proposal, BASE, TOOLS, BROWSER, trusted_tool_file
 
 ROOT=Path('/var/lib/optibrain/first-hosted-camera-preview')
 DB=Path('/var/lib/opticable-workflow-api/output/automation/phase12-autonomy.db')
@@ -39,12 +39,11 @@ def local(store):
 def released():
     receipt=json.loads((Path('/var/lib/optibrain/releases/current.json')).read_text())
     head=SOURCE.parent.name
-    if receipt.get('sha')!=head or receipt.get('state')!='deployed' or receipt.get('api_version')!='1.32.0':
-        raise PermissionError('Exact guarded 1.32.0 release required before provider execution')
+    if receipt.get('sha')!=head or receipt.get('state')!='deployed' or receipt.get('api_version')!='1.32.1':
+        raise PermissionError('Exact guarded 1.32.1 release required before provider execution')
     if SOURCE != Path('/opt/optibrain-releases')/head/'source':
         raise PermissionError('Provider execution must use root-owned immutable release source')
-    from workflow.automation.website_preview_github_live import _trusted_bytes
-    _trusted_bytes(Path(__file__))
+    trusted_tool_file(Path(__file__))
 
 def execute(command):
     if os.geteuid()!=0:raise PermissionError('Manual root execution required')
@@ -80,7 +79,7 @@ def execute(command):
         cloud=CloudflarePreviewAdapter(store=store,github=github,local_git=git,boundary=boundary,deployment_safety=safety)
         if command=='verify':return {'identity':identity,'builds_safety':safety.last_receipt,'target':cloud.get_project(PREVIEW_WORKER).__dict__,'provider_writes':0}
         if command=='provision':return cloud.provision(binding=binding)
-        executor=ProposalPreviewExecutor(store,github,boundary)
+        executor=ProposalPreviewExecutor(store,github,boundary,clock=lambda:datetime.now(timezone.utc))
         if command=='push':return executor.push_proposal(binding,now)
         if command=='draft':return executor.create_draft_pr(binding,now)
         if command=='ci':return github.get_workflow_status(REPOSITORY,binding['head_sha']).__dict__
@@ -104,7 +103,7 @@ def execute(command):
         if command=='reconcile':
             proof=json.loads((ROOT/'execution-hosted-test.json').read_text())
             if proof.get('state')!='PASS' or any(proof.get(k)!=v for k,v in binding.items()):raise ValueError('Hosted exact-head tests required')
-            return reconcile(store,github,cloud,PreviewHTTP(cloud),now,maximum=1,git=git,expected_page='Caméras IP pour commerces et entrepôts')
+            return reconcile(store,github,cloud,PreviewHTTP(cloud),now,maximum=1,git=git,expected_page='Caméras IP pour commerces et entrepôts',clock=lambda:datetime.now(timezone.utc))
         raise ValueError('Unapproved operation')
     finally:github.close()
 

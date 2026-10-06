@@ -12,9 +12,9 @@ class Phase6ReleaseVersionTests(unittest.TestCase):
             with self.subTest(path=path):
                 response = client.get(path)
                 self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.json()["version"], "1.32.0")
+                self.assertEqual(response.json()["version"], "1.32.1")
                 self.assertEqual(response.json()["status"], "ok")
-        self.assertEqual(api.app.version, "1.32.0")
+        self.assertEqual(api.app.version, "1.32.1")
 
     def test_version_matches_current_architecture_contract(self):
         contract = Path(__file__).resolve().parents[3] / "docs/OPTIBRAIN_ARCHITECTURE_BLUEPRINT.md"

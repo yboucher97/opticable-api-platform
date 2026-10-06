@@ -1,6 +1,6 @@
 # OptiBrain architecture
 
-AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; Current API contract: `1.32.0`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
+AUTHORITATIVE CURRENT. Read [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) first. FastAPI core is `apps/workflow-api/workflow`; Current API contract: `1.32.1`. [Runtime](OPTIBRAIN_RUNTIME_CONTRACT.md) specifies services/network; [state](OPTIBRAIN_STATE_CONTRACT.md) specifies data/identity; [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) specifies authority.
 
 ```mermaid
 flowchart TD
