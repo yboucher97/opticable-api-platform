@@ -1,0 +1,23 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"urn:opticable:optibrain:manager:1",
+  "title":"OptiBrain bounded owner manager",
+  "type":"object",
+  "required":["schema","type","scope","at","today","sections","proposals","proposal_counts","priorities","priority_count","sources","authority","events","activity","brief","data_completeness","efficiency","safety","execution_authorized","provider_writes"],
+  "properties":{
+    "schema":{"const":1},"type":{"const":"optibrain.manager"},"scope":{"const":"live"},
+    "at":{"type":"string","format":"date-time"},
+    "today":{"type":"array","maxItems":5,"items":{"type":"object","required":["priority_id","what","why","evidence","next_action","confidence","urgency","status"]}},
+    "sections":{"type":"object","required":["sales","acquisition","customers","recurring","finance","marketing","website_seo","ads","content","system","owner_actions"]},
+    "proposals":{"type":"array","items":{"type":"object","required":["proposal_id","revision","payload_hash","domain","status","readiness","evidence","preview","execution_authorized"],"properties":{"execution_authorized":{"const":false}}}},
+    "proposal_counts":{"type":"object","required":["total","by_domain","by_status"]},
+    "priorities":{"type":"array","items":{"type":"object"}},"priority_count":{"type":"integer","minimum":0},
+    "sources":{"type":"array","items":{"type":"object","required":["source_id","provider","access_type","authentication_health","data_health","observed_at","cache_age_seconds","required","source_confidence"],"properties":{"data_health":{"enum":["GREEN","STALE","PARTIAL","BLOCKED","RATE_LIMITED","AUTH_EXPIRED","PLAN_LIMITED","NO_CREDITS","PROVIDER_ERROR","INTENTIONALLY_OPTIONAL","OWNER_DEFERRED","UNKNOWN"]}}}},
+    "authority":{"type":"array","items":{"type":"object","required":["authority","state"]}},
+    "events":{"type":"array","maxItems":50},"activity":{"type":"object","required":["1d","7d"]},
+    "brief":{"type":"object","required":["day","what_changed","sales_attention","top_priorities"]},
+    "data_completeness":{"type":"object","additionalProperties":{"enum":["GREEN","GREEN — WAITING NATURAL DATA","GREEN — INTENTIONALLY OPTIONAL","PARTIAL","BLOCKED"]}},
+    "efficiency":{"type":"object"},"safety":{"type":"object"},
+    "execution_authorized":{"const":false},"provider_writes":{"const":0}
+  }
+}

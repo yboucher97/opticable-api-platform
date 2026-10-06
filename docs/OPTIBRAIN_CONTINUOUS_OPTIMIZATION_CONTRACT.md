@@ -56,3 +56,7 @@ Phase33 completion uses the shared proposal lifecycle and learning fields for fu
 ## Phase34 current delta
 
 Phase34 integrates Sales conversation/context, unsent drafts, partner/customer reviews, sequence/list proposals and content feedback into the shared evidence → proposal → preview → owner review → future execution → measurement → learning path. Bounded deterministic preparation attaches to the existing observer; no persistent model or new production authority. Phase37 may later combine these domain priorities; it is not started here.
+
+## Phase37 implemented control center
+
+[Manager](OPTIBRAIN_MANAGER_CONTRACT.md) implements ingest → structure → prioritize → propose/prepare → owner intent → observe existing authorized execution → measure/learn. Existing internal scheduler hosts deterministic refresh; no second orchestrator/model worker or new writer. Same semantic evidence reuses previews; at most3 changed local website drafts/cycle. Existing bounded Sales/Ads jobs continue. Machine output, concise brief, source freshness, exact feedback,1d/7d observed activity and result import use current protected journals. Existing automatic preparation means drafts/briefs; publication and sends need independent authority.

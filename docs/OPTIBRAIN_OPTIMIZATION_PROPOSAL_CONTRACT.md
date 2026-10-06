@@ -61,3 +61,9 @@ Examples and schema validation are format proof only. They are not provider-back
 ## Phase34 current delta
 
 Phase34 implements SALES_REPLY, OUTREACH_PROPOSAL, CUSTOMER_EXPANSION, SEQUENCE_CHANGE and CONTENT_FEEDBACK using existing OUTREACH/SALES_PROCESS/CONTENT target categories and the same immutable revision/local-review store. Conversation versions reuse the existing database. Owner preview, rejection and learning are retained; approved fixtures cannot grant outreach authority. Ads projections filter their own proposal/asset/priority IDs so Sales integration does not inflate Ads counters.
+
+## Phase37 control center and owner intent
+
+[Manager](OPTIBRAIN_MANAGER_CONTRACT.md) aggregates existing immutable optimization_records. Same-origin exact-hash feedback adds APPROVE intent, REJECT, REQUEST_REVISION, WAIT, NOT_RELEVANT and NEVER, with reason/category/evidence/reconsideration conditions. Intent appears in domain views but never passes execution_allowed, which remains false. Approval cannot transfer across a revision. Reject/wait suppress identical semantic re-preparation until changed material evidence or explicit owner feedback; NEVER suppresses all automatic revisions of that idea. Legacy reviews remain intact.
+
+Read-time freshness can project NEEDS_REFRESH and INSUFFICIENT confidence without rewriting immutable proposal facts. Source authentication, provider fact dates and display refresh are independent. Local website editorial previews use the same proposal/priority/assets stores and existing detail endpoint. Provider drafts, branch/build/publication, Ads/outreach and financial transport remain separately gated. manager_learning admits evidence-backed SUCCESS/NEUTRAL/REGRESSION/INSUFFICIENT_DATA/BLOCKED results; execution receipt and baseline/post windows are mandatory for performance verdicts. No results are fabricated for unexecuted previews.

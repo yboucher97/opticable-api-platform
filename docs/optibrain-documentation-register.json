@@ -23,8 +23,8 @@
   "counts": {
     "SUPERSEDED": 9,
     "HISTORICAL": 48,
-    "AUDIT EVIDENCE": 103,
-    "AUTHORITATIVE CURRENT": 59,
+    "AUDIT EVIDENCE": 105,
+    "AUTHORITATIVE CURRENT": 61,
     "SECURITY / CONTROL": 1,
     "RECOVERY": 1
   },
@@ -322,6 +322,13 @@
       "current": true,
       "superseded_by": null,
       "purpose": "Specialist current lifecycle contract under primary onboarding/runbook precedence"
+    },
+    {
+      "path": "docs/OPTIBRAIN_MANAGER_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Phase37 bounded manager contract/schema/evidence; no execution grant"
     },
     {
       "path": "docs/OPTIBRAIN_MARKETING_ATTRIBUTION_CONTRACT.md",
@@ -864,6 +871,13 @@
       "current": true,
       "superseded_by": null,
       "purpose": "Complete document classification"
+    },
+    {
+      "path": "docs/optibrain-manager.schema.json",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Phase37 bounded manager contract/schema/evidence; no execution grant"
     },
     {
       "path": "docs/optibrain-optimization.schema.json",
@@ -1451,6 +1465,20 @@
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_SALES_INTELLIGENCE_CONTRACT.md",
       "purpose": "Phase26/27 bounded audit, test/checkpoint/unsent comparison evidence; no takeover authority"
+    },
+    {
+      "path": "docs/phase37-evidence/final-report.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Phase37 bounded manager contract/schema/evidence; no execution grant"
+    },
+    {
+      "path": "docs/phase37-evidence/final-report.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Phase37 bounded manager contract/schema/evidence; no execution grant"
     },
     {
       "path": "docs/phase5/additive-plan-review.json",

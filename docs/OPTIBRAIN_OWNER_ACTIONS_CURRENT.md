@@ -116,3 +116,11 @@ No immediate Forms setup, GA4 filter activation, Basic access or new OAuth actio
 ## Phase34 current delta
 
 Phase34: review the shared Sales drafts and sequence issues in `/v1/operator/sales`. Coordinate the existing partner/supplier discussions in Apollo; confirm any manual response/appointment before using a draft. Resolve the five unbound reply threads through existing native Apollo/Mail context; no broader OAuth requested. Review recruitment-list cleanup and overdue LinkedIn-task strategy; no reactivation or sequence edits occurred. Draft recipients, channels, preferred language, current employer, suppression and recent/manual contact still need exact future execution review. Separate sealed outreach graduation is required before any send. Existing Ads/GA4/GBP owner decisions remain separate.
+
+## Phase37 consolidated current actions (supersedes older repeated phase lists)
+
+Use [Business Manager](OPTIBRAIN_MANAGER_CONTRACT.md) for current evidence and top5 actions. Review real Sales drafts in the existing Apollo/Claude context, imminent verified tenders and genuine Forms inquiry/Lead context. Review selected FR camera landing/measurement/campaign previews; approval records intent only. Provider mutation remains absent.
+
+Upcoming: review current12 internal/4 customer authority scopes by October25, before original November1/2 expiries; Manager surfaces the review from October18. No silent renewal. Blocking capability gaps: exact unmatched reply bodies/employer/collision verification for selected outreach; fresh native finance/business observations where stale; supported repository/native Form draft adapters before those proposals can become production previews; deterministic job-cost allocation before profitability.
+
+Deferred: Google Basic only when fresh quantitative Planner optimization requires it; AI vendor hosting/legal proof only before unsupported public provider claims. Optional: native GBP scope only if profile verification is desired; Holo/manual creative handoff. Natural-data wait: genuine eligible paid attribution/qualified outcomes; no Forms retest or export activation. Historical Forms setup/filter/OAuth and old phase approval repeats are obsolete unless their specific evidence changes.

@@ -84,6 +84,23 @@ class OptimizationStore:
                                   (row['id'],row['revision'],row['payload_hash'])).fetchone()
                 item['review']=dict(review) if review else None
                 item['effective_status']=REVIEW[review['choice']] if review else item['record'].get('status')
+                if kind=='optibrain.optimization_proposal' and review is None:
+                    rejected=db.execute("SELECT r.record,r.detail FROM optimization_reviews v JOIN optimization_records r ON r.kind=? AND r.id=v.proposal_id AND r.revision=v.revision WHERE v.proposal_id=? AND v.choice='REJECT' ORDER BY v.at DESC,v.rowid DESC LIMIT 1",(kind,row['id'])).fetchone()
+                    if rejected:
+                        from .manager_intelligence import semantic_evidence
+                        if semantic_evidence(json.loads(rejected['record']),json.loads(rejected['detail']))==semantic_evidence(item['record'],item['detail']):
+                            item['effective_status']='REJECTED'
+                # Shared local intent is visible in every domain surface. It
+                # never changes canonical records or grants transport authority.
+                if kind=='optibrain.optimization_proposal' and db.execute("SELECT 1 FROM sqlite_master WHERE name='manager_feedback'").fetchone():
+                    f=db.execute("SELECT * FROM manager_feedback WHERE kind='PROPOSAL' AND target=? ORDER BY at DESC,rowid DESC LIMIT 1",(row['id'],)).fetchone()
+                    if f:
+                        from .manager_intelligence import semantic_evidence
+                        value=json.loads(f['value'])
+                        same=f['version']==row['payload_hash']
+                        repeat=f['choice'] in {'REJECT','NOT_RELEVANT','WAIT'} and value.get('semantic_evidence')==semantic_evidence(item['record'],item['detail'])
+                        if same or repeat or f['choice']=='NEVER':
+                            item['effective_status']={'APPROVE':'APPROVED','REJECT':'REJECTED','REQUEST_REVISION':'RESEARCHING'}.get(f['choice'],f['choice'])
                 result.append(item)
             return result
 
