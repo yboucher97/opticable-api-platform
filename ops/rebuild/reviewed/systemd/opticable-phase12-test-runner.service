@@ -1,0 +1,36 @@
+# Current reviewed runtime reconstruction; nothing is enabled by bootstrap.
+# /etc/systemd/system/opticable-phase12-test-runner.service
+[Unit]
+Description=OptiBrain bounded TEST_ONLY business action runner
+After=network-online.target opticable-workflow-api.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+Environment=OPTIBRAIN_PHASE12_CODE_ROOT=/opt/opticable-api-platform
+EnvironmentFile=/etc/optibrain/phase12-runner.env
+ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python /usr/local/lib/optibrain/phase12-run-test-lab.py --once
+TimeoutStartSec=180
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/optibrain/phase8/test-lab /var/lib/optibrain/phase11/test-lab /var/lib/optibrain/phase12 /var/lib/opticable-workflow-api/output/automation /etc/optibrain
+ReadWritePaths=/run/optibrain-readiness
+ExecStartPost=/usr/bin/python3 /usr/local/lib/optibrain/queue-metrics.py
+ExecStartPost=/usr/bin/python3 /usr/local/lib/optibrain/phase14-runtime-snapshot.py
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+CapabilityBoundingSet=CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH CAP_FOWNER CAP_CHOWN CAP_SYS_PTRACE
+ReadOnlyPaths=/etc/optibrain/mutation-control.json /etc/optibrain/phase12-runner.env
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

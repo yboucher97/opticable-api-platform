@@ -1,0 +1,16 @@
+# Owner-approved cutover contract
+
+RECOVERY — CURRENT SPECIALIZED GUIDE. DNS changes in this mission: **0**. This is the future exact sequence, after a real replacement passes every critical gate.
+
+Current readback: zone `ea7b4f245feb0a98fb5534e73e761970`, A record `8f10227bdeaa87597fd71cf7d499f133`, `optibrain.opticable.ca` → `148.113.249.7`, `proxied:true`, TTL `1` (Cloudflare automatic, not one second). Re-read the record, effective TTL, Access application/issuer/audience/allowlist and any origin/TLS policy at the actual migration window. Record the new IP and preserve the exact original JSON. A requested TTL reduction is a separately audited cutover operation; no reduction was made here.
+
+1. Freeze source consequential writers and observers, wait for in-flight work, preserve newer provider/R2 effect evidence, and create the final verified recovery/catalog.
+2. Synchronize/verify the replacement privately with all consequential writers OFF. Require every critical result and independent target backup readback; inspect source version, all knowledge/audits, provider identity, no stale jobs and rollback capability.
+3. Test with `ssh -L 8080:127.0.0.1:8080 ADMIN@NEW_IP` and local `http://127.0.0.1:8080/v1/system/health`. Owner auth uses the normal Access session; never forge a JWT. Prepare production Caddy from `/etc/caddy/optibrain-production.caddy`, validate syntax and establish reviewed origin TLS before routing. DNS-01/provider or local host override may support pre-cutover TLS; no new secret or live certificate policy is inferred.
+4. Obtain owner approval binding old/new host, exact record/origin state, SHA, final generation/hash, private validation, TLS/Access proof and rollback record. Approval concerns traffic only; it does not enable business writers.
+5. Apply only the approved Cloudflare DNS/origin target change through the existing owner/admin channel. Record Universal Action Evidence before mutation and provider readback after. Read the changed record and verify independent public resolution, TLS, unauthenticated Access/origin denial, public API version and authenticated owner dashboard/Manager.
+6. Monitor API errors/latency, source freshness, backup readback and storage. Keep the old host frozen and intact. Any observer resumption must retain existing scopes/cutoffs/claims and be explicitly reconciled; customer timers/writers remain OFF.
+
+Traffic switching is intentionally absent from the bootstrap executable. Caddy configuration syntax alone does not prove public TLS/Access failover. A future DNS/TLS/Access blocker means NO cutover, even if the bootstrap result's local checks pass. Roll back using the recorded old state if public checks regress.
+
+Final capture also stops source API/PDF/Omada intake, after the replacement is privately ready. Stopping scheduled observers alone leaves inbound receipts open; the source freeze receipt must prove `intake_off:true`. Retain Caddy/source state so rollback can restart the same services after event reconciliation.

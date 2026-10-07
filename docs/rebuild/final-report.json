@@ -1,0 +1,1233 @@
+{
+  "at": "2026-10-07T04:50:13.860080+00:00",
+  "control_center": {
+    "last_full_rebuild_test": null,
+    "owner_control_center": "NOT BUILT IN THIS MISSION",
+    "recovery_confidence": "COMPONENT VERIFIED; fresh-VPS drill required",
+    "recovery_status_model_ready": true,
+    "result_schema": "docs/rebuild/result.schema.json"
+  },
+  "current_host": {
+    "architecture": "x86_64",
+    "backup_staging_bytes": 29393039360,
+    "cpu_vcpus": 4,
+    "critical_storage_risk": true,
+    "disk_bytes": {
+      "free": 1369808896,
+      "total": 76887154688,
+      "used": 75500568576
+    },
+    "hostname": "vps-214ba8cd",
+    "inodes_used_percent": 7,
+    "kernel": "6.8.0-142-generic",
+    "os": "Ubuntu 24.04.5 LTS",
+    "ram_bytes": 8127705088,
+    "timezone": "America/Toronto",
+    "worktree_count": 54
+  },
+  "final_questions": [
+    {
+      "answer": "Implemented for Ubuntu 24.04 amd64 after the trusted recovery packet is supplied; complete fresh-VPS behavior remains unproven until the disposable drill.",
+      "number": 1,
+      "question": "Can an empty supported Ubuntu VPS be rebuilt automatically?"
+    },
+    {
+      "answer": "Three normal checkpoints: VPS/access, offline decryption/packet transfer, final cutover approval. Failed portable provider bindings may require additional consent.",
+      "number": 2,
+      "question": "How many owner actions are still required?"
+    },
+    {
+      "answer": "Yes; verified bundle/public Git checkout is pinned to the recovery SHA and API identity, separate from reviewed tooling identity.",
+      "number": 3,
+      "question": "Can the exact OptiBrain code version be restored?"
+    },
+    {
+      "answer": "Eight actual recovery stores passed streamed restore checks; discovery and all-table snapshots support a changed future count rather than hardcoding eight.",
+      "number": 4,
+      "question": "Can all durable databases be restored?"
+    },
+    {
+      "answer": "Yes in component proof: exact proposal/priority revisions and evidence are preserved; Decision Cards derive from exact source. Active /run projections require controlled regeneration/reconciliation.",
+      "number": 5,
+      "question": "Are Decision Cards and priorities preserved?"
+    },
+    {
+      "answer": "Yes; exact row/ID/schema digests and canonical per-action hash chains pass. Bootstrap writes its own separate canonical sidecar.",
+      "number": 6,
+      "question": "Are Action Evidence / audit history preserved?"
+    },
+    {
+      "answer": "Current count is honestly zero. All-table comparison and nonzero fixtures prove future Learning Records are included automatically.",
+      "number": 7,
+      "question": "Are current and future Learning Records preserved?"
+    },
+    {
+      "answer": "Paths, named permissions, encrypted recovery and portable OAuth bindings are defined; 11 required source-host reads pass. New-host reads and owner decryption remain required.",
+      "number": 8,
+      "question": "Are provider identities recoverable without exposing secrets?"
+    },
+    {
+      "answer": "Yes by policies, final env overrides and masks; component fixtures verify closure. Full OS boot still requires a drill.",
+      "number": 9,
+      "question": "Does restored OptiBrain start with consequential writers OFF?"
+    },
+    {
+      "answer": "Queued state is retained as history; all business/observation scheduler services/timers and persistent workers remain masked. No replay grant is generated.",
+      "number": 10,
+      "question": "Are stale jobs prevented from executing?"
+    },
+    {
+      "answer": "Reviewed source and hashes, private loopback configuration and validation are automated. Public TLS/Access testing belongs to later cutover.",
+      "number": 11,
+      "question": "Is Caddy/reverse proxy reproducible?"
+    },
+    {
+      "answer": "Yes; 44 reviewed definition/helper files plus safety overrides are installed and hash/syntax checked. Only apps and verified backup pair may start.",
+      "number": 12,
+      "question": "Are systemd services/timers reproducible?"
+    },
+    {
+      "answer": "Yes on the target, including current AGE/R2/upload/readback and preserve-existing policy; a fresh encrypted target backup is a mandatory readiness gate.",
+      "number": 13,
+      "question": "Are backups automatically configured?"
+    },
+    {
+      "answer": "Yes via loopback Caddy and SSH tunnel, exact-state checks and provider GETs; no DNS mutation adapter exists here.",
+      "number": 14,
+      "question": "Can migration be validated before DNS cutover?"
+    },
+    {
+      "answer": "Prepared exact DNS before-state/host/generation rollback; freeze both hosts and reconcile any new intake/effects before switching back. Traffic rollback is not tested today.",
+      "number": 15,
+      "question": "Can we roll back to the old VPS?"
+    },
+    {
+      "answer": "Yes; retain intact/frozen, starting recommendation 14 days with review after 7. No automatic termination.",
+      "number": 16,
+      "question": "Can the old VPS remain a fallback?"
+    },
+    {
+      "answer": "Yes; choose --data-root /srv/optibrain-data on a separately provisioned mounted disk. Existing paths use owned-generation bind mounts; no live paths moved today.",
+      "number": 17,
+      "question": "Can a future data volume be mounted cleanly?"
+    },
+    {
+      "answer": "No expected loss when exact snapshot verification and final immutable-history sync pass; readiness fails closed on loss. No actual migration has happened.",
+      "number": 18,
+      "question": "Will moving to a new VPS lose any accumulated learning?"
+    },
+    {
+      "answer": "No. Existing universal evidence, learning, authorization and recovery architecture are reused.",
+      "number": 19,
+      "question": "Is another foundation phase required?"
+    },
+    {
+      "answer": "sudo bash /recovery/toolchain/ops/rebuild/bootstrap.sh restore --manifest /recovery/toolchain/docs/rebuild/current-host-manifest.json --catalog /recovery/catalog.json --archive /recovery/recovery.tar.gz --generation latest-verified --migration (after the trusted private recovery packet is transferred as described in bootstrap.md).",
+      "number": 20,
+      "question": "Once a new VPS is purchased, what exact first command should the owner run?"
+    }
+  ],
+  "foundation_complete": true,
+  "fresh_vm_rebuild_readiness": "PARTIAL",
+  "knowledge_portability": {
+    "audit_claims": "all SQLite immutable evidence plus R2 business-effects/v1 and conversion-effects/v1 external immutable namespaces",
+    "business_events_owner_corrections": "phase12-autonomy.db: manager_events (source=OWNER), manager_feedback",
+    "core_events_runs_checkpoints_audit": "automation.db",
+    "decision_cards_priorities_proposals_assets": "phase12-autonomy.db: optimization_records + action_envelopes + action_evidence; cards derived by exact source",
+    "learning_records": "phase12-autonomy.db: manager_learning",
+    "mail_forms_document_intelligence": "receipt/intake stores and root evidence now; future tables/files captured by discovery; WorkDrive owns large documents",
+    "preview_state": "phase12-autonomy.db: website_preview_observations + website_preview_webhooks; preserved /var/lib/optibrain preview evidence",
+    "relationships": "phase12-autonomy.db: manager_links; /etc/optibrain/phase11-operations.json; lifecycle finance-links/recurring-links",
+    "source_health": "phase12-autonomy.db: acquisition_sources + provider_usage; root snapshots regenerate /run projections",
+    "todos": "phase12-autonomy.db: action_evidence priority transitions"
+  },
+  "limits": [
+    "No external fresh VPS exists; OS/package/systemd/mount/full durable promotion/TLS end-to-end and elapsed RTO are not proved.",
+    "This exact encrypted recovery has independent ciphertext readback and matching local plaintext; owner-device decryption receipt remains absent.",
+    "Public owner Cloudflare Access login, native Forms writer setting and post-backup immutable provider-effect reconciliation are required at actual cutover.",
+    "Current disk is 99% used; no business/recovery retention changes were authorized.",
+    "One initial Google probe refreshed its live access-token cache; subsequent provider probes isolate all OAuth/cache files.",
+    "The legacy shell fixture briefly copied root state into RAM, was stopped before archive creation, then rerun under a private mount namespace; no production data modified."
+  ],
+  "migration": {
+    "automatic_old_vps_termination": false,
+    "cutover": "prepared exact DNS/Cloudflare before/proposed state and private/public validation; separate owner approval required",
+    "dns_before": {
+      "mutation_performed": false,
+      "name": "optibrain.opticable.ca",
+      "old_content": "148.113.249.7",
+      "proxied": true,
+      "record_id": "8f10227bdeaa87597fd71cf7d499f133",
+      "ttl": 1,
+      "ttl_semantics": "Cloudflare automatic; assess effective TTL at cutover",
+      "type": "A",
+      "zone_id": "ea7b4f245feb0a98fb5534e73e761970"
+    },
+    "final_delta": "source writers/observers/intake freeze + new verified generation, immutable superset, serialized rerunnable target switch",
+    "new_host_validation": "IMPLEMENTED; not executed on external VPS",
+    "old_host_retention_days_recommended": 14,
+    "rollback": "prepared old/new host and generation receipt; freeze/reconcile divergence before origin rollback"
+  },
+  "owner_effort": {
+    "during": "offline decryption and trusted private packet transfer; provider consent only if failed",
+    "final": "approve concrete cutover/rollback report",
+    "initial": "new VPS IP and SSH/root access",
+    "normal_checkpoints": 3,
+    "target": "minimal"
+  },
+  "performance": {
+    "current_baseline": {
+      "api_latency_ms": {
+        "max": 42.661,
+        "median": 1.822,
+        "samples": [
+          42.661,
+          1.935,
+          1.822,
+          1.767,
+          1.793
+        ]
+      },
+      "api_version": "1.34.1",
+      "at": "2026-10-07T04:21:03.658459+00:00",
+      "cpu_count": 4,
+      "destructive_stress_tests": 0,
+      "disk_bytes": {
+        "free": 1369808896,
+        "total": 76887154688,
+        "used": 75500568576
+      },
+      "load_average": [
+        0.2197265625,
+        0.35498046875,
+        0.31005859375
+      ],
+      "manager_http_authenticated_ms": null,
+      "manager_limit": "Owner Access session unavailable to automation; provider-free copied-state render measured separately",
+      "manager_render_ms": 6168.839,
+      "memory_bytes": {
+        "MemAvailable": 6503133184,
+        "MemTotal": 8127705088,
+        "SwapFree": 1835196416,
+        "SwapTotal": 2147479552
+      },
+      "provider_collector_samples": [
+        {
+          "at": "2026-10-07T04:01:56.904593+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 61,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-07T03:31:09.213820+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 46,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-07T03:00:19.813056+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 58,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-07T02:30:18.313385+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 50,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-07T02:00:26.636763+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 55,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-07T01:31:40.909150+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 46,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-07T01:01:29.815834+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 57,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-07T00:30:38.318357+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 55,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-07T00:01:48.324319+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 54,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T23:31:27.528494+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 45,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T23:00:26.675644+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 47,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T22:31:45.313955+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 56,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T22:01:38.264548+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 45,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T21:30:26.658271+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 62,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T21:01:26.628185+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 41,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T20:31:08.303465+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 41,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T20:01:38.275430+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 47,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T19:30:38.297243+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 48,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T19:00:25.746420+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 46,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T18:30:57.263169+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 52,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T18:00:26.630857+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 42,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T17:30:14.654639+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 56,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T17:01:26.662942+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 60,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T16:31:38.363380+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 46,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T16:01:13.992424+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 41,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T15:31:26.662297+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 55,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T15:00:25.292134+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 46,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T14:30:26.701032+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 52,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T14:01:55.857679+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 48,
+          "job": "phase12-test-runner",
+          "status": "success"
+        },
+        {
+          "at": "2026-10-06T13:30:27.776590+00:00",
+          "calls": {
+            "books_get": 0,
+            "books_write": 0,
+            "cloudflare": 0,
+            "crm_get": 0,
+            "crm_write": 0,
+            "forms_get": 0,
+            "forms_mutation": 0,
+            "github": 0,
+            "google": 0,
+            "mail_get": 0,
+            "mail_mutation": 0,
+            "oauth_refresh": 0,
+            "other_zoho": 0,
+            "r2": 0,
+            "sign_get": 0,
+            "sign_mutation": 0
+          },
+          "duration_ms": 52,
+          "job": "phase12-test-runner",
+          "status": "success"
+        }
+      ],
+      "scheduled_jobs": {
+        "optibrain-backup": {
+          "last_duration_ms": 65009.93,
+          "result": "success"
+        },
+        "optibrain-phase2a-upload": {
+          "last_duration_ms": 50206.261,
+          "result": "success"
+        },
+        "opticable-lifecycle-internal": {
+          "last_duration_ms": 96986.941,
+          "result": "success"
+        },
+        "opticable-phase10-service-events": {
+          "last_duration_ms": 2944.024,
+          "result": "success"
+        },
+        "opticable-phase12-test-runner": {
+          "last_duration_ms": 508.495,
+          "result": "success"
+        },
+        "opticable-phase9-intake-receipts": {
+          "last_duration_ms": 2796.264,
+          "result": "success"
+        }
+      },
+      "schema": 1,
+      "source_sha": "be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa"
+    },
+    "manager_http_authenticated_ms": null,
+    "new_host_comparison_tooling": "baseline + compare, numeric \u00b115% similar band; new-host comparison NOT RUN",
+    "stress_tests": 0
+  },
+  "ready_for_owner_cutover": false,
+  "rebuild": {
+    "application_install": "exact application SHA, rebuilt Python venvs/npm lock, hash-pinned Node",
+    "data_root_default": "/var/lib/optibrain-data",
+    "data_root_optional": "/srv/optibrain-data",
+    "firewall": "deny incoming, SSH/80/443; internal services loopback",
+    "idempotent": "COMPONENT TESTED; full replacement drill pending",
+    "one_command": "sudo bash /recovery/toolchain/ops/rebuild/bootstrap.sh restore --manifest /recovery/toolchain/docs/rebuild/current-host-manifest.json --catalog /recovery/catalog.json --archive /recovery/recovery.tar.gz --generation latest-verified --migration",
+    "production_paths_moved": 0,
+    "reverse_proxy": "reviewed Caddy; private 127.0.0.1:8080 before owner-approved public config",
+    "system_services": "44 reviewed definitions/helper files plus closed safety overrides",
+    "timers": "business/observation/retired masked; backup pair only after fresh readback"
+  },
+  "recovery": {
+    "active_store_count": 5,
+    "all_databases_integrity_foreign_keys_schema_rows_ids_audit": "PASS",
+    "all_manifest_files_verified": 6277,
+    "audit_chains_verified": 122,
+    "ciphertext_sha256": "70422eed74ff52da3f020dd2e2193b1a0dababecc7b8c9d1fd01cbca970a0669",
+    "database_count": 8,
+    "full_durable_file_promotion": "NOT performed on current host; fixture promotion PASS",
+    "historical_store_count": 3,
+    "knowledge": {
+      "audit_events": 603,
+      "envelopes": 116,
+      "feedback": 0,
+      "learning": 0,
+      "manager_events": 547,
+      "optimization": [
+        [
+          "optibrain.business_priority",
+          286,
+          51
+        ],
+        [
+          "optibrain.optimization_asset",
+          42,
+          26
+        ],
+        [
+          "optibrain.optimization_proposal",
+          76,
+          34
+        ]
+      ],
+      "owner_fact_corrections": 3,
+      "preview_observations": 109,
+      "priority_latest_statuses": {
+        "OWNER_REVIEW": 51
+      }
+    },
+    "latest_verified_generation": "20261007T030438Z",
+    "plaintext_sha256": "1005074668c9b5e60bed640eae008d36301accfe842b4e74fc8ac4ab97baec48",
+    "provider_reads": {
+      "APOLLO": {
+        "duration_ms": 124,
+        "evidence": {
+          "zero_credit_read": true
+        },
+        "read_only": true,
+        "status": "PASS"
+      },
+      "CLOUDFLARE": {
+        "duration_ms": 439,
+        "evidence": {
+          "account_id": "81d07d311d1b51e5e04b451d1f254850",
+          "workers_read": true
+        },
+        "read_only": true,
+        "status": "PASS"
+      },
+      "CLOUDFLARE_BUILDS": {
+        "duration_ms": 1686,
+        "evidence": {
+          "account_id": "81d07d311d1b51e5e04b451d1f254850",
+          "builds_read": true,
+          "worker_reads": 11
+        },
+        "read_only": true,
+        "status": "PASS"
+      },
+      "GA4": {
+        "duration_ms": 140,
+        "evidence": {
+          "property_id": "530093120",
+          "read_only": true
+        },
+        "read_only": true,
+        "status": "PASS"
+      },
+      "GITHUB": {
+        "duration_ms": 1207,
+        "evidence": {
+          "app_id": 5077440,
+          "auth_exchanges_only": true,
+          "installation_id": 164914980,
+          "repository": "yboucher97/opticable-api-platform"
+        },
+        "read_only": true,
+        "status": "PASS"
+      },
+      "GOOGLE_ADS": {
+        "read_only": true,
+        "reason": "Existing Google Basic access deferred by owner; preserved cache and source health are validated locally",
+        "status": "DEFERRED"
+      },
+      "GSC": {
+        "duration_ms": 117,
+        "evidence": {
+          "read_only": true,
+          "site": "sc-domain:opticable.ca"
+        },
+        "read_only": true,
+        "status": "PASS"
+      },
+      "OTHER_SOURCES": {
+        "read_only": true,
+        "reason": "Optional research sources and edge KV survive host move; no paid/model-generation health calls",
+        "status": "DEFERRED"
+      },
+      "ZOHO_BOOKS": {
+        "duration_ms": 505,
+        "evidence": {
+          "authenticated_read": true,
+          "http_status": 200,
+          "service": "zohoapis"
+        },
+        "read_only": true,
+        "status": "PASS"
+      },
+      "ZOHO_CRM": {
+        "duration_ms": 446,
+        "evidence": {
+          "authenticated_read": true,
+          "http_status": 200,
+          "service": "zohoapis"
+        },
+        "read_only": true,
+        "status": "PASS"
+      },
+      "ZOHO_FORMS": {
+        "duration_ms": 479,
+        "evidence": {
+          "authenticated_connector_export": true,
+          "authenticated_read": true,
+          "http_status": 200,
+          "native_form_mutations": 0,
+          "native_integration_setting": "OWNER-UI evidence required at cutover",
+          "service": "mail"
+        },
+        "read_only": true,
+        "status": "PASS"
+      },
+      "ZOHO_MAIL": {
+        "duration_ms": 287,
+        "evidence": {
+          "authenticated_read": true,
+          "http_status": 200,
+          "service": "mail"
+        },
+        "read_only": true,
+        "status": "PASS"
+      },
+      "ZOHO_WORKDRIVE": {
+        "duration_ms": 269,
+        "evidence": {
+          "authenticated_read": true,
+          "http_status": 200,
+          "service": "zohoapis"
+        },
+        "read_only": true,
+        "status": "PASS"
+      }
+    },
+    "selected_generation_owner_offline_decryption_verified": false,
+    "verification_status": "download_hash_verified"
+  },
+  "release": {
+    "branch": "integration/fresh-vm-rebuild-migration-20261007",
+    "main_autodeploy_boundary": "Successful main validation triggers existing API deployment workflow; keep tooling release as reviewed PR revision until a separately controlled merge window.",
+    "pr": "PENDING creation and exact-head CI",
+    "production_deployment": false,
+    "scope": "NON_RUNTIME REBUILD TOOLING AND DOCUMENTATION; application source/API unchanged"
+  },
+  "safe_restore": {
+    "ads_execution": "OFF",
+    "books_writes": "OFF",
+    "conversion_uploads": "OFF",
+    "customer_authority": "OFF",
+    "customer_timer": "OFF",
+    "internal_observation_until_validation": "OFF",
+    "outreach": "OFF",
+    "persistent_development_worker": "OFF",
+    "website_production": "OFF"
+  },
+  "safety": {
+    "business_recovery_data_deletions": 0,
+    "customer_writes": 0,
+    "database_destructive_operations": 0,
+    "dns_changes": 0,
+    "production_config_changes": 0,
+    "production_migration": 0,
+    "production_service_changes": 0,
+    "provider_business_mutations": 0,
+    "temporary_fixture_deletions_only": true,
+    "unexpected_auth_cache_writes": 1
+  },
+  "schema": 1,
+  "secrets": {
+    "durable_secret_paths": 17,
+    "encrypted_offhost": "existing owner-recipient AGE; create-only R2 with independent GET hash",
+    "inventory_complete_for_canonical_durable_paths": true,
+    "new_host_portability": "provider read gates determine consent/rotation needs; no unnecessary reauthorization",
+    "owner_key_dependency": "owner device decrypts AGE; identity never embedded or transferred to VPS",
+    "plaintext_local_exception": "existing root-only local archives contain credentials; not changed or deleted",
+    "secret_values_printed": 0
+  },
+  "source": {
+    "live_api_version": "1.34.1",
+    "origin_main_at_last_read": "be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa",
+    "production_sha": "be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa",
+    "submodules": "",
+    "toolchain_release": "guarded non-runtime tooling PR; no application version/deployment implied"
+  },
+  "tests": {
+    "backup_shell": "PASS in private mount namespace with RAM fixtures, including nested business manifest",
+    "container_or_external_vm": "SKIPPED; storage-critical, no images or external VPS",
+    "documentation_contract": {
+      "configuration_sources": 103,
+      "documents": 293,
+      "passed": true,
+      "primary_documents": 10,
+      "unknown_documents": 0
+    },
+    "dry_run_plan": "PASS; eight stores, exact source, zero host writes",
+    "focused": {
+      "blocked_network_attempts": 0,
+      "errors": 0,
+      "failures": 0,
+      "passed": true,
+      "skipped": 0,
+      "subtests": 100,
+      "tests": 96
+    },
+    "full": {
+      "blocked_network_attempts": 0,
+      "errors": 0,
+      "failures": 0,
+      "passed": true,
+      "skipped": 0,
+      "subtests": 1851,
+      "tests": 1953
+    },
+    "full_regression_storage_blocked": false,
+    "intermediate_failures": "Corrected before final candidate: failure envelope, completed-marker reset, partial final-sync readback, nested backup manifest, audit import before packages. Final focused/full and isolated backup fixture PASS.",
+    "manifest_schema": "PASS",
+    "storage_limited": true,
+    "syntax": "PASS",
+    "unexpected_writes": {
+      "business_or_database_writes": 0,
+      "google_access_token_cache_refresh": 1
+    }
+  },
+  "type": "optibrain.rebuild.mission_report"
+}

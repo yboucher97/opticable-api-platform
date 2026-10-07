@@ -1,0 +1,27 @@
+[Unit]
+Description=OptiBrain encrypted off-host Phase 2A backup
+After=optibrain-backup.service
+ConditionPathExists=/etc/optibrain/age-recipient
+ConditionPathExists=/etc/optibrain/r2-uploader.env
+
+[Service]
+Type=oneshot
+TimeoutStartSec=46min
+User=root
+Group=root
+ExecStart=/usr/local/lib/optibrain-backup/optibrain-phase2a-upload.sh
+StandardOutput=journal
+StandardError=journal
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/optibrain
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+CapabilityBoundingSet=

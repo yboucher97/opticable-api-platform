@@ -1,0 +1,3281 @@
+{
+  "all_host_timers": "NEXT                                 LEFT LAST                               PASSED UNIT                                   ACTIVATES\nWed 2026-10-07 00:04:33 EDT           58s Tue 2026-10-06 23:58:27 EDT      5min ago opticable-lifecycle-internal.timer     opticable-lifecycle-internal.service\nWed 2026-10-07 00:05:57 EDT      2min 22s Wed 2026-10-07 00:00:57 EDT  2min 37s ago opticable-phase9-intake-receipts.timer opticable-phase9-intake-receipts.service\nWed 2026-10-07 00:07:00 EDT      3min 24s Tue 2026-10-06 00:07:00 EDT       23h ago sysstat-summary.timer                  sysstat-summary.service\nWed 2026-10-07 00:10:00 EDT          6min Wed 2026-10-07 00:00:08 EDT  3min 26s ago sysstat-collect.timer                  sysstat-collect.service\nWed 2026-10-07 00:31:33 EDT         27min Wed 2026-10-07 00:01:56 EDT  1min 38s ago opticable-phase12-test-runner.timer    opticable-phase12-test-runner.service\nWed 2026-10-07 00:45:25 EDT         41min Tue 2026-10-06 23:45:25 EDT     18min ago opticable-phase10-service-events.timer opticable-phase10-service-events.service\nWed 2026-10-07 00:47:13 EDT         43min Tue 2026-10-06 23:26:10 EDT     37min ago fwupd-refresh.timer                    fwupd-refresh.service\nWed 2026-10-07 06:23:40 EDT            6h Tue 2026-10-06 06:03:17 EDT       18h ago apt-daily-upgrade.timer                apt-daily-upgrade.service\nWed 2026-10-07 07:35:41 EDT            7h Tue 2026-10-06 13:18:31 EDT       10h ago motd-news.timer                        motd-news.service\nWed 2026-10-07 11:53:38 EDT           11h Tue 2026-10-06 05:48:26 EDT       18h ago man-db.timer                           man-db.service\nWed 2026-10-07 12:21:33 EDT           12h Tue 2026-10-06 12:21:33 EDT       11h ago update-notifier-download.timer         update-notifier-download.service\nWed 2026-10-07 12:31:27 EDT           12h Tue 2026-10-06 12:31:27 EDT       11h ago systemd-tmpfiles-clean.timer           systemd-tmpfiles-clean.service\nWed 2026-10-07 13:10:30 EDT           13h Tue 2026-10-06 18:36:33 EDT  5h 27min ago apt-daily.timer                        apt-daily.service\nWed 2026-10-07 22:33:23 EDT           22h Tue 2026-10-06 22:43:37 EDT  1h 19min ago optibrain-backup.timer                 optibrain-backup.service\nWed 2026-10-07 23:09:03 EDT           23h Tue 2026-10-06 23:00:13 EDT   1h 3min ago optibrain-phase2a-upload.timer         optibrain-phase2a-upload.service\nThu 2026-10-08 00:00:00 EDT           23h Wed 2026-10-07 00:00:08 EDT  3min 26s ago dpkg-db-backup.timer                   dpkg-db-backup.service\nThu 2026-10-08 00:00:00 EDT           23h Wed 2026-10-07 00:00:08 EDT  3min 26s ago logrotate.timer                        logrotate.service\nSun 2026-10-11 03:10:13 EDT        4 days Sun 2026-10-04 03:10:07 EDT    2 days ago e2scrub_all.timer                      e2scrub_all.service\nMon 2026-10-12 00:42:15 EDT        5 days Mon 2026-10-05 01:25:53 EDT 1 day 22h ago fstrim.timer                           fstrim.service\nFri 2026-10-16 01:39:49 EDT 1 week 2 days Sun 2026-10-04 09:39:54 EDT    2 days ago update-notifier-motd.timer             update-notifier-motd.service\n-                                       - -                                       - apport-autoreport.timer                apport-autoreport.service\n-                                       - -                                       - snapd.snap-repair.timer                snapd.snap-repair.service\n-                                       - -                                       - ua-timer.timer                         ua-timer.service\n\n23 timers listed.",
+  "api_version": "1.34.1",
+  "architecture": "x86_64",
+  "authority_expected_restore_state": {
+    "ads": "OFF",
+    "books": "OFF",
+    "conversion_uploads": "OFF",
+    "customer": "OFF",
+    "customer_timer": "OFF",
+    "english_real": "OFF",
+    "internal": "OFF",
+    "outreach": "OFF",
+    "persistent_development": "OFF",
+    "production_website": "OFF"
+  },
+  "bootstrap": {
+    "builds_worker_ids": [
+      "e3fc5eaa3a46499893264f7805709d8e",
+      "d48c571f00c14be49495bc546f8d319c"
+    ],
+    "default_data_root": "/var/lib/optibrain-data",
+    "document_storage": {
+      "object_storage": "archives/encrypted recovery; no new credential platform",
+      "workdrive": "canonical large business documents"
+    },
+    "node_sha256": "df450af89261115ef9f9e3830c3eeb2cc9213b63c720b1af623cb5dcbe2e02de",
+    "node_version": "v22.23.3",
+    "optional_data_root": "/srv/optibrain-data",
+    "packages": [
+      "python3",
+      "python3-venv",
+      "python3-pip",
+      "python3-boto3",
+      "git",
+      "sqlite3",
+      "age",
+      "caddy",
+      "curl",
+      "ca-certificates",
+      "openssl",
+      "iproute2",
+      "systemd",
+      "sudo",
+      "rsync",
+      "tar",
+      "xz-utils",
+      "logrotate",
+      "openssh-server",
+      "util-linux",
+      "ufw",
+      "fail2ban"
+    ],
+    "required_providers": [
+      "GITHUB",
+      "CLOUDFLARE",
+      "CLOUDFLARE_BUILDS",
+      "ZOHO_CRM",
+      "ZOHO_BOOKS",
+      "ZOHO_MAIL",
+      "ZOHO_FORMS",
+      "ZOHO_WORKDRIVE",
+      "GA4",
+      "GSC",
+      "APOLLO"
+    ],
+    "retention_policy": "preserve-existing",
+    "reviewed_files": [
+      {
+        "destination": "/etc/systemd/system/optibrain-agent-dispatch.service.d/phase13-retirement.conf",
+        "mode": "0644",
+        "sha256": "a418942a958b0cc0c53b52315bbd822cdfe2e3c59903d2aa019489e6f97b0269",
+        "source": "ops/rebuild/reviewed/systemd/optibrain-agent-dispatch.service.d/phase13-retirement.conf"
+      },
+      {
+        "destination": "/etc/systemd/system/optibrain-agent-dispatch.timer.d/phase13-retirement.conf",
+        "mode": "0644",
+        "sha256": "a418942a958b0cc0c53b52315bbd822cdfe2e3c59903d2aa019489e6f97b0269",
+        "source": "ops/rebuild/reviewed/systemd/optibrain-agent-dispatch.timer.d/phase13-retirement.conf"
+      },
+      {
+        "destination": "/etc/systemd/system/optibrain-agent-status.service.d/phase13-retirement.conf",
+        "mode": "0644",
+        "sha256": "a418942a958b0cc0c53b52315bbd822cdfe2e3c59903d2aa019489e6f97b0269",
+        "source": "ops/rebuild/reviewed/systemd/optibrain-agent-status.service.d/phase13-retirement.conf"
+      },
+      {
+        "destination": "/etc/systemd/system/optibrain-agent-status.timer.d/phase13-retirement.conf",
+        "mode": "0644",
+        "sha256": "a418942a958b0cc0c53b52315bbd822cdfe2e3c59903d2aa019489e6f97b0269",
+        "source": "ops/rebuild/reviewed/systemd/optibrain-agent-status.timer.d/phase13-retirement.conf"
+      },
+      {
+        "destination": "/etc/systemd/system/optibrain-agent-usage.service.d/phase13-retirement.conf",
+        "mode": "0644",
+        "sha256": "a418942a958b0cc0c53b52315bbd822cdfe2e3c59903d2aa019489e6f97b0269",
+        "source": "ops/rebuild/reviewed/systemd/optibrain-agent-usage.service.d/phase13-retirement.conf"
+      },
+      {
+        "destination": "/etc/systemd/system/optibrain-agent-usage.timer.d/phase13-retirement.conf",
+        "mode": "0644",
+        "sha256": "a418942a958b0cc0c53b52315bbd822cdfe2e3c59903d2aa019489e6f97b0269",
+        "source": "ops/rebuild/reviewed/systemd/optibrain-agent-usage.timer.d/phase13-retirement.conf"
+      },
+      {
+        "destination": "/etc/systemd/system/optibrain-backup.service",
+        "mode": "0644",
+        "sha256": "c8c2bce57db7dd94103dd34983828e1a98b48391f3b3756e0d602cb495e724fa",
+        "source": "ops/rebuild/reviewed/systemd/optibrain-backup.service"
+      },
+      {
+        "destination": "/etc/systemd/system/optibrain-backup.service.d/identity-switch.conf",
+        "mode": "0644",
+        "sha256": "3b49d69f8577214371d29b64ae818dd68383bf94a9fe7d529d5c93ef2faf7969",
+        "source": "ops/rebuild/reviewed/systemd/optibrain-backup.service.d/identity-switch.conf"
+      },
+      {
+        "destination": "/etc/systemd/system/optibrain-backup.service.d/preserve-existing.conf",
+        "mode": "0644",
+        "sha256": "b2453ba07a6b70f826e5968740e9f78d686b3bf72adbbaac1c5339b13d0b7f7c",
+        "source": "ops/rebuild/reviewed/systemd/optibrain-backup.service.d/preserve-existing.conf"
+      },
+      {
+        "destination": "/etc/systemd/system/optibrain-backup.timer",
+        "mode": "0644",
+        "sha256": "566b5236ef45baf6cd609c5923bd7fe13e1c4c8647dcaeb3d0968a2536c6d266",
+        "source": "ops/rebuild/reviewed/systemd/optibrain-backup.timer"
+      },
+      {
+        "destination": "/etc/systemd/system/optibrain-phase2a-upload.service",
+        "mode": "0644",
+        "sha256": "b82adb8c48d3cae8b138c839d041a42f8a6b882025646bb7da084440160871f9",
+        "source": "ops/rebuild/reviewed/systemd/optibrain-phase2a-upload.service"
+      },
+      {
+        "destination": "/etc/systemd/system/optibrain-phase2a-upload.timer",
+        "mode": "0644",
+        "sha256": "3c3b1c38cf1cf901788c974b4e4014ffdf65af6e8c9b7fb06e6181be98d58a8f",
+        "source": "ops/rebuild/reviewed/systemd/optibrain-phase2a-upload.timer"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-customer-communications.service",
+        "mode": "0644",
+        "sha256": "ffa14029d24e4504fcd493d302361ef77774b3e64017715900c77a8bc5c5db13",
+        "source": "ops/rebuild/reviewed/systemd/opticable-customer-communications.service"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-customer-communications.timer",
+        "mode": "0644",
+        "sha256": "e214e830b93d421de70eea8ee5db5b4735cc89fa6c03f50526064d4e486b13cc",
+        "source": "ops/rebuild/reviewed/systemd/opticable-customer-communications.timer"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-lifecycle-internal.service",
+        "mode": "0644",
+        "sha256": "e8dd21c9f467a6b5d71355ac0353d60ce9edaca3278c5e39389b228d63c9e532",
+        "source": "ops/rebuild/reviewed/systemd/opticable-lifecycle-internal.service"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-lifecycle-internal.timer",
+        "mode": "0644",
+        "sha256": "7638221393cecb620038e19953f8267cdcba64660a8fe6d39c86049449cb3b28",
+        "source": "ops/rebuild/reviewed/systemd/opticable-lifecycle-internal.timer"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-omada-site.service",
+        "mode": "0644",
+        "sha256": "cc7db15d0d3a91c5d0c93778c4ee60e36c92b0ff0f67bb4617099c03f6509c65",
+        "source": "ops/rebuild/reviewed/systemd/opticable-omada-site.service"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-password-pdf.service",
+        "mode": "0644",
+        "sha256": "2577d345f6391f7aff39bc0c5842ba5fd0274573d790e5cd59b5954fa7eb2331",
+        "source": "ops/rebuild/reviewed/systemd/opticable-password-pdf.service"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-phase10-service-events.service",
+        "mode": "0644",
+        "sha256": "fae0b490ac0a1a61f26bf77ae6d482bdc173316fd6f4e5b10565f06b26d60d2d",
+        "source": "ops/rebuild/reviewed/systemd/opticable-phase10-service-events.service"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-phase10-service-events.timer",
+        "mode": "0644",
+        "sha256": "e37e9779a8f61caeece1ac02ba3c85d904073f9e6a242ac552253d688b098d76",
+        "source": "ops/rebuild/reviewed/systemd/opticable-phase10-service-events.timer"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-phase12-test-runner.service",
+        "mode": "0644",
+        "sha256": "104bba2a1721b405020fc88021608d41ead69d68a7134315357043a820674c73",
+        "source": "ops/rebuild/reviewed/systemd/opticable-phase12-test-runner.service"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-phase12-test-runner.timer",
+        "mode": "0644",
+        "sha256": "7bc1783385877ccb5b590be111aa22ca72bd72941855ef30d69fe8a8c7c0fae2",
+        "source": "ops/rebuild/reviewed/systemd/opticable-phase12-test-runner.timer"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-phase9-intake-receipts.service",
+        "mode": "0644",
+        "sha256": "383fa35ccc3277877e0bb86a28b6dfeefb4767936a105ba18ee6aeb6c4756674",
+        "source": "ops/rebuild/reviewed/systemd/opticable-phase9-intake-receipts.service"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-phase9-intake-receipts.timer",
+        "mode": "0644",
+        "sha256": "3efb0c3deed0d9330ec02b9a004a98b4a4f3902337b8e16433b1398bee798f19",
+        "source": "ops/rebuild/reviewed/systemd/opticable-phase9-intake-receipts.timer"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-workflow-api.service",
+        "mode": "0644",
+        "sha256": "e7be921468569b9c7980250c7aef46aec558d845766e876abcf66c545fef44d4",
+        "source": "ops/rebuild/reviewed/systemd/opticable-workflow-api.service"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-workflow-api.service.d/phase13-hardening.conf",
+        "mode": "0644",
+        "sha256": "60dcae0ba81c787ab07d4a187b9d15b439cad82cdf9a9576ae9dd2bd2dccfde8",
+        "source": "ops/rebuild/reviewed/systemd/opticable-workflow-api.service.d/phase13-hardening.conf"
+      },
+      {
+        "destination": "/etc/systemd/system/opticable-workflow-api.service.d/phase13-safety.conf",
+        "mode": "0644",
+        "sha256": "742251debd23c182a0126f4988197843967a23ddf2d8738f0f72066435b8d2b9",
+        "source": "ops/rebuild/reviewed/systemd/opticable-workflow-api.service.d/phase13-safety.conf"
+      },
+      {
+        "destination": "/etc/caddy/optibrain-production.caddy",
+        "mode": "0644",
+        "sha256": "a5bd021934b6963a10ef2b2996ba7b7305c186914af07893f8255a506b5ccc6b",
+        "source": "ops/rebuild/reviewed/caddy/opticable-api-platform.caddy"
+      },
+      {
+        "destination": "/etc/systemd/journald.conf.d/30-optibrain-retention.conf",
+        "mode": "0644",
+        "sha256": "ec58f97cc6ecc228f769e80123ef0b75322799571a67d67c555eed187914a488",
+        "source": "ops/rebuild/reviewed/30-optibrain-retention.conf"
+      },
+      {
+        "destination": "/usr/local/sbin/opticable-api-deploy-root",
+        "mode": "0750",
+        "sha256": "214099f13cb8c64f923b144318000ec94d87cfa84d751cde125d0fa37a3a4540",
+        "source": "deploy/manual-guarded-release.py"
+      },
+      {
+        "destination": "/usr/local/sbin/optibrain-admin",
+        "mode": "0750",
+        "sha256": "b6313a79357afed164d3d7bfd363dd14403b3c8853927c721370e1e94df17244",
+        "source": "ops/admin/optibrain-admin.py"
+      },
+      {
+        "destination": "/usr/local/sbin/optibrain-admin-update",
+        "mode": "0750",
+        "sha256": "8f1f2fdecb8603f94f746532ecfa2b90a26f9ee4e57b3d6e70e74509e166dfe6",
+        "source": "ops/admin/optibrain-admin-update.py"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain-backup/optibrain-backup.sh",
+        "installed_sha256": "f4f22c25d843cbae057141057d2e261e0eb4dec4052d9fbc6d554ea05275b4af",
+        "mode": "0755",
+        "sha256": "ff3664bdd48d97cba76fd1cfaef0c69cf2bb4aa58927dd5cefc5c927af153624",
+        "source": "ops/backup/optibrain-backup.sh",
+        "transform": "backup-root-manifest-v1"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain-backup/optibrain-phase2a-upload.sh",
+        "mode": "0755",
+        "sha256": "b2797b86a4afbafbd95665d9d647339fd59dc16d8a7f1201dc7b1a07dc73cc98",
+        "source": "ops/backup/optibrain-phase2a-upload.sh"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain-backup/optibrain-phase2a-upload.py",
+        "mode": "0755",
+        "sha256": "4137beee11dc24d5013fba581a6cc8fc6ed6f1ebd940bfbfbf602452599ec5ce",
+        "source": "ops/backup/optibrain-phase2a-upload.py"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain-backup/optibrain-restore-drill.py",
+        "mode": "0755",
+        "sha256": "996da298f7369e09233038c54d006ee5db13a2d1ccb2a81b9e2dbe0ed64501c6",
+        "source": "ops/backup/optibrain-restore-drill.py"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain-backup/recovery_authority.py",
+        "mode": "0755",
+        "sha256": "d0463063a85ebee5d796083ca3dd35161d3c03b7fdef6fe0fce09b2fe3c3d519",
+        "source": "ops/phase15/recovery_authority.py"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain/phase12-run-test-lab.py",
+        "mode": "0755",
+        "sha256": "b51d870fc68fc4750bf0feb589c9e76c70ef25120f6e8ab8415a372d16e905ea",
+        "source": "ops/phase12/run_test_lab.py"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain/phase14-runtime-snapshot.py",
+        "mode": "0755",
+        "sha256": "31e2c36ea7a5ce1af0c6246529ba8c1fcde12a84ea17f78a1074ff6a43917f29",
+        "source": "ops/phase14/runtime_snapshot.py"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain/activity_snapshot.py",
+        "mode": "0755",
+        "sha256": "a250097be24211694b0244f0b591244f2b3a3f6817233c97448203be70e1c696",
+        "source": "ops/phase14/activity_snapshot.py"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain/phase14-retention.py",
+        "mode": "0755",
+        "sha256": "00db413b739b79e29972e38e1790bb9af2de90aa8f7ccb4bbcb430de290ad29a",
+        "source": "ops/phase14/retention.py"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain/queue-metrics.py",
+        "mode": "0755",
+        "sha256": "ce8a66d9b1f8996584978c116d1203832d6140ca868b3678295911ae13300735",
+        "source": "ops/phase15/queue_metrics.py"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain/lifecycle_runner.py",
+        "mode": "0755",
+        "sha256": "2bbde8f5f463ddea80008c8175a1555beed4cbbbbc24257ceb76b3b144a1df8d",
+        "source": "ops/phase16_17/lifecycle_runner.py"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain/customer_runner.py",
+        "mode": "0755",
+        "sha256": "c56ad101026da21b20f0d11edf815b3059b8cb5d0ac474fe5283827adafaa1fe",
+        "source": "ops/phase18_19/customer_runner.py"
+      }
+    ],
+    "ssh_port": 22
+  },
+  "cpu": "{\n   \"lscpu\": [\n      {\n         \"field\": \"Architecture:\",\n         \"data\": \"x86_64\"\n      },{\n         \"field\": \"CPU op-mode(s):\",\n         \"data\": \"32-bit, 64-bit\"\n      },{\n         \"field\": \"Address sizes:\",\n         \"data\": \"40 bits physical, 48 bits virtual\"\n      },{\n         \"field\": \"Byte Order:\",\n         \"data\": \"Little Endian\"\n      },{\n         \"field\": \"CPU(s):\",\n         \"data\": \"4\"\n      },{\n         \"field\": \"On-line CPU(s) list:\",\n         \"data\": \"0-3\"\n      },{\n         \"field\": \"Vendor ID:\",\n         \"data\": \"GenuineIntel\"\n      },{\n         \"field\": \"BIOS Vendor ID:\",\n         \"data\": \"QEMU\"\n      },{\n         \"field\": \"Model name:\",\n         \"data\": \"Intel Core Processor (Haswell, no TSX)\"\n      },{\n         \"field\": \"BIOS Model name:\",\n         \"data\": \"pc-i440fx-9.2  CPU @ 2.0GHz\"\n      },{\n         \"field\": \"BIOS CPU family:\",\n         \"data\": \"1\"\n      },{\n         \"field\": \"CPU family:\",\n         \"data\": \"6\"\n      },{\n         \"field\": \"Model:\",\n         \"data\": \"60\"\n      },{\n         \"field\": \"Thread(s) per core:\",\n         \"data\": \"1\"\n      },{\n         \"field\": \"Core(s) per socket:\",\n         \"data\": \"1\"\n      },{\n         \"field\": \"Socket(s):\",\n         \"data\": \"4\"\n      },{\n         \"field\": \"Stepping:\",\n         \"data\": \"1\"\n      },{\n         \"field\": \"BogoMIPS:\",\n         \"data\": \"4799.98\"\n      },{\n         \"field\": \"Flags:\",\n         \"data\": \"fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx rdtscp lm constant_tsc rep_good nopl xtopology cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm cpuid_fault pti tpr_shadow flexpriority ept vpid ept_ad fsgsbase bmi1 avx2 smep bmi2 erms invpcid xsaveopt arat vnmi md_clear\"\n      },{\n         \"field\": \"Virtualization:\",\n         \"data\": \"VT-x\"\n      },{\n         \"field\": \"Hypervisor vendor:\",\n         \"data\": \"KVM\"\n      },{\n         \"field\": \"Virtualization type:\",\n         \"data\": \"full\"\n      },{\n         \"field\": \"L1d cache:\",\n         \"data\": \"128 KiB (4 instances)\"\n      },{\n         \"field\": \"L1i cache:\",\n         \"data\": \"128 KiB (4 instances)\"\n      },{\n         \"field\": \"L2 cache:\",\n         \"data\": \"16 MiB (4 instances)\"\n      },{\n         \"field\": \"L3 cache:\",\n         \"data\": \"64 MiB (4 instances)\"\n      },{\n         \"field\": \"NUMA node(s):\",\n         \"data\": \"1\"\n      },{\n         \"field\": \"NUMA node0 CPU(s):\",\n         \"data\": \"0-3\"\n      },{\n         \"field\": \"Vulnerability Gather data sampling:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Indirect target selection:\",\n         \"data\": \"Mitigation; Aligned branch/return thunks\"\n      },{\n         \"field\": \"Vulnerability Itlb multihit:\",\n         \"data\": \"KVM: Mitigation: VMX disabled\"\n      },{\n         \"field\": \"Vulnerability L1tf:\",\n         \"data\": \"Mitigation; PTE Inversion; VMX conditional cache flushes, SMT disabled\"\n      },{\n         \"field\": \"Vulnerability Mds:\",\n         \"data\": \"Mitigation; Clear CPU buffers; SMT Host state unknown\"\n      },{\n         \"field\": \"Vulnerability Meltdown:\",\n         \"data\": \"Mitigation; PTI\"\n      },{\n         \"field\": \"Vulnerability Mmio stale data:\",\n         \"data\": \"Unknown: No mitigations\"\n      },{\n         \"field\": \"Vulnerability Reg file data sampling:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Retbleed:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Spec rstack overflow:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Spec store bypass:\",\n         \"data\": \"Vulnerable\"\n      },{\n         \"field\": \"Vulnerability Spectre v1:\",\n         \"data\": \"Mitigation; usercopy/swapgs barriers and __user pointer sanitization\"\n      },{\n         \"field\": \"Vulnerability Spectre v2:\",\n         \"data\": \"Mitigation; Retpolines; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Retpoline\"\n      },{\n         \"field\": \"Vulnerability Srbds:\",\n         \"data\": \"Unknown: Dependent on hypervisor status\"\n      },{\n         \"field\": \"Vulnerability Tsa:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Tsx async abort:\",\n         \"data\": \"Not affected\"\n      },{\n         \"field\": \"Vulnerability Vmscape:\",\n         \"data\": \"Not affected\"\n      }\n   ]\n}",
+  "database_inventory": [
+    {
+      "backup": "existing online SQLite backup API",
+      "criticality": "HISTORICAL",
+      "encryption": "root-only local filesystem; AGE encrypted off-host",
+      "group": "root",
+      "mode": "0600",
+      "owner": "root",
+      "path": "/var/lib/optibrain/phase10/test-lab/lifecycle-events.db",
+      "purpose": "Historical TEST lifecycle evidence",
+      "restore": "verified staging -> atomic generation promotion",
+      "size_bytes": 12288,
+      "snapshot": {
+        "audit_chains_verified": 0,
+        "foreign_keys": "PASS",
+        "integrity": "ok",
+        "schema_sha256": "57ec4d2de5cac8e9f7730bbf4cb47959f82227d07b1a2a9e4faf0a8673766ac5",
+        "tables": {
+          "lifecycle_events": {
+            "count": 19,
+            "ids_sha256": "a7e19cb534c5257ce64aee5f5b37cf1f0506c024557af82ed277ca2f72d5ee2a",
+            "rows_sha256": "d0eb0e8581b5842d6a589ca17fc9ea5f7883e4e8697f42e4f05b5c2c27479c97"
+          }
+        },
+        "user_version": 0
+      },
+      "type": "file"
+    },
+    {
+      "backup": "existing online SQLite backup API",
+      "criticality": "HISTORICAL",
+      "encryption": "root-only local filesystem; AGE encrypted off-host",
+      "group": "root",
+      "mode": "0600",
+      "owner": "root",
+      "path": "/var/lib/optibrain/phase9/closure/phase9-intake.before-permission-fix.db",
+      "purpose": "Historical intake compatibility evidence",
+      "restore": "verified staging -> atomic generation promotion",
+      "size_bytes": 28672,
+      "snapshot": {
+        "audit_chains_verified": 0,
+        "foreign_keys": "PASS",
+        "integrity": "ok",
+        "schema_sha256": "83b0cc04401b0db1f3bc495c71f075f416bc955ab2b3418d1776d3d58060828a",
+        "tables": {
+          "feedback_events": {
+            "count": 7,
+            "ids_sha256": "d5523447ea0aa93a915dc6a304e4008318acae39b852bc3cc60c7145b263ee71",
+            "rows_sha256": "3ad309780a9221f138b234c521d9f2802dd024b454dd8eef3dd25d26a68caf36"
+          },
+          "intake_events": {
+            "count": 6,
+            "ids_sha256": "4875b724ac126bd2611ae720d1e81656e2fa778f7660955735594d383697bba9",
+            "rows_sha256": "c4a798479b87ec341a64104cd846ed03da6039e68068efb027f35717a8759aa5"
+          }
+        },
+        "user_version": 0
+      },
+      "type": "file"
+    },
+    {
+      "backup": "existing online SQLite backup API",
+      "criticality": "HISTORICAL",
+      "encryption": "root-only local filesystem; AGE encrypted off-host",
+      "group": "root",
+      "mode": "0644",
+      "owner": "root",
+      "path": "/var/lib/optibrain/phase9/mission2/form-receipts-stage.db",
+      "purpose": "Historical staged receipt evidence",
+      "restore": "verified staging -> atomic generation promotion",
+      "size_bytes": 53248,
+      "snapshot": {
+        "audit_chains_verified": 0,
+        "foreign_keys": "PASS",
+        "integrity": "ok",
+        "schema_sha256": "94ba9fd899af31997be7ab182e025191306b8144696469a607ad4bff0cd7decd",
+        "tables": {
+          "connector_receipts": {
+            "count": 3,
+            "ids_sha256": "21b3fcb1980401c6706bc8c1cbadc8da71dd873c0977b97ae958b8ced06bda1b",
+            "rows_sha256": "ea0b1c79ccf52fea7dfa9b0698593b28a3963b31616dc9545642653a43dc3136"
+          },
+          "form_provider_matches": {
+            "count": 1,
+            "ids_sha256": "d8d89293bb7ffc40aa14c7aa101cbb6e7c80350e6e9bc922ce93a8a305e59ada",
+            "rows_sha256": "d09311991f2a30d1fbaf4f5bb412915568336c95c90f56e14729aac3c1563aaf"
+          },
+          "form_receipt_links": {
+            "count": 1,
+            "ids_sha256": "d8d89293bb7ffc40aa14c7aa101cbb6e7c80350e6e9bc922ce93a8a305e59ada",
+            "rows_sha256": "5089146f904bf192ca8d0edb27321da1f31c431f7f12030e414beb0429108ef4"
+          },
+          "form_receipts": {
+            "count": 1,
+            "ids_sha256": "d8d89293bb7ffc40aa14c7aa101cbb6e7c80350e6e9bc922ce93a8a305e59ada",
+            "rows_sha256": "380a65e7dcd6c88e4b69a72da95f56e98f118ef2c0fc0487e741ac6331481f07"
+          }
+        },
+        "user_version": 0
+      },
+      "type": "file"
+    },
+    {
+      "backup": "existing online SQLite backup API",
+      "criticality": "CRITICAL",
+      "encryption": "root-only local filesystem; AGE encrypted off-host",
+      "group": "opticable-workflow-api",
+      "mode": "0644",
+      "owner": "opticable-workflow-api",
+      "path": "/var/lib/opticable-workflow-api/output/automation/automation.db",
+      "purpose": "Core event/run/checkpoint/idempotency/audit journal",
+      "restore": "verified staging -> atomic generation promotion",
+      "size_bytes": 26632192,
+      "snapshot": {
+        "audit_chains_verified": 7,
+        "foreign_keys": "PASS",
+        "integrity": "ok",
+        "schema_sha256": "682b261cfd8a140202dccf21aabf34db8b495d12e2f27ae02c04c2d3038cef00",
+        "tables": {
+          "action_envelopes": {
+            "count": 7,
+            "ids_sha256": "a339367c29d0d2a5eb43f6aaff1077aed9b85e99f3490484cedb2b453ec7bb57",
+            "rows_sha256": "b97266c0b266eb9dc1b846a5f4347749afd4247cfb8f37a6463236ece94323e3"
+          },
+          "action_evidence": {
+            "count": 42,
+            "ids_sha256": "1002962e4747300409772f6826caa9c6d7b21adde768396d874401b11e9a9a8e",
+            "rows_sha256": "84110b51f1191fbe6accb6296c4e47f0e8f6af734fc6eab1402dbe7d8f7d8a92"
+          },
+          "automation_audit": {
+            "count": 16761,
+            "ids_sha256": "2ca9206d079c270e9965135a2ba0172fe91f648dd2c46c4e596c4cbff309a13f",
+            "rows_sha256": "317d93bada19a39a20f1288c6ceb72f41d0e54c71cd222bea8f855ba4a25d679"
+          },
+          "automation_event_dedupe": {
+            "count": 1784,
+            "ids_sha256": "ca402fdac5f9d4bd707ec4da9e4d3519708742f5d90a13ec8bf5d6c087c9244e",
+            "rows_sha256": "54a7f70ce099668e2603cbd70620cd1dc32dfd31b1b8abf20a8b32a618486092"
+          },
+          "automation_event_history": {
+            "count": 4512,
+            "ids_sha256": "f9c98f2fd73570a7ea6bd86b3d706ee29d037ed9dd9751fa597e0450becbb375",
+            "rows_sha256": "853050828839c763e4439a6fef30d74d6045d3ac221b7eeea5e941f735fb36af"
+          },
+          "automation_event_ledger": {
+            "count": 1784,
+            "ids_sha256": "31b0f59d28eb8d8b725d02d52500fcdb454f6aadc8fadfd6a0b79a2e3036c3e9",
+            "rows_sha256": "a351277b727fbb5d2edc77e267cc19ea0e8e6584a6b38251005a4989092a9552"
+          },
+          "automation_event_processing": {
+            "count": 1784,
+            "ids_sha256": "31b0f59d28eb8d8b725d02d52500fcdb454f6aadc8fadfd6a0b79a2e3036c3e9",
+            "rows_sha256": "19abd60a1560e41f843170bf9324b2453bf5def21da653b10e4458fe1a150d9f"
+          },
+          "automation_event_replays": {
+            "count": 0,
+            "ids_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "automation_event_routes": {
+            "count": 1200,
+            "ids_sha256": "50f1ab3a94ee14aebb71364d062b4d2c10c972eb3ddf45cb91b1da99d96eeb87",
+            "rows_sha256": "602f8d8c64b8b1eb3b3a69d8dc44b32ef1b1855b7a987b9b15ba58d2d42b4dbb"
+          },
+          "automation_events": {
+            "count": 1784,
+            "ids_sha256": "31b0f59d28eb8d8b725d02d52500fcdb454f6aadc8fadfd6a0b79a2e3036c3e9",
+            "rows_sha256": "09862458ce054d1bc9ab37a8fd8262d48ad16a6f8ae4de5a735511041f9d8d15"
+          },
+          "automation_run_claims": {
+            "count": 1066,
+            "ids_sha256": "298f8295429d19b287ff48a58dc3a0b462eb7c2b564af847f5b22b83e7d4a7ef",
+            "rows_sha256": "6960210e545597025661ad122d012d5791c02ba72370bd58af3c857375609ef8"
+          },
+          "automation_run_failures": {
+            "count": 54,
+            "ids_sha256": "828b1082d804d17888ba26e76d15ea3827b59b6217ed87fc5009c0a5480a0c49",
+            "rows_sha256": "d755a377e84c0983ecae263cba091d5008e7b20c199d44c03b55e3879d4ce717"
+          },
+          "automation_run_steps": {
+            "count": 2063,
+            "ids_sha256": "df6cdf8a870d15d73af19bfe54d1ef2bb7faa07658c57143dea07f7c7c4a3a69",
+            "rows_sha256": "d35ffb17374ad5f6f93cc504bca99a0a6fb91114df3429edf9ce7a83830816e9"
+          },
+          "automation_runs": {
+            "count": 1200,
+            "ids_sha256": "e11bcc16783114eb779a8693ad71938c7d9ed85f31010b4d9481258090d7d8a1",
+            "rows_sha256": "903b1fb01b98d1cdfde2e948943fbd197b69d27733fde7e9bf5feb3d74c6ec4a"
+          },
+          "automation_sync_checkpoints": {
+            "count": 1,
+            "ids_sha256": "2db5b41d361f89a3d9fcc02547df8d707867058d3c0c421a3f425300add3eb7e",
+            "rows_sha256": "ab277cbfadde7a1efc1aa6c2c4790ce33ea784562a811a52a3d35445a1dd3ec6"
+          },
+          "automation_usage_daily": {
+            "count": 327,
+            "ids_sha256": "938c5ab6f64c353a8744f76201acece35a5cd5170ca9262675bab5c81ef134ad",
+            "rows_sha256": "8cb67d1dcd2dbec22990d97d09d8fa2a9437d97af51d15e59c8f9e36f9401cf4"
+          },
+          "automation_workflows": {
+            "count": 16,
+            "ids_sha256": "00447d0edf7017ddd6a842acccdccccb9dd3dffa5bafbd84a0e808a26632c036",
+            "rows_sha256": "0b9f1c3857f4820bfbc1cd5833dfd804d7502748f13ab2a999a4f9d2219a9e5d"
+          },
+          "mailbox_observation_cache": {
+            "count": 413,
+            "ids_sha256": "ee2789abce2521d08126013a9da193a936a1afac5ef74ac29274caf7cb45e84d",
+            "rows_sha256": "872c912a4cda295d10741a4b63275c718130dd4194f2c52ba1b8a44b773fbb9f"
+          },
+          "mailbox_observation_checkpoints": {
+            "count": 1,
+            "ids_sha256": "d578e7851bf6bce7919f644684dce7e2981042eac58b623a9e109984f03e60fd",
+            "rows_sha256": "82bf54a261233003f61d41b826a16e97975c0f629961951098f49a0b8a0e3d9a"
+          },
+          "provider_usage": {
+            "count": 3566,
+            "ids_sha256": "8234efbba6b0d337ea38722b592c1f79efbdc80010aeb5ce67ee04f661c18e4a",
+            "rows_sha256": "24f169c061c73836d234cdbc73479f76684dde5133892fb5e2b9f5eafe797566"
+          },
+          "sqlite_sequence": {
+            "count": 5,
+            "ids_sha256": "670f0bc91dc9dba1397919174dbb673f0bb0815728e734bf7244352fea99cd9c",
+            "rows_sha256": "670f0bc91dc9dba1397919174dbb673f0bb0815728e734bf7244352fea99cd9c"
+          }
+        },
+        "user_version": 2
+      },
+      "type": "file"
+    },
+    {
+      "backup": "existing online SQLite backup API",
+      "criticality": "CRITICAL",
+      "encryption": "root-only local filesystem; AGE encrypted off-host",
+      "group": "opticable-workflow-api",
+      "mode": "0644",
+      "owner": "opticable-workflow-api",
+      "path": "/var/lib/opticable-workflow-api/output/automation/phase10-service-events.db",
+      "purpose": "Durable service occurrence and completion chronology",
+      "restore": "verified staging -> atomic generation promotion",
+      "size_bytes": 245760,
+      "snapshot": {
+        "audit_chains_verified": 0,
+        "foreign_keys": "PASS",
+        "integrity": "ok",
+        "schema_sha256": "9ce0232b0883062a3c54129a4422c6dd16ca94dc526262ff0c10d2f000d2e1c2",
+        "tables": {
+          "crm_display_snapshots": {
+            "count": 5,
+            "ids_sha256": "c1446fc81e072c24272f2d75a8d913d9ad527a2d16cc3ecd1e4e0edc68f0a0f4",
+            "rows_sha256": "468a01c12abe3887becfad605f0e2c451d82018b5e65313c939e336e56b73c90"
+          },
+          "provider_usage": {
+            "count": 126,
+            "ids_sha256": "ad466cff3483d20b55c65950e11ff51ed9eb7ee487338ade10d693f437b32737",
+            "rows_sha256": "db3cf73789500f7975a2c82cf2af5459a87ca83401eca8c681ca108af9d4d12f"
+          },
+          "service_events": {
+            "count": 25,
+            "ids_sha256": "b3484f83bc1a515d925a17441eda4dab149f988adcb845bc4e066d87eb6e6c50",
+            "rows_sha256": "5227e0884a7a14eacc2400fb70764c36c814bf452848a848ced4e9ac099f1fac"
+          },
+          "service_state": {
+            "count": 17,
+            "ids_sha256": "8d5a4c93eee01f6e0142aa2fdd0926eb094ea0c255d7a72d56fa3a305ff668f5",
+            "rows_sha256": "8e236c0661de24ce379cd3d1688cd73415a5b2449030f3be25bc315eae657f40"
+          }
+        },
+        "user_version": 0
+      },
+      "type": "file"
+    },
+    {
+      "backup": "existing online SQLite backup API",
+      "criticality": "CRITICAL",
+      "encryption": "root-only local filesystem; AGE encrypted off-host",
+      "group": "opticable-workflow-api",
+      "mode": "0660",
+      "owner": "opticable-workflow-api",
+      "path": "/var/lib/opticable-workflow-api/output/automation/phase12-autonomy.db",
+      "purpose": "Action Evidence, Manager, decisions, priorities, proposals, relationships, learning and preview state",
+      "restore": "verified staging -> atomic generation promotion",
+      "size_bytes": 145797120,
+      "snapshot": {
+        "audit_chains_verified": 147,
+        "foreign_keys": "PASS",
+        "integrity": "ok",
+        "schema_sha256": "c7e8ca2bb9e90df6d3fac1fea3bf763dcede0aa862c08ab726a7e2a4d8153c38",
+        "tables": {
+          "acquisition_aliases": {
+            "count": 9219,
+            "ids_sha256": "2ec7e4175ea805062abf98589c3e49c67d1862a351e4778ad0b4b9724a6bcd84",
+            "rows_sha256": "09d021be2ec84a47e0a0eaf8e9456108ccd3f780367d296cda625e706a4ee620"
+          },
+          "acquisition_conflicts": {
+            "count": 0,
+            "ids_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "acquisition_enrichment_bundles": {
+            "count": 1,
+            "ids_sha256": "5151c096efb07e4f642a7d5bbc787aa30a5c2d9bc1a920c4e5e9cb227d2348ff",
+            "rows_sha256": "83d3fbadcc1b4d9aefd2b45fc7945f435455fe8d5dff90b9676aa073c0f9f144"
+          },
+          "acquisition_enrichment_lookups": {
+            "count": 5,
+            "ids_sha256": "b0a327165866590d427115fe234199f001ec10912f8cadbdb425fe137313c3e9",
+            "rows_sha256": "878e3f8cdd08044f60da864c7311cf1b006dabf1be036597f7e851bbe6000135"
+          },
+          "acquisition_enrichment_proofs": {
+            "count": 44,
+            "ids_sha256": "9c558f66de9277129f84754c45208f8234b9a37c6d8d6f070d27a74363f098fd",
+            "rows_sha256": "849ec1285ce5f221b6ee861ec45bfdb9c5824d92261ffde328757c12a04f5cbc"
+          },
+          "acquisition_entities": {
+            "count": 5687,
+            "ids_sha256": "d614d97ca9648a9694a0ee87c652d389600c49f4cd6ba6b5c3514bf9b1654f24",
+            "rows_sha256": "58f19a125c973ae2be260ebd618335e13b22a0f7dfd62ed3b68303735160efb7"
+          },
+          "acquisition_facts": {
+            "count": 32344,
+            "ids_sha256": "b935877d581e135ec36d49401574d7d342fda1274a4245d3d4d1ee4e47a489c3",
+            "rows_sha256": "65752552b9298bc7e091c205cefa8a515c2fa800a39bd8c5ff6306df9e353962"
+          },
+          "acquisition_phase30_classifications": {
+            "count": 125,
+            "ids_sha256": "8d042ecb6ff19863801531ad50a77cd0ee62ff6ba85d72922dbb63e2036530ed",
+            "rows_sha256": "e1c03807662ec50c6bf56aff5df5c47ab7a5f2de01316ee8a246be1d1d405b27"
+          },
+          "acquisition_prospects": {
+            "count": 273,
+            "ids_sha256": "79aded21c6e7ffa6e8413285928926dc81dc9eda677ec21b6702ada4f342f367",
+            "rows_sha256": "47c8593995459c37e9a3edba9d4734562e7a4704525ed0a67ff48c7fcf08fc4b"
+          },
+          "acquisition_research_attempts": {
+            "count": 9,
+            "ids_sha256": "2124ff3cdda486ac553679d8561cf77d95949aca1ff5055b47dae51deb1de494",
+            "rows_sha256": "f58a371992598463940cfe29bb6578d057ee1636c58bf6dacaeb110454600775"
+          },
+          "acquisition_snapshots": {
+            "count": 349,
+            "ids_sha256": "6bf34aa856d98939ae3c3fb835c2f3e94db109e545a6b1cc5b2d24af39fc798a",
+            "rows_sha256": "9aa2c8bc5825a747831b183cce179b90f64d7e90060ffe7e7f490b12f2600f8a"
+          },
+          "acquisition_sources": {
+            "count": 30,
+            "ids_sha256": "d92e512814e989fa17687f7211f9839ab7c13cc7523c3cb120c0b1bcf389cb69",
+            "rows_sha256": "4521b1f4924025888a2fbe8d3087de96601550308918023852445ca211fd8943"
+          },
+          "acquisition_timeseries": {
+            "count": 34,
+            "ids_sha256": "5b7c63be31a55c512cafea027d6d3506e9451d36784d9aceb27de145c05f3fc0",
+            "rows_sha256": "1c995a6d0d059dc78fecab08bec4a86e4168e874b321a59f072a6dd2c16efc08"
+          },
+          "acquisition_trigger_current": {
+            "count": 291,
+            "ids_sha256": "254d02fe48425a71293eb67c85d4e477ed3fedeb38896cb0c04fd6c78fcfd2c6",
+            "rows_sha256": "4568e1289eeef1bbc85b855dd8e18b5bd528770edc4413b52e8683437455f442"
+          },
+          "acquisition_trigger_retention": {
+            "count": 291,
+            "ids_sha256": "254d02fe48425a71293eb67c85d4e477ed3fedeb38896cb0c04fd6c78fcfd2c6",
+            "rows_sha256": "b01bdf187f2b2c408d0318622daf7b35ccef1c01fe093872759d9d175a022536"
+          },
+          "acquisition_trigger_versions": {
+            "count": 333,
+            "ids_sha256": "d51a2307172310bb1ce96a268f95ec6c5e4548cbe5cbb5ebf12d5ee0904909e2",
+            "rows_sha256": "e12678672f16331263ce45077b029c8121b18291cb4c458c92f63f83880e3c75"
+          },
+          "action_envelopes": {
+            "count": 147,
+            "ids_sha256": "971015b3f1d424937c0540d3a90677650b18a67364d44bca9b1d4b30235095df",
+            "rows_sha256": "a753d0c10d5652f0fa4a9c18f466a78c45916c493e0946f76e0579663b465d97"
+          },
+          "action_evidence": {
+            "count": 764,
+            "ids_sha256": "0bf1ad5af873bd20938337e020eb397974cfc8e6ba520a871dca191de739a6ef",
+            "rows_sha256": "a1510f1158ad11f23f9f78eaf98fc3791aee4d4d74d61abad8d13e3b1e78d4d7"
+          },
+          "actions": {
+            "count": 16,
+            "ids_sha256": "0418aa13fa4ea4ca015ee8b586f5ca0755f18f7c79920235e4581537477d883e",
+            "rows_sha256": "6696d4c9bffe79f7f139323680ee11f9f51fa22ce7d35ce45505947b58069bdc"
+          },
+          "approvals": {
+            "count": 1,
+            "ids_sha256": "657fe05e0f38e19c50e439797bea937128d0e07f9ed335142e97cded5b768987",
+            "rows_sha256": "4a968b6aca8619f150bd7bcc35681d0b333da44fe2c8d18b48012810cd5b617b"
+          },
+          "lifecycle_evidence": {
+            "count": 915,
+            "ids_sha256": "cd7cc7367683843a30d42e4596645526399dc6c7b67be6948ec150c8361cfa6b",
+            "rows_sha256": "34eb19cdd6e0049da85d6c84d61a7f97884dd876f3391fce017b6add020bfa87"
+          },
+          "lifecycle_intents": {
+            "count": 224,
+            "ids_sha256": "b77c7aa18bc42e71810dacbc0d52116e4643fd00e998c8bddf9495644890560b",
+            "rows_sha256": "5798101e32646a30fef7b234c93bc44133ca4f8fa50476cf0e4b6e0f1884ae96"
+          },
+          "manager_briefs": {
+            "count": 36,
+            "ids_sha256": "d214b3bbb0ca563315126ddfe2963953307b68c9c1c9a7535b70e0f12378e92f",
+            "rows_sha256": "ecc2785bf3601b09b3155278ecc9d0dd0bd99a6ea3e46bf7be3d7c18f380092a"
+          },
+          "manager_events": {
+            "count": 548,
+            "ids_sha256": "1afea2eaf0c80398e8440f4f0d77e89f66a58cc755984c4784ef0033b186f715",
+            "rows_sha256": "e4c0b92fdb3b604ef53d9356fd5bf8e14bbc6f18da4bcb9737f4b37359f7ce7c"
+          },
+          "manager_feedback": {
+            "count": 0,
+            "ids_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "manager_learning": {
+            "count": 0,
+            "ids_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "manager_links": {
+            "count": 4285,
+            "ids_sha256": "1536e4aa2631950951f617844b2b03ee5c1e49597bb520437fc8f5885a521dd5",
+            "rows_sha256": "7a71b98b870b8f94a95036c8c8eb87adc431f3c40e6146da375433c02467632c"
+          },
+          "manager_receipts": {
+            "count": 240,
+            "ids_sha256": "e95e845ac7bfb46dc50e9bb7e2d484662da730a0d9d824d09c44610d55b9dbb5",
+            "rows_sha256": "6accb41d8a2b104c224bb6b2cc4b7b96151e43289998b18cb77ebc57c571c37a"
+          },
+          "optimization_records": {
+            "count": 415,
+            "ids_sha256": "258e36a610735db1c330a8b8855d3a746d21ac6622a10a330e067a80ffc5d409",
+            "rows_sha256": "58faf227c860764d91e70e49a3befad472bea0b8be985f1cbf00810f4624b260"
+          },
+          "optimization_reviews": {
+            "count": 0,
+            "ids_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "provider_usage": {
+            "count": 254,
+            "ids_sha256": "c8a1556a76766c406a4e283912fb2205ce06057b7924c9e46308124beba977d8",
+            "rows_sha256": "9db155e67296adca4b031e859a49557f58a61b5b58eb2f76d5569acfae8ac3b1"
+          },
+          "runner_runs": {
+            "count": 274,
+            "ids_sha256": "4a1ef98d42d88fc90fbc951dd67fed312243b50e2fb076f4f59a713c6b7fad99",
+            "rows_sha256": "f9dadd9875816c19b7e87ffeecb6069bda66ea3ac6fd1045544b726f13a4a50b"
+          },
+          "sales_conversation_versions": {
+            "count": 392,
+            "ids_sha256": "0b8157a089a88ad6dde6c73594daa4ad6ef6ef518071e1f5cf519ff41e164589",
+            "rows_sha256": "0a8a285dd3d814f4fc6f7d20e3f97653d8d9a560c074d0fbaf21f9f8b9fd9a44"
+          },
+          "scheduled": {
+            "count": 2,
+            "ids_sha256": "c1faf126e508d98e1cf3f03216449b5bfe96058f7a9ae4016d0fe2ba16f3ce22",
+            "rows_sha256": "a29849c9e6a1beed0b3ab3c57df59a9a0323395a37f19441eecca5f5c1f23f29"
+          },
+          "sqlite_sequence": {
+            "count": 1,
+            "ids_sha256": "dc4c900add3103984f8f8e31c6a83c45aed62565a44602a023980d7cb16b816b",
+            "rows_sha256": "dc4c900add3103984f8f8e31c6a83c45aed62565a44602a023980d7cb16b816b"
+          },
+          "website_preview_observations": {
+            "count": 109,
+            "ids_sha256": "105a3a51ab84c752e97c2ee04599a767eed6d2edf2d4d02a03c1dba1a1424fd4",
+            "rows_sha256": "9453dc054082f4f0f1dbcc44e4feb90db1d4b094eaac186d3d783ace8742f42f"
+          },
+          "website_preview_webhooks": {
+            "count": 0,
+            "ids_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "user_version": 0
+      },
+      "type": "file"
+    },
+    {
+      "backup": "existing online SQLite backup API",
+      "criticality": "CRITICAL",
+      "encryption": "root-only local filesystem; AGE encrypted off-host",
+      "group": "opticable-workflow-api",
+      "mode": "0600",
+      "owner": "opticable-workflow-api",
+      "path": "/var/lib/opticable-workflow-api/output/automation/phase9-form-receipts.db",
+      "purpose": "Immutable Forms/Mail/connector receipt chronology",
+      "restore": "verified staging -> atomic generation promotion",
+      "size_bytes": 1708032,
+      "snapshot": {
+        "audit_chains_verified": 0,
+        "foreign_keys": "PASS",
+        "integrity": "ok",
+        "schema_sha256": "717964c4f4b1a1b6b779053a3133b12637e598e648242ceee4f3c7647e66092e",
+        "tables": {
+          "connector_receipts": {
+            "count": 10,
+            "ids_sha256": "8603f58b33477c03cb8c1d1f61291df2d456a16a803877e27292db562090997e",
+            "rows_sha256": "ba331cb1fc158c9f9bd276b58c48865c797bd9294ff09b1e7a312ddb3735abf9"
+          },
+          "form_context_projections": {
+            "count": 1,
+            "ids_sha256": "51611caea54d3085e610abaf3e7ccba75b5fa7cc5408c07e96760b6ca476fcf3",
+            "rows_sha256": "984163e6563be407f77e976ee937fd73f95348b8193e71f7ce9f0b00ded02572"
+          },
+          "form_enrichment_journal": {
+            "count": 2,
+            "ids_sha256": "9ff48386e6df4dfc7811742bf541771e8cc403cddee6df2c0fc170db98b793da",
+            "rows_sha256": "3bb69191684d1fa763ac9fc8f028c6c6cfd785907a168466b160fe59a71018a7"
+          },
+          "form_message_anomalies": {
+            "count": 0,
+            "ids_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "form_parse_projections": {
+            "count": 3,
+            "ids_sha256": "ebc58c133d2212821b99c8feba127040c828c6a521d12bed178b4cca9aa0e897",
+            "rows_sha256": "cca0bf342f96380a300ac427e70bc8dc76776fbf22948dab123679991114f4ad"
+          },
+          "form_poll_events": {
+            "count": 1126,
+            "ids_sha256": "de9666944a9a282a621bddf10769cd13a217a90b5dc7b0d5ea3040a954abe121",
+            "rows_sha256": "a47884eadcfdc96b453a3d23bb2368ac4af9091c30f6fc087069734d23d992d0"
+          },
+          "form_provider_matches": {
+            "count": 2,
+            "ids_sha256": "3bbb4fea845446f80c0150d790d418da89750ea8ea21531d6e293d690448221b",
+            "rows_sha256": "e10651b390850fa263b35445722ff4b7a4af1cc242fa22963beb92f8ff905101"
+          },
+          "form_receipt_links": {
+            "count": 2,
+            "ids_sha256": "78cde50e69539eff00825d0f7b21d9fdbecd841321b9bc9ca55e0d3fab0b4838",
+            "rows_sha256": "c70ed45fb308d5ce82f3fbaf3de1e02ab6cb7fec7c42344884318bb71e6e3310"
+          },
+          "form_receipts": {
+            "count": 9,
+            "ids_sha256": "e9975898d3426a07e2ccb97a51c8374c9438dc3dfe91e626b29748218803d21a",
+            "rows_sha256": "eb1c073fb4ff6d5b8fcd77df54eb936a6e52a5b823068d3a5567bac961734752"
+          },
+          "form_test_classifications": {
+            "count": 1,
+            "ids_sha256": "14b7fd16aa1df335a165d3b3fd7bea2c82d11127554e7a0c510112b161026b44",
+            "rows_sha256": "9d8928fb01c01c6409889d7633facb89486b97913b58b5e1f21eb0fe1d3fc403"
+          },
+          "mail_message_cache": {
+            "count": 9,
+            "ids_sha256": "f71c437caa413485fab2e69e7c3e406af3c77089906b8d6d02f963927534941a",
+            "rows_sha256": "2b816c9e7524c8ef7e814e3456de7162f87da7f001cff3160487ebc80ee403e1"
+          },
+          "mail_poll_state": {
+            "count": 1,
+            "ids_sha256": "d578e7851bf6bce7919f644684dce7e2981042eac58b623a9e109984f03e60fd",
+            "rows_sha256": "643e11bbb23927fa35b8486f5b44cfdfe9b4faa4bdbb1f58c4591c348d5ef9d7"
+          },
+          "provider_usage": {
+            "count": 1455,
+            "ids_sha256": "b0f51434f20ccc3efddb6871ed7a77e5d41e92ceab47ecae261c0ff58c96b15c",
+            "rows_sha256": "76eb7e2ecff8a012a7fffac8f472f68ec8b7f92a67f27e2d6ff61713fb166480"
+          },
+          "sqlite_sequence": {
+            "count": 1,
+            "ids_sha256": "637898809eb62247b350df51546bcb26eb57385b8f36de46576eb7c84441ec97",
+            "rows_sha256": "637898809eb62247b350df51546bcb26eb57385b8f36de46576eb7c84441ec97"
+          }
+        },
+        "user_version": 0
+      },
+      "type": "file"
+    },
+    {
+      "backup": "existing online SQLite backup API",
+      "criticality": "CRITICAL",
+      "encryption": "root-only local filesystem; AGE encrypted off-host",
+      "group": "opticable-workflow-api",
+      "mode": "0600",
+      "owner": "opticable-workflow-api",
+      "path": "/var/lib/opticable-workflow-api/output/automation/phase9-intake.db",
+      "purpose": "Canonical intake/link/return/owner feedback chronology",
+      "restore": "verified staging -> atomic generation promotion",
+      "size_bytes": 28672,
+      "snapshot": {
+        "audit_chains_verified": 0,
+        "foreign_keys": "PASS",
+        "integrity": "ok",
+        "schema_sha256": "83b0cc04401b0db1f3bc495c71f075f416bc955ab2b3418d1776d3d58060828a",
+        "tables": {
+          "feedback_events": {
+            "count": 8,
+            "ids_sha256": "cddd71ca6dbe963e7f80f0feae09c53ef00fa4680b6c974e6acbc684bac7de17",
+            "rows_sha256": "ac4ec019bb7a2fc0509745b0b0a7687b8fad6ce95bf136a5a10b265a86e7b389"
+          },
+          "intake_events": {
+            "count": 7,
+            "ids_sha256": "9d7dcc67c88bb6c01b3431fb51742335d798e23877fc84981586c30339398881",
+            "rows_sha256": "ad98a2b40f72ece3350fb572453cd7d049633a486f4e47a4fd23f2a0e7a84a7b"
+          }
+        },
+        "user_version": 0
+      },
+      "type": "file"
+    }
+  ],
+  "directories": [
+    {
+      "group": "opticable-workflow-api",
+      "mode": "0750",
+      "owner": "opticable-workflow-api",
+      "path": "/var/lib/opticable-workflow-api",
+      "size_bytes": 4096,
+      "type": "directory"
+    },
+    {
+      "group": "root",
+      "mode": "0700",
+      "owner": "root",
+      "path": "/var/lib/optibrain",
+      "size_bytes": 4096,
+      "type": "directory"
+    },
+    {
+      "group": "opticable-password-pdf",
+      "mode": "0750",
+      "owner": "opticable-password-pdf",
+      "path": "/var/lib/opticable-password-pdf",
+      "size_bytes": 4096,
+      "type": "directory"
+    },
+    {
+      "group": "opticable-omada-site",
+      "mode": "0750",
+      "owner": "opticable-omada-site",
+      "path": "/var/lib/opticable-omada-site",
+      "size_bytes": 4096,
+      "type": "directory"
+    },
+    {
+      "group": "siteandpassword",
+      "mode": "2770",
+      "owner": "root",
+      "path": "/var/lib/opticable-api-platform/shared",
+      "size_bytes": 4096,
+      "type": "directory"
+    }
+  ],
+  "disk_layout": "{\n   \"blockdevices\": [\n      {\n         \"name\": \"sda\",\n         \"size\": \"75G\",\n         \"type\": \"disk\",\n         \"fstype\": null,\n         \"mountpoints\": [\n             null\n         ],\n         \"children\": [\n            {\n               \"name\": \"sda1\",\n               \"size\": \"74G\",\n               \"type\": \"part\",\n               \"fstype\": \"ext4\",\n               \"mountpoints\": [\n                   \"/\"\n               ]\n            },{\n               \"name\": \"sda14\",\n               \"size\": \"4M\",\n               \"type\": \"part\",\n               \"fstype\": null,\n               \"mountpoints\": [\n                   null\n               ]\n            },{\n               \"name\": \"sda15\",\n               \"size\": \"106M\",\n               \"type\": \"part\",\n               \"fstype\": \"vfat\",\n               \"mountpoints\": [\n                   \"/boot/efi\"\n               ]\n            },{\n               \"name\": \"sda16\",\n               \"size\": \"913M\",\n               \"type\": \"part\",\n               \"fstype\": \"ext4\",\n               \"mountpoints\": [\n                   \"/boot\"\n               ]\n            }\n         ]\n      }\n   ]\n}",
+  "dns": {
+    "mutation_performed": false,
+    "name": "optibrain.opticable.ca",
+    "old_content": "148.113.249.7",
+    "proxied": true,
+    "record_id": "8f10227bdeaa87597fd71cf7d499f133",
+    "ttl": 1,
+    "ttl_semantics": "Cloudflare automatic; assess effective TTL at cutover",
+    "type": "A",
+    "zone_id": "ea7b4f245feb0a98fb5534e73e761970"
+  },
+  "fail2ban": "Status\n|- Number of jail:\t1\n`- Jail list:\tsshd",
+  "firewall": "Status: active\nLogging: on (low)\nDefault: deny (incoming), allow (outgoing), disabled (routed)\nNew profiles: skip\n\nTo                         Action      From\n--                         ------      ----\n22/tcp                     ALLOW IN    Anywhere                  \n22/tcp (OpenSSH)           ALLOW IN    Anywhere                  \n80/tcp                     ALLOW IN    Anywhere                  \n443/tcp                    ALLOW IN    Anywhere                  \n22/tcp (v6)                ALLOW IN    Anywhere (v6)             \n22/tcp (OpenSSH (v6))      ALLOW IN    Anywhere (v6)             \n80/tcp (v6)                ALLOW IN    Anywhere (v6)             \n443/tcp (v6)               ALLOW IN    Anywhere (v6)",
+  "generated_at": "2026-10-07T04:03:42.176288+00:00",
+  "groups": [
+    {
+      "gid": 0,
+      "members": [],
+      "name": "root"
+    },
+    {
+      "gid": 1,
+      "members": [],
+      "name": "daemon"
+    },
+    {
+      "gid": 2,
+      "members": [],
+      "name": "bin"
+    },
+    {
+      "gid": 3,
+      "members": [],
+      "name": "sys"
+    },
+    {
+      "gid": 4,
+      "members": [
+        "syslog"
+      ],
+      "name": "adm"
+    },
+    {
+      "gid": 5,
+      "members": [],
+      "name": "tty"
+    },
+    {
+      "gid": 6,
+      "members": [],
+      "name": "disk"
+    },
+    {
+      "gid": 7,
+      "members": [],
+      "name": "lp"
+    },
+    {
+      "gid": 8,
+      "members": [],
+      "name": "mail"
+    },
+    {
+      "gid": 9,
+      "members": [],
+      "name": "news"
+    },
+    {
+      "gid": 10,
+      "members": [],
+      "name": "uucp"
+    },
+    {
+      "gid": 12,
+      "members": [],
+      "name": "man"
+    },
+    {
+      "gid": 13,
+      "members": [],
+      "name": "proxy"
+    },
+    {
+      "gid": 15,
+      "members": [],
+      "name": "kmem"
+    },
+    {
+      "gid": 20,
+      "members": [],
+      "name": "dialout"
+    },
+    {
+      "gid": 21,
+      "members": [],
+      "name": "fax"
+    },
+    {
+      "gid": 22,
+      "members": [],
+      "name": "voice"
+    },
+    {
+      "gid": 24,
+      "members": [],
+      "name": "cdrom"
+    },
+    {
+      "gid": 25,
+      "members": [],
+      "name": "floppy"
+    },
+    {
+      "gid": 26,
+      "members": [],
+      "name": "tape"
+    },
+    {
+      "gid": 27,
+      "members": [
+        "optibrain"
+      ],
+      "name": "sudo"
+    },
+    {
+      "gid": 29,
+      "members": [],
+      "name": "audio"
+    },
+    {
+      "gid": 30,
+      "members": [],
+      "name": "dip"
+    },
+    {
+      "gid": 33,
+      "members": [
+        "caddy"
+      ],
+      "name": "www-data"
+    },
+    {
+      "gid": 34,
+      "members": [],
+      "name": "backup"
+    },
+    {
+      "gid": 37,
+      "members": [],
+      "name": "operator"
+    },
+    {
+      "gid": 38,
+      "members": [],
+      "name": "list"
+    },
+    {
+      "gid": 39,
+      "members": [],
+      "name": "irc"
+    },
+    {
+      "gid": 40,
+      "members": [],
+      "name": "src"
+    },
+    {
+      "gid": 42,
+      "members": [],
+      "name": "shadow"
+    },
+    {
+      "gid": 43,
+      "members": [],
+      "name": "utmp"
+    },
+    {
+      "gid": 44,
+      "members": [],
+      "name": "video"
+    },
+    {
+      "gid": 45,
+      "members": [],
+      "name": "sasl"
+    },
+    {
+      "gid": 46,
+      "members": [],
+      "name": "plugdev"
+    },
+    {
+      "gid": 50,
+      "members": [],
+      "name": "staff"
+    },
+    {
+      "gid": 60,
+      "members": [],
+      "name": "games"
+    },
+    {
+      "gid": 100,
+      "members": [
+        "optibrain"
+      ],
+      "name": "users"
+    },
+    {
+      "gid": 65534,
+      "members": [],
+      "name": "nogroup"
+    },
+    {
+      "gid": 999,
+      "members": [],
+      "name": "systemd-journal"
+    },
+    {
+      "gid": 998,
+      "members": [],
+      "name": "systemd-network"
+    },
+    {
+      "gid": 997,
+      "members": [],
+      "name": "crontab"
+    },
+    {
+      "gid": 996,
+      "members": [],
+      "name": "systemd-timesync"
+    },
+    {
+      "gid": 995,
+      "members": [],
+      "name": "input"
+    },
+    {
+      "gid": 994,
+      "members": [],
+      "name": "sgx"
+    },
+    {
+      "gid": 993,
+      "members": [],
+      "name": "kvm"
+    },
+    {
+      "gid": 992,
+      "members": [],
+      "name": "render"
+    },
+    {
+      "gid": 101,
+      "members": [],
+      "name": "messagebus"
+    },
+    {
+      "gid": 102,
+      "members": [],
+      "name": "syslog"
+    },
+    {
+      "gid": 991,
+      "members": [],
+      "name": "systemd-resolve"
+    },
+    {
+      "gid": 103,
+      "members": [],
+      "name": "uuidd"
+    },
+    {
+      "gid": 104,
+      "members": [],
+      "name": "tss"
+    },
+    {
+      "gid": 105,
+      "members": [],
+      "name": "lxd"
+    },
+    {
+      "gid": 106,
+      "members": [],
+      "name": "_ssh"
+    },
+    {
+      "gid": 107,
+      "members": [],
+      "name": "rdma"
+    },
+    {
+      "gid": 108,
+      "members": [],
+      "name": "tcpdump"
+    },
+    {
+      "gid": 109,
+      "members": [],
+      "name": "landscape"
+    },
+    {
+      "gid": 990,
+      "members": [],
+      "name": "fwupd-refresh"
+    },
+    {
+      "gid": 989,
+      "members": [],
+      "name": "polkitd"
+    },
+    {
+      "gid": 110,
+      "members": [],
+      "name": "admin"
+    },
+    {
+      "gid": 111,
+      "members": [],
+      "name": "netdev"
+    },
+    {
+      "gid": 1000,
+      "members": [],
+      "name": "ubuntu"
+    },
+    {
+      "gid": 1001,
+      "members": [],
+      "name": "optibrain"
+    },
+    {
+      "gid": 988,
+      "members": [],
+      "name": "caddy"
+    },
+    {
+      "gid": 987,
+      "members": [
+        "opticable-password-pdf",
+        "opticable-workflow-api"
+      ],
+      "name": "siteandpassword"
+    },
+    {
+      "gid": 986,
+      "members": [],
+      "name": "opticable-password-pdf"
+    },
+    {
+      "gid": 985,
+      "members": [],
+      "name": "opticable-omada-site"
+    },
+    {
+      "gid": 984,
+      "members": [],
+      "name": "opticable-workflow-api"
+    },
+    {
+      "gid": 1002,
+      "members": [],
+      "name": "opticable-deploy"
+    }
+  ],
+  "health_endpoints": [
+    "/v1/system/health",
+    "/v1/system/readiness",
+    "/v1/operator/manager?format=json"
+  ],
+  "hostname": "vps-214ba8cd",
+  "kernel": "6.8.0-142-generic",
+  "knowledge_portability": {
+    "audit_claims": "all SQLite immutable evidence plus R2 business-effects/v1 and conversion-effects/v1 external immutable namespaces",
+    "business_events_owner_corrections": "phase12-autonomy.db: manager_events (source=OWNER), manager_feedback",
+    "core_events_runs_checkpoints_audit": "automation.db",
+    "decision_cards_priorities_proposals_assets": "phase12-autonomy.db: optimization_records + action_envelopes + action_evidence; cards derived by exact source",
+    "learning_records": "phase12-autonomy.db: manager_learning",
+    "mail_forms_document_intelligence": "receipt/intake stores and root evidence now; future tables/files captured by discovery; WorkDrive owns large documents",
+    "preview_state": "phase12-autonomy.db: website_preview_observations + website_preview_webhooks; preserved /var/lib/optibrain preview evidence",
+    "relationships": "phase12-autonomy.db: manager_links; /etc/optibrain/phase11-operations.json; lifecycle finance-links/recurring-links",
+    "source_health": "phase12-autonomy.db: acquisition_sources + provider_usage; root snapshots regenerate /run projections",
+    "todos": "phase12-autonomy.db: action_evidence priority transitions"
+  },
+  "main_sha": "be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa",
+  "manifest_version": 1,
+  "mounts": "{\n   \"filesystems\": [\n      {\n         \"target\": \"/\",\n         \"source\": \"/dev/sda1\",\n         \"fstype\": \"ext4\",\n         \"options\": \"rw,relatime,discard,errors=remount-ro,commit=30\",\n         \"children\": [\n            {\n               \"target\": \"/sys\",\n               \"source\": \"sysfs\",\n               \"fstype\": \"sysfs\",\n               \"options\": \"rw,nosuid,nodev,noexec,relatime\",\n               \"children\": [\n                  {\n                     \"target\": \"/sys/kernel/security\",\n                     \"source\": \"securityfs\",\n                     \"fstype\": \"securityfs\",\n                     \"options\": \"rw,nosuid,nodev,noexec,relatime\"\n                  },{\n                     \"target\": \"/sys/fs/cgroup\",\n                     \"source\": \"cgroup2\",\n                     \"fstype\": \"cgroup2\",\n                     \"options\": \"rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot\"\n                  },{\n                     \"target\": \"/sys/fs/pstore\",\n                     \"source\": \"pstore\",\n                     \"fstype\": \"pstore\",\n                     \"options\": \"rw,nosuid,nodev,noexec,relatime\"\n                  },{\n                     \"target\": \"/sys/fs/bpf\",\n                     \"source\": \"bpf\",\n                     \"fstype\": \"bpf\",\n                     \"options\": \"rw,nosuid,nodev,noexec,relatime,mode=700\"\n                  },{\n                     \"target\": \"/sys/kernel/tracing\",\n                     \"source\": \"tracefs\",\n                     \"fstype\": \"tracefs\",\n                     \"options\": \"rw,nosuid,nodev,noexec,relatime\"\n                  },{\n                     \"target\": \"/sys/kernel/debug\",\n                     \"source\": \"debugfs\",\n                     \"fstype\": \"debugfs\",\n                     \"options\": \"rw,nosuid,nodev,noexec,relatime\"\n                  },{\n                     \"target\": \"/sys/fs/fuse/connections\",\n                     \"source\": \"fusectl\",\n                     \"fstype\": \"fusectl\",\n                     \"options\": \"rw,nosuid,nodev,noexec,relatime\"\n                  },{\n                     \"target\": \"/sys/kernel/config\",\n                     \"source\": \"configfs\",\n                     \"fstype\": \"configfs\",\n                     \"options\": \"rw,nosuid,nodev,noexec,relatime\"\n                  }\n               ]\n            },{\n               \"target\": \"/proc\",\n               \"source\": \"proc\",\n               \"fstype\": \"proc\",\n               \"options\": \"rw,nosuid,nodev,noexec,relatime\",\n               \"children\": [\n                  {\n                     \"target\": \"/proc/sys/fs/binfmt_misc\",\n                     \"source\": \"systemd-1\",\n                     \"fstype\": \"autofs\",\n                     \"options\": \"rw,relatime,fd=32,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=4118\",\n                     \"children\": [\n                        {\n                           \"target\": \"/proc/sys/fs/binfmt_misc\",\n                           \"source\": \"binfmt_misc\",\n                           \"fstype\": \"binfmt_misc\",\n                           \"options\": \"rw,nosuid,nodev,noexec,relatime\"\n                        }\n                     ]\n                  }\n               ]\n            },{\n               \"target\": \"/dev\",\n               \"source\": \"udev\",\n               \"fstype\": \"devtmpfs\",\n               \"options\": \"rw,nosuid,relatime,size=3948984k,nr_inodes=987246,mode=755,inode64\",\n               \"children\": [\n                  {\n                     \"target\": \"/dev/pts\",\n                     \"source\": \"devpts\",\n                     \"fstype\": \"devpts\",\n                     \"options\": \"rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000\"\n                  },{\n                     \"target\": \"/dev/shm\",\n                     \"source\": \"tmpfs\",\n                     \"fstype\": \"tmpfs\",\n                     \"options\": \"rw,nosuid,nodev,inode64\"\n                  },{\n                     \"target\": \"/dev/hugepages\",\n                     \"source\": \"hugetlbfs\",\n                     \"fstype\": \"hugetlbfs\",\n                     \"options\": \"rw,nosuid,nodev,relatime,pagesize=2M\"\n                  },{\n                     \"target\": \"/dev/mqueue\",\n                     \"source\": \"mqueue\",\n                     \"fstype\": \"mqueue\",\n                     \"options\": \"rw,nosuid,nodev,noexec,relatime\"\n                  }\n               ]\n            },{\n               \"target\": \"/run\",\n               \"source\": \"tmpfs\",\n               \"fstype\": \"tmpfs\",\n               \"options\": \"rw,nosuid,nodev,noexec,relatime,size=793724k,mode=755,inode64\",\n               \"children\": [\n                  {\n                     \"target\": \"/run/lock\",\n                     \"source\": \"tmpfs\",\n                     \"fstype\": \"tmpfs\",\n                     \"options\": \"rw,nosuid,nodev,noexec,relatime,size=5120k,inode64\"\n                  },{\n                     \"target\": \"/run/user/1001\",\n                     \"source\": \"tmpfs\",\n                     \"fstype\": \"tmpfs\",\n                     \"options\": \"rw,nosuid,nodev,relatime,size=793720k,nr_inodes=198430,mode=700,uid=1001,gid=1001,inode64\"\n                  }\n               ]\n            },{\n               \"target\": \"/boot\",\n               \"source\": \"/dev/sda16\",\n               \"fstype\": \"ext4\",\n               \"options\": \"rw,relatime\",\n               \"children\": [\n                  {\n                     \"target\": \"/boot/efi\",\n                     \"source\": \"/dev/sda15\",\n                     \"fstype\": \"vfat\",\n                     \"options\": \"rw,relatime,fmask=0077,dmask=0077,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro\"\n                  }\n               ]\n            }\n         ]\n      }\n   ]\n}",
+  "os": {
+    "BUG_REPORT_URL": "\"https://bugs.launchpad.net/ubuntu/\"",
+    "HOME_URL": "\"https://www.ubuntu.com/\"",
+    "ID": "ubuntu",
+    "ID_LIKE": "debian",
+    "LOGO": "ubuntu-logo",
+    "NAME": "\"Ubuntu\"",
+    "PRETTY_NAME": "\"Ubuntu 24.04.5 LTS\"",
+    "PRIVACY_POLICY_URL": "\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"",
+    "SUPPORT_URL": "\"https://help.ubuntu.com/\"",
+    "UBUNTU_CODENAME": "noble",
+    "VERSION": "\"24.04.5 LTS (Noble Numbat)\"",
+    "VERSION_CODENAME": "noble",
+    "VERSION_ID": "\"24.04\""
+  },
+  "packages": "acl\t2.3.2-1build1.1\nadduser\t3.137ubuntu1\nage\t1.1.1-1ubuntu0.24.04.3\napparmor\t4.0.1really4.0.1-0ubuntu0.24.04.8\napport\t2.28.3-0ubuntu0.1\napport-core-dump-handler\t2.28.3-0ubuntu0.1\napport-symptoms\t0.25\nappstream\t1.0.2-1build6\napt\t2.8.3\napt-transport-https\t2.8.3\napt-utils\t2.8.3\nat-spi2-common\t2.52.0-1build1\nbase-files\t13ubuntu10.5\nbase-passwd\t3.6.3build1\nbash\t5.2.21-2ubuntu4\nbash-completion\t1:2.11-8\nbc\t1.07.1-3ubuntu4\nbcache-tools\t1.0.8-5build1\nbind9-dnsutils\t1:9.18.39-0ubuntu0.24.04.7\nbind9-host\t1:9.18.39-0ubuntu0.24.04.7\nbind9-libs:amd64\t1:9.18.39-0ubuntu0.24.04.7\nbinutils\t2.42-4ubuntu2.10\nbinutils-common:amd64\t2.42-4ubuntu2.10\nbinutils-x86-64-linux-gnu\t2.42-4ubuntu2.10\nbolt\t0.9.7-1\nbpfcc-tools\t0.29.1+ds-1ubuntu7\nbpftrace\t0.20.2-1ubuntu4.3\nbsdextrautils\t2.39.3-9ubuntu6.6\nbsdutils\t1:2.39.3-9ubuntu6.6\nbtrfs-progs\t6.6.3-1.1build2\nbuild-essential\t12.10ubuntu1\nbusybox-initramfs\t1:1.36.1-6ubuntu3.1\nbusybox-static\t1:1.36.1-6ubuntu3.1\nbyobu\t6.11-0ubuntu1.1\nbzip2\t1.0.8-5.1ubuntu0.1\nca-certificates\t20260601~24.04.1\ncaddy\t2.6.2-6ubuntu0.24.04.3\ncloud-guest-utils\t0.33-1\ncloud-init\t26.1-0ubuntu1~24.04.1\ncloud-initramfs-copymods\t0.49~24.04.1\ncloud-initramfs-dyn-netconf\t0.49~24.04.1\ncommand-not-found\t23.04.0\nconsole-setup\t1.226ubuntu1.1\nconsole-setup-linux\t1.226ubuntu1.1\ncoreutils\t9.4-3ubuntu6.3\ncpio\t2.15+dfsg-1ubuntu2.1\ncpp\t4:13.2.0-7ubuntu1\ncpp-13\t13.3.0-6ubuntu2~24.04.1\ncpp-13-x86-64-linux-gnu\t13.3.0-6ubuntu2~24.04.1\ncpp-x86-64-linux-gnu\t4:13.2.0-7ubuntu1\ncron\t3.0pl1-184ubuntu2\ncron-daemon-common\t3.0pl1-184ubuntu2\ncryptsetup\t2:2.7.0-1ubuntu4.2\ncryptsetup-bin\t2:2.7.0-1ubuntu4.2\ncryptsetup-initramfs\t2:2.7.0-1ubuntu4.2\ncurl\t8.5.0-2ubuntu10.15\ndash\t0.5.12-6ubuntu5\ndbus\t1.14.10-4ubuntu4.1\ndbus-bin\t1.14.10-4ubuntu4.1\ndbus-daemon\t1.14.10-4ubuntu4.1\ndbus-session-bus-common\t1.14.10-4ubuntu4.1\ndbus-system-bus-common\t1.14.10-4ubuntu4.1\ndbus-user-session\t1.14.10-4ubuntu4.1\ndebconf\t1.5.86ubuntu1\ndebconf-i18n\t1.5.86ubuntu1\ndebianutils\t5.17build1\ndebootstrap\t1.0.134ubuntu2\ndhcpcd-base\t1:10.0.6-1ubuntu3.2\ndiffutils\t1:3.10-1ubuntu0.1\ndirmngr\t2.4.4-2ubuntu17.6\ndistro-info\t1.7build1\ndistro-info-data\t0.72-0ubuntu0.24.04.1\ndmeventd\t2:1.02.185-3ubuntu3.2\ndmidecode\t3.5-3ubuntu0.2\ndmsetup\t2:1.02.185-3ubuntu3.2\ndosfstools\t4.2-1.1build1\ndpkg\t1.22.6ubuntu6.6\ndpkg-dev\t1.22.6ubuntu6.6\ndracut-install\t060+5-1ubuntu3.4\ne2fsprogs\t1.47.0-2.4~exp1ubuntu4.1\ne2fsprogs-l10n\t1.47.0-2.4~exp1ubuntu4.1\neatmydata\t131-1ubuntu1\ned\t1.20.1-1\nefibootmgr\t18-1build2\neject\t2.39.3-9ubuntu6.6\nethtool\t1:6.7-1build1\nfail2ban\t1.0.2-3ubuntu0.1\nfakeroot\t1.33-1\nfdisk\t2.39.3-9ubuntu6.6\nfile\t1:5.45-3build1\nfinalrd\t9build1\nfindutils\t4.9.0-5build1\nfontconfig\t2.15.0-1.1ubuntu2\nfontconfig-config\t2.15.0-1.1ubuntu2\nfonts-dejavu-core\t2.37-8\nfonts-dejavu-mono\t2.37-8\nfonts-freefont-ttf\t20211204+svn4273-2\nfonts-ipafont-gothic\t00303-21ubuntu1\nfonts-liberation\t1:2.1.5-3\nfonts-noto-color-emoji\t2.047-0ubuntu0.24.04.1\nfonts-tlwg-loma-otf\t1:0.7.3-1\nfonts-ubuntu-console\t0.869+git20240321-0ubuntu1\nfonts-unifont\t1:15.1.01-1build1\nfonts-wqy-zenhei\t0.9.45-8\nfriendly-recovery\t0.2.42\nftp\t20230507-2build3\nfuse3\t3.14.0-5build1\nfwupd\t2.0.20-1ubuntu2~24.04.2\nfwupd-signed\t1.52+1.4-1\ng++\t4:13.2.0-7ubuntu1\ng++-13\t13.3.0-6ubuntu2~24.04.1\ng++-13-x86-64-linux-gnu\t13.3.0-6ubuntu2~24.04.1\ng++-x86-64-linux-gnu\t4:13.2.0-7ubuntu1\ngawk\t1:5.2.1-2ubuntu0.1\ngcc\t4:13.2.0-7ubuntu1\ngcc-13\t13.3.0-6ubuntu2~24.04.1\ngcc-13-base:amd64\t13.3.0-6ubuntu2~24.04.1\ngcc-13-x86-64-linux-gnu\t13.3.0-6ubuntu2~24.04.1\ngcc-14-base:amd64\t14.2.0-4ubuntu2~24.04.1\ngcc-x86-64-linux-gnu\t4:13.2.0-7ubuntu1\ngdisk\t1.0.10-1build1\ngettext-base\t0.21-14ubuntu2\ngir1.2-girepository-2.0:amd64\t1.80.1-1\ngir1.2-glib-2.0:amd64\t2.80.0-6ubuntu3.9\ngir1.2-packagekitglib-1.0\t1.2.8-2ubuntu1.5\ngit\t1:2.43.0-1ubuntu7.3\ngit-man\t1:2.43.0-1ubuntu7.3\ngnupg\t2.4.4-2ubuntu17.6\ngnupg-l10n\t2.4.4-2ubuntu17.6\ngnupg-utils\t2.4.4-2ubuntu17.6\ngpg\t2.4.4-2ubuntu17.6\ngpg-agent\t2.4.4-2ubuntu17.6\ngpg-wks-client\t2.4.4-2ubuntu17.6\ngpgconf\t2.4.4-2ubuntu17.6\ngpgsm\t2.4.4-2ubuntu17.6\ngpgv\t2.4.4-2ubuntu17.6\ngrep\t3.11-4build1\ngroff-base\t1.23.0-3build2\ngrub-common\t2.12-1ubuntu7.3\ngrub-efi-amd64-bin\t2.12-1ubuntu7.3\ngrub-efi-amd64-signed\t1.202.5+2.12-1ubuntu7.3\ngrub-gfxpayload-lists\t0.7build2\ngrub-pc\t2.12-1ubuntu7.3\ngrub-pc-bin\t2.12-1ubuntu7.3\ngrub2-common\t2.12-1ubuntu7.3\ngzip\t1.12-1ubuntu3.2\nhdparm\t9.65+ds-1build1\nhostname\t3.23+nmu2ubuntu2\nhtop\t3.3.0-4build1\nhwdata\t0.379-1\nibverbs-providers:amd64\t50.0-2ubuntu0.2\nieee-data\t20220827.1\ninetutils-telnet\t2:2.5-3ubuntu4.2\ninfo\t7.1-3build2\ninit\t1.66ubuntu1\ninit-system-helpers\t1.66ubuntu1\ninitramfs-tools\t0.142ubuntu25.8\ninitramfs-tools-bin\t0.142ubuntu25.8\ninitramfs-tools-core\t0.142ubuntu25.8\ninstall-info\t7.1-3build2\niproute2\t6.1.0-1ubuntu6.4\niptables\t1.8.10-3ubuntu2\niputils-ping\t3:20240117-1ubuntu0.1\niputils-tracepath\t3:20240117-1ubuntu0.1\niso-codes\t4.16.0-1\njavascript-common\t11+nmu1\njq\t1.7.1-3ubuntu0.24.04.2\nkbd\t2.6.4-2ubuntu2\nkeyboard-configuration\t1.226ubuntu1.1\nkeyboxd\t2.4.4-2ubuntu17.6\nklibc-utils\t2.0.13-4ubuntu0.2\nkmod\t31+20240202-2ubuntu7.2\nkpartx\t0.9.4-5ubuntu8.2\nkrb5-locales\t1.20.1-6ubuntu2.10\nlandscape-common\t24.02-0ubuntu5.7\nless\t590-2ubuntu2.1\nlibacl1:amd64\t2.3.2-1build1.1\nlibaio1t64:amd64\t0.3.113-6build1.1\nlibalgorithm-diff-perl\t1.201-1\nlibalgorithm-diff-xs-perl:amd64\t0.04-8build3\nlibalgorithm-merge-perl\t0.08-5\nlibaom3:amd64\t3.8.2-2ubuntu0.2\nlibapparmor1:amd64\t4.0.1really4.0.1-0ubuntu0.24.04.8\nlibappstream5:amd64\t1.0.2-1build6\nlibapt-pkg6.0t64:amd64\t2.8.3\nlibarchive13t64:amd64\t3.7.2-2ubuntu0.8\nlibargon2-1:amd64\t0~20190702+dfsg-4build1\nlibasan8:amd64\t14.2.0-4ubuntu2~24.04.1\nlibasound2-data\t1.2.11-1ubuntu0.3\nlibasound2t64:amd64\t1.2.11-1ubuntu0.3\nlibassuan0:amd64\t2.5.6-1build1\nlibatasmart4:amd64\t0.19-5build3\nlibatk-bridge2.0-0t64:amd64\t2.52.0-1build1\nlibatk1.0-0t64:amd64\t2.52.0-1build1\nlibatm1t64:amd64\t1:2.5.1-5.1build1\nlibatomic1:amd64\t14.2.0-4ubuntu2~24.04.1\nlibatspi2.0-0t64:amd64\t2.52.0-1build1\nlibattr1:amd64\t1:2.5.2-1ubuntu0.1\nlibaudit-common\t1:3.1.2-2.1ubuntu0.1\nlibaudit1:amd64\t1:3.1.2-2.1ubuntu0.1\nlibavahi-client3:amd64\t0.8-13ubuntu6.2\nlibavahi-common-data:amd64\t0.8-13ubuntu6.2\nlibavahi-common3:amd64\t0.8-13ubuntu6.2\nlibbinutils:amd64\t2.42-4ubuntu2.10\nlibblkid1:amd64\t2.39.3-9ubuntu6.6\nlibblockdev-crypto3:amd64\t3.1.1-1ubuntu0.1\nlibblockdev-fs3:amd64\t3.1.1-1ubuntu0.1\nlibblockdev-loop3:amd64\t3.1.1-1ubuntu0.1\nlibblockdev-mdraid3:amd64\t3.1.1-1ubuntu0.1\nlibblockdev-nvme3:amd64\t3.1.1-1ubuntu0.1\nlibblockdev-part3:amd64\t3.1.1-1ubuntu0.1\nlibblockdev-swap3:amd64\t3.1.1-1ubuntu0.1\nlibblockdev-utils3:amd64\t3.1.1-1ubuntu0.1\nlibblockdev3:amd64\t3.1.1-1ubuntu0.1\nlibbpf1:amd64\t1:1.3.0-2build2\nlibbpfcc:amd64\t0.29.1+ds-1ubuntu7\nlibbrotli1:amd64\t1.1.0-2build2\nlibbsd0:amd64\t0.12.1-1build1.1\nlibbytesize-common\t2.10-1ubuntu2\nlibbytesize1:amd64\t2.10-1ubuntu2\nlibbz2-1.0:amd64\t1.0.8-5.1ubuntu0.1\nlibc-bin\t2.39-0ubuntu8.9\nlibc-dev-bin\t2.39-0ubuntu8.9\nlibc-devtools\t2.39-0ubuntu8.9\nlibc6:amd64\t2.39-0ubuntu8.9\nlibc6-dev:amd64\t2.39-0ubuntu8.9\nlibcairo2:amd64\t1.18.0-3build1\nlibcap-ng0:amd64\t0.8.4-2build2\nlibcap2:amd64\t1:2.66-5ubuntu2.4\nlibcap2-bin\t1:2.66-5ubuntu2.4\nlibcbor0.10:amd64\t0.10.2-1.2ubuntu2\nlibcc1-0:amd64\t14.2.0-4ubuntu2~24.04.1\nlibclang-cpp18\t1:18.1.3-1ubuntu1\nlibclang1-18\t1:18.1.3-1ubuntu1\nlibcom-err2:amd64\t1.47.0-2.4~exp1ubuntu4.1\nlibcrypt-dev:amd64\t1:4.4.36-4build1\nlibcrypt1:amd64\t1:4.4.36-4build1\nlibcryptsetup12:amd64\t2:2.7.0-1ubuntu4.2\nlibctf-nobfd0:amd64\t2.42-4ubuntu2.10\nlibctf0:amd64\t2.42-4ubuntu2.10\nlibcups2t64:amd64\t2.4.7-1.2ubuntu7.14\nlibcurl3t64-gnutls:amd64\t8.5.0-2ubuntu10.15\nlibcurl4t64:amd64\t8.5.0-2ubuntu10.15\nlibdatrie1:amd64\t0.2.13-3build1\nlibdb5.3t64:amd64\t5.3.28+dfsg2-7\nlibdbus-1-3:amd64\t1.14.10-4ubuntu4.1\nlibdebconfclient0:amd64\t0.271ubuntu3\nlibdeflate0:amd64\t1.19-1build1.1\nlibdevmapper-event1.02.1:amd64\t2:1.02.185-3ubuntu3.2\nlibdevmapper1.02.1:amd64\t2:1.02.185-3ubuntu3.2\nlibdpkg-perl\t1.22.6ubuntu6.6\nlibdrm-amdgpu1:amd64\t2.4.125-1ubuntu0.1~24.04.2\nlibdrm-common\t2.4.125-1ubuntu0.1~24.04.2\nlibdrm-intel1:amd64\t2.4.125-1ubuntu0.1~24.04.2\nlibdrm2:amd64\t2.4.125-1ubuntu0.1~24.04.2\nlibduktape207:amd64\t2.7.0+tests-0ubuntu3\nlibdw1t64:amd64\t0.190-1.1ubuntu0.1\nlibeatmydata1:amd64\t131-1ubuntu1\nlibedit2:amd64\t3.1-20230828-1build1\nlibefiboot1t64:amd64\t38-3.1build1\nlibefivar1t64:amd64\t38-3.1build1\nlibelf1t64:amd64\t0.190-1.1ubuntu0.1\nliberror-perl\t0.17029-2\nlibestr0:amd64\t0.1.11-1build1\nlibevdev2:amd64\t1.13.1+dfsg-1build1\nlibevent-core-2.1-7t64:amd64\t2.1.12-stable-9ubuntu2.2\nlibexpat1:amd64\t2.6.1-2ubuntu0.6\nlibexpat1-dev:amd64\t2.6.1-2ubuntu0.6\nlibext2fs2t64:amd64\t1.47.0-2.4~exp1ubuntu4.1\nlibfakeroot:amd64\t1.33-1\nlibfastjson4:amd64\t1.2304.0-1build1\nlibfdisk1:amd64\t2.39.3-9ubuntu6.6\nlibffi8:amd64\t3.4.6-1build1\nlibfido2-1:amd64\t1.14.0-1build3\nlibfile-fcntllock-perl\t0.22-4ubuntu5\nlibflashrom1:amd64\t1.3.0-2.1ubuntu2\nlibfontconfig1:amd64\t2.15.0-1.1ubuntu2\nlibfontenc1:amd64\t1:1.1.8-1build1\nlibfreetype6:amd64\t2.13.2+dfsg-1ubuntu0.1\nlibfribidi0:amd64\t1.0.13-3build1\nlibftdi1-2:amd64\t1.5-6build5\nlibfuse3-3:amd64\t3.14.0-5build1\nlibfwupd3:amd64\t2.0.20-1ubuntu2~24.04.2\nlibgbm1:amd64\t25.2.8-0ubuntu0.24.04.2\nlibgcc-13-dev:amd64\t13.3.0-6ubuntu2~24.04.1\nlibgcc-s1:amd64\t14.2.0-4ubuntu2~24.04.1\nlibgcrypt20:amd64\t1.10.3-2ubuntu0.2\nlibgd3:amd64\t2.3.3-9ubuntu5\nlibgdbm-compat4t64:amd64\t1.23-5.1build1\nlibgdbm6t64:amd64\t1.23-5.1build1\nlibgirepository-1.0-1:amd64\t1.80.1-1\nlibgl1:amd64\t1.7.0-1build1\nlibgl1-mesa-dri:amd64\t25.2.8-0ubuntu0.24.04.2\nlibglib2.0-0t64:amd64\t2.80.0-6ubuntu3.9\nlibglib2.0-bin\t2.80.0-6ubuntu3.9\nlibglib2.0-data\t2.80.0-6ubuntu3.9\nlibglvnd0:amd64\t1.7.0-1build1\nlibglx-mesa0:amd64\t25.2.8-0ubuntu0.24.04.2\nlibglx0:amd64\t1.7.0-1build1\nlibgmp10:amd64\t2:6.3.0+dfsg-2ubuntu6.1\nlibgnutls30t64:amd64\t3.8.3-1.1ubuntu3.6\nlibgomp1:amd64\t14.2.0-4ubuntu2~24.04.1\nlibgpg-error-l10n\t1.47-3build2.1\nlibgpg-error0:amd64\t1.47-3build2.1\nlibgpgme11t64:amd64\t1.18.0-4.1ubuntu4\nlibgpm2:amd64\t1.20.7-11\nlibgprofng0:amd64\t2.42-4ubuntu2.10\nlibgraphite2-3:amd64\t1.3.14-2ubuntu0.24.04.1\nlibgssapi-krb5-2:amd64\t1.20.1-6ubuntu2.10\nlibgstreamer1.0-0:amd64\t1.24.2-1ubuntu0.1\nlibgudev-1.0-0:amd64\t1:238-5ubuntu1\nlibharfbuzz0b:amd64\t8.3.0-2build2\nlibheif-plugin-aomdec:amd64\t1.17.6-1ubuntu4.9\nlibheif-plugin-aomenc:amd64\t1.17.6-1ubuntu4.9\nlibheif1:amd64\t1.17.6-1ubuntu4.9\nlibhogweed6t64:amd64\t3.9.1-2.2build1.1\nlibhwasan0:amd64\t14.2.0-4ubuntu2~24.04.1\nlibibverbs1:amd64\t50.0-2ubuntu0.2\nlibice6:amd64\t2:1.0.10-1build3\nlibicu74:amd64\t74.2-1ubuntu3.1\nlibidn2-0:amd64\t2.3.7-2build1.1\nlibinih1:amd64\t55-1ubuntu2\nlibintl-perl\t1.33-1build3\nlibintl-xs-perl\t1.33-1build3\nlibip4tc2:amd64\t1.8.10-3ubuntu2\nlibip6tc2:amd64\t1.8.10-3ubuntu2\nlibisl23:amd64\t0.26-3build1.1\nlibisns0t64:amd64\t0.101-0.3ubuntu0.1\nlibitm1:amd64\t14.2.0-4ubuntu2~24.04.1\nlibjansson4:amd64\t2.14-2build2\nlibjbig0:amd64\t2.1-6.1ubuntu2\nlibjcat1:amd64\t0.2.3-1~ubuntu0.24.04.1\nlibjpeg-turbo8:amd64\t2.1.5-2ubuntu2\nlibjpeg8:amd64\t8c-2ubuntu11\nlibjq1:amd64\t1.7.1-3ubuntu0.24.04.2\nlibjs-jquery\t3.6.1+dfsg+~3.5.14-1\nlibjs-sphinxdoc\t7.2.6-6\nlibjs-underscore\t1.13.4~dfsg+~1.11.4-3\nlibjson-c5:amd64\t0.17-1build1\nlibjson-glib-1.0-0:amd64\t1.8.0-2build2\nlibjson-glib-1.0-common\t1.8.0-2build2\nlibk5crypto3:amd64\t1.20.1-6ubuntu2.10\nlibkeyutils1:amd64\t1.6.3-3build1\nlibklibc:amd64\t2.0.13-4ubuntu0.2\nlibkmod2:amd64\t31+20240202-2ubuntu7.2\nlibkrb5-3:amd64\t1.20.1-6ubuntu2.10\nlibkrb5support0:amd64\t1.20.1-6ubuntu2.10\nlibksba8:amd64\t1.6.6-1build1\nlibldap-common\t2.6.10+dfsg-0ubuntu0.24.04.1\nlibldap2:amd64\t2.6.10+dfsg-0ubuntu0.24.04.1\nliblerc4:amd64\t4.0.0+ds-4ubuntu2\nlibllvm18:amd64\t1:18.1.3-1ubuntu1\nlibllvm20:amd64\t1:20.1.2-0ubuntu1~24.04.3\nliblmdb0:amd64\t0.9.31-1build1\nliblocale-gettext-perl\t1.07-6ubuntu5\nliblsan0:amd64\t14.2.0-4ubuntu2~24.04.1\nliblvm2cmd2.03:amd64\t2.03.16-3ubuntu3.2\nliblz4-1:amd64\t1.9.4-1build1.1\nliblzma5:amd64\t5.6.1+really5.4.5-1ubuntu0.3\nliblzo2-2:amd64\t2.10-2build4\nlibmagic-mgc\t1:5.45-3build1\nlibmagic1t64:amd64\t1:5.45-3build1\nlibmaxminddb0:amd64\t1.9.1-1build1\nlibmbim-glib4:amd64\t1.31.2-0ubuntu3.1\nlibmbim-proxy\t1.31.2-0ubuntu3.1\nlibmbim-utils\t1.31.2-0ubuntu3.1\nlibmd0:amd64\t1.1.0-2build1.1\nlibmm-glib0:amd64\t1.23.4-0ubuntu2\nlibmnl0:amd64\t1.0.5-2build1\nlibmodule-find-perl\t0.16-2\nlibmodule-scandeps-perl\t1.35-1ubuntu0.24.04.1\nlibmount1:amd64\t2.39.3-9ubuntu6.6\nlibmpc3:amd64\t1.3.1-1build1.1\nlibmpfr6:amd64\t4.2.1-1build1.1\nlibmspack0t64:amd64\t0.11-1.1build1\nlibncurses6:amd64\t6.4+20240113-1ubuntu2.2\nlibncursesw6:amd64\t6.4+20240113-1ubuntu2.2\nlibnetfilter-conntrack3:amd64\t1.0.9-6build1\nlibnetplan1:amd64\t1.1.2-8ubuntu1~24.04.3\nlibnettle8t64:amd64\t3.9.1-2.2build1.1\nlibnewt0.52:amd64\t0.52.24-2ubuntu2\nlibnfnetlink0:amd64\t1.0.2-2build1\nlibnftables1:amd64\t1.0.9-1ubuntu0.1\nlibnftnl11:amd64\t1.2.6-2build1\nlibnghttp2-14:amd64\t1.59.0-1ubuntu0.4\nlibnl-3-200:amd64\t3.7.0-0.3build1.1\nlibnl-genl-3-200:amd64\t3.7.0-0.3build1.1\nlibnl-route-3-200:amd64\t3.7.0-0.3build1.1\nlibnpth0t64:amd64\t1.6-3.1build1\nlibnspr4:amd64\t2:4.35-1.1build1\nlibnss-systemd:amd64\t255.4-1ubuntu8.17\nlibnss3:amd64\t2:3.98-1ubuntu0.2\nlibnss3-tools\t2:3.98-1ubuntu0.2\nlibntfs-3g89t64:amd64\t1:2022.10.3-1.2ubuntu3.2\nlibnuma1:amd64\t2.0.18-1ubuntu0.24.04.1\nlibnvme1t64\t1.8-3ubuntu1\nlibonig5:amd64\t6.9.9-1build1\nlibopeniscsiusr\t2.1.9-3ubuntu5.4\nlibp11-kit0:amd64\t0.25.3-4ubuntu2.2\nlibpackagekit-glib2-18:amd64\t1.2.8-2ubuntu1.5\nlibpam-cap:amd64\t1:2.66-5ubuntu2.4\nlibpam-modules:amd64\t1.5.3-5ubuntu5.7\nlibpam-modules-bin\t1.5.3-5ubuntu5.7\nlibpam-runtime\t1.5.3-5ubuntu5.7\nlibpam-systemd:amd64\t255.4-1ubuntu8.17\nlibpam0g:amd64\t1.5.3-5ubuntu5.7\nlibpango-1.0-0:amd64\t1.52.1+ds-1build1\nlibparted2t64:amd64\t3.6-4build1\nlibpcap0.8t64:amd64\t1.10.4-4.1ubuntu3.1\nlibpci3:amd64\t1:3.10.0-2build1\nlibpciaccess0:amd64\t0.17-3ubuntu0.24.04.3\nlibpcre2-8-0:amd64\t10.42-4ubuntu2.1\nlibperl5.38t64:amd64\t5.38.2-3.2ubuntu0.6\nlibpipeline1:amd64\t1.5.7-2\nlibpixman-1-0:amd64\t0.42.2-1build1\nlibplymouth5:amd64\t24.004.60-1ubuntu7.2\nlibpng16-16t64:amd64\t1.6.43-5ubuntu0.6\nlibpolkit-agent-1-0:amd64\t124-2ubuntu1.24.04.4\nlibpolkit-gobject-1-0:amd64\t124-2ubuntu1.24.04.4\nlibpopt0:amd64\t1.19+dfsg-1build1\nlibproc-processtable-perl:amd64\t0.636-1build3\nlibproc2-0:amd64\t2:4.0.4-4ubuntu3.3\nlibprotobuf-c1:amd64\t1.4.1-1ubuntu4\nlibpsl5t64:amd64\t0.21.2-1.1build1\nlibpython3-dev:amd64\t3.12.3-0ubuntu2.1\nlibpython3-stdlib:amd64\t3.12.3-0ubuntu2.1\nlibpython3.12-dev:amd64\t3.12.3-1ubuntu0.17\nlibpython3.12-minimal:amd64\t3.12.3-1ubuntu0.17\nlibpython3.12-stdlib:amd64\t3.12.3-1ubuntu0.17\nlibpython3.12t64:amd64\t3.12.3-1ubuntu0.17\nlibqmi-glib5:amd64\t1.35.2-0ubuntu2\nlibqmi-proxy\t1.35.2-0ubuntu2\nlibqmi-utils\t1.35.2-0ubuntu2\nlibqrtr-glib0:amd64\t1.2.2-1ubuntu4\nlibquadmath0:amd64\t14.2.0-4ubuntu2~24.04.1\nlibreadline8t64:amd64\t8.2-4build1\nlibreiserfscore0t64\t1:3.6.27-7.1build1\nlibrtmp1:amd64\t2.4+20151223.gitfa8646d.1-2build7\nlibsasl2-2:amd64\t2.1.28+dfsg1-5ubuntu3.1\nlibsasl2-modules:amd64\t2.1.28+dfsg1-5ubuntu3.1\nlibsasl2-modules-db:amd64\t2.1.28+dfsg1-5ubuntu3.1\nlibseccomp2:amd64\t2.5.5-1ubuntu3.1\nlibselinux1:amd64\t3.5-2ubuntu2.1\nlibsemanage-common\t3.5-1build5\nlibsemanage2:amd64\t3.5-1build5\nlibsensors-config\t1:3.6.0-9build1\nlibsensors5:amd64\t1:3.6.0-9build1\nlibsepol2:amd64\t3.5-2build1\nlibsframe1:amd64\t2.42-4ubuntu2.10\nlibsgutils2-1.46-2:amd64\t1.46-3ubuntu4\nlibsharpyuv0:amd64\t1.3.2-0.4build3\nlibsigsegv2:amd64\t2.14-1ubuntu2\nlibslang2:amd64\t2.3.3-3build2\nlibsm6:amd64\t2:1.2.3-1build3\nlibsmartcols1:amd64\t2.39.3-9ubuntu6.6\nlibsodium23:amd64\t1.0.18-1ubuntu0.24.04.1\nlibsort-naturally-perl\t1.03-4\nlibsqlite3-0:amd64\t3.45.1-1ubuntu2.8\nlibss2:amd64\t1.47.0-2.4~exp1ubuntu4.1\nlibssh-4:amd64\t0.10.6-2ubuntu0.5\nlibssl3t64:amd64\t3.0.13-0ubuntu3.16\nlibstdc++-13-dev:amd64\t13.3.0-6ubuntu2~24.04.1\nlibstdc++6:amd64\t14.2.0-4ubuntu2~24.04.1\nlibstemmer0d:amd64\t2.2.0-4build1\nlibsystemd-shared:amd64\t255.4-1ubuntu8.17\nlibsystemd0:amd64\t255.4-1ubuntu8.17\nlibtasn1-6:amd64\t4.19.0-3ubuntu0.24.04.2\nlibtcl8.6:amd64\t8.6.14+dfsg-1build1\nlibterm-readkey-perl\t2.38-2build4\nlibtext-charwidth-perl:amd64\t0.04-11build3\nlibtext-iconv-perl:amd64\t1.7-8build3\nlibtext-wrapi18n-perl\t0.06-10\nlibthai-data\t0.1.29-2build1\nlibthai0:amd64\t0.1.29-2build1\nlibtiff6:amd64\t4.5.1+git230720-4ubuntu2.5\nlibtinfo6:amd64\t6.4+20240113-1ubuntu2.2\nlibtirpc-common\t1.3.4+ds-1.1build1\nlibtirpc3t64:amd64\t1.3.4+ds-1.1build1\nlibtraceevent1:amd64\t1:1.8.2-1ubuntu2.1\nlibtraceevent1-plugin:amd64\t1:1.8.2-1ubuntu2.1\nlibtracefs1:amd64\t1.8.0-1ubuntu1\nlibtsan2:amd64\t14.2.0-4ubuntu2~24.04.1\nlibtss2-esys-3.0.2-0t64:amd64\t4.0.1-7.1ubuntu5.1\nlibtss2-mu-4.0.1-0t64:amd64\t4.0.1-7.1ubuntu5.1\nlibtss2-sys1t64:amd64\t4.0.1-7.1ubuntu5.1\nlibtss2-tcti-cmd0t64:amd64\t4.0.1-7.1ubuntu5.1\nlibtss2-tcti-device0t64:amd64\t4.0.1-7.1ubuntu5.1\nlibtss2-tcti-mssim0t64:amd64\t4.0.1-7.1ubuntu5.1\nlibtss2-tcti-swtpm0t64:amd64\t4.0.1-7.1ubuntu5.1\nlibubsan1:amd64\t14.2.0-4ubuntu2~24.04.1\nlibuchardet0:amd64\t0.0.8-1build1\nlibudev1:amd64\t255.4-1ubuntu8.17\nlibudisks2-0:amd64\t2.10.1-6ubuntu1.5\nlibunistring5:amd64\t1.1-2build1.1\nlibunwind8:amd64\t1.6.2-3build1.1\nliburcu8t64:amd64\t0.14.0-3.1build1\nliburing2:amd64\t2.5-1build1\nlibusb-1.0-0:amd64\t2:1.0.27-1\nlibutempter0:amd64\t1.2.1-3build1\nlibuuid1:amd64\t2.39.3-9ubuntu6.6\nlibuv1t64:amd64\t1.48.0-1.1build1\nlibvolume-key1:amd64\t0.3.12-7build2\nlibvulkan1:amd64\t1.3.275.0-1build1\nlibwebp7:amd64\t1.3.2-0.4build3\nlibwrap0:amd64\t7.6.q-33\nlibx11-6:amd64\t2:1.8.7-1build1\nlibx11-data\t2:1.8.7-1build1\nlibx11-xcb1:amd64\t2:1.8.7-1build1\nlibxau6:amd64\t1:1.0.9-1build6\nlibxaw7:amd64\t2:1.0.14-1build2\nlibxcb-dri3-0:amd64\t1.15-1ubuntu2\nlibxcb-glx0:amd64\t1.15-1ubuntu2\nlibxcb-present0:amd64\t1.15-1ubuntu2\nlibxcb-randr0:amd64\t1.15-1ubuntu2\nlibxcb-render0:amd64\t1.15-1ubuntu2\nlibxcb-shm0:amd64\t1.15-1ubuntu2\nlibxcb-sync1:amd64\t1.15-1ubuntu2\nlibxcb-xfixes0:amd64\t1.15-1ubuntu2\nlibxcb1:amd64\t1.15-1ubuntu2\nlibxcomposite1:amd64\t1:0.4.5-1build3\nlibxdamage1:amd64\t1:1.1.6-1build1\nlibxdmcp6:amd64\t1:1.1.3-0ubuntu6\nlibxext6:amd64\t2:1.3.4-1build2\nlibxfixes3:amd64\t1:6.0.0-2build1\nlibxfont2:amd64\t1:2.0.6-1+deb13u1build0.24.04.2\nlibxi6:amd64\t2:1.8.1-1build1\nlibxkbcommon0:amd64\t1.6.0-1build1\nlibxkbfile1:amd64\t1:1.1.0-1build4\nlibxml2:amd64\t2.9.14+dfsg-1.3ubuntu3.9\nlibxmlb2:amd64\t0.3.24-1~ubuntu0.24.04.1\nlibxmlsec1t64:amd64\t1.2.39-5build2\nlibxmlsec1t64-openssl:amd64\t1.2.39-5build2\nlibxmu6:amd64\t2:1.1.3-3build2\nlibxmuu1:amd64\t2:1.1.3-3build2\nlibxpm4:amd64\t1:3.5.17-1ubuntu0.24.04.2\nlibxrandr2:amd64\t2:1.5.2-2build1\nlibxrender1:amd64\t1:0.9.10-1.1build1\nlibxshmfence1:amd64\t1.3-1build5\nlibxslt1.1:amd64\t1.1.39-0exp1ubuntu0.24.04.3\nlibxt6t64:amd64\t1:1.2.1-1.2build1\nlibxtables12:amd64\t1.8.10-3ubuntu2\nlibxxf86vm1:amd64\t1:1.1.4-1build4\nlibxxhash0:amd64\t0.8.2-2build1\nlibyaml-0-2:amd64\t0.2.5-1build1\nlibzstd1:amd64\t1.5.5+dfsg2-2build1.1\nlinux-base\t4.5ubuntu9+24.04.2\nlinux-headers-6.8.0-136\t6.8.0-136.136\nlinux-headers-6.8.0-136-generic\t6.8.0-136.136\nlinux-headers-6.8.0-142\t6.8.0-142.142\nlinux-headers-6.8.0-142-generic\t6.8.0-142.142\nlinux-headers-generic\t6.8.0-142.142\nlinux-headers-virtual\t6.8.0-142.142\nlinux-image-6.8.0-136-generic\t6.8.0-136.136\nlinux-image-6.8.0-142-generic\t6.8.0-142.142\nlinux-image-virtual\t6.8.0-142.142\nlinux-libc-dev:amd64\t6.8.0-142.142\nlinux-modules-6.8.0-136-generic\t6.8.0-136.136\nlinux-modules-6.8.0-142-generic\t6.8.0-142.142\nlinux-tools-6.8.0-136\t6.8.0-136.136\nlinux-tools-6.8.0-136-generic\t6.8.0-136.136\nlinux-tools-6.8.0-142\t6.8.0-142.142\nlinux-tools-6.8.0-142-generic\t6.8.0-142.142\nlinux-tools-common\t6.8.0-142.142\nlinux-virtual\t6.8.0-142.142\nlocales\t2.39-0ubuntu8.9\nlogin\t1:4.13+dfsg1-4ubuntu3.2\nlogrotate\t3.21.0-2build1\nlogsave\t1.47.0-2.4~exp1ubuntu4.1\nlsb-release\t12.0-2\nlshw\t02.19.git.2021.06.19.996aaad9c7-2ubuntu0.24.04.1\nlsof\t4.95.0-1build3\nlto-disabled-list\t47\nlvm2\t2.03.16-3ubuntu3.2\nlxd-agent-loader\t0.7ubuntu0.1\nlxd-installer\t4ubuntu0.1\nmake\t4.3-4.1build2\nman-db\t2.12.0-4build2\nmanpages\t6.7-2\nmanpages-dev\t6.7-2\nmawk\t1.3.4.20240123-1build1\nmdadm\t4.3-1ubuntu2.1\nmedia-types\t10.1.0\nmesa-libgallium:amd64\t25.2.8-0ubuntu0.24.04.2\nmodemmanager\t1.23.4-0ubuntu2\nmokutil\t0.6.0-2build3\nmotd-news-config\t13ubuntu10.5\nmount\t2.39.3-9ubuntu6.6\nmtr-tiny\t0.95-1.1ubuntu0.1\nmultipath-tools\t0.9.4-5ubuntu8.2\nnano\t7.2-2ubuntu0.2\nncurses-base\t6.4+20240113-1ubuntu2.2\nncurses-bin\t6.4+20240113-1ubuntu2.2\nncurses-term\t6.4+20240113-1ubuntu2.2\nneedrestart\t3.6-7ubuntu4.5\nnetbase\t6.4\nnetcat-openbsd\t1.226-1ubuntu2\nnetplan-generator\t1.1.2-8ubuntu1~24.04.3\nnetplan.io\t1.1.2-8ubuntu1~24.04.3\nnetworkd-dispatcher\t2.2.4-1\nnftables\t1.0.9-1ubuntu0.1\nnodejs\t22.23.3-1nodesource1\nntfs-3g\t1:2022.10.3-1.2ubuntu3.2\nnumactl\t2.0.18-1ubuntu0.24.04.1\nopen-iscsi\t2.1.9-3ubuntu5.4\nopen-vm-tools\t2:13.0.10-0ubuntu0.24.04.1\nopenssh-client\t1:9.6p1-3ubuntu13.19\nopenssh-server\t1:9.6p1-3ubuntu13.19\nopenssh-sftp-server\t1:9.6p1-3ubuntu13.19\nopenssl\t3.0.13-0ubuntu3.16\nos-prober\t1.81ubuntu4\noverlayroot\t0.49~24.04.1\npackagekit\t1.2.8-2ubuntu1.5\npackagekit-tools\t1.2.8-2ubuntu1.5\nparted\t3.6-4build1\npasswd\t1:4.13+dfsg1-4ubuntu3.2\npastebinit\t1.6.2-1\npatch\t2.7.6-7build3\npci.ids\t0.0~2024.03.31-1ubuntu0.1\npciutils\t1:3.10.0-2build1\nperl\t5.38.2-3.2ubuntu0.6\nperl-base\t5.38.2-3.2ubuntu0.6\nperl-modules-5.38\t5.38.2-3.2ubuntu0.6\npinentry-curses\t1.2.1-3ubuntu5\nplymouth\t24.004.60-1ubuntu7.2\nplymouth-theme-ubuntu-text\t24.004.60-1ubuntu7.2\npolkitd\t124-2ubuntu1.24.04.4\npollinate\t4.33-3.1ubuntu1.3\npowermgmt-base\t1.37ubuntu0.1\nprocps\t2:4.0.4-4ubuntu3.3\npsmisc\t23.7-1build1\npublicsuffix\t20231001.0357-0.1\npython-apt-common\t2.7.7ubuntu5.3\npython-babel-localedata\t2.10.3-3build1\npython3\t3.12.3-0ubuntu2.1\npython3-apport\t2.28.3-0ubuntu0.1\npython3-apt\t2.7.7ubuntu5.3\npython3-attr\t23.2.0-2\npython3-automat\t22.10.0-2\npython3-babel\t2.10.3-3build1\npython3-bcrypt\t3.2.2-1build1\npython3-blinker\t1.7.0-1\npython3-boto3\t1.34.46+dfsg-1ubuntu1\npython3-botocore\t1.34.46+repack-1ubuntu1\npython3-bpfcc\t0.29.1+ds-1ubuntu7\npython3-certifi\t2023.11.17-1\npython3-cffi-backend:amd64\t1.16.0-2build1\npython3-chardet\t5.2.0+dfsg-1\npython3-click\t8.1.6-2\npython3-colorama\t0.4.6-4\npython3-commandnotfound\t23.04.0\npython3-configobj\t5.0.8-3\npython3-constantly\t23.10.4-1\npython3-cryptography\t41.0.7-4ubuntu0.4\npython3-dateutil\t2.8.2-3ubuntu1\npython3-dbus\t1.3.2-5build3\npython3-debconf\t1.5.86ubuntu1\npython3-debian\t0.1.49ubuntu2\npython3-dev\t3.12.3-0ubuntu2.1\npython3-distro\t1.9.0-1\npython3-distro-info\t1.7build1\npython3-distupgrade\t1:24.04.29\npython3-gdbm:amd64\t3.12.3-0ubuntu1\npython3-gi\t3.48.2-1\npython3-hamcrest\t2.1.0-1\npython3-httplib2\t0.20.4-3ubuntu0.1\npython3-hyperlink\t21.0.0-5\npython3-idna\t3.6-2ubuntu0.2\npython3-incremental\t22.10.0-1\npython3-jinja2\t3.1.2-1ubuntu1.3\npython3-jmespath\t1.0.1-1\npython3-json-pointer\t2.0-0ubuntu1\npython3-jsonpatch\t1.32-3\npython3-jsonschema\t4.10.3-2ubuntu1\npython3-jwt\t2.7.0-1ubuntu0.2\npython3-launchpadlib\t1.11.0-6\npython3-lazr.restfulclient\t0.14.6-1\npython3-lazr.uri\t1.0.6-3\npython3-magic\t2:0.4.27-3\npython3-markdown-it\t3.0.0-2\npython3-markupsafe\t2.1.5-1build2\npython3-mdurl\t0.1.2-1\npython3-minimal\t3.12.3-0ubuntu2.1\npython3-netaddr\t0.8.0-2ubuntu1\npython3-netifaces:amd64\t0.11.0-2build3\npython3-netplan\t1.1.2-8ubuntu1~24.04.3\npython3-newt:amd64\t0.52.24-2ubuntu2\npython3-oauthlib\t3.2.2-1\npython3-openssl\t23.2.0-1ubuntu0.1\npython3-packaging\t24.0-1\npython3-pexpect\t4.9-2\npython3-pip\t24.0+dfsg-1ubuntu1.3\npython3-pip-whl\t24.0+dfsg-1ubuntu1.3\npython3-pkg-resources\t68.1.2-2ubuntu1.2\npython3-problem-report\t2.28.3-0ubuntu0.1\npython3-ptyprocess\t0.7.0-5\npython3-pyasn1\t0.4.8-4ubuntu0.3\npython3-pyasn1-modules\t0.2.8-1\npython3-pyasyncore\t1.0.2-2\npython3-pygments\t2.17.2+dfsg-1\npython3-pyinotify\t0.9.6-2ubuntu1\npython3-pyparsing\t3.1.1-1\npython3-pyrsistent:amd64\t0.20.0-1build2\npython3-requests\t2.31.0+dfsg-1ubuntu1.2\npython3-rich\t13.7.1-1\npython3-s3transfer\t0.10.1-1ubuntu2\npython3-serial\t3.5-2\npython3-service-identity\t24.1.0-1\npython3-setuptools\t68.1.2-2ubuntu1.2\npython3-setuptools-whl\t68.1.2-2ubuntu1.2\npython3-six\t1.16.0-4\npython3-software-properties\t0.99.49.4\npython3-systemd\t235-1build4\npython3-twisted\t24.3.0-1ubuntu0.2\npython3-typing-extensions\t4.10.0-1\npython3-tz\t2024.1-2\npython3-update-manager\t1:24.04.12\npython3-urllib3\t2.0.7-1ubuntu0.7\npython3-venv\t3.12.3-0ubuntu2.1\npython3-wadllib\t1.3.6-5\npython3-wheel\t0.42.0-2\npython3-yaml\t6.0.1-2build2\npython3-zope.interface\t6.1-1build1\npython3.12\t3.12.3-1ubuntu0.17\npython3.12-dev\t3.12.3-1ubuntu0.17\npython3.12-minimal\t3.12.3-1ubuntu0.17\npython3.12-venv\t3.12.3-1ubuntu0.17\nqemu-guest-agent\t1:8.2.2+ds-0ubuntu1.18\nreadline-common\t8.2-4build1\nrpcsvc-proto\t1.4.2-0ubuntu7\nrsync\t3.2.7-1ubuntu1.5\nrsyslog\t8.2312.0-3ubuntu9.4\nrun-one\t1.17-0ubuntu2\nsbsigntool\t0.9.4-3.1ubuntu7\nscreen\t4.9.1-1ubuntu1\nsecureboot-db\t1.9build1\nsed\t4.9-2ubuntu0.24.04.1\nsensible-utils\t0.0.22\nsg3-utils\t1.46-3ubuntu4\nsg3-utils-udev\t1.46-3ubuntu4\nsgml-base\t1.31\nshared-mime-info\t2.4-4\nshim-signed\t1.58+15.8-0ubuntu1\nsnapd\t2.76.3+ubuntu24.04\nsoftware-properties-common\t0.99.49.4\nsosreport\t4.10.2-0ubuntu0~24.04.1\nsquashfs-tools\t1:4.6.1-1build1\nssh-import-id\t5.11-0ubuntu2.24.04.1\nstrace\t6.8-0ubuntu2\nsudo\t1.9.15p5-3ubuntu5.24.04.3\nsysstat\t12.6.1-2\nsystemd\t255.4-1ubuntu8.17\nsystemd-dev\t255.4-1ubuntu8.17\nsystemd-hwe-hwdb\t255.1.7\nsystemd-resolved\t255.4-1ubuntu8.17\nsystemd-sysv\t255.4-1ubuntu8.17\nsystemd-timesyncd\t255.4-1ubuntu8.17\nsysvinit-utils\t3.08-6ubuntu3\ntar\t1.35+dfsg-3ubuntu0.4\ntcl\t8.6.14build1\ntcl8.6\t8.6.14+dfsg-1build1\ntcpdump\t4.99.4-3ubuntu4.24.04.1\ntelnet\t0.17+2.5-3ubuntu4.2\nthin-provisioning-tools\t0.9.0-2ubuntu5.1\ntime\t1.9-0.2build1\ntmux\t3.4-1ubuntu0.1\ntnftp\t20230507-2build3\ntpm-udev\t0.6ubuntu1\ntrace-cmd\t3.2-1ubuntu2\ntzdata\t2026c-0ubuntu0.24.04.1\nubuntu-kernel-accessories\t1.539.2\nubuntu-keyring\t2023.11.28.1\nubuntu-minimal\t1.539.2\nubuntu-pro-client\t37.2ubuntu~24.04.1\nubuntu-pro-client-l10n\t37.2ubuntu~24.04.1\nubuntu-release-upgrader-core\t1:24.04.29\nubuntu-server\t1.539.2\nubuntu-standard\t1.539.2\nucf\t3.0043+nmu1\nudev\t255.4-1ubuntu8.17\nudisks2\t2.10.1-6ubuntu1.5\nufw\t0.36.2-6\nunattended-upgrades\t2.9.1+nmu4ubuntu1\nunzip\t6.0-28ubuntu4.1\nupdate-manager-core\t1:24.04.12\nupdate-notifier-common\t3.192.68.2\nusb-modeswitch\t2.6.1-3ubuntu3\nusb-modeswitch-data\t20191128-6\nusb.ids\t2024.03.18-1\nusbutils\t1:017-3build1\nutil-linux\t2.39.3-9ubuntu6.6\nuuid-runtime\t2.39.3-9ubuntu6.6\nvim\t2:9.1.0016-1ubuntu7.20\nvim-common\t2:9.1.0016-1ubuntu7.20\nvim-runtime\t2:9.1.0016-1ubuntu7.20\nvim-tiny\t2:9.1.0016-1ubuntu7.20\nwget\t1.21.4-1ubuntu4.5\nwhiptail\t0.52.24-2ubuntu2\nwhois\t5.5.22\nx11-common\t1:7.7+23ubuntu3\nx11-xkb-utils\t7.7+8build2\nxauth\t1:1.1.2-1build1\nxdg-user-dirs\t0.18-1build1\nxfonts-cyrillic\t1:1.0.5+nmu1\nxfonts-encodings\t1:1.0.5-0ubuntu2\nxfonts-scalable\t1:1.0.3-1.3\nxfonts-utils\t1:7.7+6build3\nxfsprogs\t6.6.0-1ubuntu2.1\nxkb-data\t2.41-2ubuntu1.1\nxml-core\t0.19\nxserver-common\t2:21.1.12-1ubuntu1.8\nxvfb\t2:21.1.12-1ubuntu1.8\nxxd\t2:9.1.0016-1ubuntu7.20\nxz-utils\t5.6.1+really5.4.5-1ubuntu0.3\nzerofree\t1.1.1-1build5\nzlib1g:amd64\t1:1.3.dfsg-3.1ubuntu2.2\nzlib1g-dev:amd64\t1:1.3.dfsg-3.1ubuntu2.2\nzstd\t1.5.5+dfsg2-2build1.1",
+  "provider_identities": {
+    "CLOUDFLARE_ACCOUNT_ID": "81d07d311d1b51e5e04b451d1f254850",
+    "GITHUB_APP_ID": "5077440",
+    "GITHUB_APP_INSTALLATION_ID": "164914980",
+    "GITHUB_OWNER": "yboucher97",
+    "OVH_ENDPOINT": "ovh-ca",
+    "ZOHO_OAUTH_ACCOUNTS_BASE_URL": "https://accounts.zoho.com"
+  },
+  "ram": "total        used        free      shared  buff/cache   available\nMem:      8127705088  1605054464   849444864     9195520  6083039232  6522650624\nSwap:     2147479552   313069568  1834409984",
+  "recovery_generation": "20261007T030438Z",
+  "recovery_sources": {
+    "database_count": 8,
+    "encrypted_sha256": "70422eed74ff52da3f020dd2e2193b1a0dababecc7b8c9d1fd01cbca970a0669",
+    "format_version": 2,
+    "generation": "20261007T030438Z",
+    "local_archive": "/var/backups/optibrain/optibrain-backup-20261007T030438Z.tar.gz",
+    "object_key": "backups/2026/10/07/20261007T030438Z.tar.gz.age",
+    "offline_decryption_this_generation": false,
+    "offline_restore_verified": false,
+    "owner_identity_on_host": false,
+    "recipient_sha256": "d3593cf7f443701fe9d863b6fa2b7ba7ff17ed216f6a6f463e1333589cd8a96f",
+    "source_bundle": "/var/lib/optibrain/recovery-source/current.bundle",
+    "source_sha256": "1005074668c9b5e60bed640eae008d36301accfe842b4e74fc8ac4ab97baec48",
+    "verification_status": "download_hash_verified",
+    "verified_at": "2026-10-07T03:07:23.208917+00:00"
+  },
+  "release_metadata": {
+    "api_version": "1.34.1",
+    "at": "2026-10-07T02:43:54.450346+00:00",
+    "baseline": "35e316b46bc04c3136fdad2e5cea4150f9a6d1fa",
+    "ci_run_id": 37563114710,
+    "migration_state": {
+      "active_databases": 5,
+      "strategy": "additive rebuildable caches; no journal migration",
+      "user_versions": {
+        "automation.db": 2,
+        "phase10-service-events.db": 0,
+        "phase12-autonomy.db": 0,
+        "phase9-form-receipts.db": 0,
+        "phase9-intake.db": 0
+      }
+    },
+    "rollback": {
+      "backup_archive": "/var/backups/optibrain/optibrain-backup-20261007T022152Z.tar.gz",
+      "backup_sha256": "7103728df3f9eeda07e7ebc0d7b18bda84127954e187c59bf87825b442370999",
+      "sha": "35e316b46bc04c3136fdad2e5cea4150f9a6d1fa"
+    },
+    "safety_flags": {
+      "automatic_writes": false,
+      "development_worker": false,
+      "real_canary_allowed": false,
+      "test_writes_enabled": false
+    },
+    "schema": 1,
+    "service_health": {
+      "caddy": "active",
+      "opticable-omada-site": "active",
+      "opticable-password-pdf": "active",
+      "opticable-workflow-api": "active"
+    },
+    "sha": "be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa",
+    "state": "deployed",
+    "technical_provider_calls": {
+      "github": {
+        "reads": 1,
+        "writes": 0
+      }
+    },
+    "tests": {
+      "blocked_network_attempts": 0,
+      "errors": 0,
+      "failures": 0,
+      "passed": true,
+      "skipped": 0,
+      "subtests": 1851,
+      "tests": 1891
+    },
+    "timer_health": {
+      "optibrain-backup": "active",
+      "optibrain-phase2a-upload": "active",
+      "opticable-phase10-service-events": "active",
+      "opticable-phase12-test-runner": "active",
+      "opticable-phase9-intake-receipts": "active"
+    },
+    "type": "optibrain.release",
+    "writers_enabled": false
+  },
+  "repository": "https://github.com/yboucher97/opticable-api-platform.git",
+  "required_packages": [
+    "python3",
+    "python3-venv",
+    "python3-pip",
+    "python3-boto3",
+    "git",
+    "sqlite3",
+    "age",
+    "caddy",
+    "curl",
+    "ca-certificates",
+    "openssl",
+    "iproute2",
+    "systemd",
+    "sudo",
+    "rsync",
+    "tar",
+    "xz-utils",
+    "logrotate",
+    "openssh-server",
+    "util-linux",
+    "ufw",
+    "fail2ban",
+    "qemu-guest-agent"
+  ],
+  "reverse_proxy": {
+    "backend_ports": [
+      8100,
+      8000,
+      3210
+    ],
+    "configuration": "/etc/caddy/conf.d/opticable-api-platform.caddy",
+    "initial_test_bind": "127.0.0.1:8080",
+    "production_host": "optibrain.opticable.ca"
+  },
+  "runtime_versions": {
+    "caddy": "2.6.2",
+    "codex": "codex-cli 0.160.1",
+    "git": "git version 2.43.0",
+    "node": "v22.23.3",
+    "npm": "12.2.0",
+    "python": "Python 3.12.3"
+  },
+  "secret_paths": [
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "root",
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/optibrain/cloudflare-test-token",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "4ca783d46094e350edf2ea7092bb7284b32c6f4b62055d30de74dc936dbe5834",
+      "size_bytes": 54,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "root",
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/optibrain/control-plane.key",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "1968bb882399cce120fca9970ca2051c5794e0e2ca7452c654ae1ff3015f961a",
+      "size_bytes": 65,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "root",
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/optibrain/github-actions-deploy-ed25519",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "9171c53b2985881b21abbb5fbb9788e3618f55c39f8220cf90b79940525b9645",
+      "size_bytes": 432,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "opticable-workflow-api",
+      "mode": "0640",
+      "owner": "root",
+      "path": "/etc/optibrain/github-app.pem",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "a3c02d4b5d5d406f800e2b85ccd8a8076b874d63413f733f64ed24c2e3a1d74a",
+      "size_bytes": 1675,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "root",
+      "key_names": [
+        "OPTIBRAIN_AUTO_TEST_INTERNAL",
+        "OPTIBRAIN_AUTO_TEST_PROJECT",
+        "OPTIBRAIN_AUTO_TEST_TASK",
+        "OPTIBRAIN_BUSINESS_AUTO_WRITES"
+      ],
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/optibrain/phase12-runner.env",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "7d0dc9e6afb9140dcb2c07e1c65309f2e759acf6cfdc0e2a86704a994ab9879d",
+      "size_bytes": 121,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "root",
+      "key_names": [
+        "OPTIBRAIN_PHASE9_FORM_ENRICHMENT",
+        "OPTIBRAIN_PHASE9_FORM_GO_LIVE"
+      ],
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/optibrain/phase9-form-enrichment.env",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "4bf895d7b874a30e63fb958777481c34d8b8a2f9f13157f28e4f20b082879e4d",
+      "size_bytes": 93,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "root",
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/optibrain/phase9-receipt-export-private.pem",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "be37a80149c94a37f9645313bfeb60aa39cbd36e1a3d6aa2c8a7817808811385",
+      "size_bytes": 2484,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "opticable-workflow-api",
+      "key_names": [
+        "OPTIBRAIN_RECEIPT_EXPORT_KEY"
+      ],
+      "mode": "0640",
+      "owner": "root",
+      "path": "/etc/optibrain/phase9-receipt-export.env",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "20998a8a6cd809cc92bb03b9c96fa8a1a2b7b760860be9b3257da0861275993d",
+      "size_bytes": 94,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "root",
+      "key_names": [
+        "aws_access_key_id",
+        "aws_secret_access_key"
+      ],
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/optibrain/r2-uploader.env",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "ab7f21bfd25647d688cc00aa7928f7d12586ccbbf9a46acbc6ca97c841419177",
+      "size_bytes": 152,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "opticable-workflow-api",
+      "mode": "0640",
+      "owner": "root",
+      "path": "/etc/optibrain/website-preview/cloudflare-builds-user.token",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "8b6309e8496cb8a745c5261dcd1e470ce9055cd767969f294b94a4dbc57b9e3b",
+      "size_bytes": 54,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "root",
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/optibrain/zoho-oauth-traverse-recovery.txt",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "7b27020c1831ed896784f33e0ca3dd54301d7792ed03e49c06f07d6a7dd7714e",
+      "size_bytes": 785,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "root",
+      "key_names": [
+        "NODE_ENV",
+        "OMADA_SITE_CREATOR_BROWSER_CHANNEL",
+        "OMADA_SITE_CREATOR_DATA_DIR",
+        "OMADA_SITE_CREATOR_HEADLESS",
+        "OMADA_SITE_CREATOR_HOST",
+        "OMADA_SITE_CREATOR_PORT",
+        "OMADA_SITE_CREATOR_WEBHOOK_TOKEN",
+        "PLAYWRIGHT_BROWSERS_PATH"
+      ],
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/opticable-omada-site.env",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "6adadb050ff04dddc5f6633a9641014c29f7ec9de1575e8146ee47ea1a0a78c8",
+      "size_bytes": 390,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "root",
+      "key_names": [
+        "WIFI_PDF_API_KEY",
+        "ZOHO_OAUTH_CREDENTIALS_PATH",
+        "ZOHO_WORKDRIVE_PARENT_FOLDER_ID"
+      ],
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/opticable-password-pdf.env",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "a4608c8555afbcaeee37b24d26b7a98faf3b84a37b1bc7fc4bf5b262d4dca057",
+      "size_bytes": 198,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "root",
+      "key_names": [
+        "ANTHROPIC_API_KEY",
+        "ANTHROPIC_MODEL",
+        "ANTHROPIC_WORKSPACE_ID",
+        "APOLLO_API_KEY",
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_API_TOKEN",
+        "GITHUB_APP_ID",
+        "GITHUB_APP_INSTALLATION_ID",
+        "GITHUB_APP_PRIVATE_KEY_PATH",
+        "GITHUB_OWNER",
+        "GOOGLE_OAUTH_CLIENT_ID",
+        "GOOGLE_OAUTH_CLIENT_SECRET",
+        "GOOGLE_OAUTH_CREDENTIALS_PATH",
+        "GOOGLE_OAUTH_REDIRECT_URI",
+        "GOOGLE_OAUTH_SCOPES",
+        "OMADA_BROWSER_CHANNEL",
+        "OMADA_CLOUD_BASE_URL",
+        "OMADA_DEFAULT_REGION",
+        "OMADA_DEFAULT_SCENARIO",
+        "OMADA_DEFAULT_TIMEZONE",
+        "OMADA_HEADLESS",
+        "OMADA_ORGANIZATION_NAME",
+        "OMADA_SITE_CREATOR_BASE_URL",
+        "OMADA_SITE_CREATOR_CLOUD_EMAIL",
+        "OMADA_SITE_CREATOR_CLOUD_PASSWORD",
+        "OMADA_SITE_CREATOR_DEVICE_PASSWORD",
+        "OMADA_SITE_CREATOR_DEVICE_USERNAME",
+        "OMADA_SITE_CREATOR_TIMEOUT_SECONDS",
+        "OMADA_SITE_CREATOR_WEBHOOK_TOKEN",
+        "OPENAI_API_KEY",
+        "OPENAI_MODEL",
+        "OPTIBRAIN_ALLOW_APOLLO_CREDIT_CONSUMPTION",
+        "OPTIBRAIN_CRM_DRIFT_ENABLED",
+        "OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL",
+        "OPTIBRAIN_PHASE5_CRM_CHANNEL_EXPIRY",
+        "OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT",
+        "OPTIBRAIN_PHASE7_REGISTRATION",
+        "OPTIBRAIN_PHASE7_RELEASE_SHA",
+        "OPTIBRAIN_SYNC_CONFIG",
+        "OPTIBRAIN_WEBHOOK_CONFIG",
+        "OVH_APPLICATION_KEY",
+        "OVH_APPLICATION_SECRET",
+        "OVH_CONSUMER_KEY",
+        "OVH_ENDPOINT",
+        "PASSWORD_PDF_API_KEY",
+        "PASSWORD_PDF_BASE_URL",
+        "PASSWORD_PDF_TIMEOUT_SECONDS",
+        "SITE_WORKFLOW_API_KEY",
+        "SITE_WORKFLOW_HOST",
+        "SITE_WORKFLOW_OUTPUT_ROOT",
+        "SITE_WORKFLOW_PASSWORD_SPECIALS",
+        "SITE_WORKFLOW_PORT",
+        "SITE_WORKFLOW_SSID_PREFIX",
+        "SITE_WORKFLOW_SSID_SUFFIX_LENGTH",
+        "SITE_WORKFLOW_SSID_TEMPLATE",
+        "WINDSOR_API_KEY",
+        "ZOHO_OAUTH_ACCOUNTS_BASE_URL",
+        "ZOHO_OAUTH_CLIENT_ID",
+        "ZOHO_OAUTH_CLIENT_SECRET",
+        "ZOHO_OAUTH_CREDENTIALS_PATH",
+        "ZOHO_OAUTH_REDIRECT_URI",
+        "ZOHO_OAUTH_SCOPES"
+      ],
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/opticable-workflow-api.env",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "6cc602cfacf00c596e5d91ecc937e48a46ab0a969382b2bd3c19937a8e3c5af9",
+      "size_bytes": 7377,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "siteandpassword",
+      "mode": "0640",
+      "owner": "opticable-workflow-api",
+      "path": "/var/lib/opticable-api-platform/shared/zoho-oauth.json",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "830da5f683b91f6a2575003d74c8d4fae46858fe413dec6329c8674052154ea3",
+      "size_bytes": 3022,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "siteandpassword",
+      "mode": "0640",
+      "owner": "root",
+      "path": "/var/lib/opticable-api-platform/shared/zoho-oauth.json.pre-full",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "04f5c464831f7835c5e7f7b8133dae4e2c37c1b88315787f8cf0eb3b6c84cc90",
+      "size_bytes": 710,
+      "type": "file"
+    },
+    {
+      "consumer": "API/root reviewed provider clients; PDF shared OAuth; backup/uploader where named",
+      "group": "opticable-workflow-api",
+      "mode": "0640",
+      "owner": "opticable-workflow-api",
+      "path": "/var/lib/opticable-workflow-api/output/integrations/google-oauth.json",
+      "recovery_source": "selected AGE-encrypted recovery",
+      "rotation": "preserve current binding; read verification first; never overwrite a newer rotation",
+      "sha256": "429f641174db195ab35f43839938510bc250b0c9493635789c3cb039adae6ac8",
+      "size_bytes": 2381,
+      "type": "file"
+    }
+  ],
+  "secret_values_printed": 0,
+  "services": [
+    {
+      "ActiveState": "inactive",
+      "After": "sysinit.target tmp.mount system.slice network-online.target -.mount network.target systemd-journald.socket basic.target systemd-tmpfiles-setup.service",
+      "Description": "Caddy",
+      "DropInPaths": "",
+      "EnvironmentFiles": "NOT APPLICABLE",
+      "ExecMainExitTimestamp": "",
+      "ExecMainStartTimestamp": "",
+      "ExecStart": "{ path=/usr/bin/caddy ; argv[]=/usr/bin/caddy run --environ --resume ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+      "FragmentPath": "/usr/lib/systemd/system/caddy-api.service",
+      "Group": "caddy",
+      "LastTriggerUSec": "NOT APPLICABLE",
+      "NextElapseUSecRealtime": "NOT APPLICABLE",
+      "Requires": "sysinit.target -.mount network-online.target system.slice",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "NOT APPLICABLE",
+      "TimersMonotonic": "NOT APPLICABLE",
+      "Triggers": "",
+      "Type": "notify",
+      "UnitFileState": "disabled",
+      "User": "caddy",
+      "Wants": "tmp.mount",
+      "WorkingDirectory": "",
+      "authority_relationship": "NO AUTHORITY",
+      "classification": "RETIRED / MASKED",
+      "definition_hashes": {
+        "/usr/lib/systemd/system/caddy-api.service": "e1522046019c912af380dccfb6ac1a558b4c4df24fe0716bbdc6ad451bb598aa"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "caddy-api.service"
+    },
+    {
+      "ActiveState": "active",
+      "After": "network-online.target systemd-tmpfiles-setup.service network.target basic.target system.slice tmp.mount sysinit.target -.mount systemd-journald.socket",
+      "Description": "Caddy",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecMainExitTimestamp": "",
+      "ExecMainStartTimestamp": "Fri 2026-09-25 12:14:19 EDT",
+      "ExecStart": "{ path=/usr/bin/caddy ; argv[]=/usr/bin/caddy run --environ --config /etc/caddy/Caddyfile ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+      "FragmentPath": "/usr/lib/systemd/system/caddy.service",
+      "Group": "caddy",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "-.mount network-online.target sysinit.target system.slice",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "notify",
+      "UnitFileState": "enabled",
+      "User": "caddy",
+      "Wants": "tmp.mount",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ACTIVE REQUIRED",
+      "definition_hashes": {
+        "/usr/lib/systemd/system/caddy.service": "df2189b76e606ba16f620a348a4ecab446c6760234363566d473a2a51636ebe7"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "caddy.service"
+    },
+    {
+      "ActiveState": "active",
+      "After": "sysinit.target nftables.service basic.target firewalld.service ipset.service -.mount network.target systemd-journald.socket ip6tables.service system.slice iptables.service",
+      "Description": "Fail2Ban Service",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecMainExitTimestamp": "",
+      "ExecMainStartTimestamp": "Thu 2026-10-01 06:21:37 EDT",
+      "ExecStart": "{ path=/usr/bin/fail2ban-server ; argv[]=/usr/bin/fail2ban-server -xf start ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+      "FragmentPath": "/usr/lib/systemd/system/fail2ban.service",
+      "Group": "",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "system.slice sysinit.target -.mount",
+      "Restart": "on-failure",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "simple",
+      "UnitFileState": "enabled",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ACTIVE REQUIRED",
+      "definition_hashes": {
+        "/usr/lib/systemd/system/fail2ban.service": "1ce60983492b5059aea6ae74ac24b118ce00a18b40c3677d56ce3eba02551119"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "fail2ban.service"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "",
+      "Description": "optibrain-agent-dispatch.service",
+      "DropInPaths": "/etc/systemd/system/optibrain-agent-dispatch.service.d/phase13-retirement.conf",
+      "EnvironmentFiles": "NOT APPLICABLE",
+      "ExecMainExitTimestamp": "",
+      "ExecMainStartTimestamp": "",
+      "ExecStart": "NOT APPLICABLE",
+      "FragmentPath": "/etc/systemd/system/optibrain-agent-dispatch.service",
+      "Group": "",
+      "LastTriggerUSec": "NOT APPLICABLE",
+      "NextElapseUSecRealtime": "NOT APPLICABLE",
+      "Requires": "",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "NOT APPLICABLE",
+      "TimersMonotonic": "NOT APPLICABLE",
+      "Triggers": "",
+      "Type": "",
+      "UnitFileState": "masked",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "NO AUTHORITY",
+      "classification": "RETIRED / MASKED",
+      "definition_hashes": {
+        "/etc/systemd/system/optibrain-agent-dispatch.service.d/phase13-retirement.conf": "a418942a958b0cc0c53b52315bbd822cdfe2e3c59903d2aa019489e6f97b0269"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "optibrain-agent-dispatch.service"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "",
+      "Description": "optibrain-agent-status.service",
+      "DropInPaths": "/etc/systemd/system/optibrain-agent-status.service.d/phase13-retirement.conf",
+      "EnvironmentFiles": "NOT APPLICABLE",
+      "ExecMainExitTimestamp": "",
+      "ExecMainStartTimestamp": "",
+      "ExecStart": "NOT APPLICABLE",
+      "FragmentPath": "/etc/systemd/system/optibrain-agent-status.service",
+      "Group": "",
+      "LastTriggerUSec": "NOT APPLICABLE",
+      "NextElapseUSecRealtime": "NOT APPLICABLE",
+      "Requires": "",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "NOT APPLICABLE",
+      "TimersMonotonic": "NOT APPLICABLE",
+      "Triggers": "",
+      "Type": "",
+      "UnitFileState": "masked",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "NO AUTHORITY",
+      "classification": "RETIRED / MASKED",
+      "definition_hashes": {
+        "/etc/systemd/system/optibrain-agent-status.service.d/phase13-retirement.conf": "a418942a958b0cc0c53b52315bbd822cdfe2e3c59903d2aa019489e6f97b0269"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "optibrain-agent-status.service"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "",
+      "Description": "optibrain-agent-usage.service",
+      "DropInPaths": "/etc/systemd/system/optibrain-agent-usage.service.d/phase13-retirement.conf",
+      "EnvironmentFiles": "NOT APPLICABLE",
+      "ExecMainExitTimestamp": "",
+      "ExecMainStartTimestamp": "",
+      "ExecStart": "NOT APPLICABLE",
+      "FragmentPath": "/etc/systemd/system/optibrain-agent-usage.service",
+      "Group": "",
+      "LastTriggerUSec": "NOT APPLICABLE",
+      "NextElapseUSecRealtime": "NOT APPLICABLE",
+      "Requires": "",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "NOT APPLICABLE",
+      "TimersMonotonic": "NOT APPLICABLE",
+      "Triggers": "",
+      "Type": "",
+      "UnitFileState": "masked",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "NO AUTHORITY",
+      "classification": "RETIRED / MASKED",
+      "definition_hashes": {
+        "/etc/systemd/system/optibrain-agent-usage.service.d/phase13-retirement.conf": "a418942a958b0cc0c53b52315bbd822cdfe2e3c59903d2aa019489e6f97b0269"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "optibrain-agent-usage.service"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "systemd-tmpfiles-setup.service -.mount tmp.mount systemd-journald.socket system.slice local-fs.target sysinit.target optibrain-backup.timer basic.target",
+      "Description": "OptiBrain local backup",
+      "DropInPaths": "/etc/systemd/system/optibrain-backup.service.d/identity-switch.conf /etc/systemd/system/optibrain-backup.service.d/preserve-existing.conf",
+      "EnvironmentFiles": "",
+      "ExecMainExitTimestamp": "Tue 2026-10-06 23:05:43 EDT",
+      "ExecMainStartTimestamp": "Tue 2026-10-06 23:04:38 EDT",
+      "ExecStart": "{ path=/bin/bash ; argv[]=/bin/bash /usr/local/lib/optibrain-backup/optibrain-backup.sh --preserve-existing ; ignore_errors=no ; start_time=[Tue 2026-10-06 23:04:38 EDT] ; stop_time=[Tue 2026-10-06 23:05:43 EDT] ; pid=772046 ; code=exited ; status=0 }",
+      "FragmentPath": "/etc/systemd/system/optibrain-backup.service",
+      "Group": "",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "system.slice sysinit.target -.mount",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "oneshot",
+      "UnitFileState": "static",
+      "User": "",
+      "Wants": "tmp.mount",
+      "WorkingDirectory": "",
+      "authority_relationship": "BACKUP ONLY",
+      "classification": "ONESHOT",
+      "definition_hashes": {
+        "/etc/systemd/system/optibrain-backup.service": "b627ad517e2332170b00655f2e22b56d830a3704ee6e143caf895f0f208c1b91",
+        "/etc/systemd/system/optibrain-backup.service.d/identity-switch.conf": "3b49d69f8577214371d29b64ae818dd68383bf94a9fe7d529d5c93ef2faf7969",
+        "/etc/systemd/system/optibrain-backup.service.d/preserve-existing.conf": "b2453ba07a6b70f826e5968740e9f78d686b3bf72adbbaac1c5339b13d0b7f7c"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "optibrain-backup.service"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "optibrain-phase2a-upload.timer systemd-tmpfiles-setup.service tmp.mount sysinit.target systemd-journald.socket basic.target -.mount system.slice optibrain-backup.service",
+      "Description": "OptiBrain encrypted off-host Phase 2A backup",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecMainExitTimestamp": "Tue 2026-10-06 23:07:23 EDT",
+      "ExecMainStartTimestamp": "Tue 2026-10-06 23:06:33 EDT",
+      "ExecStart": "{ path=/usr/local/lib/optibrain-backup/optibrain-phase2a-upload.sh ; argv[]=/usr/local/lib/optibrain-backup/optibrain-phase2a-upload.sh ; ignore_errors=no ; start_time=[Tue 2026-10-06 23:06:33 EDT] ; stop_time=[Tue 2026-10-06 23:07:23 EDT] ; pid=772553 ; code=exited ; status=0 }",
+      "FragmentPath": "/etc/systemd/system/optibrain-phase2a-upload.service",
+      "Group": "root",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "sysinit.target -.mount system.slice",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "oneshot",
+      "UnitFileState": "static",
+      "User": "root",
+      "Wants": "tmp.mount",
+      "WorkingDirectory": "",
+      "authority_relationship": "BACKUP ONLY",
+      "classification": "ONESHOT",
+      "definition_hashes": {
+        "/etc/systemd/system/optibrain-phase2a-upload.service": "b82adb8c48d3cae8b138c839d041a42f8a6b882025646bb7da084440160871f9"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "optibrain-phase2a-upload.service"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "sysinit.target tmp.mount opticable-workflow-api.service basic.target network-online.target -.mount system.slice systemd-journald.socket systemd-tmpfiles-setup.service",
+      "Description": "OptiBrain individually scoped operational customer emails",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecMainExitTimestamp": "",
+      "ExecMainStartTimestamp": "",
+      "ExecStart": "{ path=/usr/bin/python3 ; argv[]=/usr/bin/python3 -I -B /usr/local/lib/optibrain/customer_runner.py --once ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+      "FragmentPath": "/etc/systemd/system/opticable-customer-communications.service",
+      "Group": "root",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "-.mount sysinit.target system.slice",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "oneshot",
+      "UnitFileState": "static",
+      "User": "root",
+      "Wants": "tmp.mount network-online.target",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ONESHOT",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-customer-communications.service": "ffa14029d24e4504fcd493d302361ef77774b3e64017715900c77a8bc5c5db13"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "opticable-customer-communications.service"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "system.slice tmp.mount -.mount sysinit.target systemd-tmpfiles-setup.service systemd-journald.socket network-online.target basic.target opticable-workflow-api.service opticable-lifecycle-internal.timer",
+      "Description": "OptiBrain individually scoped new-record internal lifecycle",
+      "DropInPaths": "",
+      "EnvironmentFiles": "/etc/opticable-workflow-api.env (ignore_errors=no)",
+      "ExecMainExitTimestamp": "Tue 2026-10-06 23:59:29 EDT",
+      "ExecMainStartTimestamp": "Tue 2026-10-06 23:58:27 EDT",
+      "ExecStart": "{ path=/usr/bin/python3 ; argv[]=/usr/bin/python3 -I -B /usr/local/lib/optibrain/lifecycle_runner.py --once ; ignore_errors=no ; start_time=[Tue 2026-10-06 23:58:27 EDT] ; stop_time=[Tue 2026-10-06 23:59:29 EDT] ; pid=774545 ; code=exited ; status=0 }",
+      "FragmentPath": "/etc/systemd/system/opticable-lifecycle-internal.service",
+      "Group": "root",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "-.mount sysinit.target system.slice",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "oneshot",
+      "UnitFileState": "static",
+      "User": "root",
+      "Wants": "tmp.mount network-online.target",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ONESHOT",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-lifecycle-internal.service": "e8dd21c9f467a6b5d71355ac0353d60ce9edaca3278c5e39389b228d63c9e532"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "opticable-lifecycle-internal.service"
+    },
+    {
+      "ActiveState": "active",
+      "After": "system.slice systemd-journald.socket network-online.target basic.target -.mount sysinit.target",
+      "Description": "Omada Site Creator",
+      "DropInPaths": "",
+      "EnvironmentFiles": "/etc/opticable-omada-site.env (ignore_errors=no)",
+      "ExecMainExitTimestamp": "",
+      "ExecMainStartTimestamp": "Thu 2026-10-01 16:19:49 EDT",
+      "ExecStart": "{ path=/usr/bin/node ; argv[]=/usr/bin/node /opt/opticable-api-platform/apps/omada-site-service/dist/server.js ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+      "FragmentPath": "/etc/systemd/system/opticable-omada-site.service",
+      "Group": "opticable-omada-site",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "sysinit.target -.mount system.slice",
+      "Restart": "always",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "simple",
+      "UnitFileState": "enabled",
+      "User": "opticable-omada-site",
+      "Wants": "network-online.target",
+      "WorkingDirectory": "/opt/opticable-api-platform/apps/omada-site-service",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ACTIVE REQUIRED",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-omada-site.service": "cc7db15d0d3a91c5d0c93778c4ee60e36c92b0ff0f67bb4617099c03f6509c65"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "opticable-omada-site.service"
+    },
+    {
+      "ActiveState": "active",
+      "After": "systemd-journald.socket -.mount sysinit.target network.target system.slice basic.target",
+      "Description": "Password PDF Generator API",
+      "DropInPaths": "",
+      "EnvironmentFiles": "/etc/opticable-password-pdf.env (ignore_errors=no)",
+      "ExecMainExitTimestamp": "",
+      "ExecMainStartTimestamp": "Fri 2026-10-02 02:20:14 EDT",
+      "ExecStart": "{ path=/opt/opticable-api-platform/apps/password-pdf-service/.venv/bin/uvicorn ; argv[]=/opt/opticable-api-platform/apps/password-pdf-service/.venv/bin/uvicorn wifi_pdf.api:app --host 127.0.0.1 --port 8000 ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+      "FragmentPath": "/etc/systemd/system/opticable-password-pdf.service",
+      "Group": "opticable-password-pdf",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "-.mount sysinit.target system.slice",
+      "Restart": "always",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "simple",
+      "UnitFileState": "enabled",
+      "User": "opticable-password-pdf",
+      "Wants": "",
+      "WorkingDirectory": "/opt/opticable-api-platform/apps/password-pdf-service",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ACTIVE REQUIRED",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-password-pdf.service": "2577d345f6391f7aff39bc0c5842ba5fd0274573d790e5cd59b5954fa7eb2331"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "opticable-password-pdf.service"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "network-online.target system.slice systemd-tmpfiles-setup.service sysinit.target -.mount opticable-workflow-api.service tmp.mount opticable-phase10-service-events.timer basic.target systemd-journald.socket",
+      "Description": "Reconcile OptiBrain service lifecycle evidence from read-only Zoho CRM",
+      "DropInPaths": "",
+      "EnvironmentFiles": "/etc/opticable-workflow-api.env (ignore_errors=no)",
+      "ExecMainExitTimestamp": "Tue 2026-10-06 23:45:28 EDT",
+      "ExecMainStartTimestamp": "Tue 2026-10-06 23:45:25 EDT",
+      "ExecStart": "{ path=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python ; argv[]=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python /opt/opticable-api-platform/ops/phase10/collect_service_events.py ; ignore_errors=no ; start_time=[Tue 2026-10-06 23:45:25 EDT] ; stop_time=[Tue 2026-10-06 23:45:28 EDT] ; pid=773907 ; code=exited ; status=0 }",
+      "FragmentPath": "/etc/systemd/system/opticable-phase10-service-events.service",
+      "Group": "opticable-workflow-api",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "-.mount system.slice sysinit.target",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "oneshot",
+      "UnitFileState": "static",
+      "User": "opticable-workflow-api",
+      "Wants": "tmp.mount network-online.target",
+      "WorkingDirectory": "/opt/opticable-api-platform/apps/workflow-api",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ONESHOT",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-phase10-service-events.service": "63b09918ef7483cc9106f5140f95d221b9e229892ae7feddb4f4201043febe06"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "opticable-phase10-service-events.service"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "sysinit.target systemd-journald.socket systemd-tmpfiles-setup.service system.slice network-online.target basic.target -.mount tmp.mount opticable-workflow-api.service opticable-phase12-test-runner.timer",
+      "Description": "OptiBrain bounded TEST_ONLY business action runner",
+      "DropInPaths": "",
+      "EnvironmentFiles": "/etc/optibrain/phase12-runner.env (ignore_errors=no)",
+      "ExecMainExitTimestamp": "Wed 2026-10-07 00:01:56 EDT",
+      "ExecMainStartTimestamp": "Wed 2026-10-07 00:01:56 EDT",
+      "ExecStart": "{ path=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python ; argv[]=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python /usr/local/lib/optibrain/phase12-run-test-lab.py --once ; ignore_errors=no ; start_time=[Wed 2026-10-07 00:01:56 EDT] ; stop_time=[Wed 2026-10-07 00:01:56 EDT] ; pid=774867 ; code=exited ; status=0 }",
+      "FragmentPath": "/etc/systemd/system/opticable-phase12-test-runner.service",
+      "Group": "root",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "-.mount system.slice sysinit.target",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "oneshot",
+      "UnitFileState": "disabled",
+      "User": "root",
+      "Wants": "tmp.mount network-online.target",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ONESHOT",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-phase12-test-runner.service": "104bba2a1721b405020fc88021608d41ead69d68a7134315357043a820674c73"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "opticable-phase12-test-runner.service"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "opticable-phase9-intake-receipts.timer systemd-journald.socket systemd-tmpfiles-setup.service -.mount sysinit.target tmp.mount system.slice basic.target opticable-workflow-api.service network-online.target",
+      "Description": "Collect OptiBrain lead intake receipts from Zoho Forms Mail and public connector",
+      "DropInPaths": "",
+      "EnvironmentFiles": "/etc/optibrain/phase9-form-enrichment.env (ignore_errors=yes)",
+      "ExecMainExitTimestamp": "Wed 2026-10-07 00:01:07 EDT",
+      "ExecMainStartTimestamp": "Wed 2026-10-07 00:00:57 EDT",
+      "ExecStart": "{ path=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python ; argv[]=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python /opt/opticable-api-platform/ops/phase9/collect_form_receipts.py ; ignore_errors=no ; start_time=[Wed 2026-10-07 00:00:57 EDT] ; stop_time=[Wed 2026-10-07 00:01:07 EDT] ; pid=774838 ; code=exited ; status=0 }",
+      "FragmentPath": "/etc/systemd/system/opticable-phase9-intake-receipts.service",
+      "Group": "opticable-workflow-api",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "system.slice -.mount sysinit.target",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "oneshot",
+      "UnitFileState": "disabled",
+      "User": "opticable-workflow-api",
+      "Wants": "tmp.mount network-online.target",
+      "WorkingDirectory": "/opt/opticable-api-platform/apps/workflow-api",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ONESHOT",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-phase9-intake-receipts.service": "383fa35ccc3277877e0bb86a28b6dfeefb4767936a105ba18ee6aeb6c4756674"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "opticable-phase9-intake-receipts.service"
+    },
+    {
+      "ActiveState": "active",
+      "After": "network-online.target basic.target systemd-tmpfiles-setup.service -.mount tmp.mount sysinit.target system.slice systemd-journald.socket",
+      "Description": "Site And Password Workflow",
+      "DropInPaths": "/etc/systemd/system/opticable-workflow-api.service.d/phase13-hardening.conf /etc/systemd/system/opticable-workflow-api.service.d/phase13-safety.conf",
+      "EnvironmentFiles": "/etc/opticable-workflow-api.env (ignore_errors=no)",
+      "ExecMainExitTimestamp": "",
+      "ExecMainStartTimestamp": "Tue 2026-10-06 22:43:51 EDT",
+      "ExecStart": "{ path=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/uvicorn ; argv[]=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/uvicorn workflow.api:app --host 127.0.0.1 --port 8100 --no-access-log ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+      "FragmentPath": "/etc/systemd/system/opticable-workflow-api.service",
+      "Group": "opticable-workflow-api",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "sysinit.target system.slice -.mount",
+      "Restart": "always",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "simple",
+      "UnitFileState": "enabled",
+      "User": "opticable-workflow-api",
+      "Wants": "tmp.mount network-online.target",
+      "WorkingDirectory": "/opt/opticable-api-platform/apps/workflow-api",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ACTIVE REQUIRED",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-workflow-api.service": "e7be921468569b9c7980250c7aef46aec558d845766e876abcf66c545fef44d4",
+        "/etc/systemd/system/opticable-workflow-api.service.d/phase13-hardening.conf": "60dcae0ba81c787ab07d4a187b9d15b439cad82cdf9a9576ae9dd2bd2dccfde8",
+        "/etc/systemd/system/opticable-workflow-api.service.d/phase13-safety.conf": "742251debd23c182a0126f4988197843967a23ddf2d8738f0f72066435b8d2b9"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "/v1/system/health",
+      "name": "opticable-workflow-api.service"
+    },
+    {
+      "ActiveState": "active",
+      "After": "network.target system.slice ssh.socket pollinate.service sysinit.target basic.target systemd-journald.socket -.mount auditd.service",
+      "Description": "OpenBSD Secure Shell server",
+      "DropInPaths": "",
+      "EnvironmentFiles": "/etc/default/ssh (ignore_errors=yes)",
+      "ExecMainExitTimestamp": "",
+      "ExecMainStartTimestamp": "Thu 2026-10-01 06:21:36 EDT",
+      "ExecStart": "{ path=/usr/sbin/sshd ; argv[]=/usr/sbin/sshd -D $SSHD_OPTS ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+      "FragmentPath": "/usr/lib/systemd/system/ssh.service",
+      "Group": "",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "-.mount sysinit.target ssh.socket system.slice",
+      "Restart": "on-failure",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "notify",
+      "UnitFileState": "disabled",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ACTIVE REQUIRED",
+      "definition_hashes": {
+        "/usr/lib/systemd/system/ssh.service": "35b2858970feb78e985900b33ba8cb84249dfadbf296155e5639cafcf1dd40a3"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "ssh.service"
+    },
+    {
+      "ActiveState": "active",
+      "After": "systemd-journald.socket system.slice local-fs.target",
+      "Description": "Uncomplicated firewall",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecMainExitTimestamp": "Fri 2026-09-25 12:14:16 EDT",
+      "ExecMainStartTimestamp": "Fri 2026-09-25 12:14:15 EDT",
+      "ExecStart": "{ path=/usr/lib/ufw/ufw-init ; argv[]=/usr/lib/ufw/ufw-init start quiet ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+      "FragmentPath": "/usr/lib/systemd/system/ufw.service",
+      "Group": "",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "system.slice",
+      "Restart": "no",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "",
+      "Type": "oneshot",
+      "UnitFileState": "enabled",
+      "User": "",
+      "Wants": "local-fs.target network-pre.target",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ONESHOT",
+      "definition_hashes": {
+        "/usr/lib/systemd/system/ufw.service": "efece4d41e747407ed7a02d217420cef9aa60ee84326a145de528400dc63419d"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "ufw.service"
+    },
+    {
+      "ActiveState": "active",
+      "After": "system.slice sysinit.target",
+      "Description": "OpenBSD Secure Shell server socket",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecStart": "",
+      "FragmentPath": "/usr/lib/systemd/system/ssh.socket",
+      "Group": "",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "system.slice sysinit.target",
+      "Restart": "",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "",
+      "Triggers": "ssh.service",
+      "Type": "",
+      "UnitFileState": "enabled",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "ACTIVE REQUIRED",
+      "definition_hashes": {
+        "/usr/lib/systemd/system/ssh.socket": "a79db2fe39bb1b452c260370e7a1ba6d13bed16fad0df8f18177802760b3d196"
+      },
+      "expected_restore_state": "CONTAINED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "ssh.socket"
+    }
+  ],
+  "source_production_sha": "be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa",
+  "ssh": [
+    "port 22",
+    "addressfamily any",
+    "listenaddress [::]:22",
+    "listenaddress 0.0.0.0:22",
+    "usepam yes",
+    "logingracetime 30",
+    "x11displayoffset 10",
+    "maxauthtries 4",
+    "maxsessions 10",
+    "clientaliveinterval 0",
+    "clientalivecountmax 3",
+    "requiredrsasize 1024",
+    "streamlocalbindmask 0177",
+    "unusedconnectiontimeout none",
+    "permitrootlogin no",
+    "ignorerhosts yes",
+    "ignoreuserknownhosts no",
+    "hostbasedauthentication no",
+    "hostbasedusesnamefrompacketonly no",
+    "pubkeyauthentication yes",
+    "kerberosauthentication no",
+    "kerberosorlocalpasswd yes",
+    "kerberosticketcleanup yes",
+    "gssapiauthentication no",
+    "gssapicleanupcredentials yes",
+    "gssapikeyexchange no",
+    "gssapistrictacceptorcheck yes",
+    "gssapistorecredentialsonrekey no",
+    "gssapikexalgorithms gss-group14-sha256-,gss-group16-sha512-,gss-nistp256-sha256-,gss-curve25519-sha256-,gss-group14-sha1-,gss-gex-sha1-",
+    "passwordauthentication no",
+    "kbdinteractiveauthentication no",
+    "printmotd no",
+    "printlastlog yes",
+    "x11forwarding no",
+    "x11uselocalhost yes",
+    "permittty yes",
+    "permituserrc yes",
+    "strictmodes yes",
+    "tcpkeepalive yes",
+    "permitemptypasswords no",
+    "compression yes",
+    "gatewayports no",
+    "usedns no",
+    "allowtcpforwarding no",
+    "allowagentforwarding no",
+    "disableforwarding no",
+    "allowstreamlocalforwarding yes",
+    "streamlocalbindunlink no",
+    "fingerprinthash SHA256",
+    "exposeauthinfo no",
+    "debianbanner yes",
+    "pidfile /run/sshd.pid",
+    "modulifile /etc/ssh/moduli",
+    "xauthlocation /usr/bin/xauth",
+    "ciphers chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com",
+    "macs umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1",
+    "banner none",
+    "forcecommand none",
+    "chrootdirectory none",
+    "trustedusercakeys none",
+    "revokedkeys none",
+    "securitykeyprovider internal",
+    "authorizedprincipalsfile none",
+    "versionaddendum none",
+    "authorizedkeyscommand none",
+    "authorizedkeyscommanduser none",
+    "authorizedprincipalscommand none",
+    "authorizedprincipalscommanduser none",
+    "hostkeyagent none",
+    "kexalgorithms sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256",
+    "casignaturealgorithms ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,rsa-sha2-512,rsa-sha2-256",
+    "hostbasedacceptedalgorithms ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,sk-ssh-ed25519-cert-v01@openssh.com,sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,rsa-sha2-512,rsa-sha2-256",
+    "hostkeyalgorithms ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,sk-ssh-ed25519-cert-v01@openssh.com,sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,rsa-sha2-512,rsa-sha2-256",
+    "pubkeyacceptedalgorithms ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,sk-ssh-ed25519-cert-v01@openssh.com,sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,rsa-sha2-512,rsa-sha2-256",
+    "loglevel INFO",
+    "syslogfacility AUTH",
+    "authorizedkeysfile .ssh/authorized_keys .ssh/authorized_keys2",
+    "hostkey /etc/ssh/ssh_host_rsa_key",
+    "hostkey /etc/ssh/ssh_host_ecdsa_key",
+    "hostkey /etc/ssh/ssh_host_ed25519_key",
+    "acceptenv LANG",
+    "acceptenv LC_*",
+    "authenticationmethods any",
+    "channeltimeout none",
+    "subsystem sftp /usr/lib/openssh/sftp-server ",
+    "maxstartups 10:30:100",
+    "persourcemaxstartups none",
+    "persourcenetblocksize 32:128",
+    "permittunnel no",
+    "ipqos lowdelay throughput",
+    "rekeylimit 0 0",
+    "permitopen any",
+    "permitlisten any",
+    "permituserenvironment no",
+    "pubkeyauthoptions none"
+  ],
+  "storage": {
+    "backup_staging_bytes": "29393039360\t/var/backups/optibrain",
+    "controlled_directory_sizes": "475136\t/home/optibrain/phase34-evidence\n214777856\t/home/optibrain/prospect-enrichment\n1593344\t/home/optibrain/phase-completion-audit\n238657536\t/home/optibrain/remediation-main-site\n16539648\t/home/optibrain/foundation-completion\n1539133440\t/home/optibrain/.cache\n17059840\t/home/optibrain/acquisition-coverage-expansion-work\n16396288\t/home/optibrain/phase16-17-lifecycle\n543428608\t/home/optibrain/remediation-ai-site\n22921216\t/home/optibrain/phase26-27-evidence\n19726336\t/home/optibrain/phase10-lifecycle\n212992\t/home/optibrain/agent-fix\n1445888\t/home/optibrain/completion-remediation-1-2-evidence\n17108992\t/home/optibrain/prospect-enrichment-work\n8327168\t/home/optibrain/phase24-25-evidence\n16859136\t/home/optibrain/phase30-trigger-shadow\n1171456\t/home/optibrain/phase13-connector-audit\n3747840\t/home/optibrain/phase22-23-evidence\n270336\t/home/optibrain/phase16-connector\n1540096\t/home/optibrain/phase13-evidence\n16482304\t/home/optibrain/phase18-19-automation\n423526400\t/home/optibrain/.local\n16216064\t/home/optibrain/phase28-29-acquisition\n3108864\t/home/optibrain/lifecycle-truth-integration-evidence\n4788224\t/home/optibrain/phase33-evidence\n17207296\t/home/optibrain/phase33-readiness\n40185856\t/home/optibrain/phase14-implementation-evidence\n2297856\t/home/optibrain/forms-polling-remediation\n17027072\t/home/optibrain/forms-polling-remediation-work\n15433728\t/home/optibrain/phase20-21-automation\n103276544\t/home/optibrain/phase30-evidence\n94605312\t/home/optibrain/phase13-remediation-evidence\n17125376\t/home/optibrain/phase32-platform\n18321408\t/home/optibrain/phase34-sales\n15663104\t/home/optibrain/full-system-audit\n13725696\t/home/optibrain/phase15-rebuild\n14794752\t/home/optibrain/learning-audit-evidence\n15806464\t/home/optibrain/phase28-29-evidence\n200704\t/home/optibrain/optibrain-agent-build\n16142336\t/home/optibrain/phase24-25-linkage\n3956736\t/home/optibrain/phase20-21-evidence\n56647680\t/home/optibrain/acquisition-coverage-expansion\n11988992\t/home/optibrain/phase9-active-intake\n122880\t/home/optibrain/phase14-evidence\n450560\t/home/optibrain/post37-remediation-evidence\n13365248\t/home/optibrain/phase9-browser\n7835648\t/home/optibrain/phase8-test-lab\n466944\t/home/optibrain/phase18-19-evidence\n91697152\t/home/optibrain/phase33-site-readiness\n69632\t/home/optibrain/.config\n774144\t/home/optibrain/phase13-p1-evidence\n1626112\t/home/optibrain/foundation-completion-evidence\n16441344\t/home/optibrain/completion-remediation-1-2\n75804672\t/home/optibrain/phase32-final-site\n1142784\t/home/optibrain/phase15-preflight-evidence\n4606226432\t/home/optibrain/.codex\n4096\t/home/optibrain/.step\n192512\t/home/optibrain/phase13-closure-evidence\n34910208\t/home/optibrain/phase15-evidence\n77824\t/home/optibrain/.pki\n915542016\t/home/optibrain/worktrees\n15802368\t/home/optibrain/phase22-23-measurement\n36864\t/home/optibrain/.ssh\n1482752\t/home/optibrain/phase16-17-evidence\n480698368\t/home/optibrain/.npm\n75317248\t/home/optibrain/phase32-native-success\n12607488\t/home/optibrain/phase7-readiness-audit\n75296768\t/home/optibrain/phase32-main-site\n15855616\t/home/optibrain/phase26-27-sales\n5967872\t/home/optibrain/phase13-audit\n4644864\t/home/optibrain/pr133-release-recovery-evidence\n113561600\t/home/optibrain/phase33-ads\n73728\t/home/optibrain/__pycache__\n85127168\t/home/optibrain/phase32-evidence\n110338048\t/home/optibrain/phase32-ai-site\n10385248256\t/home/optibrain\n438272\t/var/lib/optibrain/phase6\n24576\t/var/lib/optibrain/conversion-export\n45056\t/var/lib/optibrain/agent-control-before-status-fix-20260929T2129Z\n73728\t/var/lib/optibrain/phase4\n1753088\t/var/lib/optibrain/prospect-enrichment\n991232\t/var/lib/optibrain/phase-completion-audit\n577536\t/var/lib/optibrain/foundation-completion\n110592\t/var/lib/optibrain/admin-update\n110592\t/var/lib/optibrain/phase13-remediation\n15715696640\t/var/lib/optibrain/phase2a\n11034624\t/var/lib/optibrain/learning-audit\n21467136\t/var/lib/optibrain/phase26-27\n212992\t/var/lib/optibrain/phase37\n561152\t/var/lib/optibrain/phase32\n40960\t/var/lib/optibrain/agent-control-before-credential-boundary-20260929T2130Z\n581632\t/var/lib/optibrain/phase9\n471040\t/var/lib/optibrain/phase8\n143360\t/var/lib/optibrain/restore-drills\n614400\t/var/lib/optibrain/phase14\n249856\t/var/lib/optibrain/forms-polling-remediation\n196608\t/var/lib/optibrain/customer-communications\n253952\t/var/lib/optibrain/phase11\n344064\t/var/lib/optibrain/phase15\n15249408\t/var/lib/optibrain/preview-control-plane-integration\n45056\t/var/lib/optibrain/phase13-closure\n11264000\t/var/lib/optibrain/recovery-source\n413696\t/var/lib/optibrain/phase30\n11345920\t/var/lib/optibrain/sales-intelligence\n7753728\t/var/lib/optibrain/lifecycle-truth-integration\n352256\t/var/lib/optibrain/phase7\n8171520\t/var/lib/optibrain/phase20-21\n1540096\t/var/lib/optibrain/acquisition-coverage-expansion\n26300416\t/var/lib/optibrain/g001-natural-verification\n1445888\t/var/lib/optibrain/phase34\n16859136\t/var/lib/optibrain/phase33\n351940608\t/var/lib/optibrain/decision-cards-multisite\n11493376\t/var/lib/optibrain/lifecycle\n90112\t/var/lib/optibrain/phase12\n2330624\t/var/lib/optibrain/completion-remediation-1-2\n192512\t/var/lib/optibrain/phase5\n1142784\t/var/lib/optibrain/phase15-preflight-evidence\n3715072\t/var/lib/optibrain/phase18-19\n503808\t/var/lib/optibrain/phase28-29\n811008\t/var/lib/optibrain/releases\n49225728\t/var/lib/optibrain/acquisition-intelligence\n13377536\t/var/lib/optibrain/phase24-25\n8806400\t/var/lib/optibrain/phase16-17\n36864\t/var/lib/optibrain/agent-control-before-workstream-fallback-20260929T2133Z\n3145728\t/var/lib/optibrain/phase13-p1\n241664\t/var/lib/optibrain/phase5-resume\n3022848\t/var/lib/optibrain/autonomous-worker-retired-20260930T205928Z\n173793280\t/var/lib/optibrain/first-hosted-camera-preview\n4399104\t/var/lib/optibrain/pr133-release-recovery\n2211840\t/var/lib/optibrain/phase13\n143360\t/var/lib/optibrain/post37-remediation\n12554240\t/var/lib/optibrain/phase22-23\n12288\t/var/lib/optibrain/admin-recovery\n188416\t/var/lib/optibrain/phase10\n16500793344\t/var/lib/optibrain\n53596160\t/var/backups/optibrain/phase15-infrastructure-20261002T123816Z\n29393039360\t/var/backups/optibrain\n228978688\t/opt/opticable-api-platform\n4798267392\t/opt/optibrain-releases\n230715392\t/opt/optibrain-recovery-drills\n593543168\t/opt/optibrain-preview-tools\n5851508736\t/opt\n6656000\t/var/tmp/optibrain-phase7-validation\n65536\t/var/tmp/optibrain-phase7-live-canary\n9936896\t/var/tmp/optibrain-phase8-sales-language\n12124160\t/var/tmp/optibrain-lifecycle-truth-restore-20261006T170920Z\n8192\t/var/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-caddy.service-KWOg8C\n583348224\t/var/tmp/optibrain-lifecycle-truth-restore-20261006T171206Z\n86016\t/var/tmp/optibrain-agent-capacity-fix-20260930T184124Z\n577536\t/var/tmp/optibrain-pr133-release-20261006\n8192\t/var/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-ModemManager.service-xBeFrH\n3153920\t/var/tmp/optibrain-phase5-hardening-cold-pycache-022\n3149824\t/var/tmp/optibrain-phase5-hardening-final-pycache\n3149824\t/var/tmp/optibrain-phase5-hardening-pycache\n530763776\t/var/tmp/optibrain-pr133-isolated-restore\n7766016\t/var/tmp/optibrain-phase5-hardening-release\n8192\t/var/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-systemd-resolved.service-fKMqfC\n9818112\t/var/tmp/optibrain-phase8-release-controls\n8192\t/var/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-opticable-workflow-api.service-WWyBWw\n1224704\t/var/tmp/optibrain-phase5-hardening-restored-v2\n7622656\t/var/tmp/optibrain-phase8-inbox-followup\n65536\t/var/tmp/optibrain-admin-update\n55029760\t/var/tmp/opticable-api-platform-deploy\n8192\t/var/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-systemd-timesyncd.service-dnoQLq\n8192\t/var/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-polkit.service-bLLnHE\n204800\t/var/tmp/optibrain-phase5-hardening-live-noop\n295776256\t/var/tmp/optibrain-phase6-validation\n75669504\t/var/tmp/optibrain-phase4-artifacts\n55832576\t/var/tmp/optibrain-phase7-deployment\n212992\t/var/tmp/optibrain-phase8-user-pause-20260930T192148Z\n10137600\t/var/tmp/optibrain-phase8-integrated\n331776\t/var/tmp/optibrain-phase3-drill.QviWHK\n7983104\t/var/tmp/optibrain-phase5-evidence\n14434304\t/var/tmp/optibrain-phase7-first-canary-deployment\n39878656\t/var/tmp/optibrain-phase5-hardening-cold\n8192\t/var/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-systemd-logind.service-pmUqIQ\n8048640\t/var/tmp/optibrain-phase7-engineering\n9871360\t/var/tmp/optibrain-phase8-sales-overdue\n9687040\t/var/tmp/optibrain-phase11-provider-id-safety\n10276864\t/var/tmp/optibrain-agent-workspace\n4096\t/var/tmp/cloud-init\n10149888\t/var/tmp/optibrain-phase11-identity-folders\n151552\t/var/tmp/optibrain-phase3-drill.WehDcw\n3153920\t/var/tmp/optibrain-phase5-hardening-cold-pycache\n90112\t/var/tmp/optibrain-phase13-recovery\n8192\t/var/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-fwupd.service-jjqnfW\n4096\t/var/tmp/optibrain-lifecycle-truth-restore-20261006T171206Z-workspace\n159744\t/var/tmp/__pycache__\n1793642496\t/var/tmp\n106496\t/tmp/tmp5de229od\n372736\t/tmp/phase9-public-drift-capture-20260930\n3665920\t/tmp/opticable-phase3-executor-app-v3\n2514944\t/tmp/opticable-phase3-executor-app-v4\n4096\t/tmp/codex-daemon-0\n8192\t/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-systemd-logind.service-o8lZ8v\n2191360\t/tmp/optibrain-c-review-pycache\n3698688\t/tmp/optibrain-lifecycle-current-20261006\n8192\t/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-caddy.service-gmzQIA\n4337664\t/tmp/phase11-pycache\n4096\t/tmp/playwright_chromiumdev_profile-oZqnbU\n2191360\t/tmp/opticable-phase3-v2-compile\n4096\t/tmp/snap-private-tmp\n8192\t/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-fwupd.service-s9oG14\n4493312\t/tmp/optibrain-v3-prod-pycache\n55857152\t/tmp/optibrain-sales-review-venv\n2363392\t/tmp/opticable-phase3-executor-v3-review-package\n3248128\t/tmp/opticable-phase2b-digest-fix\n3342336\t/tmp/opticable-phase3-claims\n4096\t/tmp/.X11-unix\n3665920\t/tmp/opticable-phase3-retry-policy\n2473984\t/tmp/pytest-of-optibrain\n15314944\t/tmp/node-compile-cache\n3731456\t/tmp/opticable-phase3-c-review-candidate\n8192\t/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-opticable-workflow-api.service-wpih4w\n4096\t/tmp/playwright-artifacts-tcYxe2\n2174976\t/tmp/opticable-phase3-c-review-pycache\n13393920\t/tmp/opticable-phase3-v2-pycache\n4096\t/tmp/.ICE-unix\n8192\t/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-ModemManager.service-fjqPjj\n8192\t/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-systemd-timesyncd.service-h0s47g\n8192\t/tmp/update-check\n1244360704\t/tmp/tmp.CQpMeZXdDn\n4096\t/tmp/playwright_chromiumdev_profile-c8S1Jr\n4096\t/tmp/.XIM-unix\n4096\t/tmp/.font-unix\n4096\t/tmp/codex-bwrap-synthetic-mount-targets-1001\n3801088\t/tmp/optibrain-c-review-v2\n8192\t/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-systemd-resolved.service-6jFUFY\n4096\t/tmp/codex-daemon-1001\n77824\t/tmp/.pki\n2433024\t/tmp/opticable-phase3-executor-app-v2\n71315456\t/tmp/optibrain-c-review-venv\n2228224\t/tmp/optibrain-v3-pycache\n6262784\t/tmp/optibrain-v3-candidate-pycache\n172032\t/tmp/tmph0z4l0zi\n4096\t/tmp/playwright-artifacts-4GOEhS\n3538944\t/tmp/opticable-phase3-executor-app-only\n2547712\t/tmp/optibrain-v4-review.p0HUhs\n2375680\t/tmp/opticable-phase3-executor-v4-review-package\n16384\t/tmp/__pycache__\n8192\t/tmp/systemd-private-efda5eb4551343ff8bebdb433abe8825-polkit.service-F1LP6J\n7192576\t/tmp/opticable-phase3-c-pycache\n4096\t/tmp/tmux-1001\n1771405312\t/tmp\n86016\t/var/log/optibrain\n4096\t/var/log/private\n4096\t/var/log/landscape\n69632\t/var/log/apt\n4096\t/var/log/caddy\n4096\t/var/log/dist-upgrade\n28672\t/var/log/unattended-upgrades\n5816320\t/var/log/sysstat\n176050176\t/var/log/journal\n240533504\t/var/log",
+    "critical": true,
+    "df_h": "Filesystem      Size  Used Avail Use% Mounted on\ntmpfs           776M  4.8M  771M   1% /run\n/dev/sda1        72G   71G  1.3G  99% /\ntmpfs           3.8G  5.0M  3.8G   1% /dev/shm\ntmpfs           5.0M     0  5.0M   0% /run/lock\n/dev/sda16      881M  117M  703M  15% /boot\n/dev/sda15      105M  6.2M   99M   6% /boot/efi\ntmpfs           776M   24K  776M   1% /run/user/1001",
+    "df_i": "Filesystem      Inodes  IUsed   IFree IUse% Mounted on\ntmpfs           992151    769  991382    1% /run\n/dev/sda1      9699328 635238 9064090    7% /\ntmpfs           992151      3  992148    1% /dev/shm\ntmpfs           992151      4  992147    1% /run/lock\n/dev/sda16       58496    604   57892    2% /boot\n/dev/sda15           0      0       0     - /boot/efi\ntmpfs           198430     42  198388    1% /run/user/1001",
+    "free_bytes": 1374199808,
+    "total_bytes": 76887154688,
+    "used_bytes": 75496177664,
+    "worktree_count": 54
+  },
+  "submodules": "",
+  "sudo_configuration": [
+    {
+      "group": "root",
+      "mode": "0440",
+      "owner": "root",
+      "path": "/etc/sudoers",
+      "sha256": "5bac27ce5ff1a78ace8f3ef81bfd60cbd44810ac3f3d280da9d7649fe90c18f8",
+      "size_bytes": 1800,
+      "type": "file"
+    },
+    {
+      "group": "root",
+      "mode": "0440",
+      "owner": "root",
+      "path": "/etc/sudoers.d/90-cloud-init-users",
+      "sha256": "2892c38fed533bc591abe7983c0fd726a8ea00a241441e644fb8ceab109af3c9",
+      "size_bytes": 139,
+      "type": "file"
+    },
+    {
+      "group": "root",
+      "mode": "0440",
+      "owner": "root",
+      "path": "/etc/sudoers.d/opticable-api-deploy",
+      "sha256": "7f0e3214d3714d9c066b6dec87648aa7d0aa429aec739f6331d0a164e2374cc5",
+      "size_bytes": 82,
+      "type": "file"
+    },
+    {
+      "group": "root",
+      "mode": "0440",
+      "owner": "root",
+      "path": "/etc/sudoers.d/README",
+      "sha256": "b428c9b673c3c806370f2aa28a98293a9cb578c70c3a8a2d1a39031861b3dbd8",
+      "size_bytes": 1068,
+      "type": "file"
+    },
+    {
+      "group": "root",
+      "mode": "0440",
+      "owner": "root",
+      "path": "/etc/sudoers.d/90-optibrain-admin",
+      "sha256": "065b3417dae178d22e1cd5a362398398b64590f095c86760373dba524969634c",
+      "size_bytes": 361,
+      "type": "file"
+    },
+    {
+      "group": "root",
+      "mode": "0440",
+      "owner": "root",
+      "path": "/etc/sudoers.d/optibrain-codex",
+      "sha256": "0720f2ea96444c3417766bd0a3f86a3ebda97a06a3bff3acd0cdaa87baae80af",
+      "size_bytes": 69,
+      "type": "file"
+    }
+  ],
+  "system_config": [
+    {
+      "group": "root",
+      "mode": "0644",
+      "owner": "root",
+      "path": "/etc/caddy/Caddyfile",
+      "sha256": "5d5a43420880bc89451a376ac45906cab13e551062079ab6c82b236821d0c0a8",
+      "size_bytes": 33,
+      "type": "file"
+    },
+    {
+      "group": "root",
+      "mode": "0644",
+      "owner": "root",
+      "path": "/etc/caddy/conf.d/opticable-api-platform.caddy",
+      "sha256": "a5bd021934b6963a10ef2b2996ba7b7305c186914af07893f8255a506b5ccc6b",
+      "size_bytes": 1604,
+      "type": "file"
+    },
+    {
+      "group": "root",
+      "mode": "0644",
+      "owner": "root",
+      "path": "/etc/systemd/journald.conf.d/30-optibrain-retention.conf",
+      "sha256": "ec58f97cc6ecc228f769e80123ef0b75322799571a67d67c555eed187914a488",
+      "size_bytes": 246,
+      "type": "file"
+    },
+    {
+      "group": "root",
+      "mode": "0640",
+      "owner": "root",
+      "path": "/etc/optibrain/backup.conf",
+      "sha256": "9ed3ec6eea94ef180f8389411f6fd81f04e57e6215a9f24682ccc67d80e3b7b4",
+      "size_bytes": 342,
+      "type": "file"
+    },
+    {
+      "group": "root",
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/optibrain/phase2a.conf",
+      "sha256": "3eb9295e011249e9e94de678c1ff838f9b32a820650fff2aff919d8c43df38b0",
+      "size_bytes": 106,
+      "type": "file"
+    },
+    {
+      "group": "root",
+      "mode": "0644",
+      "owner": "root",
+      "path": "/etc/ssh/sshd_config.d/99-optibrain-hardening.conf",
+      "sha256": "74759e7779810d85dfa67595c162e0f284a53ce1b9f3dedbb39eea4007a5411c",
+      "size_bytes": 198,
+      "type": "file"
+    }
+  ],
+  "timers": [
+    {
+      "ActiveState": "inactive",
+      "After": "",
+      "Description": "optibrain-agent-dispatch.timer",
+      "DropInPaths": "/etc/systemd/system/optibrain-agent-dispatch.timer.d/phase13-retirement.conf",
+      "EnvironmentFiles": "NOT APPLICABLE",
+      "ExecStart": "NOT APPLICABLE",
+      "FragmentPath": "/etc/systemd/system/optibrain-agent-dispatch.timer",
+      "Group": "NOT APPLICABLE",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "",
+      "Restart": "NOT APPLICABLE",
+      "Result": "success",
+      "TimersCalendar": "NOT APPLICABLE",
+      "TimersMonotonic": "NOT APPLICABLE",
+      "Triggers": "",
+      "Type": "NOT APPLICABLE",
+      "UnitFileState": "masked",
+      "User": "NOT APPLICABLE",
+      "Wants": "",
+      "WorkingDirectory": "NOT APPLICABLE",
+      "authority_relationship": "NO AUTHORITY",
+      "classification": "RETIRED / MASKED",
+      "definition_hashes": {
+        "/etc/systemd/system/optibrain-agent-dispatch.timer.d/phase13-retirement.conf": "a418942a958b0cc0c53b52315bbd822cdfe2e3c59903d2aa019489e6f97b0269"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "optibrain-agent-dispatch.timer"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "",
+      "Description": "optibrain-agent-status.timer",
+      "DropInPaths": "/etc/systemd/system/optibrain-agent-status.timer.d/phase13-retirement.conf",
+      "EnvironmentFiles": "NOT APPLICABLE",
+      "ExecStart": "NOT APPLICABLE",
+      "FragmentPath": "/etc/systemd/system/optibrain-agent-status.timer",
+      "Group": "NOT APPLICABLE",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "",
+      "Restart": "NOT APPLICABLE",
+      "Result": "success",
+      "TimersCalendar": "NOT APPLICABLE",
+      "TimersMonotonic": "NOT APPLICABLE",
+      "Triggers": "",
+      "Type": "NOT APPLICABLE",
+      "UnitFileState": "masked",
+      "User": "NOT APPLICABLE",
+      "Wants": "",
+      "WorkingDirectory": "NOT APPLICABLE",
+      "authority_relationship": "NO AUTHORITY",
+      "classification": "RETIRED / MASKED",
+      "definition_hashes": {
+        "/etc/systemd/system/optibrain-agent-status.timer.d/phase13-retirement.conf": "a418942a958b0cc0c53b52315bbd822cdfe2e3c59903d2aa019489e6f97b0269"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "optibrain-agent-status.timer"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "",
+      "Description": "optibrain-agent-usage.timer",
+      "DropInPaths": "/etc/systemd/system/optibrain-agent-usage.timer.d/phase13-retirement.conf",
+      "EnvironmentFiles": "NOT APPLICABLE",
+      "ExecStart": "NOT APPLICABLE",
+      "FragmentPath": "/etc/systemd/system/optibrain-agent-usage.timer",
+      "Group": "NOT APPLICABLE",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "",
+      "Restart": "NOT APPLICABLE",
+      "Result": "success",
+      "TimersCalendar": "NOT APPLICABLE",
+      "TimersMonotonic": "NOT APPLICABLE",
+      "Triggers": "",
+      "Type": "NOT APPLICABLE",
+      "UnitFileState": "masked",
+      "User": "NOT APPLICABLE",
+      "Wants": "",
+      "WorkingDirectory": "NOT APPLICABLE",
+      "authority_relationship": "NO AUTHORITY",
+      "classification": "RETIRED / MASKED",
+      "definition_hashes": {
+        "/etc/systemd/system/optibrain-agent-usage.timer.d/phase13-retirement.conf": "a418942a958b0cc0c53b52315bbd822cdfe2e3c59903d2aa019489e6f97b0269"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "optibrain-agent-usage.timer"
+    },
+    {
+      "ActiveState": "active",
+      "After": "time-sync.target time-set.target -.mount sysinit.target",
+      "Description": "Scheduled OptiBrain local backup",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecStart": "",
+      "FragmentPath": "/etc/systemd/system/optibrain-backup.timer",
+      "Group": "",
+      "LastTriggerUSec": "Tue 2026-10-06 22:43:37 EDT",
+      "NextElapseUSecRealtime": "Wed 2026-10-07 22:33:23 EDT",
+      "Requires": "-.mount sysinit.target",
+      "Restart": "",
+      "Result": "success",
+      "TimersCalendar": "{ OnCalendar=*-*-* 02:30:00 UTC ; next_elapse=Wed 2026-10-07 22:30:00 EDT }",
+      "TimersMonotonic": "",
+      "Triggers": "optibrain-backup.service",
+      "Type": "",
+      "UnitFileState": "enabled",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "BACKUP ONLY",
+      "classification": "TIMER-DRIVEN",
+      "definition_hashes": {
+        "/etc/systemd/system/optibrain-backup.timer": "566b5236ef45baf6cd609c5923bd7fe13e1c4c8647dcaeb3d0968a2536c6d266"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "optibrain-backup.timer"
+    },
+    {
+      "ActiveState": "active",
+      "After": "time-sync.target -.mount sysinit.target time-set.target",
+      "Description": "Scheduled OptiBrain encrypted off-host Phase 2A backup",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecStart": "",
+      "FragmentPath": "/etc/systemd/system/optibrain-phase2a-upload.timer",
+      "Group": "",
+      "LastTriggerUSec": "Tue 2026-10-06 23:00:13 EDT",
+      "NextElapseUSecRealtime": "Wed 2026-10-07 23:09:03 EDT",
+      "Requires": "-.mount sysinit.target",
+      "Restart": "",
+      "Result": "success",
+      "TimersCalendar": "{ OnCalendar=*-*-* 03:00:00 UTC ; next_elapse=Wed 2026-10-07 23:00:00 EDT }",
+      "TimersMonotonic": "",
+      "Triggers": "optibrain-phase2a-upload.service",
+      "Type": "",
+      "UnitFileState": "enabled",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "BACKUP ONLY",
+      "classification": "TIMER-DRIVEN",
+      "definition_hashes": {
+        "/etc/systemd/system/optibrain-phase2a-upload.timer": "3c3b1c38cf1cf901788c974b4e4014ffdf65af6e8c9b7fb06e6181be98d58a8f"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "optibrain-phase2a-upload.timer"
+    },
+    {
+      "ActiveState": "inactive",
+      "After": "sysinit.target",
+      "Description": "Bounded operational customer communication observation",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecStart": "",
+      "FragmentPath": "/etc/systemd/system/opticable-customer-communications.timer",
+      "Group": "",
+      "LastTriggerUSec": "",
+      "NextElapseUSecRealtime": "",
+      "Requires": "sysinit.target",
+      "Restart": "",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "{ OnBootUSec=3min ; next_elapse=0 }",
+      "Triggers": "opticable-customer-communications.service",
+      "Type": "",
+      "UnitFileState": "disabled",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "TIMER-DRIVEN",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-customer-communications.timer": "e214e830b93d421de70eea8ee5db5b4735cc89fa6c03f50526064d4e486b13cc"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "opticable-customer-communications.timer"
+    },
+    {
+      "ActiveState": "active",
+      "After": "sysinit.target",
+      "Description": "Bounded internal lifecycle observation every five minutes",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecStart": "",
+      "FragmentPath": "/etc/systemd/system/opticable-lifecycle-internal.timer",
+      "Group": "",
+      "LastTriggerUSec": "Tue 2026-10-06 23:58:27 EDT",
+      "NextElapseUSecRealtime": "",
+      "Requires": "sysinit.target",
+      "Restart": "",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "{ OnBootUSec=5min ; next_elapse=5min }",
+      "Triggers": "opticable-lifecycle-internal.service",
+      "Type": "",
+      "UnitFileState": "enabled",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "TIMER-DRIVEN",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-lifecycle-internal.timer": "7638221393cecb620038e19953f8267cdcba64660a8fe6d39c86049449cb3b28"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "opticable-lifecycle-internal.timer"
+    },
+    {
+      "ActiveState": "active",
+      "After": "sysinit.target",
+      "Description": "Refresh OptiBrain service lifecycle events every hour",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecStart": "",
+      "FragmentPath": "/etc/systemd/system/opticable-phase10-service-events.timer",
+      "Group": "",
+      "LastTriggerUSec": "Tue 2026-10-06 23:45:25 EDT",
+      "NextElapseUSecRealtime": "",
+      "Requires": "sysinit.target",
+      "Restart": "",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "{ OnBootUSec=10min ; next_elapse=10min }",
+      "Triggers": "opticable-phase10-service-events.service",
+      "Type": "",
+      "UnitFileState": "enabled",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "TIMER-DRIVEN",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-phase10-service-events.timer": "e37e9779a8f61caeece1ac02ba3c85d904073f9e6a242ac552253d688b098d76"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "opticable-phase10-service-events.timer"
+    },
+    {
+      "ActiveState": "active",
+      "After": "-.mount sysinit.target time-sync.target time-set.target",
+      "Description": "Every 30 minutes evaluate bounded OptiBrain TEST_ONLY business actions",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecStart": "",
+      "FragmentPath": "/etc/systemd/system/opticable-phase12-test-runner.timer",
+      "Group": "",
+      "LastTriggerUSec": "Wed 2026-10-07 00:01:56 EDT",
+      "NextElapseUSecRealtime": "Wed 2026-10-07 00:31:33 EDT",
+      "Requires": "-.mount sysinit.target",
+      "Restart": "",
+      "Result": "success",
+      "TimersCalendar": "{ OnCalendar=*-*-* *:00/30:00 ; next_elapse=Wed 2026-10-07 00:30:00 EDT }",
+      "TimersMonotonic": "",
+      "Triggers": "opticable-phase12-test-runner.service",
+      "Type": "",
+      "UnitFileState": "enabled",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "TIMER-DRIVEN",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-phase12-test-runner.timer": "7bc1783385877ccb5b590be111aa22ca72bd72941855ef30d69fe8a8c7c0fae2"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "opticable-phase12-test-runner.timer"
+    },
+    {
+      "ActiveState": "active",
+      "After": "sysinit.target",
+      "Description": "Poll active OptiBrain lead intake receipts every five minutes",
+      "DropInPaths": "",
+      "EnvironmentFiles": "",
+      "ExecStart": "",
+      "FragmentPath": "/etc/systemd/system/opticable-phase9-intake-receipts.timer",
+      "Group": "",
+      "LastTriggerUSec": "Wed 2026-10-07 00:00:57 EDT",
+      "NextElapseUSecRealtime": "",
+      "Requires": "sysinit.target",
+      "Restart": "",
+      "Result": "success",
+      "TimersCalendar": "",
+      "TimersMonotonic": "{ OnBootUSec=2min ; next_elapse=2min }",
+      "Triggers": "opticable-phase9-intake-receipts.service",
+      "Type": "",
+      "UnitFileState": "enabled",
+      "User": "",
+      "Wants": "",
+      "WorkingDirectory": "",
+      "authority_relationship": "ROOT POLICY + EXACT RELEASE + OFF-HOST CLAIMS",
+      "classification": "TIMER-DRIVEN",
+      "definition_hashes": {
+        "/etc/systemd/system/opticable-phase9-intake-receipts.timer": "3efb0c3deed0d9330ec02b9a004a98b4a4f3902337b8e16433b1398bee798f19"
+      },
+      "expected_restore_state": "MASKED",
+      "health_check": "systemctl show Result + exact unit hash",
+      "name": "opticable-phase9-intake-receipts.timer"
+    }
+  ],
+  "timezone": "America/Toronto",
+  "unexpected_production_writes": 0,
+  "users": [
+    {
+      "gid": 0,
+      "home": "/root",
+      "name": "root",
+      "shell": "/bin/bash",
+      "uid": 0
+    },
+    {
+      "gid": 1,
+      "home": "/usr/sbin",
+      "name": "daemon",
+      "shell": "/usr/sbin/nologin",
+      "uid": 1
+    },
+    {
+      "gid": 2,
+      "home": "/bin",
+      "name": "bin",
+      "shell": "/usr/sbin/nologin",
+      "uid": 2
+    },
+    {
+      "gid": 3,
+      "home": "/dev",
+      "name": "sys",
+      "shell": "/usr/sbin/nologin",
+      "uid": 3
+    },
+    {
+      "gid": 65534,
+      "home": "/bin",
+      "name": "sync",
+      "shell": "/bin/sync",
+      "uid": 4
+    },
+    {
+      "gid": 60,
+      "home": "/usr/games",
+      "name": "games",
+      "shell": "/usr/sbin/nologin",
+      "uid": 5
+    },
+    {
+      "gid": 12,
+      "home": "/var/cache/man",
+      "name": "man",
+      "shell": "/usr/sbin/nologin",
+      "uid": 6
+    },
+    {
+      "gid": 7,
+      "home": "/var/spool/lpd",
+      "name": "lp",
+      "shell": "/usr/sbin/nologin",
+      "uid": 7
+    },
+    {
+      "gid": 8,
+      "home": "/var/mail",
+      "name": "mail",
+      "shell": "/usr/sbin/nologin",
+      "uid": 8
+    },
+    {
+      "gid": 9,
+      "home": "/var/spool/news",
+      "name": "news",
+      "shell": "/usr/sbin/nologin",
+      "uid": 9
+    },
+    {
+      "gid": 10,
+      "home": "/var/spool/uucp",
+      "name": "uucp",
+      "shell": "/usr/sbin/nologin",
+      "uid": 10
+    },
+    {
+      "gid": 13,
+      "home": "/bin",
+      "name": "proxy",
+      "shell": "/usr/sbin/nologin",
+      "uid": 13
+    },
+    {
+      "gid": 33,
+      "home": "/var/www",
+      "name": "www-data",
+      "shell": "/usr/sbin/nologin",
+      "uid": 33
+    },
+    {
+      "gid": 34,
+      "home": "/var/backups",
+      "name": "backup",
+      "shell": "/usr/sbin/nologin",
+      "uid": 34
+    },
+    {
+      "gid": 38,
+      "home": "/var/list",
+      "name": "list",
+      "shell": "/usr/sbin/nologin",
+      "uid": 38
+    },
+    {
+      "gid": 39,
+      "home": "/run/ircd",
+      "name": "irc",
+      "shell": "/usr/sbin/nologin",
+      "uid": 39
+    },
+    {
+      "gid": 65534,
+      "home": "/nonexistent",
+      "name": "_apt",
+      "shell": "/usr/sbin/nologin",
+      "uid": 42
+    },
+    {
+      "gid": 65534,
+      "home": "/nonexistent",
+      "name": "nobody",
+      "shell": "/usr/sbin/nologin",
+      "uid": 65534
+    },
+    {
+      "gid": 998,
+      "home": "/",
+      "name": "systemd-network",
+      "shell": "/usr/sbin/nologin",
+      "uid": 998
+    },
+    {
+      "gid": 996,
+      "home": "/",
+      "name": "systemd-timesync",
+      "shell": "/usr/sbin/nologin",
+      "uid": 996
+    },
+    {
+      "gid": 65534,
+      "home": "/usr/lib/dhcpcd",
+      "name": "dhcpcd",
+      "shell": "/bin/false",
+      "uid": 100
+    },
+    {
+      "gid": 101,
+      "home": "/nonexistent",
+      "name": "messagebus",
+      "shell": "/usr/sbin/nologin",
+      "uid": 101
+    },
+    {
+      "gid": 102,
+      "home": "/nonexistent",
+      "name": "syslog",
+      "shell": "/usr/sbin/nologin",
+      "uid": 102
+    },
+    {
+      "gid": 991,
+      "home": "/",
+      "name": "systemd-resolve",
+      "shell": "/usr/sbin/nologin",
+      "uid": 991
+    },
+    {
+      "gid": 103,
+      "home": "/run/uuidd",
+      "name": "uuidd",
+      "shell": "/usr/sbin/nologin",
+      "uid": 103
+    },
+    {
+      "gid": 104,
+      "home": "/var/lib/tpm",
+      "name": "tss",
+      "shell": "/bin/false",
+      "uid": 104
+    },
+    {
+      "gid": 65534,
+      "home": "/run/sshd",
+      "name": "sshd",
+      "shell": "/usr/sbin/nologin",
+      "uid": 105
+    },
+    {
+      "gid": 1,
+      "home": "/var/cache/pollinate",
+      "name": "pollinate",
+      "shell": "/bin/false",
+      "uid": 106
+    },
+    {
+      "gid": 108,
+      "home": "/nonexistent",
+      "name": "tcpdump",
+      "shell": "/usr/sbin/nologin",
+      "uid": 107
+    },
+    {
+      "gid": 109,
+      "home": "/var/lib/landscape",
+      "name": "landscape",
+      "shell": "/usr/sbin/nologin",
+      "uid": 108
+    },
+    {
+      "gid": 990,
+      "home": "/var/lib/fwupd",
+      "name": "fwupd-refresh",
+      "shell": "/usr/sbin/nologin",
+      "uid": 990
+    },
+    {
+      "gid": 989,
+      "home": "/",
+      "name": "polkitd",
+      "shell": "/usr/sbin/nologin",
+      "uid": 989
+    },
+    {
+      "gid": 1000,
+      "home": "/home/ubuntu",
+      "name": "ubuntu",
+      "shell": "/bin/bash",
+      "uid": 1000
+    },
+    {
+      "gid": 1001,
+      "home": "/home/optibrain",
+      "name": "optibrain",
+      "shell": "/bin/bash",
+      "uid": 1001
+    },
+    {
+      "gid": 988,
+      "home": "/var/lib/caddy",
+      "name": "caddy",
+      "shell": "/usr/sbin/nologin",
+      "uid": 999
+    },
+    {
+      "gid": 986,
+      "home": "/var/lib/opticable-password-pdf",
+      "name": "opticable-password-pdf",
+      "shell": "/usr/sbin/nologin",
+      "uid": 997
+    },
+    {
+      "gid": 985,
+      "home": "/var/lib/opticable-omada-site",
+      "name": "opticable-omada-site",
+      "shell": "/usr/sbin/nologin",
+      "uid": 995
+    },
+    {
+      "gid": 984,
+      "home": "/var/lib/opticable-workflow-api",
+      "name": "opticable-workflow-api",
+      "shell": "/usr/sbin/nologin",
+      "uid": 994
+    },
+    {
+      "gid": 1002,
+      "home": "/home/opticable-deploy",
+      "name": "opticable-deploy",
+      "shell": "/bin/bash",
+      "uid": 1002
+    }
+  ],
+  "verification_suite": [
+    "source",
+    "sqlite_integrity",
+    "foreign_keys",
+    "snapshot_counts_ids_hashes",
+    "audit_chain",
+    "permissions",
+    "systemd",
+    "proxy",
+    "private_health",
+    "provider_reads",
+    "backup_download_readback",
+    "storage",
+    "authority"
+  ]
+}

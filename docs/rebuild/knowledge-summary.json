@@ -1,0 +1,29 @@
+{
+  "optimization": [
+    [
+      "optibrain.business_priority",
+      286,
+      51
+    ],
+    [
+      "optibrain.optimization_asset",
+      42,
+      26
+    ],
+    [
+      "optibrain.optimization_proposal",
+      76,
+      34
+    ]
+  ],
+  "manager_events": 547,
+  "owner_fact_corrections": 3,
+  "learning": 0,
+  "envelopes": 116,
+  "audit_events": 603,
+  "feedback": 0,
+  "preview_observations": 109,
+  "priority_latest_statuses": {
+    "OWNER_REVIEW": 51
+  }
+}

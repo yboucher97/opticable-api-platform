@@ -1,0 +1,25 @@
+# OptiBrain rebuild architecture
+
+RECOVERY — CURRENT SPECIALIZED GUIDE. Foundation remains complete. This toolchain prepares a replacement Ubuntu 24.04 amd64 host; it does not migrate production.
+
+The canonical inputs are the [host manifest](current-host-manifest.json), its [schema](rebuild-manifest.schema.json), a trusted [verified-generation catalog](recovery-catalog.json), a checksum-pinned plaintext recovery, and the separately reviewed rebuild-toolchain release. Application source comes from the recovery's exact Git SHA, preferably its verified complete-history bundle. Tooling and application versions are deliberately recorded separately. The packaged manifest supports the verified `1.34.1` release; a changed release/unit contract requires a reviewed updated manifest. Future records within these stores require no bootstrap code changes.
+
+The implementation uses Bash for entry and Python's standard library for host planning, staging, permissions, source identity and audit. Existing AGE, SQLite online backup, systemd, Caddy, Zoho OAuth, GitHub App and R2 helpers remain canonical. There is no new secrets platform, database replication system, foundation layer or continuous development worker.
+
+The replacement starts with closed root policies and final systemd EnvironmentFile overrides. All business/observation timers and consequential runner services are masked before installation or restore. Persistent development units stay masked. Queued records and approvals remain historical evidence; they are never replayed by restore. A later observer or writer graduation requires independent reconciliation and explicit authority.
+
+Restore verifies the whole archive's digest and every manifest file while streaming, then extracts selected durable data into a generation under `/var/lib/optibrain-data`. Every SQLite store passes integrity, foreign keys, schema, table counts, primary-key identity hashes, full-row hashes and universal audit-chain checks before promotion. Unknown durable business files are retained conservatively. Browser/npm caches, WAL/SHM, lock files, raw log history, old authorizations, host SSH identities and historical worktrees are excluded.
+
+Canonical `/var/lib/...` paths become bind mounts from the verified generation. This keeps trusted root-directory checks and existing service sandbox paths intact. `--data-root /srv/optibrain-data` supports a separately provisioned mounted volume. A single root disk works; no disk is formatted, repartitioned or created by this toolchain. Existing production paths are unchanged. Both generations survive final synchronization for rollback. App and backup units require the durable bind mounts through generated `RequiresMountsFor` drop-ins, so a failed data mount cannot start an empty replacement store on reboot.
+
+Private Caddy binds `127.0.0.1:8080`; the reviewed production host configuration is stored separately. Backend ports remain loopback. Initial testing uses an SSH tunnel, so public DNS and certificate issuance are unnecessary. Public cutover is a later owner-approved operation described in [cutover](cutover.md).
+
+Every target mutation and verification emits the existing Universal Action Evidence Envelope with before/proposed/after state, technical reason, risk, rollback, readback and result. Its hash-chained sidecar is `/var/lib/optibrain-rebuild/actions.db`, outside restored business databases. Original business envelopes are preserved byte-for-byte; bootstrap evidence does not alter their snapshot hashes. [Result JSON](result.schema.json) can feed a future Owner Control Center. No model private reasoning or credential bodies belong in either journal.
+
+The replacement installs a hash-bound adaptation of the existing backup helper that selects the generation-root manifest; recursive selection could mistake a nested business manifest for recovery metadata. Its reviewed unit points at that private installed helper. Current production helper/source are unchanged. The isolated shell fixture verifies a nested manifest survives backup and validation.
+
+Backups use the existing root helpers, public AGE recipient, scoped R2 credentials, independent streamed download hash and current preserve-existing retention policy. Only backup/upload timers can be enabled automatically, after a new target-created recovery verifies. Missing credentials, provider failures, insufficient storage or unverified backups keep cutover readiness false.
+
+Large business documents remain in WorkDrive; object storage holds archives and encrypted recovery. The manifest reserves these interfaces without implementing a new document subsystem. External Cloudflare Worker/KV/queue state and immutable R2 effect namespaces survive VPS loss and must be reconciled independently, especially for effects newer than the selected backup.
+
+Current evidence proves component restore, provider reads and contained Manager rendering. A disposable fresh VPS drill is still required to establish complete OS-to-running-server behavior and measured RTO. No traffic or full-host failover is claimed by this mission.

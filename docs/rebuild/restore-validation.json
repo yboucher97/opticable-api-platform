@@ -1,0 +1,9 @@
+{
+  "all_manifest_files_verified": 6277,
+  "databases": 8,
+  "full_staging": false,
+  "generation": "20261007T030438Z",
+  "location": "RAM-backed /dev/shm; no duplicate archives",
+  "plaintext_sha256": "1005074668c9b5e60bed640eae008d36301accfe842b4e74fc8ac4ab97baec48",
+  "source_sha": "be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa"
+}

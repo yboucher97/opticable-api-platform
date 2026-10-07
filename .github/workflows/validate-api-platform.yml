@@ -6,6 +6,8 @@ on:
       - "apps/workflow-api/**"
       - "apps/omada-site-service/**"
       - "ops/backup/**"
+      - "ops/rebuild/**"
+      - "docs/rebuild/**"
       - "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md"
       - "ops/admin/master-runbook.sha256"
       - "deploy/manual-guarded-release.py"
@@ -41,6 +43,8 @@ on:
       - "apps/workflow-api/**"
       - "apps/omada-site-service/**"
       - "ops/backup/**"
+      - "ops/rebuild/**"
+      - "docs/rebuild/**"
       - "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md"
       - "ops/admin/master-runbook.sha256"
       - "deploy/manual-guarded-release.py"
@@ -107,6 +111,9 @@ jobs:
           bash -n ../../deploy/bootstrap-github-actions-secrets.sh
           bash -n ../../deploy/production-root-command.sh
           bash -n ../../ops/phase6/git-hooks/pre-push
+          bash -n ../../ops/rebuild/bootstrap.sh
+          bash -n ../../ops/rebuild/launch.sh
+          bash -n ../../tests/test_optibrain_backup.sh
 
       - name: Verify authoritative runbook digest
         run: |
@@ -119,10 +126,13 @@ jobs:
           PYCODE
 
       - name: Compile Python
-        run: python -m compileall -q workflow tests ../../ops/phase6 ../../ops/phase14 ../../ops/phase22_23 ../../deploy/manual-guarded-release.py
+        run: python -m compileall -q workflow tests ../../ops/rebuild ../../ops/phase6 ../../ops/phase14 ../../ops/phase22_23 ../../deploy/manual-guarded-release.py
 
       - name: Run automation kernel tests
         run: python -I ../../ops/phase6/validate.py --suite full
+
+      - name: Verify replacement backup with isolated fixture sources
+        run: sudo env TMPDIR=/dev/shm bash ../../tests/test_optibrain_backup.sh
 
 
   control-plane-worker:

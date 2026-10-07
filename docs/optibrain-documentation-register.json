@@ -21,12 +21,12 @@
     "HISTORICAL EVIDENCE"
   ],
   "counts": {
-    "SUPERSEDED": 10,
-    "HISTORICAL": 48,
-    "AUDIT EVIDENCE": 140,
+    "AUDIT EVIDENCE": 150,
     "AUTHORITATIVE CURRENT": 71,
-    "SECURITY / CONTROL": 2,
-    "RECOVERY": 1
+    "HISTORICAL": 48,
+    "RECOVERY": 11,
+    "SECURITY / CONTROL": 3,
+    "SUPERSEDED": 10
   },
   "documents": [
     {
@@ -1884,6 +1884,153 @@
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "purpose": "Post-foundation implementation, preserving exact-SHA release and required recovery",
+      "superseded_by": null
+    },
+    {
+      "classification": "RECOVERY",
+      "current": true,
+      "path": "docs/rebuild/architecture.md",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "RECOVERY",
+      "current": true,
+      "path": "docs/rebuild/bootstrap.md",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "RECOVERY",
+      "current": true,
+      "path": "docs/rebuild/control-center.md",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "path": "docs/rebuild/current-host-inventory.md",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "path": "docs/rebuild/current-host-manifest.json",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "RECOVERY",
+      "current": true,
+      "path": "docs/rebuild/cutover.md",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "RECOVERY",
+      "current": true,
+      "path": "docs/rebuild/drill.md",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "path": "docs/rebuild/final-report.json",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "path": "docs/rebuild/final-report.md",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "path": "docs/rebuild/knowledge-summary.json",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "RECOVERY",
+      "current": true,
+      "path": "docs/rebuild/migration.md",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "path": "docs/rebuild/mission-action-evidence.json",
+      "purpose": "Sanitized canonical universal evidence export for rebuild preparation; explicitly retrospective auth-cache exception",
+      "superseded_by": null
+    },
+    {
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "path": "docs/rebuild/performance-baseline.json",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "path": "docs/rebuild/provider-read-results.json",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "RECOVERY",
+      "current": true,
+      "path": "docs/rebuild/rebuild-manifest.schema.json",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "path": "docs/rebuild/recovery-catalog.json",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "path": "docs/rebuild/restore-validation.json",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "RECOVERY",
+      "current": true,
+      "path": "docs/rebuild/restore.md",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "RECOVERY",
+      "current": true,
+      "path": "docs/rebuild/result.schema.json",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "RECOVERY",
+      "current": true,
+      "path": "docs/rebuild/rollback.md",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
+      "superseded_by": null
+    },
+    {
+      "classification": "SECURITY / CONTROL",
+      "current": true,
+      "path": "docs/rebuild/secrets-manifest.md",
+      "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
       "superseded_by": null
     }
   ]

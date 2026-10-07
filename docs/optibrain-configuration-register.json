@@ -756,10 +756,10 @@
       "location": "/etc/optibrain/rebuild-safety.env",
       "owner": "root",
       "secret": false,
-      "source_of_truth": "ops/phase15/bootstrap.py",
-      "deployed": "final recovery EnvironmentFile",
+      "source_of_truth": "ops/rebuild/engine.py; canonical Recovery guide",
+      "deployed": "replacement only; no current-host policy changed",
       "restored": "regenerate fresh OFF",
-      "verified": "bootstrap VERIFY",
+      "verified": "safe rerun, flags and masked schedulers plus exact reviewed units",
       "backed_up": "replacement app backup",
       "purpose": "replacement-only safety override"
     },
@@ -1081,6 +1081,61 @@
       "verified": "Existing website-restricted App tokens; user token/account/Workers/Builds all HTTP 200; proposed trigger exclusion not applied",
       "backed_up": "Existing encrypted /etc/optibrain and /var/lib/optibrain operational backup; verify secure configuration coverage after credential intake before execution",
       "purpose": "Isolated preview credentials and bounded mission evidence; accepted GitHub Free plan limit without provider main protection"
+    },
+    {
+      "backed_up": "restored business roots in existing AGE/R2 archive; sidecar/control receipts export separately for drill/Control Center retention",
+      "deployed": "replacement only; current production untouched",
+      "location": "/var/lib/optibrain-rebuild/state.json; manifest.json; result.json; backup-verified.json",
+      "owner": "root; named restored file owners/modes inside mounted generation",
+      "purpose": "Private marked-target binding, idempotent progress, machine readiness and fresh encrypted readback",
+      "restored": "staged exact hashes/DB schemas and closed authority; old generations retained",
+      "secret": false,
+      "source_of_truth": "docs/rebuild/current-host-manifest.json + trusted verified-generation catalog + ops/rebuild",
+      "verified": "component fixtures plus target-only verify gate; full fresh-VPS drill pending"
+    },
+    {
+      "backed_up": "restored business roots in existing AGE/R2 archive; sidecar/control receipts export separately for drill/Control Center retention",
+      "deployed": "replacement only; current production untouched",
+      "location": "/var/lib/optibrain-rebuild/actions.db",
+      "owner": "root; named restored file owners/modes inside mounted generation",
+      "purpose": "Canonical universal rebuild action evidence sidecar independent of restored business hashes",
+      "restored": "staged exact hashes/DB schemas and closed authority; old generations retained",
+      "secret": false,
+      "source_of_truth": "docs/rebuild/current-host-manifest.json + trusted verified-generation catalog + ops/rebuild",
+      "verified": "component fixtures plus target-only verify gate; full fresh-VPS drill pending"
+    },
+    {
+      "backed_up": "restored business roots in existing AGE/R2 archive; sidecar/control receipts export separately for drill/Control Center retention",
+      "deployed": "replacement only; current production untouched",
+      "location": "/var/lib/optibrain-data/generations; optional /srv/optibrain-data/generations",
+      "owner": "root; named restored file owners/modes inside mounted generation",
+      "purpose": "Verified durable state generations; configurable volume and retained final-sync rollback",
+      "restored": "staged exact hashes/DB schemas and closed authority; old generations retained",
+      "secret": true,
+      "source_of_truth": "docs/rebuild/current-host-manifest.json + trusted verified-generation catalog + ops/rebuild",
+      "verified": "component fixtures plus target-only verify gate; full fresh-VPS drill pending"
+    },
+    {
+      "backed_up": "restored business roots in existing AGE/R2 archive; sidecar/control receipts export separately for drill/Control Center retention",
+      "deployed": "replacement only; current production untouched",
+      "location": "/etc/fstab OPTIBRAIN REBUILD block",
+      "owner": "root; named restored file owners/modes inside mounted generation",
+      "purpose": "Owned-generation bind mounts preserving canonical sandbox and trust paths",
+      "restored": "staged exact hashes/DB schemas and closed authority; old generations retained",
+      "secret": false,
+      "source_of_truth": "docs/rebuild/current-host-manifest.json + trusted verified-generation catalog + ops/rebuild",
+      "verified": "component fixtures plus target-only verify gate; full fresh-VPS drill pending"
+    },
+    {
+      "backed_up": "restored business roots in existing AGE/R2 archive; sidecar/control receipts export separately for drill/Control Center retention",
+      "deployed": "replacement only; current production untouched",
+      "location": "/etc/caddy/optibrain-production.caddy; replacement /etc/caddy/Caddyfile",
+      "owner": "root; named restored file owners/modes inside mounted generation",
+      "purpose": "Reviewed public proxy source plus loopback private validation route",
+      "restored": "staged exact hashes/DB schemas and closed authority; old generations retained",
+      "secret": false,
+      "source_of_truth": "docs/rebuild/current-host-manifest.json + trusted verified-generation catalog + ops/rebuild",
+      "verified": "component fixtures plus target-only verify gate; full fresh-VPS drill pending"
     }
   ],
   "environment_key_references": [

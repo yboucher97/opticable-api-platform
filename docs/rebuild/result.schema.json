@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OptiBrain replacement verification result",
+  "type": "object",
+  "required": [
+    "schema",
+    "type",
+    "at",
+    "generation",
+    "source_sha",
+    "api_version",
+    "checks",
+    "ready_for_owner_cutover",
+    "authority",
+    "owner_approval",
+    "dns_changes",
+    "production_migration",
+    "owner_control_center",
+    "last_backup",
+    "last_restore_test",
+    "last_full_rebuild_test",
+    "recovery_confidence"
+  ],
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "type": {
+      "const": "optibrain.rebuild.result"
+    },
+    "source_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "checks": {
+      "type": "object"
+    },
+    "authority": {
+      "enum": [
+        "SAFE/OFF",
+        "UNKNOWN"
+      ]
+    },
+    "ready_for_owner_cutover": {
+      "type": "boolean"
+    },
+    "owner_approval": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "dns_changes": {
+      "const": 0
+    },
+    "production_migration": {
+      "const": 0
+    },
+    "last_full_rebuild_test": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner_control_center": {
+      "const": "NOT BUILT"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "ready_for_owner_cutover": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "authority": {
+            "const": "SAFE/OFF"
+          },
+          "checks": {
+            "required": [
+              "OS",
+              "SOURCE",
+              "DATABASES",
+              "KNOWLEDGE",
+              "AUDIT",
+              "MANAGER",
+              "SYSTEMD",
+              "PROXY",
+              "FIREWALL",
+              "SSH",
+              "AUTHORITY",
+              "STORAGE",
+              "SECRETS",
+              "BACKUPS",
+              "PROVIDERS"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
