@@ -48,6 +48,25 @@ def install_manager_routes(app,*,verifier,db_path,origin,clock=None):
             return JSONResponse(view,headers=headers)
         return HTMLResponse(render_manager(view,query=q,domain=domain,status=status),headers=headers)
 
+    @app.get('/v1/operator/manager/audit',tags=['operator'])
+    async def audit(q:str='',status:str='',since:str|None=None,automatic:bool|None=None,limit:int=100,
+        cf_access_jwt_assertion:str|None=Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        identity(cf_access_jwt_assertion)
+        from .automation.action_evidence import ActionEvidence
+        try:
+            rows=await run_in_threadpool(ActionEvidence(path).timeline,query=q,status=status,since=since,automatic=automatic,limit=limit)
+        except ValueError:raise HTTPException(status_code=422,detail='Bounded audit filter required')
+        return JSONResponse({'read_only':True,'timeline':rows,'provider_writes':0},headers=headers)
+
+    @app.get('/v1/operator/manager/audit/{action_id}',tags=['operator'])
+    async def action_detail(action_id:str,cf_access_jwt_assertion:str|None=Header(default=None,alias='Cf-Access-Jwt-Assertion')):
+        identity(cf_access_jwt_assertion)
+        from .automation.action_evidence import ActionEvidence
+        try:record=await run_in_threadpool(ActionEvidence(path).detail,action_id)
+        except ValueError:raise HTTPException(status_code=422,detail='Bounded exact action identifier required')
+        if record is None:raise HTTPException(status_code=404,detail='Action evidence not found')
+        return JSONResponse({'read_only':True,**record},headers=headers)
+
     @app.post('/v1/operator/manager/feedback',tags=['operator'])
     async def feedback(request:Request,cf_access_jwt_assertion:str|None=Header(default=None,alias='Cf-Access-Jwt-Assertion')):
         person=identity(cf_access_jwt_assertion)

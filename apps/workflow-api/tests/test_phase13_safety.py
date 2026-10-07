@@ -39,6 +39,21 @@ class Safety(unittest.TestCase):
     def attempted(self):
         self.journal.prepare(self.action,decide(self.action,'TEST_ONLY',self.policy))
         self.journal.transition(self.action.action_id,from_states=('proposed',),to='attempted',attempt=True)
+        from datetime import datetime,timezone
+        from workflow.automation.action_evidence import ActionEvidence,envelope
+        now=datetime.now(timezone.utc);audit=ActionEvidence(self.journal.path)
+        audit.plan(envelope(self.action.action_id,self.action.action_type,{'type':'Leads','identity':'501'},now,
+            mutation=True,before_state={'id':'501','ownership':'TEST_ONLY'},proposed_state=self.action.payload,
+            exact_versions={'payload_hash':self.action.payload_hash},authority_class='EXISTING_TEST_ONLY_POLICY',
+            rollback_capability='COMPENSATING_ACTION_ONLY',consequence='Derived TEST Task',compensating_action='Owner reconciliation'),now)
+        audit.start(self.action.action_id,now,authority_check=lambda:None)
+    def test_legacy_attempt_without_universal_envelope_cannot_reach_transport(self):
+        self.journal.prepare(self.action,decide(self.action,'TEST_ONLY',self.policy))
+        self.journal.transition(self.action.action_id,from_states=('proposed',),to='attempted',attempt=True)
+        claim=self.store.claim(self.action)
+        with self.scope(),patch('workflow.automation.mutation_control.os.geteuid',return_value=0),patch('workflow.automation.mutation_control.read_control',return_value={'test_writes_enabled':True,'allowed_actions':['crm.task.create']}):
+            bind_task_claim(self.action,self.client,self.body,claim)
+            with self.assertRaises(ValueError):require_business_transport(self.client,'zohoapis','POST','/crm/v8/Tasks',self.body)
     def test_all_legacy_business_methods_deny_before_auth_even_with_flags_and_confirm(self):
         with patch.dict(os.environ,{'OPTIBRAIN_BUSINESS_AUTO_WRITES':'1','OPTIBRAIN_OUTBOUND_SENDS':'phase7-single-canary-v1'}),patch('workflow.automation.mutation_control.read_control',return_value={'test_writes_enabled':True}),patch('workflow.zoho_gateway.httpx.request') as transport:
             for service,path in [('mail','/api/accounts/1/messages'),('sign','/requests'),('forms','/api/v1/forms'),('projects','/api/v3/portal/1/projects/'),('zohoapis','/crm/v8/Tasks')]:
@@ -106,7 +121,16 @@ class Safety(unittest.TestCase):
             with self.assertRaises(ValueError):
                 with technical_admin_call(self.client,'cloudflare','PUT','/resource',{}):pass
         with patch('workflow.automation.mutation_control.os.geteuid',return_value=0):
-            with technical_admin_call(self.client,'cloudflare','PUT','/resource',{}):
+            from datetime import datetime,timezone
+            from workflow.automation.action_evidence import ActionEvidence,envelope
+            now=datetime.now(timezone.utc);audit=ActionEvidence(self.journal.path);aid='technical-audit-fixture-001'
+            plan=envelope(aid,'TECHNICAL_CONFIG',{'type':'CONFIG','identity':'/resource'},now,provider='cloudflare',
+                mutation=True,before_state={'exists':False},proposed_state={},rollback_capability='COMPENSATING_ACTION_ONLY',
+                consequence='Technical object may exist',compensating_action='Owner reviewed cleanup',authority_class='EXPLICIT_TEST_FIXTURE')
+            audit.plan(plan,now);audit.start(aid,now,authority_check=lambda:None)
+            with self.assertRaises(ValueError):
+                with technical_admin_call(self.client,'cloudflare','PUT','/resource',{}):pass
+            with technical_admin_call(self.client,'cloudflare','PUT','/resource',{},audit=audit,action_id=aid):
                 require_technical_admin(self.client,'cloudflare','PUT','/resource',{})
                 with self.assertRaises(ValueError):require_technical_admin(self.client,'cloudflare','PUT','/resource',{})
     def test_production_api_authentication_is_fail_closed_and_url_keys_are_rejected(self):

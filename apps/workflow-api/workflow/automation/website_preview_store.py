@@ -38,6 +38,13 @@ class WebsitePreviewStore(OptimizationStore):
             if prior and prior['fingerprint']==digest(value):return seq
             db.execute('INSERT INTO website_preview_observations VALUES (?,?,?,?,?,?,?)',
                 (value['proposal_id'],value['proposal_revision'],seq+1,value['proposal_hash'],digest(value),value['updated_at'],raw))
+            from .action_evidence import local_record,stamp
+            local_record(db,digest(['preview-observation',value['proposal_id'],value['proposal_revision'],seq+1,digest(value)]),
+                'PREVIEW_STATE_OBSERVED',{'type':'WEBSITE_PREVIEW','identity':value['proposal_id']},stamp(value['updated_at']),
+                before={'state':json.loads(prior['value'])['state'],'fingerprint':prior['fingerprint']} if prior else {'exists':False},
+                after={'state':value['state'],'fingerprint':digest(value),'sequence':seq+1},
+                reason='Exact canonical preview state and evidence observation; no production outcome inferred',proposal_id=value['proposal_id'],
+                evidence_refs=value.get('evidence_refs',[]),exact_versions={k:value.get(k) for k in ('proposal_revision','proposal_hash','repository','base_sha','head_sha','deployment_id')})
         return seq+1
 
     def preview(self, proposal_id, now):

@@ -154,6 +154,9 @@ class UploadTests(unittest.TestCase):
                 return super().request(method,path,**args)
         t=Writes();adapter=CloudflarePreviewAdapter(transport=t,clock=lambda:NOW)
         with tempfile.TemporaryDirectory() as directory,patch.object(adapter,'_guard') as guard:
+            from workflow.automation.action_evidence import ActionEvidence
+            audit_directory=tempfile.TemporaryDirectory();self.addCleanup(audit_directory.cleanup)
+            adapter.audit=ActionEvidence(Path(audit_directory.name)/'audit.db')
             root=Path(directory);(root/'index.html').write_text('camera');(root/'preview-evidence.json').write_text(json.dumps(binding))
             digest=artifact_files(root)[1]
             result=adapter.upload(binding,root,digest)

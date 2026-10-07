@@ -143,6 +143,22 @@ class ProposalPreviewExecutor:
             raise ValueError('Remote proposal ref differs; overwrite forbidden')
         return value
 
+    def _audited(self, binding, now, operation, before, mutate, readback):
+        from .action_evidence import ActionEvidence,envelope,execute_action
+        from .acquisition_store import digest
+        aid=digest(['website-preview',operation,binding])
+        journal=ActionEvidence(self.store.path)
+        plan=envelope(aid,operation,{'type':'WEBSITE_PREVIEW','identity':binding['repository']+':'+binding['branch']},now,
+            mutation=True,provider='GITHUB',proposal_id=binding['proposal_id'],before_state=before,proposed_state=binding,
+            reason='Prepare the exact isolated proposal for owner review',business_rationale='Existing preview-only boundary validates exact source, tests and provider containment',
+            authority_class='EXISTING_PREVIEW_ONLY_SCOPE',automatic_rule='Exact canonical tuple, tested preview scope and fresh root-configured boundary',
+            exact_versions={**binding,'environment':'preview'},rollback_capability='COMPENSATING_ACTION_ONLY',
+            consequence='A proposal branch/draft PR may be externally observed; production is not changed',
+            compensating_action='Owner may close draft PR/archive proposal ref after verifying it is unused; preserve audit history')
+        def execute():mutate();return {'success':True}
+        return execute_action(journal,plan,now,authority_check=lambda:self._prepared(binding,self._now(now)),
+            execute=execute,readback=readback,verify=lambda actual,expected:actual is not None,clock=lambda:self._now(now))
+
     def push_proposal(self, binding, now):
         self._prepared(binding, now)
         self._main(binding, now)
@@ -151,7 +167,9 @@ class ProposalPreviewExecutor:
         self._prepared(binding, now)
         writes = 0
         if prior is None:
-            self.github.push_proposal_branch(binding['repository'], binding['branch'], binding['head_sha'], binding['proposal_id'])
+            self._audited(binding,now,'PREVIEW_BRANCH_PUSH',{'exists':False},
+                lambda:self.github.push_proposal_branch(binding['repository'], binding['branch'], binding['head_sha'], binding['proposal_id']),
+                lambda:self._branch(binding,now))
             writes = 1
         self._branch(binding, now)  # Mandatory authenticated readback, even replay.
         self._prepared(binding, now)
@@ -175,7 +193,9 @@ class ProposalPreviewExecutor:
         self._prepared(binding, now)
         writes = 0
         if prior is None:
-            self.github.open_draft_pr(binding['repository'], binding['branch'], binding['proposal_id'])
+            self._audited(binding,now,'PREVIEW_DRAFT_PR',{'exists':False},
+                lambda:self.github.open_draft_pr(binding['repository'], binding['branch'], binding['proposal_id']),
+                lambda:self._pr(binding,now))
             writes = 1
         pr = self._pr(binding, now)
         self._branch(binding, now)

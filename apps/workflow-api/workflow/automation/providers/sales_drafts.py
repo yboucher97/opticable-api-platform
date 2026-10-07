@@ -15,7 +15,7 @@ from ..event_schema import digest
 from ..events import EventLedger
 from ..sales_decision import ACTIVE_STATUSES, POLICY_VERSION, validate_sales_decision
 from .crm_leads import FIELDS, _utc_iso, records
-from .mail_drafts import save_mail_draft
+from .mail_drafts import save_mail_draft,draft_folder,verify_mail_draft
 
 
 TEMPLATES = {
@@ -155,6 +155,11 @@ def register_sales_draft_action(engine, client, store):
                 return {"drafted": False, "reason": refusal or "recipient_changed"}
             if os.environ.get("OPTIBRAIN_SALES_DRAFTS") != POLICY_VERSION:
                 return {"drafted": False, "reason": "observe"}
+            folder=draft_folder(client,account)
+            evidence.update(provider='ZOHO_MAIL',kind='MAIL_DRAFT',action='draft.create',
+                plan_hash=evidence['draft_identity'],
+                before_state={'new_derived_draft':True,'lead_id':identity,'source_version':source_version,'folder_id':folder},
+                proposed_state={'draft_identity':evidence['draft_identity'],'content_hash':content_hash,'folder_id':folder})
             journal.record("started", key, evidence, "phase6-sales-draft")
             try:
                 response = save_mail_draft(client, account, payload)
@@ -165,10 +170,11 @@ def register_sales_draft_action(engine, client, store):
                         or (outer.get("status") or {}).get("code") != 200
                         or not re.fullmatch(r"[0-9]{1,30}", draft_id)):
                     raise ZohoWriteUnconfirmedError("Mail draft response is unconfirmed")
+                actual=verify_mail_draft(client,account,folder,draft_id,payload)
             except Exception as exc:
                 journal.record("manual", key, {**evidence, "error": type(exc).__name__}, "phase6-sales-draft")
                 raise ZohoWriteUnconfirmedError("Mail draft outcome requires human reconciliation") from None
-            journal.record("verified", key, {**evidence, "draft_id": draft_id}, "phase6-sales-draft")
+            journal.record("verified", key, {**evidence, "draft_id": draft_id,'actual_after':actual,'verification':True}, "phase6-sales-draft")
             return {"drafted": True, "deduplicated": False, "draft_id": draft_id,
                     "content_hash": content_hash}
 

@@ -2,8 +2,11 @@ from copy import deepcopy
 from datetime import datetime,timezone
 from io import BytesIO
 import json,unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import Mock,patch
 from workflow.automation import conversion_export as c
+from workflow.automation.action_evidence import ActionEvidence
 from test_marketing_attribution import fixture
 
 NOW=datetime(2026,10,3,14,tzinfo=timezone.utc)
@@ -119,7 +122,11 @@ class ConversionPlanTests(unittest.TestCase):
    client.authorize(self.plan(p=p),live=True)
  def test_central_conversion_grant_is_exact_and_one_use(self):
   client=c.DataManager(Mock());p=self.plan();client.authorize=Mock();body={**p['body'],'validateOnly':False}
-  with c.conversion_scope(client,p,live=True,claim={'key':p['key'],'payload_hash':p['payload_hash']}):
+  temporary=TemporaryDirectory();self.addCleanup(temporary.cleanup);audit=ActionEvidence(Path(temporary.name)/'existing.db')
+  with self.assertRaises(ValueError):
+   with c.conversion_scope(client,p,live=True,claim={'key':p['key'],'payload_hash':p['payload_hash']}):pass
+  c.prepare_conversion_audit(p,client,audit,control(),datetime.now(timezone.utc))
+  with c.conversion_scope(client,p,live=True,claim={'key':p['key'],'payload_hash':p['payload_hash']},audit=audit):
    with self.assertRaises(ValueError):c.check_transport(client,'google_datamanager','POST','/v1/campaigns',body,{})
    self.assertTrue(c.check_transport(client,'google_datamanager','POST','/v1/events:ingest',body,{}))
    with self.assertRaises(ValueError):c.check_transport(client,'google_datamanager','POST','/v1/events:ingest',body,{})
@@ -146,6 +153,8 @@ class S3:
 class ConversionEffectTests(unittest.TestCase):
  def setUp(self):
   self.plan=c.build_plan(event(),fixture(),control(),now=NOW);self.claims=c.ConversionClaims(S3());self.client=Mock()
+  temporary=TemporaryDirectory();self.addCleanup(temporary.cleanup)
+  self.client.audit=ActionEvidence(Path(temporary.name)/'existing.db');self.client.authorize.return_value=control()
   self.client.ingest.return_value={'requestId':'request-one'}
  def test_validation_has_no_offhost_claim_or_effect(self):
   r=c.export_one(self.plan,self.client,None);self.assertEqual(r['uploads'],0)
@@ -154,12 +163,14 @@ class ConversionEffectTests(unittest.TestCase):
   self.assertEqual(c.export_one(self.plan,self.client,self.claims,live=True)['uploads'],1)
   self.assertEqual(c.export_one(self.plan,self.client,self.claims,live=True)['uploads'],0)
   self.client.ingest.assert_called_once()
+  self.assertEqual(self.client.audit.get(c.conversion_action_id(self.plan))['status'],'STARTED')
  def test_lost_ack_never_reposts_after_local_state_loss(self):
   self.client.ingest.side_effect=TimeoutError('provider may have committed')
   with self.assertRaises(ValueError):c.export_one(self.plan,self.client,self.claims,live=True)
   restored=c.ConversionClaims(self.claims.client)
   self.assertEqual(c.export_one(self.plan,self.client,restored,live=True)['state'],'RECONCILIATION_REQUIRED')
   self.client.ingest.assert_called_once()
+  self.assertEqual(self.client.audit.get(c.conversion_action_id(self.plan))['final_result']['stage'],'CONVERSION_UPLOAD')
  def test_changed_value_same_identity_holds(self):
   c.export_one(self.plan,self.client,self.claims,live=True)
   with self.assertRaises(ValueError):c.export_one({**self.plan,'payload_hash':'0'*64},self.client,self.claims,live=True)
@@ -168,14 +179,17 @@ class ConversionEffectTests(unittest.TestCase):
   self.claims.put=Mock(side_effect=TimeoutError())
   with self.assertRaises(TimeoutError):c.export_one(self.plan,self.client,self.claims,live=True)
   self.client.ingest.assert_not_called()
+  self.assertEqual(self.client.audit.get(c.conversion_action_id(self.plan))['final_result']['stage'],'OFFHOST_CLAIM')
  def test_own_kill_before_claim_preserves_other_families(self):
   self.client.authorize.side_effect=ValueError('export stopped')
   with self.assertRaises(ValueError):c.export_one(self.plan,self.client,self.claims,live=True)
   self.assertEqual(self.claims.client.objects,{});self.client.ingest.assert_not_called()
  def test_provider_processing_needs_destination_and_one_event(self):
+  c.export_one(self.plan,self.client,self.claims,live=True)
   row={'destination':self.plan['body']['destinations'][0],'requestStatus':'SUCCESS','eventsIngestionStatus':{'recordCount':'1'}}
   self.client.status.return_value={'requestStatusPerDestination':[row]}
   self.assertEqual(c.reconcile(self.plan,self.client,'request-one')['state'],'PROVIDER_PROCESSING_PASS')
+  self.assertEqual(self.client.audit.get(c.conversion_action_id(self.plan))['effect_result'],'VERIFIED')
   for change in ({'requestStatus':'PROCESSING'},{'warningInfo':{'warningCounts':[1]}},{'errorInfo':{'errorCounts':[1]}}):
    self.client.status.return_value={'requestStatusPerDestination':[{**row,**change}]}
    self.assertEqual(c.reconcile(self.plan,self.client,'request-one')['state'],'RECONCILIATION_REQUIRED')

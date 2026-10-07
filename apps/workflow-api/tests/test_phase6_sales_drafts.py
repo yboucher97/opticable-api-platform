@@ -34,6 +34,7 @@ class FakeMail:
         self.drafts = []
         self.lose = False
         self.response = None
+        self.readback_content = None
         self.before_second_read = None
         self.reads = 0
 
@@ -44,6 +45,12 @@ class FakeMail:
             if self.reads == 2 and self.before_second_read:
                 self.before_second_read()
             return {"ok": True, "status": 200, "data": {"data": [copy.deepcopy(self.lead)]}}
+        if (service,method,path)==('mail','GET','/api/accounts/456/folders'):
+            return {'ok':True,'status':200,'data':{'status':{'code':200},'data':[{'folderId':'678','folderType':'Drafts','path':'/Drafts'}]}}
+        if service=='mail' and method=='GET' and path.startswith('/api/accounts/456/folders/678/messages/'):
+            mid=path.split('/')[-2];payload=self.drafts[int(mid)-701]
+            value={'messageId':mid,'folderId':'678',**{k:payload[k] for k in ('fromAddress','toAddress','subject')}} if path.endswith('/details') else {'content':self.readback_content if self.readback_content is not None else payload['content']}
+            return {'ok':True,'status':200,'data':{'status':{'code':200},'data':value}}
         if (service, method, path) != ("mail", "POST", "/api/accounts/456/messages"):
             raise AssertionError("Forbidden provider operation")
         payload = kwargs["body"]
@@ -161,10 +168,19 @@ class SalesDraftTests(unittest.TestCase):
         self.fake.lead["Language"] = "en"
         self.invoke()
         self.assertEqual(len(self.fake.drafts), 2)
-        proof = next(r["metadata"] for r in self.store.recent_audit() if r["action"] == "verified")
-        self.assertEqual(proof["supersedes_draft_id"], "701")
-        self.assertEqual(self.invoke(old)["reason"], "superseded")
+        from workflow.automation.action_evidence import ActionEvidence
+        audit=ActionEvidence(self.store.db_path)
+        records=[r for r in audit.timeline() if r['action_type']=='CONFIGURATION_draft.create' and r['event']=='SUCCEEDED']
+        self.assertEqual(len({r['action_id'] for r in records}),2)
+        proof = next(r['metadata'] for r in self.store.recent_audit() if r['action'] == 'verified')
+        self.assertEqual(proof['supersedes_draft_id'], '701')
+        self.assertEqual(self.invoke(old)['reason'], 'superseded')
         self.assertEqual(len(self.fake.drafts), 2)
+
+    def test_http_success_without_exact_draft_readback_requires_reconciliation(self):
+        self.fake.readback_content='Unexpected provider content'
+        with self.assertRaises(ZohoWriteUnconfirmedError):self.invoke()
+        self.assertTrue(DesiredJournal(self.store).unresolved('sales-draft:'+digest(['Leads','123'])))
 
     def test_lost_response_fences_same_and_newer_versions_after_restart(self):
         self.fake.lose = True

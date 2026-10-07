@@ -183,6 +183,8 @@ def check_transport(client,service,method,path,body,headers,*,recheck=False,
             or refreshed.get('expected_native_bindings')!=source['plan'].get('expected_native_bindings')):
         raise ValueError('Customer native relationships changed before transport')
     if not recheck:
+        from .effect_audit import start_effect
+        start_effect(grant['journal'],effect,grant['scope'],client)
         grant['used']=True
         grant['journal'].append(effect,'transport_intent',{'scope':grant['scope'],
             'ownership':mode,'offhost_claim':grant['claim'].key})

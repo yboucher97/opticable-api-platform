@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import re
 import time
 import hashlib
@@ -210,6 +212,18 @@ class AutomationEngine:
                     action_identity=identity, attempt=attempt)
                 if marker is None:
                     return False
+                from .action_evidence import ActionEvidence,envelope
+                audit=ActionEvidence(self.store.db_path)
+                audit_id=hashlib.sha256((identity+':'+str(marker)).encode()).hexdigest()
+                audit_now=datetime.now(timezone.utc)
+                audit.plan(envelope(audit_id,step.action,{'type':'WORKFLOW_STEP','identity':run_id+':'+step.id},audit_now,
+                    before_state={'step_status':'NOT_STARTED'},proposed_state={'inputs_hash':identity},
+                    trigger=event.event_id,reason='Queued workflow step from durable event',
+                    business_rationale='Execute the registered workflow step; downstream provider authority remains independent',
+                    evidence_refs=[{'event_id':event.event_id,'run_id':run_id}],
+                    exact_versions={'workflow_version':definition.version,'action_identity':identity},
+                    authority_class='WORKFLOW_ORCHESTRATION',automatic_rule='Registered enabled workflow and claimed durable run'),audit_now)
+                audit.start(audit_id,audit_now,authority_check=lambda:None)
                 try:
                     if handler is None:
                         raise ValueError("unknown action or unresolved workflow input")
@@ -218,6 +232,10 @@ class AutomationEngine:
                     result = handler(context, effective_step)
                 except Exception as exc:  # provider/template runtime errors are captured durably
                     status_code, timeout, retry_after = self._error_signal(exc)
+                    audit.finish(audit_id,datetime.now(timezone.utc),provider_success=False,failure={
+                        'stage':'WORKFLOW_STEP','error_class':type(exc).__name__,'provider_status':status_code,
+                        'safe_details':type(exc).__name__,'partial_effects':'UNKNOWN',
+                        'recovery_action':'Execution-control classification and provider reconciliation govern retries'})
                     decision = decide_retry(
                         attempt=attempt, max_attempts=step.retry.max_attempts,
                         safe_to_retry=retry_safe, http_status=status_code, network_timeout=timeout,
@@ -267,6 +285,9 @@ class AutomationEngine:
                         provider_operation_id=provider_operation_id,
                         final_context=context if final_step else None):
                     return False
+                audit.finish(audit_id,datetime.now(timezone.utc),provider_success=True,
+                    actual_after={'result':result,'step_record_id':marker},verified=True,
+                    response={'basis':'Durable claimed-step completion; provider effects have separate readback evidence'})
                 if final_step:
                     return True
                 step_succeeded = True

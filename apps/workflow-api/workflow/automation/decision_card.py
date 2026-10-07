@@ -7,7 +7,7 @@ import ast
 from copy import deepcopy
 from html import escape
 import json
-from .acquisition_store import safe
+from .acquisition_store import safe,digest
 from .website_registry import site_for
 
 OPTIONS = ['APPROVE', 'REQUEST REVISION', 'REJECT', 'DEFER']
@@ -168,9 +168,23 @@ def decision_card(item, preview=None, *, evidence=None, measured=None):
                 'guardrail':['Forms remain usable','Consent and attribution remain correct','Exclude TEST/operator events','No degradation in qualified inquiry quality'],
                 'result_state':'NOT_EXECUTED'},
             recommended_decision={'value':'REVISE','reason':'Retain technical scene-design detail and sharpen the change before any production proposal.'})
+    from .optimization_learning import evidence_bundle,truth_class
+    from datetime import datetime,timezone
+    bundle=item.get('evidence_bundle') or evidence_bundle(r,d,datetime.now(timezone.utc))
+    card.update(why_optibrain_thinks_this=card['why_change'],sources_used=bundle['items'],
+        counterevidence={'findings':bundle['counterevidence'],'search':[{'check':c['check'],'state':c['state']} for c in bundle['counterevidence_search']],
+            'searched_sources':sorted(bundle['source_coverage']),'state':bundle['counterevidence_state']},
+        evidence_bundle={'fingerprint':digest(bundle),
+            'audit_record_id':item.get('audit_action_id'),'correlation':bundle['correlation'],
+            'unknowns':bundle['unknowns']},previous_relevant_learning=item.get('previous_learning',[]),
+        audit_record_id=item.get('audit_action_id'),
+        audit_state='DURABLE' if item.get('audit_action_id') else 'LEGACY — awaiting canonical observer evidence',
+        expected_result=card['expected_benefit'],result_measurement='See the frozen measurement plan and execution baseline.',
+        rollback_class=d.get('rollback_capability','UNKNOWN'),
+        canonical_truth=[{'evidence_id':e['evidence_id'],'classification':e['truth_class']} for e in bundle['items']])
     if measured:
         card['measured_result']=deepcopy(measured);card['learning']=measured.get('learning') or measured.get('interpretation')
-        card['measurement_plan']['result_state']=measured['outcome']
+        card['measurement_plan']['result_state']=measured.get('result') or measured.get('outcome','UNKNOWN')
     card['summary']={'what_changed':card['proposed_change'],'why':card['why_change'],
         'main_benefit':card['expected_benefit'],'main_downside':card['cons'][0],
         'recommendation':card['recommended_decision']['value']+' — '+card['recommended_decision']['reason']}
@@ -182,7 +196,9 @@ def todo_explanation(priority, card):
     return {'why_this_exists':priority['why'],'latest_event':event or {'state':priority['status'],'evidence':priority.get('evidence',[])},
         'action_required':priority['next_action'],'deadline':priority.get('due_at') or priority.get('deadline'),
         'if_ignored':card['do_nothing'],'confidence':card['confidence'],
-        'proposal_ids':priority.get('proposal_ids',[]),'priority_id':priority['priority_id']}
+        'proposal_ids':priority.get('proposal_ids',[]),'priority_id':priority['priority_id'],
+        'evidence':priority.get('evidence',[]),'actionability':priority.get('actionability','UNKNOWN'),
+        'decision_card_id':card.get('audit_record_id'),'audit_record_id':card.get('audit_record_id')}
 
 
 def render_card(card):
@@ -198,7 +214,9 @@ def render_card(card):
     out+='<p><strong>UNCERTAINTY / CONFIDENCE</strong></p>'+show(card['confidence'])
     out+='<details><summary>Decision evidence and exact before / after</summary>'
     for k,v in card.items():
-        if k not in {'summary','pros','cons','confidence'}:out+='<h3>'+h(k.replace('_',' ').upper())+'</h3>'+show(v)
+        if k not in {'summary','pros','cons','confidence'}:
+            out+='<h3>'+h(k.replace('_',' ').upper())+'</h3>'
+            out+=('<a href="/v1/operator/manager/audit/'+h(v)+'">'+h(v)+'</a>') if k=='audit_record_id' and v else show(v)
     return out+'</details></section>'
 
 

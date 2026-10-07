@@ -14,7 +14,10 @@ def main():
     method=request.get('method','GET');body=request.get('body')
     if method=='GET':result=client.request(request['path'],params=request.get('query',{}))
     else:
-        with technical_admin_call(client,request['provider'],method,request['path'],body):
+        from workflow.automation.action_evidence import ActionEvidence
+        audit=ActionEvidence('/var/lib/opticable-workflow-api/output/automation/phase12-autonomy.db')
+        aid=request.get('audit_action_id')
+        with technical_admin_call(client,request['provider'],method,request['path'],body,audit=audit,action_id=aid):
             result=client.request(request['path'],method,body=body)
     output=ROOT/(request['receipt']+'.json')
     if '/' in request['receipt']:raise ValueError('Receipt name must be a basename')

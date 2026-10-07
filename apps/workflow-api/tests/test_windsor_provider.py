@@ -27,6 +27,19 @@ class FakeWindsor:
 
 
 class WindsorProviderTests(unittest.TestCase):
+    def _audit_fixture(self,store,account='acct'):
+        from datetime import datetime,timezone
+        from workflow.automation.action_evidence import ActionEvidence,envelope
+        now=datetime.now(timezone.utc);j=ActionEvidence(store.db_path);aid='windsor-audit-fixture-001'
+        plan=envelope(aid,'WINDSOR_PAUSE',{'type':'AD_ACCOUNT','identity':account},now,
+            provider='WINDSOR',mutation=True,before_state={'campaign_id':'1','status':'ENABLED'},
+            proposed_state={'connector':'google_ads','account':account,'action':'pause_campaign','params':{'campaign_id':'1'}},
+            rollback_capability='REVERSIBLE_WITH_LIMITATIONS',rollback_target={'campaign_id':'1','status':'ENABLED'},
+            rollback_procedure='Owner restores exact previous campaign state after native provider review',
+            authority_class='EXPLICIT_TEST_FIXTURE',readback_supported=False,
+            unknowns=['Generic Windsor documented action result has no independent native configuration readback in this adapter; reconcile natively'])
+        j.plan(plan,now);j.start(aid,now,authority_check=lambda:None)
+
     def _real_write(self, *, response: httpx.Response | None = None,
                     error: Exception | None = None) -> tuple[dict, list[dict], int]:
         with tempfile.TemporaryDirectory() as tmp:
@@ -46,12 +59,14 @@ steps:
       connector: google_ads
       account: acct
       action_id: pause_campaign
+      audit_action_id: windsor-audit-fixture-001
       reason: fixture
       params: {campaign_id: '1'}
     on_error: continue
     retry:
       max_attempts: 5
 """.strip() + "\n", encoding="utf-8")
+            self._audit_fixture(store)
             engine = AutomationEngine(store, workflows)
             client = WindsorApiClient(WindsorSettings(
                 base_url="https://example.invalid", api_key="fixture", timeout_seconds=30))
@@ -260,9 +275,11 @@ steps:
       connector: google_ads
       account: "123"
       action_id: pause_campaign
+      audit_action_id: windsor-audit-fixture-001
       reason: policy test
       params: {campaign_id: "1"}
 """.strip()+"\n", encoding="utf-8")
+            self._audit_fixture(store,account='123')
             engine=AutomationEngine(store, workflows); register_windsor_actions(engine, FakeWindsor(), store); engine.sync_definitions()
             response=engine.ingest(AutomationEvent(event_type="test.windsor", source="unit-test"))
             run=store.get_run(response.run_ids[0])

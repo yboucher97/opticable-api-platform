@@ -8,7 +8,7 @@ from .acquisition_store import digest, safe
 CLASSIFICATIONS = {'UNATTENDED','OWNER_INITIATED','TEST_ONLY','MANUAL_PROVIDER_ACTION',
                    'NATURAL_BUSINESS_EFFECT','AUTOMATIC_EXISTING_WORKFLOW','UNKNOWN'}
 FEEDBACK = {'APPROVE','REJECT','REQUEST_REVISION','HIGHER','LOWER','NOT_RELEVANT','WAIT','DEFER','NEVER'}
-OUTCOMES = {'SUCCESS','NEUTRAL','REGRESSION','INSUFFICIENT_DATA','BLOCKED'}
+OUTCOMES = {'SUCCESS','NEUTRAL','REGRESSION','INSUFFICIENT_DATA','BLOCKED','POSITIVE','NEGATIVE','MIXED','INCONCLUSIVE','NOT_MEASURABLE'}
 ENTITY_TYPES = set('COMPANY PERSON LEAD CONTACT ACCOUNT DEAL CUSTOMER SERVICE_LOCATION SERVICE ESTIMATE INVOICE RECURRING_PROFILE PROJECT PERMIT TENDER TRIGGER PROSPECT CONVERSATION WEBSITE_PAGE SEARCH_QUERY KEYWORD CAMPAIGN AD_GROUP AD CREATIVE FORM REVIEW CONTENT_ASSET MARKET_OPPORTUNITY OPTIMIZATION_PROPOSAL BUSINESS_PRIORITY EXECUTION_RESULT LEARNING'.split())
 TRUTH = {'PROVIDER_FACT','PUBLIC_SOURCE_FACT','USER_CONFIRMED','OWNER_VERIFIED_FACT','DERIVED_DETERMINISTICALLY','MODEL_INFERENCE','ESTIMATE','UNKNOWN'}
 
@@ -51,10 +51,17 @@ class ManagerStore(WebsitePreviewStore):
         if len(raw.encode())>8192:raise ValueError('Bounded event references required')
         key=digest([source,native_id,version]);self.setup()
         with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
             before=db.total_changes
             db.execute('INSERT OR IGNORE INTO manager_events VALUES (?,?,?,?,?,?,?)',
                        (key,source,native_id,version,observed_at,now.isoformat(),raw))
             added=db.total_changes>before
+            if added:
+                from .action_evidence import local_record
+                local_record(db,key,'BUSINESS_EVENT_OBSERVED',{'type':value.get('kind','EVENT'),'identity':str(native_id)},now,
+                    before={'event_observed':False},after={'event_id':key,'source':source,'source_at':observed_at,'version':version},
+                    reason=value.get('title') or 'Canonical business event observed',source_system=source,provider=source,
+                    evidence_refs=[{'reference':str(native_id),'source_at':observed_at}],proven_facts=[{'truth_class':value['truth_class']}])
         return added
 
     def events(self,*,limit=50):
@@ -144,6 +151,12 @@ class ManagerStore(WebsitePreviewStore):
                     raise ValueError('Preview changed during owner feedback')
             db.execute('INSERT OR IGNORE INTO manager_feedback VALUES (?,?,?,?,?,?,?,?)',
                 (key,kind,target,version,choice,actor,now.isoformat(),json.dumps(evidence)))
+            from .action_evidence import local_record
+            local_record(db,key,'OWNER_'+choice,{'type':kind,'identity':target},now,
+                before={'payload_hash':version},after={'feedback_id':key,'choice':choice},reason=reason or 'Exact owner review intent',
+                initiator=actor,proposal_id=target if kind=='PROPOSAL' else None,priority_id=target if kind=='PRIORITY' else None,
+                exact_versions={'payload_hash':version,'revision':r.get('revision'),'preview':evidence.get('website_preview_binding')},
+                approval_record={'actor':actor,'at':now.isoformat(),'evidence':evidence},approval_revision=r.get('revision'))
         return {'state':choice,'execution_authorized':False,'provider_writes':0,'feedback_id':key}
 
     def feedback_latest(self):
@@ -188,6 +201,8 @@ class ManagerStore(WebsitePreviewStore):
 
     def learning(self,proposal_id,revision,now,value):
         """Import verified executor/results evidence; never derive an execution from approval."""
+        if value.get('execution_action_id'):
+            return self.record_learning(proposal_id,revision,now,value)
         safe(value)
         if value.get('outcome') not in OUTCOMES or not value.get('evidence') or not value.get('limitations'):
             raise ValueError('Evidence-backed result and limitations required')
@@ -205,6 +220,43 @@ class ManagerStore(WebsitePreviewStore):
         with self.connect() as db:db.execute('INSERT OR IGNORE INTO manager_learning VALUES (?,?,?,?,?,?)',
             (key,proposal_id,revision,value['outcome'],now.isoformat(),json.dumps(value)))
         return key
+
+    def evidence_bundle(self, proposal_id, revision):
+        from .action_evidence import ActionEvidence
+        item=next((p for p in self.rows() if p['record']['proposal_id']==proposal_id and p['record']['revision']==revision),None)
+        if not item or not item.get('audit_action_id'):return None
+        with self.connect() as db:
+            row=db.execute("SELECT evidence_json FROM action_evidence WHERE action_id=? AND kind='optimization_bundle' ORDER BY event_id DESC LIMIT 1",(item['audit_action_id'],)).fetchone()
+        return json.loads(row['evidence_json'])['bundle'] if row else None
+
+    def record_learning(self, proposal_id, revision, now, value):
+        from .action_evidence import ActionEvidence,local_record
+        from .optimization_learning import validate_learning
+        action=ActionEvidence(self.path).get(value.get('execution_action_id'))
+        value=validate_learning(value,action)
+        if value['proposal_id']!=proposal_id or action['exact_versions'].get('proposal_revision')!=revision:
+            raise ValueError('Learning must bind exact executed proposal revision')
+        self.setup();key=digest([proposal_id,revision,value])
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row=db.execute("SELECT 1 FROM optimization_records WHERE kind='optibrain.optimization_proposal' AND id=? AND revision=?",(proposal_id,revision)).fetchone()
+            if not row:raise ValueError('Known executed proposal revision required')
+            db.execute('INSERT OR IGNORE INTO manager_learning VALUES (?,?,?,?,?,?)',(key,proposal_id,revision,value['result'],now.isoformat(),json.dumps(value)))
+            local_record(db,key,'LEARNING_RECORDED',{'type':'LEARNING','identity':key},now,before={'exists':False},
+                after={'learning_id':key,'result':value['result']},reason=value['lesson'],proposal_id=proposal_id,
+                evidence_refs=value['after_evidence'],learning_linkage=[key,value['execution_action_id']])
+        ActionEvidence(self.path).event(action['action_id'],'DECISION','LEARNING_LINK',{'learning_id':key,'result':value['result']},now)
+        return key
+
+    def learning_records(self, *, limit=1000):
+        self.setup()
+        with self.connect() as db:
+            rows=db.execute('SELECT * FROM manager_learning ORDER BY at DESC,rowid DESC LIMIT ?',(min(1000,max(1,limit)),)).fetchall()
+        return [{**dict(row),'value':json.loads(row['value'])} for row in rows]
+
+    def relevant_learning(self, context):
+        from .optimization_learning import relevant_learning
+        return relevant_learning(self.learning_records(),context)
 
     def latest_learning(self,proposal_id,revision):
         self.setup()

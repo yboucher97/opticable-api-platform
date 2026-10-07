@@ -57,7 +57,7 @@ def prepare(inputs,store,now,*,maximum=3):
             'unit':'count','baseline_value':None,'baseline_status':'UNKNOWN','baseline_sample':None,'baseline_window':None,
             'cohort_geography_language':service+' / '+language+' / exact page'}],
             'window':'28 days baseline and 28 days post-approved deployment; compare matched weekday windows',
-            'minimum_usable_sample':'At least 30 relevant organic visits and 5 qualified inquiries; otherwise INSUFFICIENT_DATA',
+            'minimum_usable_sample':'Review usable genuine inquiries and comparable source coverage; sparse evidence remains INCONCLUSIVE; no invented significance threshold',
             'guardrails':['No broken quote/acknowledgement path','No material organic visibility regression','No unsupported claims or TEST business KPI'],
             'success':'Improved observed qualified inquiry rate with usable sample and intact guardrails; association only',
             'neutral':'Usable sample with no clear movement','regression':'Guardrail breach or observed qualified inquiry decline',
