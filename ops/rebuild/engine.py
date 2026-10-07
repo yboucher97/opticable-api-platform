@@ -46,6 +46,10 @@ def reviewed_bytes(row):
         original=b'find "${verify_dir}" -type f -name manifest.json -print -quit'
         require(data.count(original)==1,'backup_manifest_adapter_source_changed')
         data=data.replace(original,b'find "${verify_dir}" -mindepth 2 -maxdepth 2 -type f -name manifest.json -print -quit')
+        anchor=b'if [[ "${OPTIBRAIN_SKIP_LIVE_STATE:-false}" != "true" ]]; then'
+        require(data.count(anchor)==2,'backup_audit_adapter_source_changed')
+        export=b'if [[ -f /var/lib/optibrain-rebuild/actions.db && "${OPTIBRAIN_SKIP_LIVE_STATE:-false}" != "true" ]]; then\n  /usr/bin/python3 /usr/local/lib/optibrain-backup/rebuild-audit-export.py\nfi\n'
+        data=data.replace(anchor,export+anchor,1)
     import hashlib
     require(hashlib.sha256(data).hexdigest()==row.get('installed_sha256',row['sha256']),
             'reviewed_installed_definition_hash_mismatch')
@@ -492,6 +496,9 @@ class Engine:
             for name,expected in self.row['expected_knowledge'].items():
                 canonical='/var/lib/opticable-workflow-api/output/automation/automation.db' if name=='database/automation.db' else '/'+name.removeprefix('state/')
                 require(database_snapshot(path_at(self.root,canonical))==expected,'promoted_knowledge_mismatch')
+            exported=path_at(self.root,'/var/lib/optibrain/rebuild-evidence')
+            exported.mkdir(mode=0o700,parents=True,exist_ok=True)
+            self.host.chown(exported,0,0);exported.chmod(0o700)
             result.update(generation=self.row['generation'], databases=len(self.row['databases']),mounts=len(mounts),history_preserved=True)
 
     def proxy_firewall(self):

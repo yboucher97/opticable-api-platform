@@ -35,3 +35,16 @@ Zoho: API env contains core OAuth/client/provider bindings, and shared `/var/lib
 Google: existing OAuth binding supports GA4 `530093120` and GSC `sc-domain:opticable.ca`; Ads Basic access remains owner-deferred. Apollo probe is authenticated zero-credit `/auth/health`; no enrichment/outreach. Other optional provider/model keys are covered as named env-file fields, never exercised through paid/model-generation probes.
 
 Owner MFA/account ownership is needed only when Cloudflare/GitHub/Zoho/OVH/domain/provider account access is lost or a host-bound credential fails portable validation. The normal recovery has three owner checkpoints: new VPS/access, offline decryption/private packet transfer, final traffic approval. No new provider authorization is presumed necessary.
+
+## Regenerable system identities
+
+These paths are metadata-only inventory, separate from the 17 canonical durable credential paths. Stock recovery does not capture Caddy TLS private state; origin TLS must be regenerated or supplied through an owner-authorized encrypted supplement before public cutover. A local Host override can verify an installed certificate; it cannot issue a certificate or satisfy ACME DNS validation. Stock Caddy here has no configured Cloudflare DNS-01 module/credential, so DNS-01 is a future reviewed option, not an existing automated capability. SSH host identities are freshly generated.
+
+| Path | Owner/group | Mode | Consumer | Recovery |
+|---|---|---|---|---|
+| /var/lib/caddy/.local/share/caddy/acme/acme-staging-v02.api.letsencrypt.org-directory/users/default/default.key | caddy:caddy | 0600 | caddy.service | Existing Caddy TLS state is outside the current normal recovery bundle; regenerate or owner-authorize an encrypted TLS supplement before cutover |
+| /var/lib/caddy/.local/share/caddy/acme/acme-v02.api.letsencrypt.org-directory/users/default/default.key | caddy:caddy | 0600 | caddy.service | Existing Caddy TLS state is outside the current normal recovery bundle; regenerate or owner-authorize an encrypted TLS supplement before cutover |
+| /var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/optibrain.opticable.ca/optibrain.opticable.ca.key | caddy:caddy | 0600 | caddy.service | Existing Caddy TLS state is outside the current normal recovery bundle; regenerate or owner-authorize an encrypted TLS supplement before cutover |
+| /etc/ssh/ssh_host_ecdsa_key | root:root | 0600 | ssh.service | Regenerate new host identity; never blindly restore old host keys |
+| /etc/ssh/ssh_host_ed25519_key | root:root | 0600 | ssh.service | Regenerate new host identity; never blindly restore old host keys |
+| /etc/ssh/ssh_host_rsa_key | root:root | 0600 | ssh.service | Regenerate new host identity; never blindly restore old host keys |

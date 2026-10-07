@@ -82,7 +82,7 @@
       "question": "Is Caddy/reverse proxy reproducible?"
     },
     {
-      "answer": "Yes; 44 reviewed definition/helper files plus safety overrides are installed and hash/syntax checked. Only apps and verified backup pair may start.",
+      "answer": "Yes; 45 reviewed definition/helper files plus safety overrides are installed and hash/syntax checked. Only apps and verified backup pair may start.",
       "number": 12,
       "question": "Are systemd services/timers reproducible?"
     },
@@ -147,7 +147,8 @@
     "Public owner Cloudflare Access login, native Forms writer setting and post-backup immutable provider-effect reconciliation are required at actual cutover.",
     "Current disk is 99% used; no business/recovery retention changes were authorized.",
     "One initial Google probe refreshed its live access-token cache; subsequent provider probes isolate all OAuth/cache files.",
-    "The legacy shell fixture briefly copied root state into RAM, was stopped before archive creation, then rerun under a private mount namespace; no production data modified."
+    "The legacy shell fixture briefly copied root state into RAM, was stopped before archive creation, then rerun under a private mount namespace; no production data modified.",
+    "Stock recovery does not capture Caddy TLS private state and stock Caddy has no configured DNS-01 module; origin TLS provisioning/valid proof remains a pre-cutover blocker."
   ],
   "migration": {
     "automatic_old_vps_termination": false,
@@ -976,7 +977,7 @@
     "one_command": "sudo bash /recovery/toolchain/ops/rebuild/bootstrap.sh restore --manifest /recovery/toolchain/docs/rebuild/current-host-manifest.json --catalog /recovery/catalog.json --archive /recovery/recovery.tar.gz --generation latest-verified --migration",
     "production_paths_moved": 0,
     "reverse_proxy": "reviewed Caddy; private 127.0.0.1:8080 before owner-approved public config",
-    "system_services": "44 reviewed definitions/helper files plus closed safety overrides",
+    "system_services": "45 reviewed definitions/helper files plus closed safety overrides",
     "timers": "business/observation/retired masked; backup pair only after fresh readback"
   },
   "recovery": {
@@ -1182,6 +1183,68 @@
     "new_host_portability": "provider read gates determine consent/rotation needs; no unnecessary reauthorization",
     "owner_key_dependency": "owner device decrypts AGE; identity never embedded or transferred to VPS",
     "plaintext_local_exception": "existing root-only local archives contain credentials; not changed or deleted",
+    "regenerable_system_secret_paths": [
+      {
+        "classification": "SECRET / REGENERABLE",
+        "consumer": "caddy.service",
+        "group": "caddy",
+        "mode": "0600",
+        "owner": "caddy",
+        "path": "/var/lib/caddy/.local/share/caddy/acme/acme-staging-v02.api.letsencrypt.org-directory/users/default/default.key",
+        "recovery_source": "Existing Caddy TLS state is outside the current normal recovery bundle; regenerate or owner-authorize an encrypted TLS supplement before cutover",
+        "rotation": "TLS must be valid before routing; SSH fingerprint must be re-pinned by owner"
+      },
+      {
+        "classification": "SECRET / REGENERABLE",
+        "consumer": "caddy.service",
+        "group": "caddy",
+        "mode": "0600",
+        "owner": "caddy",
+        "path": "/var/lib/caddy/.local/share/caddy/acme/acme-v02.api.letsencrypt.org-directory/users/default/default.key",
+        "recovery_source": "Existing Caddy TLS state is outside the current normal recovery bundle; regenerate or owner-authorize an encrypted TLS supplement before cutover",
+        "rotation": "TLS must be valid before routing; SSH fingerprint must be re-pinned by owner"
+      },
+      {
+        "classification": "SECRET / REGENERABLE",
+        "consumer": "caddy.service",
+        "group": "caddy",
+        "mode": "0600",
+        "owner": "caddy",
+        "path": "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/optibrain.opticable.ca/optibrain.opticable.ca.key",
+        "recovery_source": "Existing Caddy TLS state is outside the current normal recovery bundle; regenerate or owner-authorize an encrypted TLS supplement before cutover",
+        "rotation": "TLS must be valid before routing; SSH fingerprint must be re-pinned by owner"
+      },
+      {
+        "classification": "SECRET / REGENERABLE",
+        "consumer": "ssh.service",
+        "group": "root",
+        "mode": "0600",
+        "owner": "root",
+        "path": "/etc/ssh/ssh_host_ecdsa_key",
+        "recovery_source": "Regenerate new host identity; never blindly restore old host keys",
+        "rotation": "TLS must be valid before routing; SSH fingerprint must be re-pinned by owner"
+      },
+      {
+        "classification": "SECRET / REGENERABLE",
+        "consumer": "ssh.service",
+        "group": "root",
+        "mode": "0600",
+        "owner": "root",
+        "path": "/etc/ssh/ssh_host_ed25519_key",
+        "recovery_source": "Regenerate new host identity; never blindly restore old host keys",
+        "rotation": "TLS must be valid before routing; SSH fingerprint must be re-pinned by owner"
+      },
+      {
+        "classification": "SECRET / REGENERABLE",
+        "consumer": "ssh.service",
+        "group": "root",
+        "mode": "0600",
+        "owner": "root",
+        "path": "/etc/ssh/ssh_host_rsa_key",
+        "recovery_source": "Regenerate new host identity; never blindly restore old host keys",
+        "rotation": "TLS must be valid before routing; SSH fingerprint must be re-pinned by owner"
+      }
+    ],
     "secret_values_printed": 0
   },
   "source": {
@@ -1210,7 +1273,7 @@
       "passed": true,
       "skipped": 0,
       "subtests": 100,
-      "tests": 97
+      "tests": 99
     },
     "full": {
       "blocked_network_attempts": 0,
@@ -1219,11 +1282,12 @@
       "passed": true,
       "skipped": 0,
       "subtests": 1851,
-      "tests": 1954
+      "tests": 1956
     },
     "full_regression_storage_blocked": false,
     "intermediate_failures": "Corrected before final candidate: failure envelope, completed-marker reset, partial final-sync readback, nested backup manifest, audit import before packages. Final focused/full and isolated backup fixture PASS.",
     "manifest_schema": "PASS",
+    "rebuild_audit_durability": "canonical envelope/event hashes verified and exported into existing encrypted backup roots before every new-host backup",
     "storage_limited": true,
     "syntax": "PASS",
     "unexpected_writes": {

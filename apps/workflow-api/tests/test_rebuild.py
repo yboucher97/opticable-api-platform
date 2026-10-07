@@ -23,6 +23,7 @@ from recovery import STATE_ROOTS, classify, selected, select_generation, stage_a
 from verification import check_secrets, knowledge_check, ready, validate_stale_suppression
 from migration import assert_immutable_superset, final_sync, rollback_manifest, validate_freeze
 from performance import compare
+from audit_export import export_actions
 
 
 class FakeHost(Host):
@@ -291,6 +292,17 @@ class RebuildTests(unittest.TestCase):
         self.engine.safety()
         with self.engine.audit.store.connect(readonly=True) as db:ids=[r[0] for r in db.execute('SELECT action_id FROM action_envelopes')]
         self.assertTrue(ids);self.assertTrue(all(self.engine.audit.store.verify_integrity(aid) for aid in ids))
+    def test_rebuild_audit_export_preserves_envelopes_and_chains_in_backup_root(self):
+        self.engine.safety();state=self.directory/'export-state.json';atomic_json(state,{'target_id':'f'*32})
+        result=export_actions(self.engine.control/'actions.db',state,self.directory/'export')
+        value=json.loads((self.directory/'export'/('f'*32+'.json')).read_text())
+        self.assertTrue(value['all_action_chains_verified']);self.assertGreater(result['envelopes'],0)
+        self.assertEqual(len(value['action_envelopes']),result['envelopes']);self.assertEqual((self.directory/'export'/('f'*32+'.json')).stat().st_mode&0o777,0o600)
+    def test_rebuild_audit_export_refuses_corrupt_hash_chain(self):
+        self.engine.safety();state=self.directory/'export-state.json';atomic_json(state,{'target_id':'f'*32})
+        with sqlite3.connect(self.engine.control/'actions.db') as db:
+            db.execute('DROP TRIGGER action_evidence_immutable_update');db.execute("UPDATE action_evidence SET event_hash='broken' WHERE event_id=1")
+        with self.assertRaisesRegex(ValueError,'chain failed'):export_actions(self.engine.control/'actions.db',state,self.directory/'export')
     def test_failed_operation_records_structured_audit_and_preserves_error(self):
         with self.assertRaisesRegex(RebuildError,'fixture_blocker'):
             with self.engine.operation('fixture_failure',{'value':'before'},{'value':'proposed'}):raise RebuildError('fixture_blocker')

@@ -23,7 +23,7 @@ The exact first replacement command, after trusted packet transfer, is:
 sudo bash /recovery/toolchain/ops/rebuild/bootstrap.sh restore --manifest /recovery/toolchain/docs/rebuild/current-host-manifest.json --catalog /recovery/catalog.json --archive /recovery/recovery.tar.gz --generation latest-verified --migration
 ```
 
-Idempotency, safe rerun, failure containment and interrupted final sync are covered by private fixtures/fake adapters. Exact application source comes from a verified Git bundle or the exact public repository SHA. Python dependencies and npm lock builds are regenerated; Node 22.23.3 is hash-pinned. Named identities/permissions, 44 reviewed definitions/helper files, timer masks, firewall/SSH, private Caddy and controlled journald retention are automated. The current production host is refused before OS adapters execute.
+Idempotency, safe rerun, failure containment and interrupted final sync are covered by private fixtures/fake adapters. Exact application source comes from a verified Git bundle or the exact public repository SHA. Python dependencies and npm lock builds are regenerated; Node 22.23.3 is hash-pinned. Named identities/permissions, 45 reviewed definitions/helper files, timer masks, firewall/SSH, private Caddy and controlled journald retention are automated. The current production host is refused before OS adapters execute.
 
 The replacement-only backup adapter fixes recursive selection of a nested business `manifest.json`; both original-source and installed-byte hashes are reviewed. It installs under `/usr/local/lib/optibrain-backup`; today's production helper remains untouched.
 
@@ -88,7 +88,7 @@ Recovery status model: **YES** ([result schema](result.schema.json), [Control Ce
 
 ## Tests and safety
 
-Final candidate: **97 focused tests / 100 subtests and 1,954 full tests / 1,851 subtests PASS**, with zero failures, errors, skips or network attempts. Exact-head CI is recorded in [machine report](final-report.json). The mount-isolated RAM backup shell fixture passed including a nested business manifest. Full regression fits RAM fixtures despite critical root storage; a heavyweight VM/container drill was skipped. Syntax, manifest schema, reviewed hashes, dry-run planning and documentation contracts are also checked.
+Final candidate: **99 focused tests / 100 subtests and 1,956 full tests / 1,851 subtests PASS**, with zero failures, errors, skips or network attempts. Exact-head CI is recorded in [machine report](final-report.json). The mount-isolated RAM backup shell fixture passed including a nested business manifest. Full regression fits RAM fixtures despite critical root storage; a heavyweight VM/container drill was skipped. Syntax, manifest schema, reviewed hashes, dry-run planning and documentation contracts are also checked.
 
 Intermediate defects were fixed before release: structured failure fields, completed-marker reset, partial final-sync readback, nested backup manifest selection, and pre-package canonical audit loading. The old shell fixture initially copied live root state to RAM because it lacked a root-path override; it was stopped before archive creation and then rerun in a private mount namespace. No business/recovery source data changed.
 
@@ -113,7 +113,7 @@ A fresh VPS must prove package/systemd/mount/full durable promotion and containe
 | 9 | Does restored OptiBrain start with consequential writers OFF? | Yes by policies, final env overrides and masks; component fixtures verify closure. Full OS boot still requires a drill. |
 | 10 | Are stale jobs prevented from executing? | Queued state is retained as history; all business/observation scheduler services/timers and persistent workers remain masked. No replay grant is generated. |
 | 11 | Is Caddy/reverse proxy reproducible? | Reviewed source and hashes, private loopback configuration and validation are automated. Public TLS/Access testing belongs to later cutover. |
-| 12 | Are systemd services/timers reproducible? | Yes; 44 reviewed definition/helper files plus safety overrides are installed and hash/syntax checked. Only apps and verified backup pair may start. |
+| 12 | Are systemd services/timers reproducible? | Yes; 45 reviewed definition/helper files plus safety overrides are installed and hash/syntax checked. Only apps and verified backup pair may start. |
 | 13 | Are backups automatically configured? | Yes on the target, including current AGE/R2/upload/readback and preserve-existing policy; a fresh encrypted target backup is a mandatory readiness gate. |
 | 14 | Can migration be validated before DNS cutover? | Yes via loopback Caddy and SSH tunnel, exact-state checks and provider GETs; no DNS mutation adapter exists here. |
 | 15 | Can we roll back to the old VPS? | Prepared exact DNS before-state/host/generation rollback; freeze both hosts and reconcile any new intake/effects before switching back. Traffic rollback is not tested today. |
@@ -130,3 +130,5 @@ This change adds non-runtime rebuild tooling/docs and tests; application API/cod
 Sanitized [mission Action Evidence](mission-action-evidence.json) preserves technical rationale/readbacks and explicitly labels the historical auth-cache exception. Future target operations record canonical envelopes before adapters execute.
 
 Guarded tooling PR: [#147](https://github.com/yboucher97/opticable-api-platform/pull/147). Initial CI passed the full app/Worker/Omada suites; the standalone backup fixture needed a portable syntax-check command on a CI host without `/opt/opticable-api-platform`. That fixture is corrected and the current revision awaits exact-head CI.
+
+Caddy/SSH regenerable secret paths are also inventoried in the machine manifest. Stock recovery does not capture Caddy TLS private state, and stock Caddy has no configured DNS-01 module. An actual certificate route and valid origin TLS proof must be established before the future cutover; a Host override alone does not issue a certificate. The new rebuild audit journal exports verified canonical envelopes/events into the existing encrypted backup roots automatically, retaining prior target IDs.

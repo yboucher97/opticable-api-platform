@@ -105,7 +105,7 @@
       {
         "destination": "/etc/systemd/system/optibrain-backup.service",
         "mode": "0644",
-        "sha256": "c8c2bce57db7dd94103dd34983828e1a98b48391f3b3756e0d602cb495e724fa",
+        "sha256": "891dcda8b24ea013283fd772c5817c77df4d2546136bb8462e8044cff6a276f8",
         "source": "ops/rebuild/reviewed/systemd/optibrain-backup.service"
       },
       {
@@ -260,7 +260,7 @@
       },
       {
         "destination": "/usr/local/lib/optibrain-backup/optibrain-backup.sh",
-        "installed_sha256": "f4f22c25d843cbae057141057d2e261e0eb4dec4052d9fbc6d554ea05275b4af",
+        "installed_sha256": "522256084357befb99be57a62599b71fd514c4c76fa14093789d4df0431fc398",
         "mode": "0755",
         "sha256": "ff3664bdd48d97cba76fd1cfaef0c69cf2bb4aa58927dd5cefc5c927af153624",
         "source": "ops/backup/optibrain-backup.sh",
@@ -331,6 +331,12 @@
         "mode": "0755",
         "sha256": "c56ad101026da21b20f0d11edf815b3059b8cb5d0ac474fe5283827adafaa1fe",
         "source": "ops/phase18_19/customer_runner.py"
+      },
+      {
+        "destination": "/usr/local/lib/optibrain-backup/rebuild-audit-export.py",
+        "mode": "0755",
+        "sha256": "6e30b42a773858cdac53b3917ec4b41613a1df1d4ff1af814bb3df771130db4f",
+        "source": "ops/rebuild/audit_export.py"
       }
     ],
     "ssh_port": 22
@@ -1413,6 +1419,68 @@
     "verification_status": "download_hash_verified",
     "verified_at": "2026-10-07T03:07:23.208917+00:00"
   },
+  "regenerable_system_secret_paths": [
+    {
+      "classification": "SECRET / REGENERABLE",
+      "consumer": "caddy.service",
+      "group": "caddy",
+      "mode": "0600",
+      "owner": "caddy",
+      "path": "/var/lib/caddy/.local/share/caddy/acme/acme-staging-v02.api.letsencrypt.org-directory/users/default/default.key",
+      "recovery_source": "Existing Caddy TLS state is outside the current normal recovery bundle; regenerate or owner-authorize an encrypted TLS supplement before cutover",
+      "rotation": "TLS must be valid before routing; SSH fingerprint must be re-pinned by owner"
+    },
+    {
+      "classification": "SECRET / REGENERABLE",
+      "consumer": "caddy.service",
+      "group": "caddy",
+      "mode": "0600",
+      "owner": "caddy",
+      "path": "/var/lib/caddy/.local/share/caddy/acme/acme-v02.api.letsencrypt.org-directory/users/default/default.key",
+      "recovery_source": "Existing Caddy TLS state is outside the current normal recovery bundle; regenerate or owner-authorize an encrypted TLS supplement before cutover",
+      "rotation": "TLS must be valid before routing; SSH fingerprint must be re-pinned by owner"
+    },
+    {
+      "classification": "SECRET / REGENERABLE",
+      "consumer": "caddy.service",
+      "group": "caddy",
+      "mode": "0600",
+      "owner": "caddy",
+      "path": "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/optibrain.opticable.ca/optibrain.opticable.ca.key",
+      "recovery_source": "Existing Caddy TLS state is outside the current normal recovery bundle; regenerate or owner-authorize an encrypted TLS supplement before cutover",
+      "rotation": "TLS must be valid before routing; SSH fingerprint must be re-pinned by owner"
+    },
+    {
+      "classification": "SECRET / REGENERABLE",
+      "consumer": "ssh.service",
+      "group": "root",
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/ssh/ssh_host_ecdsa_key",
+      "recovery_source": "Regenerate new host identity; never blindly restore old host keys",
+      "rotation": "TLS must be valid before routing; SSH fingerprint must be re-pinned by owner"
+    },
+    {
+      "classification": "SECRET / REGENERABLE",
+      "consumer": "ssh.service",
+      "group": "root",
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/ssh/ssh_host_ed25519_key",
+      "recovery_source": "Regenerate new host identity; never blindly restore old host keys",
+      "rotation": "TLS must be valid before routing; SSH fingerprint must be re-pinned by owner"
+    },
+    {
+      "classification": "SECRET / REGENERABLE",
+      "consumer": "ssh.service",
+      "group": "root",
+      "mode": "0600",
+      "owner": "root",
+      "path": "/etc/ssh/ssh_host_rsa_key",
+      "recovery_source": "Regenerate new host identity; never blindly restore old host keys",
+      "rotation": "TLS must be valid before routing; SSH fingerprint must be re-pinned by owner"
+    }
+  ],
   "release_metadata": {
     "api_version": "1.34.1",
     "at": "2026-10-07T02:43:54.450346+00:00",

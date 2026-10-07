@@ -1094,7 +1094,7 @@
       "verified": "component fixtures plus target-only verify gate; full fresh-VPS drill pending"
     },
     {
-      "backed_up": "restored business roots in existing AGE/R2 archive; sidecar/control receipts export separately for drill/Control Center retention",
+      "backed_up": "consistent canonical envelope/chain-verified export to /var/lib/optibrain/rebuild-evidence/TARGET_ID.json before each existing AGE/R2 archive",
       "deployed": "replacement only; current production untouched",
       "location": "/var/lib/optibrain-rebuild/actions.db",
       "owner": "root; named restored file owners/modes inside mounted generation",
