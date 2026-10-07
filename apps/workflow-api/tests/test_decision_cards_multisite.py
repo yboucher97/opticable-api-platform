@@ -70,6 +70,17 @@ class CardTests(PreviewCase):
         self.assertEqual(card['confidence']['value'],'LOW')
         self.assertIn('stale',card['confidence']['reason'])
 
+    def test_superseded_preview_tests_cannot_certify_new_proposal(self):
+        self.ready();prior=self.store.website_proposal(PID);preview=self.store.preview(PID,NOW)
+        changed=deepcopy(prior['record']);changed['revision']+=1
+        changed['business_problem']='A new independently observed requirement'
+        self.store.record(changed,prior['detail'])
+        card=decision_card(self.store.website_proposal(PID),preview)
+        self.assertEqual(card['confidence']['value'],'LOW')
+        self.assertEqual(card['proven_vs_assumed']['tested_fact'],[])
+        self.assertEqual(card['technical']['preview_revision'],prior['record']['revision'])
+        self.assertIn('superseded',str(card['proven_vs_assumed']['unknown']))
+
     def test_large_card_snapshot_retains_owner_queue_metadata(self):
         from workflow.operator_manager_api import load_manager
         state={'current_state':'WAITING_CUSTOMER','next_action':'NO_ACTION','actionability':'WAITING',
@@ -113,6 +124,22 @@ class CardTests(PreviewCase):
 
 
 class SiteTests(PreviewCase):
+    def test_observer_refresh_preserves_scoped_preview_and_new_evidence_stales_it(self):
+        from workflow.automation.ads_runtime import persist
+        self.ready();prior=self.store.website_proposal(PID)
+        incoming=deepcopy(prior);incoming['detail'].pop('repository')
+        incoming['record']['status']='PREVIEW_READY'
+        persist({'proposals':[incoming],'priorities':[],'assets':[]},self.store)
+        current=self.store.website_proposal(PID)
+        self.assertEqual(current['payload_hash'],prior['payload_hash'])
+        self.assertEqual(self.store.preview(PID,NOW)['preview_state'],'PREVIEW_READY')
+        incoming=deepcopy(incoming);incoming['record']['business_problem']='New independently observed business problem'
+        persist({'proposals':[incoming],'priorities':[],'assets':[]},self.store)
+        current=self.store.website_proposal(PID)
+        self.assertEqual(current['record']['revision'],prior['record']['revision']+1)
+        self.assertEqual(current['detail']['repository'],REPO)
+        self.assertEqual(self.store.preview(PID,NOW)['stale_state'],'SUPERSEDED')
+
     def test_preserving_release_updates_only_code_pins(self):
         import importlib.util
         from pathlib import Path

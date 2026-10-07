@@ -144,6 +144,12 @@ def decision_card(item, preview=None, *, evidence=None, measured=None):
         if tests:
             head=p.get('head_sha')
             card['proven_vs_assumed']['tested_fact']=[t for t in tests if t.get('state')=='PASS' and head and t.get('head_sha')==head]
+        if p and (p.get('proposal_revision')!=r.get('revision') or p.get('proposal_hash')!=item.get('payload_hash')):
+            card['technical']['preview_revision']=p.get('proposal_revision')
+            card['technical']['current_revision']=r.get('revision')
+            card['proven_vs_assumed']['tested_fact']=[]
+            card['proven_vs_assumed']['unknown'].append('Tests belong to a superseded preview revision; the current proposal is not verified by that binding.')
+            card['confidence']={'value':'LOW','reason':'The canonical proposal and historical tested preview differ; refresh exact revision evidence before approval.'}
         if p.get('package'):
             card['technical']['provider_configuration_affected']=d.get('provider_configuration_affected') or 'No production provider configuration file is in the scoped preparation package. Preview target: '+str(p.get('preview_project'))
     if preview: card['before_after']=comparison(d,preview)
@@ -153,6 +159,14 @@ def decision_card(item, preview=None, *, evidence=None, measured=None):
             proposed_change='Explicit commercial camera intent, Montréal/Laval/Rive-Nord relevance, stronger quote CTA and FAQ coverage.',
             pros=['Explicit commercial intent','Clearer quote CTA','Named local service area','FAQ coverage'],
             cons=['Some technical specificity is lost','The visible copy change is subtle','Conversion improvement is not proven'],
+            do_nothing='Retain the existing technical scene-design copy and CTA; no measured conversion loss from doing so is known.',
+            rollback='No production change occurred. A future deployed copy change requires a guarded forward revert to the recorded base '+str((preview or {}).get('base_sha') or d.get('production_rollback_sha') or UNKNOWN)+'. Preserve measurement history.',
+            measurement_plan={'baseline':'UNKNOWN — collect 28 days of consented camera-page sessions, quote starts and genuine qualified inquiries before execution.',
+                'metric':['Camera-page quote-start rate','Genuine qualified commercial inquiries'],
+                'window':'28 days before and 28 days after a separately approved production execution; sparse samples remain INSUFFICIENT_DATA.',
+                'success_condition':'Quote-start rate improves against the observed baseline with sufficient usable samples and no lower inquiry quality; the numerical target needs owner review.',
+                'guardrail':['Forms remain usable','Consent and attribution remain correct','Exclude TEST/operator events','No degradation in qualified inquiry quality'],
+                'result_state':'NOT_EXECUTED'},
             recommended_decision={'value':'REVISE','reason':'Retain technical scene-design detail and sharpen the change before any production proposal.'})
     if measured:
         card['measured_result']=deepcopy(measured);card['learning']=measured.get('learning') or measured.get('interpretation')

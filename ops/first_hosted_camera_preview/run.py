@@ -103,7 +103,7 @@ def execute(command):
         if command=='reconcile':
             proof=json.loads((ROOT/'execution-hosted-test.json').read_text())
             if proof.get('state')!='PASS' or any(proof.get(k)!=v for k,v in binding.items()):raise ValueError('Hosted exact-head tests required')
-            return reconcile(store,github,cloud,PreviewHTTP(cloud),now,maximum=1,git=git,expected_page='Caméras IP pour commerces et entrepôts',clock=lambda:datetime.now(timezone.utc))
+            return reconcile(store,github,cloud,PreviewHTTP(cloud),now,maximum=1,site_id='opticable.ca',git=git,expected_page='Caméras IP pour commerces et entrepôts',clock=lambda:datetime.now(timezone.utc))
         raise ValueError('Unapproved operation')
     finally:github.close()
 
