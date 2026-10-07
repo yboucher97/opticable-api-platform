@@ -372,6 +372,12 @@ class Engine:
                 self.host.run(['git','-C',repo,'checkout','--detach',sha])
             require(self.host.run(['git','-c','safe.directory='+str(repo),'-C',repo,'rev-parse','HEAD'])==sha, 'exact_source_checkout_mismatch')
             require(not self.host.run(['git','-c','safe.directory='+str(repo),'-C',repo,'diff','HEAD','--']), 'source_tracked_files_dirty')
+            # A bundle clone otherwise leaves origin pointing into private
+            # staging, preventing later normal source/backup administration.
+            origin='https://github.com/yboucher97/opticable-api-platform.git'
+            self.host.run(['git','-c','safe.directory='+str(repo),'-C',repo,'remote','set-url','origin',origin])
+            require(self.host.run(['git','-c','safe.directory='+str(repo),'-C',repo,'remote','get-url','origin'])==origin,
+                    'canonical_repository_origin_failed')
             uid,gid=self.host.ids()
             # Backup invokes Git as engineering; services cannot edit this checkout.
             self.host.run(['chown','-R','optibrain:optibrain',repo],timeout=120)
