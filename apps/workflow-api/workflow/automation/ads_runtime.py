@@ -55,7 +55,15 @@ def persist(bundle,store):
             record=item['record'];key=record.get('proposal_id' if group=='proposals' else 'priority_id' if group=='priorities' else 'asset_id')
             prior=old.get(key)
             if prior:
-                compare=lambda r:{k:v for k,v in r.items() if k not in {'created_at','updated_at','revision'}}
+                scoped=group=='proposals' and prior['record']['target_system']=='WEBSITE' and prior['detail'].get('repository')
+                if scoped:
+                    # Observer output cannot discard the reviewed site's mapping.
+                    # Generated status alone does not supersede exact preview evidence.
+                    retained={k:v for k,v in prior['detail'].items() if k in {
+                        'repository','site_id','repository_mapping_evidence','historical_source_revision','camera_report_sha256'}}
+                    item['detail']={**retained,**item['detail']}
+                excluded={'created_at','updated_at','revision'} | ({'status'} if scoped else set())
+                compare=lambda r:{k:v for k,v in r.items() if k not in excluded}
                 if compare(prior['record'])==compare(record) and prior['detail']==item['detail']:
                     item['record']=prior['record'];continue
                 record['created_at']=prior['record']['created_at']
