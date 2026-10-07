@@ -16,6 +16,7 @@ REPO='yboucher97/opticable-ai'
 PID=hashlib.sha256(('no-op-preview:'+REPO+':'+BASE).encode()).hexdigest()
 BUILD_ROOT=Path('/var/lib/optibrain/decision-cards-multisite/ai-builds')
 DEPENDENCIES=Path('/opt/optibrain-preview-tools/ai-node-modules')
+SOURCE_SNAPSHOTS=Path('/opt/optibrain-preview-tools/ai-source-snapshots')
 CHECKS=REQUIRED_TESTS|{'LINT','CANONICAL','ASSETS'}
 GA_ID='G-ZEQXVSZWRL'  # Public live configuration, verified by the native fixture.
 
@@ -38,7 +39,11 @@ class NativeAISiteRunner(NativeWebsiteRunner):
             saved=json.loads(receipt.read_text())
             if saved.get('policy_sha256')!=policy or artifact_files(Path(saved['artifact_root']))[1]!=saved['artifact_sha256']:raise ValueError('AI tested artifact changed')
             return saved
-        source=root/'source';self._snapshot(BASE,source)
+        # Rebuildable dependency-bearing snapshots stay outside application
+        # recovery state. Durable artifacts and receipts contain regular files.
+        source=SOURCE_SNAPSHOTS/pid/BASE;no_symlinks(source)
+        source.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
+        self._snapshot(BASE,source)
         # No installation hook or provider credential enters this environment.
         (source/'node_modules').symlink_to(DEPENDENCIES,target_is_directory=True)
         env={'PATH':'/usr/bin:/bin','LANG':'C.UTF-8','SITE_URL':'https://ai.opticable.ca',
