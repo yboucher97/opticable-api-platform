@@ -10,7 +10,15 @@ The exact repository-equivalent first command on the replacement is:
 sudo bash /recovery/toolchain/ops/rebuild/bootstrap.sh restore --manifest /recovery/toolchain/docs/rebuild/current-host-manifest.json --catalog /recovery/catalog.json --archive /recovery/recovery.tar.gz --generation latest-verified --migration
 ```
 
-The manifest/toolchain path and every parent must be owned by root and unwritable by group/others; mutation commands reject an untrusted manifest path. The packet's toolchain must be the exact reviewed PR/release, not an arbitrary working tree. Alternatively, [launch.sh](../../ops/rebuild/launch.sh) obtains a SHA- and archive-hash-pinned toolchain from GitHub using Python before Git exists. Verify the launch script hash on the owner device, then run `sudo bash /recovery/launch.sh EXACT_TOOLCHAIN_SHA EXACT_CODELOAD_ARCHIVE_SHA256 restore --catalog /recovery/catalog.json --archive /recovery/recovery.tar.gz --generation latest-verified --migration`. The final release acquisition receipt supplies actual hashes. No unaudited package installation occurs before the canonical Python audit is available.
+The manifest/toolchain path and every parent must be owned by root and unwritable by group/others; mutation commands reject an untrusted manifest path. The packet's toolchain must be the exact reviewed PR/release, not an arbitrary working tree. The [acquisition receipt](toolchain-acquisition.json) pins the CI-verified executable revision, its source archive and launcher.
+
+Alternatively, [launch.sh](../../ops/rebuild/launch.sh) obtains a SHA- and archive-hash-pinned toolchain from GitHub using Python before Git exists. Verify the launch script SHA256 `7fb7ddf6871dd37be9183b6f2abbe7b695664f8756993dd48ebdb3fb735e2b79` on the owner device, transfer it privately to `/recovery/launch.sh`, and run:
+
+```bash
+sudo bash /recovery/launch.sh 1a78bc189d58a5cfc2e73a0ec1835c72bb37fcab c434756eb5d8721b480f4d55ee416ec7f2addc738c1254e0ec3582d1d16a9fc9 restore --catalog /recovery/catalog.json --archive /recovery/recovery.tar.gz --generation latest-verified --migration
+```
+
+No unaudited package installation occurs before the canonical Python audit is available. Receipt publication may have a later Git SHA than the executable acquisition pin; the source archive checksum deliberately identifies the completed code revision and avoids a self-referential checksum.
 
 That one invocation claims an empty replacement, creates denial policies/masks, installs required packages and pinned Node 22.23.3, creates named users/groups/directories, stages and validates recovery, installs exact application source/dependencies, restores permissions, installs reviewed units/helpers/log retention, mounts verified durable state, resets release/approval pins, validates private Caddy and firewall/SSH, boots contained services, checks knowledge/audits/providers and verifies a fresh encrypted off-host backup. It ends with `/var/lib/optibrain-rebuild/result.json` and a concise status. It cannot change DNS or enable customer automation.
 

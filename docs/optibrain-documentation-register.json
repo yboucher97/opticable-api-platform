@@ -2032,6 +2032,20 @@
       "path": "docs/rebuild/secrets-manifest.md",
       "purpose": "Canonical replacement bootstrap/restore/migration contract or sanitized generation-specific technical evidence; no production migration authority",
       "superseded_by": null
+    },
+    {
+      "path": "docs/rebuild/toolchain-acquisition.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "purpose": "Pinned reviewed toolchain source/archive/launcher identity and successful exact-code CI receipt",
+      "superseded_by": null
+    },
+    {
+      "path": "docs/rebuild/release-evidence.json",
+      "classification": "AUDIT EVIDENCE",
+      "current": true,
+      "purpose": "Sanitized canonical GitHub repository action evidence and verified unchanged production readback",
+      "superseded_by": null
     }
   ]
 }

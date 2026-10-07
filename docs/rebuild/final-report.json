@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-07T04:50:13.860080+00:00",
+  "at": "2026-10-07T05:43:51.662274+00:00",
   "control_center": {
     "last_full_rebuild_test": null,
     "owner_control_center": "NOT BUILT IN THIS MISSION",
@@ -1146,11 +1146,36 @@
   },
   "release": {
     "branch": "integration/fresh-vm-rebuild-migration-20261007",
-    "ci": "PENDING exact-head validation after CI fixture portability fix",
+    "ci": "PASS: workflow-api, control-plane-worker and omada-containment for pinned executable tooling revision",
+    "ci_run": "https://github.com/yboucher97/opticable-api-platform/actions/runs/37577348571",
+    "code_checks": [
+      {
+        "conclusion": "success",
+        "name": "omada-containment",
+        "status": "completed",
+        "url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/37577348571/job/112649104107"
+      },
+      {
+        "conclusion": "success",
+        "name": "workflow-api",
+        "status": "completed",
+        "url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/37577348571/job/112649104033"
+      },
+      {
+        "conclusion": "success",
+        "name": "control-plane-worker",
+        "status": "completed",
+        "url": "https://github.com/yboucher97/opticable-api-platform/actions/runs/37577348571/job/112649103936"
+      }
+    ],
     "main_autodeploy_boundary": "Successful main validation triggers existing API deployment workflow; keep tooling release as reviewed PR revision until a separately controlled merge window.",
     "pr": "https://github.com/yboucher97/opticable-api-platform/pull/147",
     "production_deployment": false,
-    "scope": "NON_RUNTIME REBUILD TOOLING AND DOCUMENTATION; application source/API unchanged"
+    "publication": "OPEN guarded PR; unmerged to preserve current main deployment boundary",
+    "repository_action_evidence": "docs/rebuild/release-evidence.json",
+    "scope": "NON_RUNTIME REBUILD TOOLING AND DOCUMENTATION; application source/API unchanged",
+    "toolchain_acquisition_receipt": "docs/rebuild/toolchain-acquisition.json",
+    "toolchain_sha": "1a78bc189d58a5cfc2e73a0ec1835c72bb37fcab"
   },
   "safe_restore": {
     "ads_execution": "OFF",
@@ -1183,6 +1208,7 @@
     "new_host_portability": "provider read gates determine consent/rotation needs; no unnecessary reauthorization",
     "owner_key_dependency": "owner device decrypts AGE; identity never embedded or transferred to VPS",
     "plaintext_local_exception": "existing root-only local archives contain credentials; not changed or deleted",
+    "regenerable_system_secret_path_count": 6,
     "regenerable_system_secret_paths": [
       {
         "classification": "SECRET / REGENERABLE",
@@ -1248,6 +1274,30 @@
     "secret_values_printed": 0
   },
   "source": {
+    "final_live_readback": {
+      "api_version": "1.34.1",
+      "at": "2026-10-07T05:42:31.109436+00:00",
+      "main_sha": "be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa",
+      "production_unchanged": true,
+      "recovery_generation": "20261007T030438Z",
+      "recovery_verification": "download_hash_verified",
+      "root_disk_free_bytes": 1354809344,
+      "services": {
+        "opticable-customer-communications.timer": {
+          "ActiveState": "inactive",
+          "UnitFileState": "disabled"
+        },
+        "opticable-lifecycle-internal.timer": {
+          "ActiveState": "active",
+          "UnitFileState": "enabled"
+        },
+        "opticable-workflow-api.service": {
+          "ActiveState": "active",
+          "UnitFileState": "enabled"
+        }
+      },
+      "source_sha": "be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa"
+    },
     "live_api_version": "1.34.1",
     "origin_main_at_last_read": "be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa",
     "production_sha": "be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa",
@@ -1260,7 +1310,7 @@
     "container_or_external_vm": "SKIPPED; storage-critical, no images or external VPS",
     "documentation_contract": {
       "configuration_sources": 103,
-      "documents": 293,
+      "documents": 295,
       "passed": true,
       "primary_documents": 10,
       "unknown_documents": 0
