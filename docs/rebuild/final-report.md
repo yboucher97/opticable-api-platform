@@ -88,7 +88,7 @@ Recovery status model: **YES** ([result schema](result.schema.json), [Control Ce
 
 ## Tests and safety
 
-Final candidate: **96 focused tests / 100 subtests and 1,953 full tests / 1,851 subtests PASS**, with zero failures, errors, skips or network attempts. Exact-head CI is recorded in [machine report](final-report.json). The mount-isolated RAM backup shell fixture passed including a nested business manifest. Full regression fits RAM fixtures despite critical root storage; a heavyweight VM/container drill was skipped. Syntax, manifest schema, reviewed hashes, dry-run planning and documentation contracts are also checked.
+Final candidate: **97 focused tests / 100 subtests and 1,954 full tests / 1,851 subtests PASS**, with zero failures, errors, skips or network attempts. Exact-head CI is recorded in [machine report](final-report.json). The mount-isolated RAM backup shell fixture passed including a nested business manifest. Full regression fits RAM fixtures despite critical root storage; a heavyweight VM/container drill was skipped. Syntax, manifest schema, reviewed hashes, dry-run planning and documentation contracts are also checked.
 
 Intermediate defects were fixed before release: structured failure fields, completed-marker reset, partial final-sync readback, nested backup manifest selection, and pre-package canonical audit loading. The old shell fixture initially copied live root state to RAM because it lacked a root-path override; it was stopped before archive creation and then rerun in a private mount namespace. No business/recovery source data changed.
 
@@ -128,3 +128,5 @@ A fresh VPS must prove package/systemd/mount/full durable promotion and containe
 This change adds non-runtime rebuild tooling/docs and tests; application API/code and current production recovery remain unchanged. Existing successful main validation triggers an API deployment workflow, so the tooling acquisition pin uses the CI-verified PR revision. This mission does not merge through an uncontrolled production deployment. A later controlled merge must retain current authority and distinguish tooling publication from an application deployment.
 
 Sanitized [mission Action Evidence](mission-action-evidence.json) preserves technical rationale/readbacks and explicitly labels the historical auth-cache exception. Future target operations record canonical envelopes before adapters execute.
+
+Guarded tooling PR: [#147](https://github.com/yboucher97/opticable-api-platform/pull/147). Initial CI passed the full app/Worker/Omada suites; the standalone backup fixture needed a portable syntax-check command on a CI host without `/opt/opticable-api-platform`. That fixture is corrected and the current revision awaits exact-head CI.

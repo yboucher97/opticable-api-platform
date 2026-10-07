@@ -109,7 +109,18 @@ staged_shared="$(find "${extract_dir}" -path '*/state/var/lib/opticable-api-plat
 [[ "$(stat -c '%a' "${staged_shared}")" != 2770 ]]
 
 if command -v systemd-analyze >/dev/null 2>&1; then
-  systemd-analyze verify "${unit}" "${timer}"
+  # Syntax verification must also run on CI without a deployed /opt checkout.
+  # Only the fixture command changes; source-unit assertions below stay exact.
+  fixture_unit="${tmp}/optibrain-backup.service"
+  python3 - "${unit}" "${fixture_unit}" "${script}" <<'PY'
+import pathlib,sys
+source,target,helper=sys.argv[1:]
+value=pathlib.Path(source).read_text()
+old='ExecStart=/opt/opticable-api-platform/ops/backup/optibrain-backup.sh'
+assert value.count(old)==1
+pathlib.Path(target).write_text(value.replace(old,'ExecStart=/usr/bin/bash '+helper))
+PY
+  systemd-analyze verify "${fixture_unit}" "${timer}"
 else
   printf 'systemd-analyze unavailable; unit validation skipped\n' >&2
 fi

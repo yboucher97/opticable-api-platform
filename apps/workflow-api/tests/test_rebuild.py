@@ -52,6 +52,7 @@ class FakeHost(Host):
         if args[:2]==['git','-c'] and args[-2:]==['rev-parse','HEAD']:return 'a'*40
         if args[0]=='hostname':return 'replacement.example'
         if args[:2]==['timedatectl','show']:return 'America/Toronto'
+        if args==['sshd','-T']:return 'passwordauthentication no\npubkeyauthentication yes'
         return ''
 
 
@@ -156,6 +157,10 @@ class RebuildTests(unittest.TestCase):
     def test_directory_modes_match_service_contract(self):
         self.engine.users_directories();self.assertEqual((self.target/'var/lib/opticable-api-platform/shared').stat().st_mode&0o7777,0o2770)
         self.assertEqual((self.target/'var/lib/optibrain').stat().st_mode&0o7777,0o700)
+    def test_ssh_effective_policy_readback_required(self):
+        self.assertEqual(self.engine.verify_ssh()['password_authentication'],'OFF')
+        with patch.object(self.host,'run',return_value='passwordauthentication yes\npubkeyauthentication yes'):
+            self.assert_blocked(self.engine.verify_ssh,'effective_ssh_key_only_policy_failed')
     def test_safe_restore_masks_all_business_and_retired_units(self):
         self.engine.safety();self.assertEqual(validate_stale_suppression(self.engine)['authority'],'SAFE/OFF')
     def test_safety_idempotent(self):

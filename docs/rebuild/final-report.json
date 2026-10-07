@@ -1145,8 +1145,9 @@
   },
   "release": {
     "branch": "integration/fresh-vm-rebuild-migration-20261007",
+    "ci": "PENDING exact-head validation after CI fixture portability fix",
     "main_autodeploy_boundary": "Successful main validation triggers existing API deployment workflow; keep tooling release as reviewed PR revision until a separately controlled merge window.",
-    "pr": "PENDING creation and exact-head CI",
+    "pr": "https://github.com/yboucher97/opticable-api-platform/pull/147",
     "production_deployment": false,
     "scope": "NON_RUNTIME REBUILD TOOLING AND DOCUMENTATION; application source/API unchanged"
   },
@@ -1192,6 +1193,7 @@
   },
   "tests": {
     "backup_shell": "PASS in private mount namespace with RAM fixtures, including nested business manifest",
+    "ci_first_attempt": "Application regression, Worker and Omada passed; standalone backup fixture needed a portable ExecStart path on an undeployed CI host. Fixed in subsequent revision.",
     "container_or_external_vm": "SKIPPED; storage-critical, no images or external VPS",
     "documentation_contract": {
       "configuration_sources": 103,
@@ -1208,7 +1210,7 @@
       "passed": true,
       "skipped": 0,
       "subtests": 100,
-      "tests": 96
+      "tests": 97
     },
     "full": {
       "blocked_network_attempts": 0,
@@ -1217,7 +1219,7 @@
       "passed": true,
       "skipped": 0,
       "subtests": 1851,
-      "tests": 1953
+      "tests": 1954
     },
     "full_regression_storage_blocked": false,
     "intermediate_failures": "Corrected before final candidate: failure envelope, completed-marker reset, partial final-sync readback, nested backup manifest, audit import before packages. Final focused/full and isolated backup fixture PASS.",

@@ -126,7 +126,7 @@ def verify_host(engine, *, run_providers=False, run_backup=False):
                 require('127.0.0.1:' in line or '[::1]:' in line,'internal_service_public')
         return {'policy':'deny incoming; allow reviewed SSH/80/443','internal_ports':'loopback'}
     check('FIREWALL',firewall)
-    check('SSH',lambda:{'syntax':engine.host.run(['sshd','-t']),'host_keys':'fresh; not copied','provisioning_access':'preserved'})
+    check('SSH',engine.verify_ssh)
     check('AUTHORITY',lambda:validate_stale_suppression(engine))
     def storage():
         free=shutil.disk_usage(engine.data).free

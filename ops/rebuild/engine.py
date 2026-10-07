@@ -502,12 +502,22 @@ class Engine:
             for p in (80,443): self.host.run(['ufw','allow',str(p)+'/tcp'])
             self.host.run(['ufw','default','deny','incoming']);self.host.run(['ufw','default','allow','outgoing'])
             self.host.run(['ufw','--force','enable'])
-            self.write('/etc/ssh/sshd_config.d/99-optibrain-rebuild.conf','PasswordAuthentication no\nPubkeyAuthentication yes\n',0o644)
-            self.host.run(['sshd','-t'])
+            # OpenSSH takes the first value: place this before cloud-init files,
+            # then verify the effective configuration, not syntax alone.
+            self.write('/etc/ssh/sshd_config.d/00-optibrain-rebuild.conf','PasswordAuthentication no\nPubkeyAuthentication yes\n',0o644)
+            self.verify_ssh()
             # Existing root key login stays usable until a named admin has logged in.
             self.host.run(['systemctl','reload','ssh.service'])
             self.host.run(['systemctl','enable','fail2ban.service'])
             result.update(proxy='VALID',private_origin='127.0.0.1:8080',firewall=self.host.run(['ufw','status']),ssh_host_keys='FRESH')
+
+    def verify_ssh(self):
+        self.host.run(['sshd','-t'])
+        flags=dict(line.split(None,1) for line in self.host.run(['sshd','-T']).splitlines() if ' ' in line)
+        require(flags.get('passwordauthentication')=='no' and flags.get('pubkeyauthentication')=='yes',
+                'effective_ssh_key_only_policy_failed')
+        return {'password_authentication':'OFF','public_key_authentication':'ON',
+                'host_keys':'fresh; not copied','provisioning_access':'preserved'}
 
     def rebind(self):
         with self.operation('safe_release_registration', {'old_approval_pins':'archived'}, {'business_actions_enabled':False}) as result:
