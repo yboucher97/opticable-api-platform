@@ -209,6 +209,17 @@ class LearningTests(unittest.TestCase):
         value['comparison']['sufficient']=False
         with self.assertRaises(ValueError):validate_learning(value,action)
 
+    def test_unknown_context_never_establishes_reusable_equivalence(self):
+        value,action=self.value()
+        for field in ('site','service','language','audience','channel','change_class'):
+            with self.subTest(field=field):
+                unknown={**value,field:'UNKNOWN'}
+                validate_learning(unknown,action)  # Inconclusive evidence remains valid history.
+                context={k:unknown[k] for k in ('site','service','language','audience','channel','change_class')}
+                self.assertEqual(relevant_learning([{'value':unknown}],context),[])
+                with self.assertRaisesRegex(ValueError,'Unknown learning context'):
+                    validate_learning({**unknown,'reuse_eligible':True},action)
+
     def test_no_learning_from_preview_or_approval_or_safety_self_modification(self):
         value,action=self.value();action['exact_versions']['environment']='preview'
         with self.assertRaises(ValueError):validate_learning(value,action)

@@ -12,6 +12,12 @@ RESULTS = {'POSITIVE','NEGATIVE','MIXED','INCONCLUSIVE','NOT_MEASURABLE'}
 SCOPES = {'SITE-SPECIFIC','SERVICE-SPECIFIC','AUDIENCE-SPECIFIC','CHANNEL-SPECIFIC','GENERALIZABLE'}
 PROTECTED_LEARNING = {'authority_policies','financial_safeguards','destructive_action_policy',
     'approval_boundaries','security_controls','rollback_requirements'}
+CONTEXT_FIELDS = ('site','service','language','audience','channel','change_class')
+
+
+def known_context(value):
+    return all(isinstance(value.get(k),str) and value[k].strip().upper() not in
+        {'','UNKNOWN','UNAVAILABLE','NOT_COLLECTED','UNRESOLVED'} for k in CONTEXT_FIELDS)
 FUTURE_ACTIONS = {'email_classification','email_move','attachment_extraction','document_classification',
     'crm_association','project_association','file_move','financial_match','contract_classification','todo_creation','owner_correction','undo'}
 
@@ -176,6 +182,7 @@ def validate_learning(value, action):
     for field in ('site','service','language','audience','channel','change_class'):
         if not isinstance(value[field],str) or not value[field]:raise ValueError('Explicit learning context required')
     if type(value['reuse_eligible']) is not bool:raise ValueError('Explicit reuse eligibility required')
+    if value['reuse_eligible'] and not known_context(value):raise ValueError('Unknown learning context cannot establish reusable equivalence')
     confidence=value['confidence'];assessed=learning_confidence(confidence.get('factors',{}))
     if confidence.get('value')!=assessed['value']:raise ValueError('Learning confidence must agree with recorded factors')
     if value['result'] not in {'INCONCLUSIVE','NOT_MEASURABLE'}:
@@ -196,10 +203,12 @@ def validate_learning(value, action):
 
 
 def relevant_learning(records, context, *, limit=10):
+    if not known_context(context):return []
     matches=[]
     for row in records:
         value=row['value']
         if not value.get('execution_action_id'):continue  # Legacy text is not invented outcome evidence.
+        if not known_context(value):continue
         if any(value.get(k)!=context.get(k) for k in ('site','service','language','audience','channel','change_class')):continue
         matches.append({**row,'evidence_class':'COUNTEREVIDENCE' if value['result'] in {'NEGATIVE','MIXED'} else
             'SUPPORTING' if value.get('reuse_eligible') else 'CONTEXT'})

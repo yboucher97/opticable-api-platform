@@ -17,7 +17,7 @@ import stat
 import sys
 import urllib.request
 
-ROOT = Path('/var/lib/optibrain/learning-audit/release-1.34.0')
+ROOT = Path('/var/lib/optibrain/learning-audit/release-1.34.1')
 HELPER = Path('/usr/local/lib/optibrain/phase18-19-stage-runtime.py')
 BASE = '586ac2818fcc8166a40ed0f2fb5c8a0ac5708e0b'
 
@@ -44,7 +44,7 @@ def audit_release(h, sha, *, finish=False):
     if finish:
         head=h.command([*h.GIT,'rev-parse','HEAD']).strip()
         with urllib.request.urlopen('http://127.0.0.1:8100/health',timeout=5) as response:health=json.load(response)
-        verified=head==sha and receipt.get('sha')==sha and receipt.get('state')=='deployed' and health.get('version')=='1.34.0'
+        verified=head==sha and receipt.get('sha')==sha and receipt.get('state')=='deployed' and health.get('version')=='1.34.1'
         success=audit.finish(action_id,now,provider_success=receipt.get('state')=='deployed' and receipt.get('sha')==sha,
             actual_after={'release_receipt':receipt,'git_sha':head,'health':health},verified=verified,
             response={'release_receipt':str(h.RECEIPT)},
@@ -56,7 +56,7 @@ def audit_release(h, sha, *, finish=False):
     before={'release_receipt':receipt,'git_sha':h.command([*h.GIT,'rev-parse','HEAD']).strip()}
     plan=envelope(action_id,'EXACT_SHA_API_RELEASE',{'type':'DEPLOYMENT','identity':'opticable-workflow-api'},now,
         provider='LOCAL_SYSTEMD_GIT',trigger='OWNER_AUTHORIZED_CAPABILITY_MISSION',mutation=True,approval_required=True,
-        authority_class='ROOT_MANUAL_EXACT_SHA_RELEASE',before_state=before,proposed_state={'sha':sha,'api_version':'1.34.0'},
+        authority_class='ROOT_MANUAL_EXACT_SHA_RELEASE',before_state=before,proposed_state={'sha':sha,'api_version':'1.34.1'},
         reason='Release the reviewed universal audit and learning capability through the existing guarded release gate.',
         exact_versions={'environment':'production','production_version':authorization['baseline_sha'],'proposed_version':sha,
             'test_evidence':str(ROOT/'release-validation.json'),'preview_evidence':str(ROOT/'candidate-summary.json'),
@@ -149,12 +149,12 @@ def main():
     h.require(validation.get('workflow_source_hashes')==expected, 'Final executable sources differ from full gate')
     h.require(validation.get('runtime_sampler_sha256')==h.digest(h.trusted(source/'ops/phase14/runtime_snapshot.py')), 'Timer sampler differs from full gate')
     release=h.load(h.RECEIPT)
-    h.require(release.get('sha')==sha and release.get('state')=='deployed' and release.get('api_version')=='1.34.0'
+    h.require(release.get('sha')==sha and release.get('state')=='deployed' and release.get('api_version')=='1.34.1'
               and release.get('writers_enabled') is False, 'Exact guarded release receipt required')
     h.require(h.load(h.INTERNAL/'state.json')['effects']==prior['internal_effects']
               and h.load(h.CUSTOMER/'state.json')['effects']==prior['customer_effects'], 'Effect state changed; reconcile before resume')
     with urllib.request.urlopen('http://127.0.0.1:8100/health',timeout=5) as response:
-        h.require(response.status==200 and json.load(response).get('version')=='1.34.0','API version differs')
+        h.require(response.status==200 and json.load(response).get('version')=='1.34.1','API version differs')
     path=ROOT/('runtime-activation-'+sha+'.json');h.require(not path.exists(),'Activation already exists; review, never reset')
     receipt={'schema':1,'state':'ARMED_TIMERS_OFF_PENDING_DRY_RUN_REVIEW','sha':sha,'at':now.isoformat(),
         'internal_scopes':activation['scopes'],'customer_scopes':[],'customer_authority':'CLOSED',
