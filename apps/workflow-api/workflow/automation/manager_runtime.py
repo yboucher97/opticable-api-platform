@@ -203,7 +203,11 @@ def refresh(inputs,store,now,*,origin='UNKNOWN'):
     crosswalk=relationships(inputs,store);added=sync_events(inputs,store,now,origin=origin);intake=intake_observation(store,now)
     from .lifecycle_projection import collect_states
     collect_states(inputs,now,store,record_facts=True)
+    from .learning_runtime import sync_learning_contract,sync_todo_lifecycle
+    learning_review=sync_learning_contract(inputs,store,now)
     view=build_manager(inputs,store,now,active_ids=active,crosswalk=crosswalk)
+    sync_todo_lifecycle(store,view,now)
+    view['learning_review']=learning_review
     view.update(active_priority_ids=active,crosswalk=crosswalk,preparation=prep,intake=intake,forms=models(),
         input_version=digest({k:v.get('input_version') or v.get('observed_at') or v.get('captured_at') or v.get('at') for k,v in inputs.items()}))
     version=digest([view['brief'],now.date().isoformat()]);view['brief_id']=store.brief(view['brief']['day'],version,now,view['brief'])

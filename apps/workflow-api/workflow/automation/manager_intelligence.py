@@ -57,6 +57,9 @@ def proposals(store,sources,now):
                 output[-1].update(status=website['state'],readiness=website['state'],
                     preview=website['verified_url'] or r.get('preview_location'),
                     approval='EXACT_PREVIEW_OWNER_INTENT' if website['approval_bound'] else None)
+        from .learning_runtime import context
+        item={**item,'evidence_bundle':store.evidence_bundle(r['proposal_id'],r['revision']),
+              'previous_learning':store.relevant_learning(context(item))}
         output[-1]['decision_card']=decision_card(item,store.preview(r['proposal_id'],now) if r['target_system']=='WEBSITE' else None,
             evidence=evidence,measured=store.latest_learning(r['proposal_id'],r['revision']))
     return output
@@ -214,7 +217,9 @@ def build_manager(inputs,store,now,*,active_ids=None,crosswalk=None):
             'latest_authoritative_event':p.get('lifecycle',{}).get('latest_authoritative_event'),
             'last_event_at':p.get('lifecycle',{}).get('last_event_at'),'confidence':p['confidence']} for p in today],
         'empty_day':'No newly changed evidence recorded; retained current decisions remain available.' if not changed else None}
-    return {'schema':1,'type':'optibrain.manager','scope':'live','read_only':True,'at':now.isoformat(),
+    from .action_evidence import ActionEvidence
+    audit_timeline=ActionEvidence(store.path).timeline(limit=40)
+    return {'audit_timeline':audit_timeline,'learning_records':store.learning_records(limit=20),'schema':1,'type':'optibrain.manager','scope':'live','read_only':True,'at':now.isoformat(),
         'provider_writes':0,'execution_authorized':False,'persistent_worker':'OFF','today':today,'commercial_states':states,
         'sections':sections,'proposals':ps,'priority_count':len(priorities_all),'priorities':priorities_all,
         'proposal_counts':{'total':len(ps),'by_domain':dict(domains),'by_status':dict(statuses)},'sources':sources,
@@ -266,6 +271,7 @@ def render_manager(view,*,query='',domain='',status=''):
     out+=card('Business priorities',body)
     out+=card('Source health','<table><tr><th>Source</th><th>Auth</th><th>Data</th><th>Observed</th><th>Reason</th></tr>'+''.join('<tr>'+''.join('<td>'+h(s[k])+'</td>' for k in ('provider','authentication_health','data_health','observed_at','reason'))+'</tr>' for s in view['sources'])+'</table>')
     out+=card('Authority health',short(view['authority']))+card('What OptiBrain actually did',short(view['activity']))
+    out+=card('Action audit timeline',short(view.get('audit_timeline',[])))
     out+=card('Business event feed',''.join('<p>'+h(e['value'].get('title'))+' · '+h(e['observed_at'])+' · '+h(e['value']['classification'])+'</p>' for e in view['events'][:30]))
     out+=card('Completeness / efficiency',short(view['data_completeness'])+short(view['efficiency']))
     return out+'</html>'

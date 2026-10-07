@@ -48,6 +48,8 @@ class OptimizationStore:
                 id TEXT PRIMARY KEY, proposal_id TEXT NOT NULL, revision INTEGER NOT NULL,
                 payload_hash TEXT NOT NULL, choice TEXT NOT NULL, actor TEXT NOT NULL, at TEXT NOT NULL);
             ''')
+            from .action_evidence import ActionEvidence
+            ActionEvidence.setup(db)
             with db: yield db
         finally: db.close()
 
@@ -55,7 +57,7 @@ class OptimizationStore:
         validate(record);detail=deepcopy(detail or {});safe(detail)
         if record['type'] in {'optibrain.optimization_proposal','optibrain.business_priority'}:
             from .decision_card import decision_card
-            decision_card({'record':record,'detail':detail})
+            card=decision_card({'record':record,'detail':detail})
         kind=record['type'];identifier=record[KINDS[kind]];revision=record.get('revision',revision or 1)
         raw=json.dumps(record,sort_keys=True,ensure_ascii=False,allow_nan=False)
         details=json.dumps(detail,sort_keys=True,ensure_ascii=False,allow_nan=False)
@@ -73,6 +75,22 @@ class OptimizationStore:
             if latest is not None and (record.get('approved_at') or record.get('approved_by')):
                 raise ValueError('A changed revision cannot inherit approval')
             db.execute('INSERT INTO optimization_records VALUES (?,?,?,?,?,?)',(kind,identifier,revision,fingerprint,raw,details))
+            from .action_evidence import local_record, stamp
+            from datetime import datetime, timezone
+            now=datetime.now(timezone.utc)
+            previous=db.execute('SELECT payload_hash FROM optimization_records WHERE kind=? AND id=? AND revision<? ORDER BY revision DESC LIMIT 1',(kind,identifier,revision)).fetchone()
+            local_record(db,digest(['optimization',kind,identifier,revision,fingerprint]),'OPTIMIZATION_REVISION',
+                {'type':kind,'identity':identifier},now,before={'payload_hash':previous['payload_hash']} if previous else {'exists':False},
+                after={'revision':revision,'payload_hash':fingerprint},reason=record.get('business_problem') or record.get('why') or 'Shared canonical asset revision',
+                proposal_id=record.get('proposal_id'),priority_id=record.get('priority_id'),
+                evidence_refs=record.get('source_evidence',[]),exact_versions={'revision':revision,'payload_hash':fingerprint},
+                pros=card['pros'] if kind!='optibrain.optimization_asset' else [],
+                cons=card['cons'] if kind!='optibrain.optimization_asset' else [],
+                risks=card['risks'] if kind!='optibrain.optimization_asset' else [],
+                expected_benefit=record.get('expected_benefit') or record.get('business_impact'),
+                known_downside=card['cons'][0] if kind!='optibrain.optimization_asset' else None,
+                confidence=record.get('confidence','UNKNOWN'),
+                confidence_reason=card['confidence']['reason'] if kind!='optibrain.optimization_asset' else 'Asset performance is unmeasured')
         return {'state':'RECORDED','payload_hash':fingerprint,'provider_writes':0}
 
     def rows(self,kind='optibrain.optimization_proposal'):
@@ -83,6 +101,9 @@ class OptimizationStore:
             result=[]
             for row in rows:
                 item={'record':json.loads(row['record']),'detail':json.loads(row['detail']),'payload_hash':row['payload_hash']}
+                from .action_evidence import ActionEvidence
+                aid=digest(['optimization',kind,row['id'],row['revision'],row['payload_hash']])
+                item['audit_action_id']=aid if ActionEvidence.current(db,aid) else None
                 review=db.execute('SELECT choice,at FROM optimization_reviews WHERE proposal_id=? AND revision=? AND payload_hash=? ORDER BY at DESC,rowid DESC LIMIT 1',
                                   (row['id'],row['revision'],row['payload_hash'])).fetchone()
                 item['review']=dict(review) if review else None

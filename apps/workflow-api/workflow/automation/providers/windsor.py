@@ -51,7 +51,23 @@ def register_windsor_actions(engine: AutomationEngine, client: WindsorApiClient,
                 f"Windsor action {action} may create or increase paid spend and is blocked from autonomous workflows. "
                 "Use an explicit human-approved execution path."
             )
-        result = client.execute_action(connector, account=account, action=action, params=params)
+        from datetime import datetime,timezone
+        from ..action_evidence import ActionEvidence
+        from ..acquisition_store import digest
+        audit=ActionEvidence(store.db_path);aid=step.inputs.get('audit_action_id');plan=audit.get(aid) if isinstance(aid,str) else None
+        expected={'connector':connector,'account':account,'action':action,'params':params}
+        if not plan or plan['status']!='STARTED' or not plan['mutation'] or plan['provider']!='WINDSOR' or plan['target']['identity']!=account or digest(plan['proposed_state'])!=digest(expected):
+            raise ValueError('Windsor mutation requires an exact pre-execution audit, before state, authority and rollback contract')
+        if plan['readback_supported'] or not plan['unknowns']:
+            raise ValueError('This generic Windsor adapter requires documented absent native readback; a verified adapter is needed otherwise')
+        try:
+            result = client.execute_action(connector, account=account, action=action, params=params)
+        except Exception as exc:
+            audit.finish(aid,datetime.now(timezone.utc),provider_success=False,failure={
+                'stage':'PROVIDER_EXECUTION','error_class':type(exc).__name__,'provider_status':getattr(getattr(exc,'response',None),'status_code',None),
+                'safe_details':type(exc).__name__,'partial_effects':'UNKNOWN','recovery_action':'Native provider read-only reconciliation; no retry'})
+            raise
+        audit.finish(aid,datetime.now(timezone.utc),provider_success=True,response=result,limitation=plan['unknowns'][0])
         event = context.get("event") or {}
         store.audit(
             category="provider_mutation",

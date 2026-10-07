@@ -295,16 +295,19 @@ class DesiredStateController:
                                 "document_hash": plan.document_hash, "plan_hash": plan.plan_hash,
                                 "resource_id": resource.id, "provider": resource.provider, "kind": resource.kind,
                                 "before_hash": digest(change.current), "desired_hash": digest(change.desired),
+                                "before_state": change.current, "proposed_state": change.desired,
                                 "action": change.action, "risk": change.risk}
                     if hasattr(adapter, "intent_evidence"):
                         evidence.update(adapter.intent_evidence(resource, change))
                     # This durable intent is committed BEFORE the network call. A
                     # crash leaves manual evidence even if the provider accepted it.
                     self.journal.record("started", key, evidence, actor)
+                    actual_after = None
                     try:
                         result = adapter.apply(resource, change)
                         if result.status == "completed":
                             verified = adapter.plan(resource)
+                            actual_after = verified.current
                             if verified.action != "noop":
                                 result = DesiredApplyResult(resource_id=resource.id, action=change.action,
                                     status="manual", changed=result.changed, result=result.result,
@@ -314,7 +317,7 @@ class DesiredStateController:
                             status="manual", changed=False, error="Provider outcome requires reconciliation: " + type(exc).__name__)
                     result.result = normalize(result.result)
                     result.error = normalize(result.error)
-                    evidence.update(result=result.model_dump(mode="json"), verification=result.status == "completed")
+                    evidence.update(result=result.model_dump(mode="json"), actual_after=actual_after, verification=result.status == "completed")
                     self.journal.record("verified" if result.status == "completed" else "manual", key, evidence, actor)
                 results.append(result)
                 if result.status != "completed":

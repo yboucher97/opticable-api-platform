@@ -68,4 +68,6 @@ class CloudflareApiClient:
         }
         if not response.is_success:
             raise CloudflareApiError(f"Cloudflare API returned HTTP {response.status_code}")
+        from .automation.mutation_control import record_technical_response
+        record_technical_response(result)
         return result

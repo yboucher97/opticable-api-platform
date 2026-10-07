@@ -616,6 +616,16 @@ def dispatch(action: Action, *, ownership: Ownership, policy: Policy,
     except (ValueError, TypeError, KeyError):
         return journal.transition(action.action_id, from_states=("proposed",), to="stale",
                                   detail={"reason": "fresh_evidence_unavailable"})
+    from .action_evidence import ActionEvidence, envelope
+    audit=ActionEvidence(journal.path);audit_now=datetime.now(timezone.utc)
+    audit.plan(envelope(action.action_id,action.action_type,{'type':action.target_module,'identity':action.target_id},audit_now,
+        mutation=True,provider=action.provider,before_state=current,proposed_state=action.payload,
+        trigger=source_trigger or 'manual:central-dispatch',reason=decision.reason,business_rationale=decision.reason,
+        authority_class='EXISTING_TEST_ONLY_POLICY',automatic_rule='Exact TEST ownership, allowed low-risk action and fresh off-host claim',
+        exact_versions={'payload_hash':action.payload_hash,'expected_version':action.expected_version},
+        rollback_capability='COMPENSATING_ACTION_ONLY',consequence='A derived TEST object may exist',
+        compensating_action='Owner reconciles/marks derived TEST object inactive; never delete protected records'),audit_now)
+    audit.start(action.action_id,audit_now,authority_check=lambda:None)
     journal.transition(action.action_id, from_states=("proposed",), to="attempted", attempt=True)
     try:
         from .mutation_control import action_scope
@@ -627,9 +637,14 @@ def dispatch(action: Action, *, ownership: Ownership, policy: Policy,
         if observed != provider_id:
             raise ValueError("Provider readback did not prove intended state")
     except Exception as exc:
+        audit.finish(action.action_id,datetime.now(timezone.utc),provider_success=False,failure={
+            'stage':'PROVIDER_EXECUTION_OR_READBACK','error_class':type(exc).__name__,'provider_status':None,
+            'safe_details':type(exc).__name__,'partial_effects':'UNKNOWN','recovery_action':'Read-only reconcile; no retry'})
         # This branch also covers a timeout after a provider commit. No retry.
         return journal.transition(action.action_id, from_states=("attempted",), to="reconcile",
                                   detail={"reason": "provider_outcome_ambiguous", "error_type": type(exc).__name__})
+    audit.finish(action.action_id,datetime.now(timezone.utc),provider_success=True,
+        actual_after={'provider_id':observed},verified=True,response={'provider_id':provider_id})
     return journal.transition(action.action_id, from_states=("attempted",), to="succeeded",
                               provider_id=provider_id, detail={"reconciliation": "exact_readback"})
 
@@ -668,6 +683,7 @@ def dispatch_approved(action: Action, *, approval_id: str, actor: str,
     journal.annotate(action.action_id,{'run_id':run_id or uuid4().hex,
         'source_trigger':source_trigger or 'manual:approved-dispatch'})
     journal.claim_approval(approval_id, action, actor=actor)
+    audit=None
     try:
         current = fresh()
         if (current.get("ownership") != "TEST_ONLY" or str(current.get("id")) != action.target_id or
@@ -676,6 +692,20 @@ def dispatch_approved(action: Action, *, approval_id: str, actor: str,
             journal.close_approval(approval_id, state="stale")
             return journal.transition(action.action_id, from_states=("attempted",), to="stale",
                                       detail={"reason": "approved_action_became_stale"})
+        from .action_evidence import ActionEvidence,envelope,approval_binding
+        audit=ActionEvidence(journal.path);now=datetime.now(timezone.utc)
+        plan=envelope(action.action_id,'email.send',{'type':action.target_module,'identity':action.target_id},now,
+            mutation=True,provider=action.provider,initiator=actor,before_state=current,proposed_state=action.payload,
+            trigger=source_trigger or 'manual:approved-dispatch',reason='Exact existing owner-approved TEST draft',
+            business_rationale='Original single-use approval and recipient/version/ownership checks remain authoritative',
+            approval_required=True,irreversible=True,rollback_capability='IRREVERSIBLE',
+            consequence='Recipient may consume this message; sent email cannot be undone',
+            compensating_action='Owner-reviewed correction/follow-up; never resend or erase original evidence',
+            authority_class='EXACT_EXISTING_OWNER_APPROVAL',exact_versions={'payload_hash':action.payload_hash,'approval_id':approval_id,'expected_version':action.expected_version})
+        audit.plan(plan,now)
+        with journal._db() as db:original_approval=db.execute('SELECT expires_at FROM approvals WHERE approval_id=?',(approval_id,)).fetchone()
+        audit.approve(action.action_id,actor,now,binding=approval_binding(plan),expires_at=original_approval['expires_at'])
+        audit.start(action.action_id,now,authority_check=lambda:None)
         from .mutation_control import action_scope
         with action_scope(action,journal,'TEST_ONLY'):
             provider_id = execute()
@@ -684,10 +714,15 @@ def dispatch_approved(action: Action, *, approval_id: str, actor: str,
     except Exception as exc:
         if journal.get(action.action_id)["state"] == "stale":
             return journal.get(action.action_id)
+        if audit and audit.get(action.action_id)['status']=='STARTED':
+            audit.finish(action.action_id,datetime.now(timezone.utc),provider_success=False,failure={
+                'stage':'APPROVED_SEND_OR_READBACK','error_class':type(exc).__name__,'provider_status':None,
+                'safe_details':type(exc).__name__,'partial_effects':'UNKNOWN','recovery_action':'Read-only Sent reconciliation; no resend'})
         journal.close_approval(approval_id, state="reconcile")
         return journal.transition(action.action_id, from_states=("attempted",), to="reconcile",
                                   detail={"reason": "approved_provider_outcome_ambiguous",
                                           "error_type": type(exc).__name__})
+    audit.finish(action.action_id,datetime.now(timezone.utc),provider_success=True,actual_after={'provider_id':provider_id},verified=True)
     journal.finish_approval(approval_id, provider_id=provider_id)
     return journal.get(action.action_id)
 

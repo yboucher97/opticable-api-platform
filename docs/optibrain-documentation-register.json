@@ -23,8 +23,8 @@
   "counts": {
     "SUPERSEDED": 10,
     "HISTORICAL": 48,
-    "AUDIT EVIDENCE": 139,
-    "AUTHORITATIVE CURRENT": 68,
+    "AUDIT EVIDENCE": 140,
+    "AUTHORITATIVE CURRENT": 71,
     "SECURITY / CONTROL": 2,
     "RECOVERY": 1
   },
@@ -1856,6 +1856,34 @@
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "purpose": "Reviewed multi-site isolation, no-op AI preparation and preserving release",
+      "superseded_by": null
+    },
+    {
+      "path": "docs/OPTIBRAIN_UNIVERSAL_AUDIT_LEARNING_CONTRACT.md",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Universal durable action evidence, multisource proposals, measurement and context-isolated learning",
+      "superseded_by": null
+    },
+    {
+      "path": "docs/optibrain-action-evidence.schema.json",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Universal action evidence envelope schema",
+      "superseded_by": null
+    },
+    {
+      "path": "docs/optibrain-intelligence-evidence.schema.json",
+      "classification": "AUTHORITATIVE CURRENT",
+      "current": true,
+      "purpose": "Future email/document/read-only financial evidence schema",
+      "superseded_by": null
+    },
+    {
+      "path": "docs/learning-audit/implementation.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Post-foundation implementation, preserving exact-SHA release and required recovery",
       "superseded_by": null
     }
   ]

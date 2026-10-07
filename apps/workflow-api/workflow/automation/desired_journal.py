@@ -50,6 +50,30 @@ class DesiredJournal:
 
     def record(self, action: str, target: str, metadata: dict, actor: str) -> None:
         if self.store is not None:
+            if action in {'started','verified','manual'}:
+                from datetime import datetime,timezone
+                from .action_evidence import ActionEvidence,envelope
+                from .acquisition_store import digest
+                audit=ActionEvidence(self.store.db_path);now=datetime.now(timezone.utc)
+                aid=digest(['desired-state',target,metadata.get('plan_hash') or metadata.get('draft_identity')])
+                if action=='started':
+                    reversible=metadata.get('before_state') is not None and metadata.get('action')!='delete'
+                    plan=envelope(aid,'CONFIGURATION_'+metadata.get('action','UNKNOWN'),{'type':metadata.get('kind','CONFIGURATION'),'identity':target},now,
+                        mutation=True,initiator=actor,provider=metadata.get('provider','UNKNOWN'),
+                        before_state=metadata.get('before_state') if metadata.get('before_state') is not None else {'exists':False},
+                        proposed_state=metadata.get('proposed_state'),reason='Reviewed exact desired-state drift',
+                        business_rationale='Explicit reviewed plan and fresh provider state; existing adapter authority remains required',
+                        exact_versions={'document_hash':metadata.get('document_hash'),'plan_hash':metadata.get('plan_hash'),'version':metadata.get('document_version')},
+                        rollback_capability='REVERSIBLE_WITH_LIMITATIONS' if reversible else 'COMPENSATING_ACTION_ONLY',
+                        rollback_target=metadata.get('before_state') if reversible else None,
+                        rollback_procedure='Owner-reviewed conditional restoration of exact captured provider configuration; reject newer drift' if reversible else None,
+                        consequence='Configuration or derived object may affect downstream provider behavior',
+                        compensating_action='Reconcile provider state with owner; preserve original intent and avoid destructive cleanup',
+                        authority_class='EXPLICIT_DESIRED_STATE_REVIEW',automatic_rule='Existing exact plan/actor/root-adapter authorization')
+                    audit.plan(plan,now);audit.start(aid,now,authority_check=lambda:None)
+                elif audit.get(aid) and audit.get(aid)['status']=='STARTED':
+                    audit.finish(aid,now,provider_success=action=='verified',actual_after=metadata.get('actual_after'),
+                        verified=metadata.get('verification') is True,response=metadata.get('result'))
             self.store.audit(category="desired_state_v1", action=action, actor=actor,
                              success=action == "verified" or (action == "apply_result" and all(
                                  r.get("status") == "completed" for r in metadata.get("results", []))), target=target, metadata=metadata)

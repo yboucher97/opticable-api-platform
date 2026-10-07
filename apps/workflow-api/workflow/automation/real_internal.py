@@ -195,7 +195,7 @@ class Engine:
     def hold(self,reason,effect=None):
         if not self.dry_run:atomic(ROOT/'HOLD.json',{'at':datetime.now(timezone.utc).isoformat(),'reason':reason,'action_id':effect.action_id if effect else None})
         raise UnsafeOutcome(reason)
-    def call(self,key,scope,path,body,*,headers=None,verify):
+    def call(self,key,scope,path,body,*,headers=None,verify,before=None):
         envelope={'service':'zohoapis','method':'PUT' if headers and 'If-Unmodified-Since' in headers else 'POST','path':path,
                   'body':body,'headers':headers or {},'content_type':'application/json','query':{}}
         effect=lc.LifecycleEffect(self.run+':'+key,envelope)
@@ -215,6 +215,7 @@ class Engine:
         atomic(ROOT/'authorizations'/(effect.action_id+'.json'),auth,immutable=True)
         lc.validate_request('zohoapis',envelope['method'],path,body,envelope['headers'],'application/json',{},scope=scope,mode='REAL_NEW',run=self.run)
         lc.check_real_effect(effect,scope,self.run)
+        self.journal.prepare_audit(effect,scope=scope,before=before,source=self.source)
         self.journal.intent(effect)
         try:claim=self.remote.claim(effect)
         except Exception:self.hold('Off-host claim is unavailable or uncertain',effect)
@@ -259,7 +260,7 @@ class Engine:
             return actual
         return self.call(key,scope or lc.MODULE_SCOPE[module],'/crm/v8/'+module+'/'+record['id'],
             {'data':[{'id':record['id'],**patch}],'trigger':[],'skip_feature_execution':[{'name':'cadences'}]},
-            headers={'If-Unmodified-Since':record['Modified_Time']},verify=verify)
+            headers={'If-Unmodified-Since':record['Modified_Time']},verify=verify,before=record)
     def task(self,key,module,record,subject,description,due=None):
         # One deterministic task; owner completion/defer is never reopened.
         row={'Subject':subject,'What_Id':{'id':record['id']},'$se_module':module,'Status':'Not Started',
@@ -339,7 +340,7 @@ class Engine:
                 return {'id':result['Deals'],'conversion':result}
             parents={module:self.record(module,p['id']) for module,p in [('Accounts',account),('Contacts',contact)] if p}
             self.trigger({**self.source,'parents':parents})
-            converted=self.call('convert:'+identity,'crm.lead.convert','/crm/v8/Leads/'+identity+'/actions/convert',{'data':[row]},verify=verify)
+            converted=self.call('convert:'+identity,'crm.lead.convert','/crm/v8/Leads/'+identity+'/actions/convert',{'data':[row]},verify=verify,before={'lead':lead,'parents':parents})
             if self.dry_run:continue
             result=converted['conversion'];lineage['deal_id']=result['Deals'];self.state['deals'][result['Deals']]={'lead_id':identity,'source':lineage['source'],'account_id':result['Accounts'],'contact_id':result['Contacts'],'site_address':{'street':lead.get('Street'),'city':lead.get('City'),'province':lead.get('State'),'postal_code':lead.get('Zip_Code'),'country':lead.get('Country')}};self.save()
             if lineage.get('task_id'):

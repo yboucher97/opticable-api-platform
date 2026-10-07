@@ -27,11 +27,15 @@ GRANT=ContextVar('optibrain_conversion_export',default=None)
 
 
 @contextmanager
-def conversion_scope(client,plan,*,live,claim=None):
+def conversion_scope(client,plan,*,live,claim=None,audit=None):
     if GRANT.get() is not None:raise ValueError('Nested conversion authority forbidden')
     if live and (not claim or claim.get('key')!=plan['key'] or claim.get('payload_hash')!=plan['payload_hash']):
         raise ValueError('Fresh off-host conversion claim required')
-    token=GRANT.set({'client':client,'plan':plan,'live':live,'claim':claim,'used':False})
+    if live:
+        from .action_evidence import ActionEvidence
+        if not isinstance(audit,ActionEvidence) or (audit.get(conversion_action_id(plan)) or {}).get('status')!='STARTED':
+            raise ValueError('Started durable conversion action required before transport')
+    token=GRANT.set({'client':client,'plan':plan,'live':live,'claim':claim,'audit':audit,'used':False})
     try:yield
     finally:GRANT.reset(token)
 
@@ -45,6 +49,8 @@ def check_transport(client,service,method,path,body,headers,*,recheck=False,cont
         or content_type!='application/json' or grant['used'] is not recheck):
         raise ValueError('Exact one-use conversion transport required')
     client.authorize(grant['plan'],live=grant['live'])
+    if grant['live'] and grant['audit'].get(conversion_action_id(grant['plan']))['status']!='STARTED':
+        raise ValueError('Conversion action is no longer executable')
     grant['used']=True
     return True
 
@@ -184,7 +190,10 @@ def verify_plan(plan,control):
 
 class DataManager:
     """Fixed ingestion/status URLs, no redirects/retries, no caller headers/paths."""
-    def __init__(self,oauth):self.oauth=oauth
+    def __init__(self,oauth):
+        from .action_evidence import ActionEvidence
+        from .manager_runtime import DATABASE
+        self.oauth=oauth;self.audit=ActionEvidence(DATABASE)
     def authorize(self,plan,*,live=False):
         control=trusted_control()
         verify_plan(plan,control)
@@ -254,8 +263,36 @@ class ConversionClaims:
         return value
 
 
+def conversion_action_id(plan):
+    return 'conversion:'+plan['key']
+
+
+def prepare_conversion_audit(plan,client,audit,control,now):
+    """Existing independently reviewed one-event authority, never an export grant."""
+    from .action_evidence import envelope,approval_binding
+    action_id=conversion_action_id(plan)
+    record=envelope(action_id,'CONVERSION_OUTCOME_EXPORT',{'type':'CONVERSION_EVENT','identity':plan['key']},now,
+        provider='GOOGLE_DATA_MANAGER',source_system='CRM',trigger='INDEPENDENTLY_VERIFIED_BUSINESS_OUTCOME',
+        mutation=True,approval_required=True,authority_class='EXISTING_OWNER_APPROVED_SINGLE_EVENT',
+        reason='Export the exact independently verified outcome under existing one-event authority.',
+        before_supported=False,before_state={'local_offhost_claim':'ABSENT'},
+        unknowns=['Provider has no event-presence lookup before upload; immutable off-host claim prevents replay.'],
+        proposed_state={**plan['body'],'validateOnly':False},
+        exact_versions={'payload_hash':plan['payload_hash'],'policy_hash':plan['policy_hash'],'proof_hash':plan['proof_hash']},
+        related_entities=[{'kind':plan['kind'],'record_id':plan['record_id']}],
+        evidence_refs=[plan['proof_hash'],plan['policy_hash']],rollback_capability='IRREVERSIBLE',irreversible=True,
+        consequence='Advertising systems may consume the uploaded outcome; an upload cannot be unsent.',
+        compensating_action='Hold further exports, reconcile diagnostics, and request owner review of supported provider adjustments.',
+        provider_request={'method':'POST','path':'/v1/events:ingest','payload_hash':plan['payload_hash']})
+    audit.plan(record,now)
+    audit.approve(action_id,'EXISTING_INDEPENDENT_ROOT_SINGLE_EVENT_APPROVAL',now,
+        binding=approval_binding(record),expires_at=control['expires_at'])
+    audit.start(action_id,now,authority_check=lambda:client.authorize(plan,live=True))
+    return action_id
+
+
 def export_one(plan,client,claims,*,live=False):
-    client.authorize(plan,live=live)
+    control=client.authorize(plan,live=live)
     if not live:
         with conversion_scope(client,plan,live=False):value=client.ingest(plan,live=False)
         return {'state':'VALIDATION_ONLY_PASS','key':plan['key'],'request_id':value.get('requestId'),'uploads':0}
@@ -263,16 +300,33 @@ def export_one(plan,client,claims,*,live=False):
     if claims.read(plan,'claim') is not None:
         result=claims.read(plan,'result')
         return {'state':'RECONCILIATION_REQUIRED','key':plan['key'],'request_id':(result or {}).get('request_id'),'uploads':0}
-    claim=claims.put(plan,'claim')
+    from .action_evidence import ActionEvidence
+    audit=getattr(client,'audit',None)
+    if not isinstance(audit,ActionEvidence):raise ValueError('Durable conversion journal required')
+    now=datetime.now(timezone.utc)
+    action_id=prepare_conversion_audit(plan,client,audit,control,now)
+    try:claim=claims.put(plan,'claim')
+    except Exception as exc:
+        audit.finish(action_id,datetime.now(timezone.utc),provider_success=False,
+            failure={'stage':'OFFHOST_CLAIM','error_class':type(exc).__name__,'provider_status':None,
+                'safe_details':'Off-host claim unavailable; provider was not called.',
+                'partial_effects':False,'recovery_action':'Inspect claim state before any owner-authorized retry.'})
+        raise
     try:
-        with conversion_scope(client,plan,live=True,claim=claim):response=client.ingest(plan,live=True)
+        with conversion_scope(client,plan,live=True,claim=claim,audit=audit):response=client.ingest(plan,live=True)
         request_id=response.get('requestId')
         if not request_id:raise ValueError('Provider acknowledgement missing')
         claims.put(plan,'result',{'request_id':request_id,'state':'ACKNOWLEDGED_NOT_YET_RECONCILED',
             'warnings_present':bool(response.get('fieldWarnings'))})
+        audit.event(action_id,'TECHNICAL_AUDIT','ACKNOWLEDGED_NOT_YET_RECONCILED',
+            {'request_id':request_id,'warnings_present':bool(response.get('fieldWarnings'))},datetime.now(timezone.utc))
     except Exception as exc:
+        audit.finish(action_id,datetime.now(timezone.utc),provider_success=False,
+            failure={'stage':'CONVERSION_UPLOAD','error_class':type(exc).__name__,'provider_status':None,
+                'safe_details':'Conversion outcome uncertain; immutable claim remains in place.',
+                'partial_effects':'UNKNOWN','recovery_action':'Hold and reconcile; never automatically retry.'})
         raise ValueError('Conversion outcome uncertain; HOLD and reconcile, never retry') from exc
-    return {'state':'ACKNOWLEDGED_NOT_YET_RECONCILED','key':plan['key'],'request_id':request_id,'uploads':1}
+    return {'state':'ACKNOWLEDGED_NOT_YET_RECONCILED','key':plan['key'],'request_id':request_id,'uploads':1,'audit_action_id':action_id}
 
 
 def reconcile(plan,client,request_id):
@@ -285,4 +339,9 @@ def reconcile(plan,client,request_id):
         return {'state':'RECONCILIATION_REQUIRED','request_id':request_id,'provider_status':row.get('requestStatus')}
     count=row.get('eventsIngestionStatus',{}).get('recordCount')
     if str(count)!='1':raise ValueError('One provider conversion event not proven')
+    from .action_evidence import ActionEvidence
+    audit=getattr(client,'audit',None);action_id=conversion_action_id(plan)
+    if isinstance(audit,ActionEvidence) and (audit.get(action_id) or {}).get('status')=='STARTED':
+        audit.finish(action_id,datetime.now(timezone.utc),provider_success=True,actual_after=row,
+            verified=True,response={'request_id':request_id,'events':1,'ads_attribution_proven':False})
     return {'state':'PROVIDER_PROCESSING_PASS','request_id':request_id,'events':1,'ads_attribution_proven':False}

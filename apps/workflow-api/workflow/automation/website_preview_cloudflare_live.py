@@ -144,7 +144,7 @@ def artifact_files(root):
 
 class CloudflarePreviewAdapter:
     def __init__(self, *, transport=None, clock=None, store=None, github=None, local_git=None,
-                 boundary=None, deployment_safety=None, scope=None):
+                 boundary=None, deployment_safety=None, scope=None, audit=None):
         self.scope=scope or LiveSiteScope("opticable.ca",PROPOSAL_ID,3)
         site=self.scope.value();self.preview_worker=site["preview_target"];self.repository=site["repository"];self.proposal_id=self.scope.proposal_id
         self.script=PREFIX+"/workers/scripts/"+self.preview_worker;self.worker=PREFIX+"/workers/workers/"+self.preview_worker
@@ -153,12 +153,23 @@ class CloudflarePreviewAdapter:
         if getattr(self.transport,'scope',self.scope)!=self.scope:raise ValueError('Cloudflare transport site scope differs')
         self.store=store; self.github=github; self.local_git=local_git; self.boundary=boundary
         self.deployment_safety=deployment_safety; self.last_source=None
+        from .action_evidence import ActionEvidence
+        self.audit=audit or (ActionEvidence(store.path) if store else None)
+        self.audit_action_id=None
 
     def _project(self,project):
         if project!=self.preview_worker: raise ValueError('Only isolated preview Worker allowed')
 
     def _call(self,method,path,**args):
-        result,self.last_source=self.transport.request(method,path,**args); return result
+        if method!='GET':
+            if not self.audit or not self.audit_action_id or self.audit.get(self.audit_action_id)['status']!='STARTED':
+                raise PermissionError('Durable started universal action required for preview mutation')
+            self.audit.event(self.audit_action_id,'TECHNICAL_AUDIT','PROVIDER_REQUEST',
+                {'method':method,'path':path,'body_keys':list((args.get('body') or {}).keys()),'raw_bytes':len(args.get('raw') or b'')},self.clock())
+        result,self.last_source=self.transport.request(method,path,**args)
+        if method!='GET':self.audit.event(self.audit_action_id,'TECHNICAL_AUDIT','PROVIDER_RESPONSE',
+            {'method':method,'path':path,'source_at':self.last_source,'object_id':result.get('id') if isinstance(result,dict) else None},self.clock())
+        return result
 
     def _observe(self,operation):
         now=self.clock().isoformat()
@@ -261,9 +272,35 @@ class CloudflarePreviewAdapter:
             raise ValueError('Immutable isolated hostname required')
         return safe_preview_url(url,(host,),('opticable.ca','www.opticable.ca','ai.opticable.ca'))
 
+    def _audited(self,binding,operation,before,execute,readback):
+        from .action_evidence import envelope,execute_action
+        from .acquisition_store import digest
+        if not self.audit:raise PermissionError('Existing durable preview audit journal required')
+        now=self.clock();aid=digest(['cloudflare-preview',operation,binding])
+        plan=envelope(aid,operation,{'type':'PREVIEW_WORKER','identity':self.preview_worker},now,
+            mutation=True,provider='CLOUDFLARE',proposal_id=binding['proposal_id'],before_state=before,proposed_state=binding,
+            reason='Isolated exact-version website preview for owner review',business_rationale='Only bounded non-production configuration/assets are permitted by the existing guard',
+            authority_class='EXISTING_PREVIEW_SCOPE',automatic_rule='Root configuration, exact tested tuple and independent containment checks',
+            exact_versions={**binding,'environment':'preview'},rollback_capability='COMPENSATING_ACTION_ONLY',
+            consequence='Preview URL/version may be externally consumed; production is unchanged',
+            compensating_action='Owner may disable/archive isolated preview after checking usage; retain version and action history')
+        def run():
+            self.audit_action_id=aid
+            try:return {'success':True,'result':execute()}
+            finally:self.audit_action_id=None
+        return execute_action(self.audit,plan,now,authority_check=lambda:None,execute=run,readback=readback,
+            verify=lambda actual,expected:actual is not None,clock=self.clock)
+
     def provision(self,*,binding):
-        # Provisioning is operator-only and still requires exact prepared tests.
         self._guard(binding,require_ci=False)
+        workers=self._call('GET',PREFIX+'/workers/scripts')
+        if any(w.get('id')==self.preview_worker for w in workers):return self._configuration()
+        self._audited(binding,'PREVIEW_WORKER_PROVISION',{'exists':False},
+            lambda:self._provision(binding=binding),self._configuration)
+        return self._configuration()
+
+    def _provision(self,*,binding):
+        # The public entrypoint has verified exact prepared tests and root scope.
         workers=self._call('GET',PREFIX+'/workers/scripts')
         if any(w.get('id')==self.preview_worker for w in workers):
             return self._configuration()
@@ -292,6 +329,22 @@ class CloudflarePreviewAdapter:
 
     def upload(self,binding,artifact_root,artifact_digest):
         self._guard(binding)
+        if artifact_files(artifact_root)[1]!=artifact_digest:raise ValueError('Tested artifact changed')
+        manifest=json.loads((Path(artifact_root)/'preview-evidence.json').read_text())
+        if any(manifest.get(k)!=v for k,v in binding.items()):raise ValueError('Artifact tuple differs')
+        before=self._configuration()
+        if before['version_count']:return self._upload(binding,artifact_root,artifact_digest)
+        result={}
+        def execute():
+            result.update(self._upload(binding,artifact_root,artifact_digest));return result
+        def readback():
+            read=self.find_deployment_for_sha(self.preview_worker,binding['head_sha'])
+            if read.state!='COMPLETE' or any(read.data.get(k)!=v for k,v in binding.items()):raise ValueError('Exact version readback failed')
+            return read.data
+        self._audited(binding,'PREVIEW_UPLOAD',before,execute,readback)
+        return result
+
+    def _upload(self,binding,artifact_root,artifact_digest):
         files,digest=artifact_files(artifact_root)
         if digest!=artifact_digest: raise ValueError('Tested artifact changed')
         manifest=json.loads((Path(artifact_root)/'preview-evidence.json').read_text())

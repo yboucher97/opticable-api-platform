@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Future Intelligence Evidence",
+  "type": "object",
+  "required": [
+    "reason",
+    "confidence",
+    "evidence_refs",
+    "owner_correction",
+    "undo_state"
+  ],
+  "properties": {
+    "match_class": {
+      "enum": [
+        "DETERMINISTIC",
+        "HIGH_CONFIDENCE",
+        "POSSIBLE",
+        "UNKNOWN"
+      ]
+    },
+    "books_mutation": {
+      "const": false
+    }
+  }
+}

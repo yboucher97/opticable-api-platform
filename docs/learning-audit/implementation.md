@@ -1,0 +1,7 @@
+# Universal audit and learning implementation
+
+AUDIT EVIDENCE. This is a post-foundation capability mission, not a new foundation phase. Baseline production: API 1.33.0 / ad71c5ac3fe5593995f2cf5f5141d15f18e17553. Candidate API 1.34.0.
+
+The implementation extends existing immutable action journals and Manager learning/proposal/priority/event stores. It adds no business write authority, new provider reader, timer or separate database. Focused tests exercise required envelopes, pre-write state/rollback, exact approval expiry/revision, explicit irreversibility, provider/readback mismatch, separate rollback actions, stage-specific failure, redaction/hash integrity, source provenance/counterevidence, bounded native correlation, frozen baselines, production-only learning, inconclusive outcomes, strict context isolation, todo transitions and legacy cards.
+
+Release requires exact-head PR CI, ordinary guarded merge, exact-main CI, complete fake-provider regression and current documentation checks. The reviewed `ops/learning_audit/stage_runtime.py` preserves the original twelve internal scopes/cutoff/run/expiry/effects while temporarily closing authority for exact-SHA API deployment. Customer remains closed with its timer disabled. No renewal/effect reset, website production deployment, camera merge or AI accessibility waiver is part of this mission. Matching local/off-host/source-bundle/isolated authority-OFF recovery is required after release. Runtime receipts establish completion; candidate files alone do not.

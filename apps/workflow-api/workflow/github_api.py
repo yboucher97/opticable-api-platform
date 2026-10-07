@@ -146,4 +146,6 @@ class GithubApiClient:
         }
         if not response.is_success:
             raise GithubApiError(f"GitHub API returned HTTP {response.status_code}")
+        from .automation.mutation_control import record_technical_response
+        record_technical_response(result)
         return result

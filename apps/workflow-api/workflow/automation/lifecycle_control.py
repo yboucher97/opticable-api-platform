@@ -398,6 +398,8 @@ def check_transport(client,service,method,path,body,headers,*,recheck=False,cont
     validate_request(service,method,path,body,headers or {},content_type,query or {},scope=grant['scope'],mode=grant['mode'],run=grant['run'])
     if grant['mode']=='REAL_NEW':check_real_effect(effect,grant['scope'],grant['run'])
     if not recheck:
+        from .effect_audit import start_effect
+        start_effect(grant['journal'],effect,grant['scope'],client)
         grant['used']=True
         grant['journal'].append(effect,'transport_intent',{'scope':grant['scope'],'ownership':grant['mode'],'offhost_claim':grant['claim'].key})
     return True
@@ -426,6 +428,9 @@ class LifecycleJournal:
             CREATE TRIGGER IF NOT EXISTS lifecycle_evidence_no_update BEFORE UPDATE ON lifecycle_evidence BEGIN SELECT RAISE(ABORT,'immutable evidence'); END;
             CREATE TRIGGER IF NOT EXISTS lifecycle_evidence_no_delete BEFORE DELETE ON lifecycle_evidence BEGIN SELECT RAISE(ABORT,'immutable evidence'); END;''')
     def connect(self): return sqlite3.connect(self.path)
+    def prepare_audit(self,effect,*,scope,before=None,source=None):
+        from .effect_audit import prepare_effect
+        return prepare_effect(self,effect,scope=scope,before=before,source=source)
     def intent(self,effect):
         with self.connect() as db:
             row=db.execute('SELECT payload_hash FROM lifecycle_intents WHERE action_id=?',(effect.action_id,)).fetchone()
@@ -433,7 +438,11 @@ class LifecycleJournal:
             if not row: db.execute('INSERT INTO lifecycle_intents VALUES (?,?,?,?,?)',(effect.action_id,effect.request_key,effect.payload_hash,json.dumps(effect.payload,sort_keys=True),datetime.now(timezone.utc).isoformat()))
         return not bool(row)
     def append(self,effect,kind,value):
+        from .action_evidence import redact
+        value=redact(value)
         with self.connect() as db: db.execute('INSERT INTO lifecycle_evidence(action_id,kind,value,at) VALUES (?,?,?,?)',(effect.action_id,kind,json.dumps(value,sort_keys=True),datetime.now(timezone.utc).isoformat()))
+        from .effect_audit import effect_event
+        effect_event(self,effect,kind,value)
     def attempted(self,effect):
         with self.connect() as db:
             row=db.execute('SELECT payload_hash FROM lifecycle_intents WHERE action_id=?',(effect.action_id,)).fetchone()

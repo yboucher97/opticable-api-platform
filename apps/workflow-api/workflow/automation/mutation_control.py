@@ -118,6 +118,11 @@ def require_business_transport(client, service, method, path, body, headers=None
             or entry['state'] != 'attempted' or entry['payload_hash'] != action.payload_hash
             or not value['claim'] or not value['claim'].fresh):
         raise ValueError('Central action changed or executor is forbidden')
+    from .action_evidence import ActionEvidence
+    audit=ActionEvidence(value['journal'].path).get(action.action_id)
+    if (not audit or audit['status']!='STARTED' or not audit['mutation']
+        or audit['proposed_state']!=action.payload or audit['exact_versions'].get('payload_hash')!=action.payload_hash):
+        raise ValueError('Exact started universal action required at consequential transport')
     if not recheck:
         value['used'] = True
         value['journal'].record_evidence(action.action_id, 'transport_intent',
@@ -142,11 +147,25 @@ def record_business_response(response):
 
 
 @contextmanager
-def technical_admin_call(client, provider, method, path, body=None):
+def technical_admin_call(client, provider, method, path, body=None, *, audit=None, action_id=None):
     """Root CLI only; never issuable by runtime API/workflow inputs."""
     if os.geteuid() != 0 or provider not in {'cloudflare', 'github'} or method == 'GET' or _ADMIN.get():
         raise ValueError('Explicit root technical administration required')
-    value = {'client': client, 'hash': fingerprint(provider, method, path, body),
+    from .action_evidence import ActionEvidence,envelope
+    from datetime import datetime,timezone
+    semantic_read=provider=='cloudflare' and method=='POST' and path.endswith('/messages/peek')
+    if semantic_read and audit is None:
+        now=datetime.now(timezone.utc);audit=ActionEvidence('/var/lib/opticable-workflow-api/output/automation/automation.db')
+        action_id=hashlib.sha256((path+now.isoformat()).encode()).hexdigest()
+        plan=envelope(action_id,'TECHNICAL_QUEUE_PEEK',{'type':'QUEUE','identity':path},now,
+            provider=provider,before_state={'operation':'READ_ONLY_PEEK'},proposed_state=body,
+            reason='Root technical observation of queue state',business_rationale='Inspect existing queued observations without consuming messages',
+            authority_class='ROOT_TECHNICAL_OBSERVATION',automatic_rule='Explicit root read-only queue inspection')
+        audit.plan(plan,now);audit.start(action_id,now,authority_check=lambda:None)
+    plan=audit.get(action_id) if isinstance(audit,ActionEvidence) and action_id else None
+    if not plan or plan['status']!='STARTED' or plan['provider'].casefold()!=provider.casefold() or plan['target']['identity']!=path or plan['proposed_state']!=body:
+        raise ValueError('Exact started durable technical action and before/rollback contract required')
+    value = {'audit':audit,'action_id':action_id,'semantic_read':semantic_read,'client': client, 'hash': fingerprint(provider, method, path, body),
              'deadline': monotonic() + 120, 'used': False}
     token = _ADMIN.set(value)
     try: yield
@@ -160,4 +179,18 @@ def require_technical_admin(client, provider, method, path, body=None):
             or monotonic() >= value['deadline']
             or value['hash'] != fingerprint(provider, method, path, body)):
         raise ValueError('Runtime provider administration is forbidden')
+    if (value['audit'].get(value['action_id']) or {}).get('status')!='STARTED':
+        raise ValueError('Durable technical action is no longer executable')
     value['used'] = True
+
+
+def record_technical_response(result):
+    value=_ADMIN.get()
+    if not value or not value['used']:return
+    from datetime import datetime,timezone
+    summary={'http_status':result.get('status'),'response_hash':fingerprint('technical','RESPONSE','/',result.get('data')),
+             'request_id':result.get('request_id')}
+    value['audit'].event(value['action_id'],'TECHNICAL_AUDIT','PROVIDER_RESPONSE',summary,datetime.now(timezone.utc))
+    if value['semantic_read']:
+        value['audit'].finish(value['action_id'],datetime.now(timezone.utc),provider_success=result.get('ok') is True,
+            actual_after=summary,verified=True,response=summary)
