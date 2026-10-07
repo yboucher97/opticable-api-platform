@@ -24,6 +24,7 @@ from .website_preview_github_live import NoRedirect, _trusted_bytes, PROPOSAL_ID
 from .website_preview_git import no_symlinks
 from .website_preview_model import sha, proposal_branch
 from .website_preview_providers import ReadResult, safe_preview_url
+from .website_registry import LiveSiteScope
 
 PREFIX = '/accounts/' + ACCOUNT
 SCRIPT = PREFIX + '/workers/scripts/' + PREVIEW_WORKER
@@ -67,26 +68,29 @@ def multipart(parts):
 
 class PreviewCloudflareHTTP:
     """Fixed account/target with an independent endpoint and payload backstop."""
-    def __init__(self, *, maximum=100):
+    def __init__(self, *, maximum=100, scope=None):
+        self.scope=scope or LiveSiteScope("opticable.ca",PROPOSAL_ID,3)
+        site=self.scope.value();self.preview_worker=site["preview_target"]
+        self.script=PREFIX+"/workers/scripts/"+self.preview_worker;self.worker=PREFIX+"/workers/workers/"+self.preview_worker
         if type(maximum) is not int or not 1 <= maximum <= 100: raise ValueError('Bounded budget required')
         self.maximum = maximum; self.calls = []; self.denied = False
         self.opener = build_opener(NoRedirect())
 
     def request(self, method, path, *, body=None, raw=None, content_type=None, upload_token=None):
         reads = {'/user/tokens/verify', PREFIX, PREFIX+'/workers/scripts', PREFIX+'/workers/subdomain',
-            PREFIX+'/workers/domains', WORKER, SCRIPT+'/settings', SCRIPT+'/versions', SCRIPT+'/deployments',
-            SCRIPT+'/subdomain', '/zones/'+ZONE+'/workers/routes'}
-        valid_read = path in reads or bool(re.fullmatch(re.escape(SCRIPT+'/versions/')+UUID, path))
+            PREFIX+'/workers/domains', self.worker, self.script+'/settings', self.script+'/versions', self.script+'/deployments',
+            self.script+'/subdomain', '/zones/'+ZONE+'/workers/routes'}
+        valid_read = path in reads or bool(re.fullmatch(re.escape(self.script+'/versions/')+UUID, path))
         creates = method == 'POST' and path == PREFIX+'/workers/workers'
-        if creates and body != {'name':PREVIEW_WORKER,'subdomain':{'enabled':False,'previews_enabled':True},'observability':{'enabled':False}}:
+        if creates and body != {'name':self.preview_worker,'subdomain':{'enabled':False,'previews_enabled':True},'observability':{'enabled':False}}:
             raise ValueError('Only isolated empty Worker provisioning permitted')
-        subdomain = method == 'POST' and path == SCRIPT+'/subdomain'
+        subdomain = method == 'POST' and path == self.script+'/subdomain'
         if subdomain and body != {'enabled':True,'previews_enabled':True}: raise ValueError('Preview-only subdomain required')
-        assets = method == 'POST' and path == SCRIPT+'/assets-upload-session'
+        assets = method == 'POST' and path == self.script+'/assets-upload-session'
         if assets and (not isinstance(body,dict) or set(body)!={'manifest'} or not 1<=len(body['manifest'])<=5000):
             raise ValueError('Bounded assets manifest required')
         bucket = method == 'POST' and path == PREFIX+'/workers/assets/upload?base64=true' and upload_token is not None
-        version = method == 'PUT' and path == SCRIPT and raw is not None
+        version = method == 'PUT' and path == self.script and raw is not None
         if not (method=='GET' and valid_read or creates or subdomain or assets or bucket or version):
             raise ValueError('Endpoint outside isolated preview authority')
         if self.denied: raise PermissionError('Earlier provider denial; no retry')
@@ -115,7 +119,7 @@ class PreviewCloudflareHTTP:
         if not 200<=status<300 or value.get('success') is not True: raise CloudflareFailure(status,codes)
         # Deployment history only needs the newest page; all containment lists must be complete.
         info=value.get('result_info') or {}
-        if path!=SCRIPT+'/deployments' and info.get('total_pages',1)!=1:
+        if path!=self.script+'/deployments' and info.get('total_pages',1)!=1:
             raise ValueError('Containment inventory incomplete')
         return value['result'], source
 
@@ -140,13 +144,18 @@ def artifact_files(root):
 
 class CloudflarePreviewAdapter:
     def __init__(self, *, transport=None, clock=None, store=None, github=None, local_git=None,
-                 boundary=None, deployment_safety=None):
-        self.transport=transport or PreviewCloudflareHTTP(); self.clock=clock or (lambda:datetime.now(timezone.utc))
+                 boundary=None, deployment_safety=None, scope=None):
+        self.scope=scope or LiveSiteScope("opticable.ca",PROPOSAL_ID,3)
+        site=self.scope.value();self.preview_worker=site["preview_target"];self.repository=site["repository"];self.proposal_id=self.scope.proposal_id
+        self.script=PREFIX+"/workers/scripts/"+self.preview_worker;self.worker=PREFIX+"/workers/workers/"+self.preview_worker
+        self.page="/fr/" if self.scope.site_id=="ai.opticable.ca" else PAGE
+        self.transport=transport or PreviewCloudflareHTTP(scope=self.scope); self.clock=clock or (lambda:datetime.now(timezone.utc))
+        if getattr(self.transport,'scope',self.scope)!=self.scope:raise ValueError('Cloudflare transport site scope differs')
         self.store=store; self.github=github; self.local_git=local_git; self.boundary=boundary
         self.deployment_safety=deployment_safety; self.last_source=None
 
     def _project(self,project):
-        if project!=PREVIEW_WORKER: raise ValueError('Only isolated preview Worker allowed')
+        if project!=self.preview_worker: raise ValueError('Only isolated preview Worker allowed')
 
     def _call(self,method,path,**args):
         result,self.last_source=self.transport.request(method,path,**args); return result
@@ -165,31 +174,31 @@ class CloudflarePreviewAdapter:
     def get_project(self,project):
         self._project(project)
         def read():
-            worker=self._call('GET',WORKER)
-            if worker.get('name')!=PREVIEW_WORKER: raise ValueError('Worker name differs')
-            return {'project':PREVIEW_WORKER,'account':ACCOUNT,'worker_id':worker['id'],'environment':'preview'}
+            worker=self._call('GET',self.worker)
+            if worker.get('name')!=self.preview_worker: raise ValueError('Worker name differs')
+            return {'project':self.preview_worker,'account':ACCOUNT,'worker_id':worker['id'],'environment':'preview'}
         return self._observe(read)
 
     def _configuration(self):
-        worker=self._call('GET',WORKER)
-        if worker.get('name')!=PREVIEW_WORKER: raise ValueError('Wrong Worker')
+        worker=self._call('GET',self.worker)
+        if worker.get('name')!=self.preview_worker: raise ValueError('Wrong Worker')
         references=worker.get('references') or {}
         if references.get('routes') or references.get('domains'): raise ValueError('Worker routes/domains forbidden')
         routes=self._call('GET','/zones/'+ZONE+'/workers/routes')
         domains=self._call('GET',PREFIX+'/workers/domains')
-        if any(r.get('script')==PREVIEW_WORKER for r in routes) or any(d.get('service')==PREVIEW_WORKER for d in domains):
+        if any(r.get('script')==self.preview_worker for r in routes) or any(d.get('service')==self.preview_worker for d in domains):
             raise ValueError('Preview route/domain present')
         versions=self._versions()
         bindings=[]
         if versions:
-            detail=self._call('GET',SCRIPT+'/versions/'+versions[0]['id'])
+            detail=self._call('GET',self.script+'/versions/'+versions[0]['id'])
             bindings=(detail.get('resources',{}).get('bindings') or [])
             if bindings != [{'type':'assets','name':'ASSETS'}]:
                 raise ValueError('Production/external binding forbidden')
-            settings=self._call('GET',SCRIPT+'/settings')
+            settings=self._call('GET',self.script+'/settings')
             if settings.get('bindings') != [{'type':'assets','name':'ASSETS'}]:
                 raise ValueError('Unsafe Worker settings bindings')
-        return {'project':PREVIEW_WORKER,'environment':'preview','non_production_proof':True,
+        return {'project':self.preview_worker,'environment':'preview','non_production_proof':True,
             'isolated':True,'production_routes':False,
             'worker_id':worker['id'],'routes':[],'domains':[],'bindings':bindings,'version_count':len(versions),
             'production_secrets_copied':False,'production_bindings_copied':False}
@@ -198,7 +207,7 @@ class CloudflarePreviewAdapter:
         self._project(project); return self._observe(self._configuration)
 
     def _versions(self):
-        value=self._call('GET',SCRIPT+'/versions'); items=value.get('items') if isinstance(value,dict) else value
+        value=self._call('GET',self.script+'/versions'); items=value.get('items') if isinstance(value,dict) else value
         if not isinstance(items,list) or len(items)>1: raise ValueError('Exactly-one initial version bound')
         for v in items:
             if not re.fullmatch(UUID,v.get('id','')): raise ValueError('Version identity invalid')
@@ -208,24 +217,24 @@ class CloudflarePreviewAdapter:
         self._project(project); return self._observe(lambda:self._versions())
 
     def _deployment(self,version):
-        data=self._call('GET',SCRIPT+'/versions/'+version)
+        data=self._call('GET',self.script+'/versions/'+version)
         if data.get('id')!=version: raise ValueError('Version readback differs')
         metadata=data.get('metadata') or {}; annotations=data.get('annotations') or {}
         binding=json.loads(annotations.get('workers/message',''))
-        if set(binding)!=set(BINDING_FIELDS) or binding['proposal_id']!=PROPOSAL_ID or binding['repository']!=REPOSITORY or type(binding['proposal_revision']) is not int or binding['proposal_revision']!=3 or not re.fullmatch('[a-f0-9]{64}',binding['proposal_hash']):
+        if set(binding)!=set(BINDING_FIELDS) or binding['proposal_id']!=self.proposal_id or binding['repository']!=self.repository or type(binding['proposal_revision']) is not int or binding['proposal_revision']!=self.scope.proposal_revision or not re.fullmatch('[a-f0-9]{64}',binding['proposal_hash']):
             raise ValueError('Canonical deployment annotation required')
-        sha(binding['head_sha']);sha(binding['base_sha']);proposal_branch(binding['branch'],PROPOSAL_ID)
+        sha(binding['head_sha']);sha(binding['base_sha']);proposal_branch(binding['branch'],self.proposal_id)
         if self.store:
-            current=self.store.preview(PROPOSAL_ID,self.clock())
+            current=self.store.preview(self.proposal_id,self.clock())
             if not current or any(current.get(k)!=binding[k] for k in BINDING_FIELDS):raise ValueError('Deployment canonical tuple differs')
         if annotations.get('workers/tag')!=binding.get('head_sha'): raise ValueError('Source SHA annotations differ')
         sub=self._call('GET',PREFIX+'/workers/subdomain')
         if sub.get('subdomain')!='yboucher': raise ValueError('Account subdomain differs')
         config=self._configuration()
-        enabled=self._call('GET',SCRIPT+'/subdomain')
+        enabled=self._call('GET',self.script+'/subdomain')
         if enabled.get('enabled') is not True or enabled.get('previews_enabled') is not True:raise ValueError('Version URL not enabled on isolated target')
-        url='https://'+version[:8]+'-'+PREVIEW_WORKER+'.yboucher.workers.dev'+PAGE
-        return {**binding,'id':version,'project':PREVIEW_WORKER,'environment':'preview','non_production_proof':True,
+        url='https://'+version[:8]+'-'+self.preview_worker+'.yboucher.workers.dev'+self.page
+        return {**binding,'id':version,'project':self.preview_worker,'environment':'preview','non_production_proof':True,
             'state':'success','source_at':metadata['created_on'],'url':url,'account':ACCOUNT,'configuration':config}
 
     def find_deployment_for_sha(self,project,commit):
@@ -248,17 +257,17 @@ class CloudflarePreviewAdapter:
         if not isinstance(url,str): raise ValueError('Preview URL required')
         from urllib.parse import urlsplit
         host=urlsplit(url).hostname
-        if not host or not re.fullmatch(r'[a-f0-9]{8}-'+PREVIEW_WORKER+r'\.yboucher\.workers\.dev',host):
+        if not host or not re.fullmatch(r'[a-f0-9]{8}-'+self.preview_worker+r'\.yboucher\.workers\.dev',host):
             raise ValueError('Immutable isolated hostname required')
-        return safe_preview_url(url,(host,),('opticable.ca','www.opticable.ca'))
+        return safe_preview_url(url,(host,),('opticable.ca','www.opticable.ca','ai.opticable.ca'))
 
     def provision(self,*,binding):
         # Provisioning is operator-only and still requires exact prepared tests.
         self._guard(binding,require_ci=False)
         workers=self._call('GET',PREFIX+'/workers/scripts')
-        if any(w.get('id')==PREVIEW_WORKER for w in workers):
+        if any(w.get('id')==self.preview_worker for w in workers):
             return self._configuration()
-        self._call('POST',PREFIX+'/workers/workers',body={'name':PREVIEW_WORKER,
+        self._call('POST',PREFIX+'/workers/workers',body={'name':self.preview_worker,
             'subdomain':{'enabled':False,'previews_enabled':True},'observability':{'enabled':False}})
         return self._configuration()
 
@@ -274,7 +283,9 @@ class CloudflarePreviewAdapter:
         if require_ci:
             ref=self.github.get_branch(binding['repository'],binding['branch']); pr=self.github.get_pr(binding['repository'],binding['branch'])
             ci=self.github.get_workflow_status(binding['repository'],binding['head_sha'])
-            if ref.state!='COMPLETE' or ref.data['sha']!=binding['head_sha'] or pr.state!='COMPLETE' or pr.data.get('draft') is not True or pr.data.get('state')!='open' or pr.data.get('base_ref')!='main' or pr.data.get('auto_merge') is not None or pr.data.get('head_sha')!=binding['head_sha']:
+            no_op=self.scope.site_id=='ai.opticable.ca' and self.store.preview(binding['proposal_id'],self.clock())['package'].get('no_op') is True and binding['head_sha']==binding['base_sha']
+            valid_pr=pr.state=='VERIFIED_EMPTY' if no_op else (pr.state=='COMPLETE' and pr.data.get('draft') is True and pr.data.get('state')=='open' and pr.data.get('base_ref')=='main' and pr.data.get('auto_merge') is None and pr.data.get('head_sha')==binding['head_sha'])
+            if ref.state!='COMPLETE' or ref.data['sha']!=binding['head_sha'] or not valid_pr:
                 raise PermissionError('Exact remote ref and draft required')
             if ci.state!='COMPLETE' or ci.data.get('head_sha')!=binding['head_sha'] or ci.data.get('checks',{}).get('validate')!='PASS':
                 raise PermissionError('Exact-head native CI required')
@@ -287,7 +298,7 @@ class CloudflarePreviewAdapter:
         if any(manifest.get(k)!=v for k,v in binding.items()): raise ValueError('Artifact tuple differs')
         config=self._configuration()
         if config['version_count']:
-            existing=self.find_deployment_for_sha(PREVIEW_WORKER,binding['head_sha'])
+            existing=self.find_deployment_for_sha(self.preview_worker,binding['head_sha'])
             if existing.state=='COMPLETE' and all(existing.data.get(k)==v for k,v in binding.items()):
                 return {'state':'EXACT_REPLAY','deployment':existing.data,'provider_writes':0}
             raise ValueError('Existing unrelated version; no overwrite')
@@ -296,7 +307,7 @@ class CloudflarePreviewAdapter:
             path=Path(artifact_root)/name.lstrip('/'); raw=path.read_bytes()
             h=hashlib.sha256(base64.b64encode(raw)+path.suffix.lstrip('.').encode()).hexdigest()[:32]
             cloud_manifest[name]={'hash':h,'size':record['size']}; by_hash[h]=path
-        session=self._call('POST',SCRIPT+'/assets-upload-session',body={'manifest':cloud_manifest})
+        session=self._call('POST',self.script+'/assets-upload-session',body={'manifest':cloud_manifest})
         buckets=session.get('buckets'); token=session.get('jwt')
         if not isinstance(buckets,list) or len(buckets)>30 or not isinstance(token,str): raise ValueError('Upload session invalid')
         completion=token if not buckets else None
@@ -315,10 +326,13 @@ class CloudflarePreviewAdapter:
             'bindings':[{'type':'assets','name':'ASSETS'}],
             'assets':{'jwt':completion,'config':{'html_handling':'auto-trailing-slash','not_found_handling':'404-page','run_worker_first':True}},
             'annotations':{'workers/tag':binding['head_sha'],'workers/message':json.dumps(binding,sort_keys=True,separators=(',',':'))}}
-        raw,ctype=multipart([('metadata',json.dumps(metadata).encode(),'application/json'),('preview.js',PREVIEW_SCRIPT.encode(),'application/javascript+module')])
-        self._call('PUT',SCRIPT,raw=raw,content_type=ctype)
-        self._call('POST',SCRIPT+'/subdomain',body={'enabled':True,'previews_enabled':True})
-        read=self.find_deployment_for_sha(PREVIEW_WORKER,binding['head_sha'])
+        script=PREVIEW_SCRIPT
+        if self.scope.site_id=='ai.opticable.ca':
+            script=script.replace('if (["/fr", "/fr/"].includes(url.pathname)) url.pathname = "/";', '')
+        raw,ctype=multipart([('metadata',json.dumps(metadata).encode(),'application/json'),('preview.js',script.encode(),'application/javascript+module')])
+        self._call('PUT',self.script,raw=raw,content_type=ctype)
+        self._call('POST',self.script+'/subdomain',body={'enabled':True,'previews_enabled':True})
+        read=self.find_deployment_for_sha(self.preview_worker,binding['head_sha'])
         if read.state!='COMPLETE' or any(read.data.get(k)!=v for k,v in binding.items()): raise ValueError('Exact version readback failed')
         return {'state':'UPLOADED','deployment':read.data,'artifact_sha256':digest,'provider_writes':1}
 

@@ -24,6 +24,7 @@ import jwt
 from .website_preview_execution import PERMISSIONS, ProposalPreviewExecutor
 from .website_preview_model import proposal_branch, sha
 from .website_preview_providers import ReadResult
+from .website_registry import LiveSiteScope
 
 
 REPOSITORY = 'yboucher97/opticable-website'
@@ -94,7 +95,9 @@ class NoRedirect(HTTPRedirectHandler):
 
 class BoundedGitHubHTTP:
     """Fixed host/endpoints, 10s timeout, 256KiB response and 30-request cap."""
-    def __init__(self, *, max_requests=30):
+    def __init__(self, *, max_requests=30, scope=None):
+        self.scope=scope or LiveSiteScope("opticable.ca",PROPOSAL_ID,3)
+        site=self.scope.value();self.repository=site["repository"];self.repository_id=site["repository_numeric_id"];self.proposal_id=self.scope.proposal_id
         if type(max_requests) is not int or not 1 <= max_requests <= 30:
             raise ValueError('GitHub request budget must be 1..30')
         self.max_requests = max_requests
@@ -106,7 +109,7 @@ class BoundedGitHubHTTP:
         if not isinstance(path, str):
             raise ValueError('Fixed preview GitHub endpoint required')
         clean = path.split('?', 1)[0]
-        repo = '/repos/' + REPOSITORY
+        repo = '/repos/' + self.repository
         reads = clean in {'/app', '/app/installations/' + str(INSTALLATION_ID), '/installation/repositories', repo}
         reads = reads or bool(re.fullmatch(re.escape(repo) + r'/(?:git/ref/heads/[a-zA-Z0-9/-]+|commits/[a-f0-9]{40}|pulls|actions/runs|actions/runs/[0-9]+/jobs)', clean))
         auth = method == 'POST' and clean == '/app/installations/' + str(INSTALLATION_ID) + '/access_tokens'
@@ -114,12 +117,12 @@ class BoundedGitHubHTTP:
         if re.search(r'[\x00-\x20\\#]', path) or not (method == 'GET' and reads or auth or draft):
             raise ValueError('Endpoint outside preview GitHub transport')
         if auth and (not isinstance(body, dict) or set(body) != {'repository_ids', 'permissions'}
-                or body['repository_ids'] != [REPOSITORY_ID] or body['permissions'] not in (READ_PERMISSIONS, PERMISSIONS)):
+                or body['repository_ids'] != [self.repository_id] or body['permissions'] not in (READ_PERMISSIONS, PERMISSIONS)):
             raise ValueError('Repository-restricted minimum token request required')
         if draft:
             if not isinstance(body, dict) or set(body) != {'title', 'body', 'head', 'base', 'draft'} or body['base'] != 'main' or body['draft'] is not True:
                 raise ValueError('Draft-only PR payload required')
-            proposal_branch(body['head'], PROPOSAL_ID)
+            proposal_branch(body['head'], self.proposal_id)
         if len(self.calls) >= self.max_requests:
             raise BudgetExhausted('GitHub request budget exhausted')
         raw = json.dumps(body).encode() if body is not None else None
@@ -149,9 +152,12 @@ class GitHubPreviewAdapter:
     required_ci_checks = ('validate',)
     requires_draft_pr = True
 
-    def __init__(self, app, *, transport=None, clock=None, store=None, local_git=None, boundary=None, deployment_safety=None):
+    def __init__(self, app, *, transport=None, clock=None, store=None, local_git=None, boundary=None, deployment_safety=None, scope=None):
+        self.scope=scope or LiveSiteScope("opticable.ca",PROPOSAL_ID,3)
+        site=self.scope.value();self.repository=site["repository"];self.repository_id=site["repository_numeric_id"];self.proposal_id=self.scope.proposal_id
         self.app = app.validate()
-        self.transport = transport or BoundedGitHubHTTP()
+        self.transport = transport or BoundedGitHubHTTP(scope=self.scope)
+        if getattr(self.transport,'scope',self.scope)!=self.scope:raise ValueError('GitHub transport site scope differs')
         self.clock = clock or (lambda: datetime.now(timezone.utc))
         self.store = store; self.local_git = local_git; self.boundary = boundary
         self.deployment_safety = deployment_safety
@@ -160,14 +166,21 @@ class GitHubPreviewAdapter:
         self._auth_failed = False
         self._last_source_at = None
 
+    def _no_op(self):
+        if self.scope.site_id!='ai.opticable.ca' or not self.store or not self.boundary:return False
+        item=self.store.website_proposal(self.proposal_id)
+        return (item['record']['proposal_type']=='SITE_PREVIEW_VERIFICATION' and item['detail'].get('no_op') is True
+            and item['record']['revision']==self.scope.proposal_revision
+            and item['detail'].get('base_sha')==self.boundary.base_sha==self.boundary.head_sha)
+
     def _repo(self, repository):
-        if repository != REPOSITORY:
+        if repository != self.repository:
             raise ValueError('Only the first-preview website repository is allowed')
 
     def _branch(self, branch, *, reading=False):
         if reading and branch == 'main':
             return branch
-        proposal_branch(branch, PROPOSAL_ID)
+        proposal_branch(branch, self.proposal_id)
         if self.boundary is not None and branch != self.boundary.allowed_branch:
             raise ValueError('Ref outside exact proposal allowlist')
         return branch
@@ -203,7 +216,7 @@ class GitHubPreviewAdapter:
             self._identity = {'app_id': APP_ID, 'app_name': app['name'], 'installation_id': INSTALLATION_ID,
                 'account': 'yboucher97', 'installation_repository_selection': installation.get('repository_selection')}
         data = self._call('POST', '/app/installations/' + str(INSTALLATION_ID) + '/access_tokens', credential,
-            {'repository_ids': [REPOSITORY_ID], 'permissions': dict(permissions)})
+            {'repository_ids': [self.repository_id], 'permissions': dict(permissions)})
         expiry = datetime.fromisoformat(str(data.get('expires_at', '')).replace('Z', '+00:00'))
         if expiry.tzinfo is None or not 60 < (expiry-now).total_seconds() <= 3900 or data.get('permissions') != permissions:
             raise PermissionError('Unexpected installation token lifetime or permissions')
@@ -211,7 +224,7 @@ class GitHubPreviewAdapter:
         if not isinstance(token, str) or not re.fullmatch(r'[A-Za-z0-9_.-]{20,8192}', token):
             raise PermissionError('Installation token unavailable')
         selected = self._call('GET', '/installation/repositories?per_page=2', token)
-        if selected.get('total_count') != 1 or [r.get('full_name') for r in selected.get('repositories', [])] != [REPOSITORY] or selected['repositories'][0].get('id') != REPOSITORY_ID or selected['repositories'][0].get('private') is not True:
+        if selected.get('total_count') != 1 or [r.get('full_name') for r in selected.get('repositories', [])] != [self.repository] or selected['repositories'][0].get('id') != self.repository_id or selected['repositories'][0].get('private') is not True:
             raise PermissionError('Installation token is not restricted to the private website')
         self._tokens[mode] = (token, expiry.timestamp(), dict(permissions))
         return token
@@ -226,12 +239,12 @@ class GitHubPreviewAdapter:
             self._auth_failed = True
             raise
         cached = self._tokens['write' if for_write else 'read']
-        return {**self._identity, 'effective_repositories': [REPOSITORY],
+        return {**self._identity, 'effective_repositories': [self.repository],
             'effective_permissions': cached[2], 'expires_at': datetime.fromtimestamp(cached[1], timezone.utc).isoformat(),
             'observed_at': self.clock().isoformat(), 'installation_tokens_persisted': False}
 
     def _get(self, path):
-        return self._call('GET', '/repos/' + REPOSITORY + path, self._token())
+        return self._call('GET', '/repos/' + self.repository + path, self._token())
 
     def _observe(self, operation):
         now = self.clock(); before = len(self.transport.calls)
@@ -258,9 +271,9 @@ class GitHubPreviewAdapter:
         self._repo(repository)
         def read():
             data = self._get('')
-            if data.get('id') != REPOSITORY_ID or data.get('full_name') != REPOSITORY or data.get('private') is not True or data.get('default_branch') != 'main':
+            if data.get('id') != self.repository_id or data.get('full_name') != self.repository or data.get('private') is not True or data.get('default_branch') != 'main':
                 raise ValueError('Private website identity mismatch')
-            return {'repository': REPOSITORY, 'repository_id': REPOSITORY_ID, 'private': True, 'default_branch': 'main'}
+            return {'repository': self.repository, 'repository_id': self.repository_id, 'private': True, 'default_branch': 'main'}
         return self._observe(read)
 
     def get_branch(self, repository, branch):
@@ -268,7 +281,7 @@ class GitHubPreviewAdapter:
         def read():
             # Prove access first; a 404 alone cannot mean a ref is absent.
             metadata = self._get('')
-            if metadata.get('id') != REPOSITORY_ID or metadata.get('private') is not True:
+            if metadata.get('id') != self.repository_id or metadata.get('private') is not True:
                 raise ValueError('Repository visibility/identity mismatch')
             try:
                 data = self._get('/git/ref/heads/' + quote(branch, safe='/'))
@@ -277,7 +290,7 @@ class GitHubPreviewAdapter:
                 return []
             if data.get('ref') != 'refs/heads/' + branch or data.get('object', {}).get('type') != 'commit':
                 raise ValueError('Remote ref identity mismatch')
-            return {'repository': REPOSITORY, 'branch': branch, 'sha': sha(data['object']['sha'])}
+            return {'repository': self.repository, 'branch': branch, 'sha': sha(data['object']['sha'])}
         return self._observe(read)
 
     def get_commit(self, repository, commit):
@@ -285,7 +298,7 @@ class GitHubPreviewAdapter:
         def read():
             data = self._get('/commits/' + commit)
             if data.get('sha') != commit: raise ValueError('Commit identity mismatch')
-            return {'repository': REPOSITORY, 'sha': commit}
+            return {'repository': self.repository, 'sha': commit}
         return self._observe(read)
 
     def get_pr(self, repository, branch):
@@ -296,11 +309,11 @@ class GitHubPreviewAdapter:
                 raise ValueError('Ambiguous proposal PR inventory')
             if not data: return []
             p = data[0]
-            if p['head']['repo']['full_name'] != REPOSITORY or p['base']['repo']['full_name'] != REPOSITORY or p['head']['ref'] != branch:
+            if p['head']['repo']['full_name'] != self.repository or p['base']['repo']['full_name'] != self.repository or p['head']['ref'] != branch:
                 raise ValueError('PR repository/ref mismatch')
             if type(p.get('number')) is not int or p['number']<1 or type(p.get('draft')) is not bool or p.get('state') not in {'open','closed'}:
                 raise ValueError('PR state/identity malformed')
-            return {'repository': REPOSITORY, 'branch': branch, 'head_sha': sha(p['head']['sha']),
+            return {'repository': self.repository, 'branch': branch, 'head_sha': sha(p['head']['sha']),
                 'base_ref': p['base']['ref'], 'draft': p['draft'], 'number': p['number'],
                 'state': p['state'], 'auto_merge': p.get('auto_merge'), 'url': p['html_url']}
         return self._observe(read)
@@ -308,30 +321,32 @@ class GitHubPreviewAdapter:
     def get_workflow_status(self, repository, commit):
         self._repo(repository); sha(commit)
         def read():
-            data = self._get('/actions/runs?' + urlencode({'head_sha':commit, 'event':'pull_request', 'per_page':10}))
+            no_op=self._no_op();event='push' if no_op else 'pull_request'
+            data = self._get('/actions/runs?' + urlencode({'head_sha':commit, 'event':event, 'per_page':10}))
             runs = data.get('workflow_runs')
             if not isinstance(runs, list) or data.get('total_count') != len(runs) or len(runs) > 10:
                 raise ValueError('Incomplete exact-head workflow inventory')
-            candidates = [r for r in runs if r.get('head_sha') == commit and r.get('event') == 'pull_request'
-                and r.get('path', '').split('@')[0] == '.github/workflows/measurement-validation.yml']
+            candidates = [r for r in runs if r.get('head_sha') == commit and r.get('event') == event
+                and r.get('path', '').split('@')[0] == ('.github/workflows/static-check.yml' if self.scope.site_id=='ai.opticable.ca' else '.github/workflows/measurement-validation.yml')]
             if not candidates: return []
             run = max(candidates, key=lambda r: r['id'])
-            if run.get('repository', {}).get('full_name') != REPOSITORY:
+            if run.get('repository', {}).get('full_name') != self.repository:
                 raise ValueError('Workflow repository differs')
-            self._branch(run['head_branch'])
+            self._branch(run['head_branch'],reading=no_op)
+            if no_op and run['head_branch']!='main':raise ValueError('No-op validation must refer to exact current main')
             jobs = self._get('/actions/runs/' + str(run['id']) + '/jobs?per_page=20&filter=latest')
             if jobs.get('total_count') != len(jobs.get('jobs', [])) or len(jobs['jobs']) > 20:
                 raise ValueError('Incomplete CI job inventory')
-            selected = [j for j in jobs['jobs'] if j.get('name') == 'validate']
+            selected = [j for j in jobs['jobs'] if j.get('name') == ('verify' if self.scope.site_id=='ai.opticable.ca' else 'validate')]
             passed = run.get('status') == 'completed' and run.get('conclusion') == 'success' and len(selected) == 1 and selected[0].get('head_sha') == commit and selected[0].get('status') == 'completed' and selected[0].get('conclusion') == 'success'
-            return {'repository': REPOSITORY, 'branch': run['head_branch'], 'head_sha': commit,
+            return {'repository': self.repository, 'branch': self.boundary.allowed_branch if no_op else run['head_branch'], 'head_sha': commit,
                 'checks': {'validate':'PASS' if passed else 'FAIL' if run.get('status') == 'completed' else 'RUNNING'},
-                'run_id': run['id'], 'url': run['html_url'], 'event': 'pull_request'}
+                'run_id': run['id'], 'url': run['html_url'], 'event': event,'source_validation_branch':run['head_branch']}
         return self._observe(read)
 
     def _write_binding(self, repository, branch, proposal_id, commit=None):
         self._repo(repository); self._branch(branch)
-        if proposal_id != PROPOSAL_ID or self.boundary is None or self.store is None:
+        if proposal_id != self.proposal_id or self.boundary is None or self.store is None:
             raise PermissionError('Configured exact proposal authority required')
         binding = self.boundary.binding()
         if commit is not None and commit != binding['head_sha']:
@@ -345,13 +360,13 @@ class GitHubPreviewAdapter:
         return binding
 
     def _current_base(self, binding):
-        read = self.get_branch(REPOSITORY, 'main')
+        read = self.get_branch(self.repository, 'main')
         if read.state != 'COMPLETE' or read.data.get('sha') != binding['base_sha']:
             raise ValueError('Prepared base differs from current remote main')
 
     def push_proposal_branch(self, repository, branch, commit, proposal_id):
         binding = self._write_binding(repository, branch, proposal_id, commit)
-        if self.local_git is None or self.local_git.repository != REPOSITORY:
+        if self.local_git is None or self.local_git.repository != self.repository:
             raise PermissionError('Reviewed bounded local Git adapter required')
         local = self.local_git.read_worktree_state(proposal_id)
         if local['dirty'] or any(local.get(k) != binding[k] for k in ('branch','base_sha','head_sha','proposal_revision')):
@@ -383,7 +398,7 @@ class GitHubPreviewAdapter:
             'GIT_CONFIG_VALUE_0':'Authorization: Basic '+base64.b64encode(('x-access-token:'+token).encode()).decode()}
         argv = ['git','-c','safe.directory='+str(path),'-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false','-c','credential.helper=',
             '-c','http.followRedirects=false','-C',str(path),'push','--porcelain','--no-verify','--',
-            'https://github.com/'+REPOSITORY+'.git',commit+':refs/heads/'+branch]
+            'https://github.com/'+self.repository+'.git',commit+':refs/heads/'+branch]
         with tempfile.TemporaryFile() as output:
             result = subprocess.run(argv, env=env, stdout=output, stderr=subprocess.STDOUT, timeout=120, shell=False)
             if result.returncode != 0 or output.tell() > 65536:
@@ -407,7 +422,7 @@ class GitHubPreviewAdapter:
         body = {'title':'PREVIEW ONLY — Commercial camera landing page — DO NOT MERGE', 'head':branch,
             'base':'main', 'draft':True, 'body':'Isolated camera preview only. Owner review required; no merge or production deployment.\n\n'
             + '\n'.join(k+': '+str(binding[k]) for k in binding)}
-        self._call('POST', '/repos/'+REPOSITORY+'/pulls', self._token(write=True), body)
+        self._call('POST', '/repos/'+self.repository+'/pulls', self._token(write=True), body)
         pr = self.get_pr(repository, branch)
         if pr.state != 'COMPLETE' or pr.data.get('head_sha') != binding['head_sha'] or pr.data.get('base_ref') != 'main' or pr.data.get('draft') is not True or pr.data.get('auto_merge') is not None or pr.data.get('state') != 'open':
             raise ValueError('Draft PR readback differs')

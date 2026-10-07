@@ -14,7 +14,7 @@ from .automation import lifecycle_control as lc
 
 def load_manager(path,now):
     store=ManagerStore(path);inputs=collect();saved={}
-    try:saved=lc.trusted_json(DISPLAY,2097152)
+    try:saved=lc.trusted_json(DISPLAY,4194304)
     except (OSError,ValueError):pass
     view=build_manager(inputs,store,now,active_ids=saved.get('active_priority_ids',[]),crosswalk=saved.get('crosswalk',{}))
     for k in ('preparation','intake','forms','brief_id','refresh'):view[k]=saved.get(k)

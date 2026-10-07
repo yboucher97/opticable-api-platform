@@ -7,7 +7,7 @@ from .acquisition_store import digest, safe
 
 CLASSIFICATIONS = {'UNATTENDED','OWNER_INITIATED','TEST_ONLY','MANUAL_PROVIDER_ACTION',
                    'NATURAL_BUSINESS_EFFECT','AUTOMATIC_EXISTING_WORKFLOW','UNKNOWN'}
-FEEDBACK = {'APPROVE','REJECT','REQUEST_REVISION','HIGHER','LOWER','NOT_RELEVANT','WAIT','NEVER'}
+FEEDBACK = {'APPROVE','REJECT','REQUEST_REVISION','HIGHER','LOWER','NOT_RELEVANT','WAIT','DEFER','NEVER'}
 OUTCOMES = {'SUCCESS','NEUTRAL','REGRESSION','INSUFFICIENT_DATA','BLOCKED'}
 ENTITY_TYPES = set('COMPANY PERSON LEAD CONTACT ACCOUNT DEAL CUSTOMER SERVICE_LOCATION SERVICE ESTIMATE INVOICE RECURRING_PROFILE PROJECT PERMIT TENDER TRIGGER PROSPECT CONVERSATION WEBSITE_PAGE SEARCH_QUERY KEYWORD CAMPAIGN AD_GROUP AD CREATIVE FORM REVIEW CONTENT_ASSET MARKET_OPPORTUNITY OPTIMIZATION_PROPOSAL BUSINESS_PRIORITY EXECUTION_RESULT LEARNING'.split())
 TRUTH = {'PROVIDER_FACT','PUBLIC_SOURCE_FACT','USER_CONFIRMED','OWNER_VERIFIED_FACT','DERIVED_DETERMINISTICALLY','MODEL_INFERENCE','ESTIMATE','UNKNOWN'}
@@ -106,6 +106,7 @@ class ManagerStore(WebsitePreviewStore):
                 'provider_writes':0,'execution_authorized':False}
 
     def feedback(self,kind,target,version,choice,actor,now,*,reason='',category='',conditions=''):
+        if choice=='DEFER':choice='WAIT'
         if kind not in {'PROPOSAL','PRIORITY'} or choice not in FEEDBACK or not actor or now.tzinfo is None:
             raise ValueError('Exact local owner feedback required')
         if max(map(len,(reason,category,conditions,actor)))>1000:raise ValueError('Feedback exceeds bound')
@@ -114,6 +115,10 @@ class ManagerStore(WebsitePreviewStore):
         if not item or item['payload_hash']!=version:raise ValueError('Fresh exact revision required')
         if kind=='PRIORITY' and choice in {'APPROVE','REQUEST_REVISION'}:raise ValueError('Proposal required')
         r=item['record']
+        from .decision_card import decision_card
+        card=decision_card(item,self.preview(target,now) if kind=='PROPOSAL' and r.get('target_system')=='WEBSITE' else None)
+        if choice=='APPROVE' and card['technical'] is not None and (not card['before_after'] or any(c['state']=='UNKNOWN' for c in card['before_after'])):
+            raise ValueError('Exact technical/content before and after required before owner approval')
         if choice=='APPROVE' and (not r.get('preview_location') or not r.get('measurement_plan') or not r.get('rollback_reference')):
             raise ValueError('Preview, measurement and rollback required before approval intent')
         from .manager_intelligence import semantic_evidence
@@ -188,12 +193,24 @@ class ManagerStore(WebsitePreviewStore):
             raise ValueError('Evidence-backed result and limitations required')
         if value['outcome'] not in {'BLOCKED','INSUFFICIENT_DATA'} and (not value.get('execution_receipt') or not value.get('baseline_window') or not value.get('post_window')):
             raise ValueError('Execution receipt and comparison windows required')
+        if value['outcome'] not in {'BLOCKED','INSUFFICIENT_DATA'}:
+            if any(not value.get(k) for k in ('before_state','execution','after_state','metric_result','learning')):
+                raise ValueError('Measured before/execution/after/metrics/learning required')
+            execution=value['execution']
+            if not isinstance(execution,dict) or execution.get('environment')!='production' or execution.get('proposal_id')!=proposal_id or execution.get('revision')!=revision:
+                raise ValueError('Exact production execution required for measured business learning')
         item=next((p for p in self.rows() if p['record']['proposal_id']==proposal_id and p['record']['revision']==revision),None)
         if not item:raise ValueError('Exact current proposal required')
         self.setup();key=digest([proposal_id,revision,value])
         with self.connect() as db:db.execute('INSERT OR IGNORE INTO manager_learning VALUES (?,?,?,?,?,?)',
             (key,proposal_id,revision,value['outcome'],now.isoformat(),json.dumps(value)))
         return key
+
+    def latest_learning(self,proposal_id,revision):
+        self.setup()
+        with self.connect() as db:
+            row=db.execute('SELECT value FROM manager_learning WHERE proposal_id=? AND revision=? ORDER BY at DESC,rowid DESC LIMIT 1',(proposal_id,revision)).fetchone()
+        return json.loads(row['value']) if row else None
 
     def counts(self):
         self.setup()

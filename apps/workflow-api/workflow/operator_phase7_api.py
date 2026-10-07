@@ -153,12 +153,18 @@ def install_phase7_canary_routes(app: FastAPI, *, verifier: AccessIdentityVerifi
             proposals=OptimizationStore(Path(store.db_path).with_name('phase12-autonomy.db')).rows()
             row=next((p for p in proposals if p['record']['proposal_id']==proposal_id),None)
             if not row:raise HTTPException(status_code=404,detail='Proposal unavailable')
+            from .automation.decision_card import decision_card,render_card
+            from .automation.manager_store import ManagerStore
+            review_store=ManagerStore(Path(store.db_path).with_name('phase12-autonomy.db'))
+            preview=review_store.preview(proposal_id,now()) if row['record']['target_system']=='WEBSITE' else None
+            card=render_card(decision_card(row,preview,measured=review_store.latest_learning(proposal_id,row['record']['revision'])))
+            def explained(html):return html.replace('</body>',card+'</body>') if '</body>' in html else html.replace('</html>',card+'</html>')
             if row['record']['proposal_type'] in {'WEBSITE_EVIDENCE_PREVIEW','FORM_REVISION_DRAFT'}:
                 from .automation.manager_preview import render_preview
-                return HTMLResponse(render_preview(row),headers=private_headers)
+                return HTMLResponse(explained(render_preview(row)),headers=private_headers)
             if row['record']['proposal_type'] in {'SALES_REPLY','OUTREACH_PROPOSAL','CUSTOMER_EXPANSION','SEQUENCE_CHANGE','CONTENT_FEEDBACK'}:
                 from .automation.sales_conversations import render_proposal
-            return HTMLResponse(render_proposal(row),headers={**private_headers,
+            return HTMLResponse(explained(render_proposal(row)),headers={**private_headers,
                 'Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'"})
         if prospect_id is not None:
             if not re.fullmatch('[0-9a-f]{64}',prospect_id):raise HTTPException(status_code=404,detail='Prospect unavailable')

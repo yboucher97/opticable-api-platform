@@ -17,6 +17,7 @@ from .website_preview_github_live import (
     NoRedirect, _trusted_bytes, REPOSITORY, REPOSITORY_ID, PROPOSAL_ID,
 )
 from .website_preview_model import proposal_branch, sha
+from .website_registry import LiveSiteScope
 
 
 ACCOUNT = '81d07d311d1b51e5e04b451d1f254850'
@@ -85,9 +86,10 @@ def _matches(pattern, branch):
     return bool(re.fullmatch(re.escape(pattern).replace(r'\*', '.*'), branch))
 
 
-def unsafe_triggers(worker, triggers, branch):
+def unsafe_triggers(worker, triggers, branch, *, scope=None):
+    scope=scope or LiveSiteScope("opticable.ca",PROPOSAL_ID,3);site=scope.value()
     """Any automatic write outside the isolated target violates this mission."""
-    proposal_branch(branch, PROPOSAL_ID)
+    proposal_branch(branch, scope.proposal_id)
     if not isinstance(triggers, list) or len(triggers) > 2:
         raise ValueError('Bounded complete trigger inventory required')
     blockers = []
@@ -97,8 +99,8 @@ def unsafe_triggers(worker, triggers, branch):
         connection = trigger.get('repo_connection')
         if not isinstance(connection, dict): raise ValueError('Trigger repository identity unavailable')
         if connection.get('provider_type') != 'github': continue
-        if str(connection.get('repo_id')) != str(REPOSITORY_ID): continue
-        if connection.get('provider_account_name') != 'yboucher97' or connection.get('repo_name') != 'opticable-website':
+        if str(connection.get('repo_id')) != str(site['repository_numeric_id']): continue
+        if connection.get('provider_account_name') != 'yboucher97' or connection.get('repo_name') != site['repository'].split('/')[1]:
             raise ValueError('Trigger repository identity inconsistent')
         if connection.get('deleted_on') is not None or trigger.get('deleted_on') is not None: continue
         includes = trigger.get('branch_includes'); excludes = trigger.get('branch_excludes')
@@ -117,8 +119,10 @@ def unsafe_triggers(worker, triggers, branch):
 
 
 class CloudflarePushSafety:
-    def __init__(self, allowed_branch, *, transport=None, clock=None):
-        self.allowed_branch = proposal_branch(allowed_branch, PROPOSAL_ID)
+    def __init__(self, allowed_branch, *, transport=None, clock=None, scope=None):
+        self.scope=scope or LiveSiteScope("opticable.ca",PROPOSAL_ID,3)
+        site=self.scope.value();self.repository=site["repository"];self.proposal_id=self.scope.proposal_id
+        self.allowed_branch = proposal_branch(allowed_branch, self.proposal_id)
         self.transport = transport or CloudflareBuildsReadHTTP()
         self.clock = clock or (lambda:datetime.now(timezone.utc))
         self.last_receipt = None
@@ -126,7 +130,7 @@ class CloudflarePushSafety:
     def _binding(self, binding):
         if not isinstance(binding,dict) or set(binding) != set(BINDING_FIELDS):
             raise ValueError('Exact proposal tuple required')
-        if binding['repository'] != REPOSITORY or binding['proposal_id'] != PROPOSAL_ID or binding['branch'] != self.allowed_branch:
+        if binding['repository'] != self.repository or binding['proposal_id'] != self.proposal_id or binding['branch'] != self.allowed_branch:
             raise ValueError('Repository/ref outside exact Cloudflare proposal allowlist')
         if type(binding['proposal_revision']) is not int or binding['proposal_revision'] < 1:
             raise ValueError('Exact revision required')
@@ -154,7 +158,7 @@ class CloudflarePushSafety:
                 raise ValueError('Worker inventory identity malformed or duplicated')
             names.add(worker['id']);tags.add(worker['tag'])
             triggers, source = self.transport.read('/accounts/'+ACCOUNT+'/builds/workers/'+worker['tag']+'/triggers')
-            blockers.extend(unsafe_triggers(worker,triggers,binding['branch']));observed.append(worker['id'])
+            blockers.extend(unsafe_triggers(worker,triggers,binding['branch'],scope=self.scope));observed.append(worker['id'])
             if blockers: break  # Proven unsafe; no further provider calls needed.
         self.last_receipt={'binding':deepcopy(binding),'account':ACCOUNT,'observed_at':now.isoformat(),
             'source_at':source,'safe':not blockers,'blockers':blockers,'workers_checked':observed,

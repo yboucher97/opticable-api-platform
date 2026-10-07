@@ -39,8 +39,8 @@ def local(store):
 def released():
     receipt=json.loads((Path('/var/lib/optibrain/releases/current.json')).read_text())
     head=SOURCE.parent.name
-    if receipt.get('sha')!=head or receipt.get('state')!='deployed' or receipt.get('api_version')!='1.32.1':
-        raise PermissionError('Exact guarded 1.32.1 release required before provider execution')
+    if receipt.get('sha')!=head or receipt.get('state')!='deployed' or receipt.get('api_version') not in {'1.32.1','1.33.0'}:
+        raise PermissionError('Exact guarded preview-capable release required before provider execution')
     if SOURCE != Path('/opt/optibrain-releases')/head/'source':
         raise PermissionError('Provider execution must use root-owned immutable release source')
     trusted_tool_file(Path(__file__))

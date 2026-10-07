@@ -7,6 +7,7 @@ from .acquisition_store import digest
 from .manager_sources import registry,evidence_health,stamp,health_state
 from .lifecycle_projection import collect_states,reconcile_priority
 from .lifecycle_truth import eligible_today,priority_order,context_key,reply_draft_obsolete
+from .decision_card import decision_card,render_card,todo_explanation
 
 TZ=ZoneInfo('America/Toronto')
 DOMAIN={'GOOGLE_ADS':'ads','WEBSITE':'website','SEO':'seo','ZOHO_FORM':'form','CONTENT':'content',
@@ -56,6 +57,8 @@ def proposals(store,sources,now):
                 output[-1].update(status=website['state'],readiness=website['state'],
                     preview=website['verified_url'] or r.get('preview_location'),
                     approval='EXACT_PREVIEW_OWNER_INTENT' if website['approval_bound'] else None)
+        output[-1]['decision_card']=decision_card(item,store.preview(r['proposal_id'],now) if r['target_system']=='WEBSITE' else None,
+            evidence=evidence,measured=store.latest_learning(r['proposal_id'],r['revision']))
     return output
 
 
@@ -116,6 +119,10 @@ def priorities(store,proposal_rows,sources,now,*,active_ids=None,crosswalk=None,
                 actionability='VERIFY_FIRST' if website_action in {'PROVIDER ACCESS REQUIRED','STALE PREVIEW'} else 'ACTIONABLE_NOW',
                 reason_code='WEBSITE_PREVIEW_OWNER_REVIEW')
         v=reconcile_priority(v,lifecycle_states or {})
+        if website_action=='READY FOR PRODUCTION EXECUTOR':
+            v.update(actionability='WAITING',reason_code='SEPARATE_PRODUCTION_AUTHORITY_REQUIRED')
+        v['decision_card']=p['decision_card'] if p else decision_card(item,evidence=evidence)
+        v['todo_explanation']=todo_explanation(v,v['decision_card'])
         # Exact commercial-object state prevents separate projects at one
         # Account from collapsing into the same action.
         if v.get('lifecycle'):key=digest([v['lifecycle']['context'],family])
@@ -195,6 +202,8 @@ def build_manager(inputs,store,now,*,active_ids=None,crosswalk=None):
         'related_sales_question':a['detail'].get('sales_question'),'status':'DRAFT / BRIEF','preview':a['record']['draft_or_asset_reference'],
         'uses':a['record']['usage'],'performance':a['record']['performance_evidence']} for a in assets]
     sections['content']={'items':content[:20],'total':len(content),'publication':'OWNER APPROVAL REQUIRED','hook_library':'Shared Optimization Assets; no second queue'}
+    from .website_registry import websites
+    sections['websites']={'sites':websites(store,ps,now)}
     brief={'day':nowday,'what_changed':[{'event_id':e['id'],'title':e['value'].get('title')} for e in changed[:5]],
         'sales_attention':sections['sales']['attention'],'acquisition':sections['acquisition']['funnel'],
         'customer_actions':domains['customer'],'marketing_seo_ads':dict(domains),
@@ -244,12 +253,14 @@ def render_manager(view,*,query='',domain='',status=''):
     for p in rows[:50]:
         url='/v1/operator/acquisition?proposal_id='+p['proposal_id']
         body+='<article><h3><a href="'+h(url)+'">'+h(p['title'])+'</a></h3><p>'+h(p['domain'])+' · '+h(p['status'])+' · '+h(p['readiness'])+' · confidence '+h(p['confidence'])+'</p><p>'+h(p['why'])+'</p><p>Benefit: '+h(p['expected_benefit'])+' · Cost: '+h(p['cost'])+'</p><p>Risk: '+h(p['risk'])+'</p><details><summary>Why this?</summary>'+short(p['evidence'])+'</details><p>'+h(p['owner_action'])+'</p>'
+        body+=render_card(p['decision_card'])
         if p.get('website_preview'):
             body+='<details><summary>Website preparation / preview / review</summary>'+short(p['website_preview'])+'</details>'
-        body+="<form method='post' action='/v1/operator/manager/feedback'><input type='hidden' name='kind' value='PROPOSAL'><input type='hidden' name='target' value='"+h(p['proposal_id'])+"'><input type='hidden' name='version' value='"+h(p['payload_hash'])+"'><label>Decision <select name='choice'>"+''.join('<option>'+c+'</option>' for c in ('APPROVE','REJECT','REQUEST_REVISION','WAIT','NOT_RELEVANT','NEVER'))+"</select></label><label> Reason <input name='reason' maxlength='1000'></label><label> Reconsider when <input name='conditions' maxlength='1000'></label><button>Record owner intent</button></form><small>Approval records intent. Provider execution still requires separate authority.</small></article>"
+        body+="<form method='post' action='/v1/operator/manager/feedback'><input type='hidden' name='kind' value='PROPOSAL'><input type='hidden' name='target' value='"+h(p['proposal_id'])+"'><input type='hidden' name='version' value='"+h(p['payload_hash'])+"'><label>Decision <select name='choice'>"+''.join('<option value="'+value+'">'+label+'</option>' for value,label in [('APPROVE','APPROVE'),('REQUEST_REVISION','REQUEST REVISION'),('REJECT','REJECT'),('WAIT','DEFER'),('NOT_RELEVANT','NOT RELEVANT'),('NEVER','NEVER')])+"</select></label><label> Reason <input name='reason' maxlength='1000'></label><label> Reconsider when <input name='conditions' maxlength='1000'></label><button>Record owner intent</button></form><small>Approval records intent. Provider execution still requires separate authority.</small></article>"
     out+=card('Optimization proposals',body)
     body=''
     for p in view['priorities'][:30]:
+        body+=render_card(p['decision_card'])+'<details><summary>Why this todo exists</summary>'+short(p['todo_explanation'])+'</details>'
         body+='<article><strong>'+h(p['what'])+'</strong><p>'+h(p['status'])+' · '+h(p.get('current_state','Owner review'))+' · '+h(p['actionability'])+'</p><p>'+h(p['next_action'])+'</p><details><summary>Why / evidence / factors</summary>'+short(p.get('lifecycle'))+short(p['factors'])+short(p['evidence'])+'</details>'
         body+="<form method='post' action='/v1/operator/manager/feedback'><input type='hidden' name='kind' value='PRIORITY'><input type='hidden' name='target' value='"+h(p['priority_id'])+"'><input type='hidden' name='version' value='"+h(p['payload_hash'])+"'><select name='choice'>"+''.join('<option>'+c+'</option>' for c in ('HIGHER','LOWER','WAIT','NOT_RELEVANT','NEVER'))+"</select><button>Save preference</button></form></article>"
     out+=card('Business priorities',body)

@@ -137,7 +137,8 @@ class LocalGitAdapter:
         if p.get('repository')!=self.repository:raise ValueError('Wrong repository package')
         identifier(p['proposal_id']);sha(p['base_sha'])
         if type(p.get('proposal_revision')) is not int or p['proposal_revision']<1:raise ValueError('Invalid proposal revision')
-        if not p.get('allowed_files') or len(p['allowed_files'])>30 or len(p.get('changes',[]))>30:raise ValueError('Bounded package required')
+        if (not p.get('allowed_files') and p.get('no_op') is not True) or len(p['allowed_files'])>30 or len(p.get('changes',[]))>30:raise ValueError('Bounded package required')
+        if p.get('no_op') and (p['allowed_files'] or p['changes']):raise ValueError('No-op scope must be empty')
         for f in p['allowed_files']:relative_file(f)
         expected=digest([p['proposal_id'],p['repository'],p['base_sha'],p['allowed_files'],p['changes'],sorted(p['required_tests'])])
         if p.get('semantic_hash')!=expected:raise ValueError('Preparation hash mismatch')
@@ -179,6 +180,11 @@ class LocalGitAdapter:
             if record.get('prepared_semantic_hash')==package['semantic_hash'] and record.get('prepared_head')==record['head_sha']:return record['head_sha']
             code,_=self._git(path,'merge-base','--is-ancestor',package['base_sha'],record['head_sha'],codes=(0,1))
             if code!=0:raise ValueError('Base no longer an ancestor')
+            if package.get('no_op'):
+                if record['head_sha']!=package['base_sha']:raise ValueError('No-op source must equal the exact base')
+                record.update(proposal_revision=package['proposal_revision'],prepared_semantic_hash=package['semantic_hash'],prepared_head=record['head_sha'])
+                self._save_record({k:v for k,v in record.items() if k not in {'dirty','head_sha'}})
+                return record['head_sha']
             pending={}
             for c in package['changes']:
                 relative_file(c['path']);target=path/c['path'];no_symlinks(target)
