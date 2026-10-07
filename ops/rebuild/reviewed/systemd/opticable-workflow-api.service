@@ -1,0 +1,18 @@
+[Unit]
+Description=Site And Password Workflow
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=opticable-workflow-api
+Group=opticable-workflow-api
+WorkingDirectory=/opt/opticable-api-platform/apps/workflow-api
+EnvironmentFile=/etc/opticable-workflow-api.env
+Environment=PATH=/opt/opticable-api-platform/apps/workflow-api/.venv/bin
+ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/uvicorn workflow.api:app --host 127.0.0.1 --port 8100
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=Scheduled OptiBrain encrypted off-host Phase 2A backup
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 UTC
+Persistent=true
+RandomizedDelaySec=15m
+Unit=optibrain-phase2a-upload.service
+
+[Install]
+WantedBy=timers.target

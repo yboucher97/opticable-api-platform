@@ -1,0 +1,9 @@
+[Unit]
+Description=Bounded internal lifecycle observation every five minutes
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=5min
+RandomizedDelaySec=20
+Unit=opticable-lifecycle-internal.service
+[Install]
+WantedBy=timers.target

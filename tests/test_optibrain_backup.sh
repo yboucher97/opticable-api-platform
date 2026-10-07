@@ -1,11 +1,42 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+# Live root state has no test-path override in backup format v1. A root test
+# must isolate that fixed path before invoking the production backup helper.
+if [[ "${EUID}" -eq 0 && "${OPTIBRAIN_BACKUP_TEST_ISOLATED:-false}" != true ]]; then
+  export OPTIBRAIN_BACKUP_TEST_SCRIPT="$(realpath "${BASH_SOURCE[0]}")"
+  exec unshare --mount bash -c '
+    set -Eeuo pipefail
+    mount --make-rprivate /
+    fixture_root=$(mktemp -d)
+    fixture_target=/var/lib/optibrain
+    if [[ ! -d "${fixture_target}" ]]; then
+      fixture_target=/var/lib
+      mkdir "${fixture_root}/optibrain"
+    fi
+    trap '\''umount "${fixture_target}"; rm -rf -- "${fixture_root}"'\'' EXIT
+    mount --bind "${fixture_root}" "${fixture_target}"
+    OPTIBRAIN_BACKUP_TEST_ISOLATED=true bash "${OPTIBRAIN_BACKUP_TEST_SCRIPT}"
+  '
+fi
+
 script="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/ops/backup/optibrain-backup.sh"
 unit="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/ops/backup/optibrain-backup.service"
 timer="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/ops/backup/optibrain-backup.timer"
 tmp="$(mktemp -d)"
 trap 'rm -rf -- "${tmp}"' EXIT
+# Exercise the reviewed replacement-host compatibility adapter. The original
+# production helper is never edited or invoked with live root state here.
+rebuild_dir="$(dirname "${script}")/../rebuild"
+python3 -B - "${rebuild_dir}" "${tmp}/backup-helper.sh" <<'PY'
+import json,pathlib,sys
+sys.path.insert(0,sys.argv[1])
+from engine import REPO,reviewed_bytes
+manifest=json.loads((REPO/'docs/rebuild/current-host-manifest.json').read_text())
+row=next(r for r in manifest['bootstrap']['reviewed_files'] if r['source']=='ops/backup/optibrain-backup.sh')
+pathlib.Path(sys.argv[2]).write_bytes(reviewed_bytes(row))
+PY
+script="${tmp}/backup-helper.sh"
 mkdir -p "${tmp}/repo/.git" "${tmp}/repo/apps/workflow-api/workflow" "${tmp}/data/automation" "${tmp}/backup" "${tmp}/shared"
 printf 'fixture\n' >"${tmp}/repo/README"
 printf 'API_VERSION = "fixture-1.0"\n' >"${tmp}/repo/apps/workflow-api/workflow/api.py"
@@ -62,12 +93,12 @@ bash "${script}" --verify "${archive}"
 extract_dir="${tmp}/extract"
 mkdir -p "${extract_dir}"
 tar -xzf "${archive}" -C "${extract_dir}"
-manifest="$(find "${extract_dir}" -name manifest.json -print -quit)"
+manifest="$(find "${extract_dir}" -mindepth 2 -maxdepth 2 -name manifest.json -print -quit)"
 python3 - "${manifest}" <<'PY'
 import json, pathlib, sys
 data = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert any(entry["path"].endswith("/shared/manifest.json") for entry in data["files"])
-assert data["backup_script_version"] == "1.0.1"
+assert data["backup_script_version"] == "1.0.4"
 assert not any(entry["backup_path"].endswith(".db-wal") for entry in data["source_metadata"])
 matches = [entry for entry in data["source_metadata"] if entry["source_path"].endswith("/shared")]
 assert matches and matches[0]["mode"] == "2770", matches
@@ -78,7 +109,18 @@ staged_shared="$(find "${extract_dir}" -path '*/state/var/lib/opticable-api-plat
 [[ "$(stat -c '%a' "${staged_shared}")" != 2770 ]]
 
 if command -v systemd-analyze >/dev/null 2>&1; then
-  systemd-analyze verify "${unit}" "${timer}"
+  # Syntax verification must also run on CI without a deployed /opt checkout.
+  # Only the fixture command changes; source-unit assertions below stay exact.
+  fixture_unit="${tmp}/optibrain-backup.service"
+  python3 - "${unit}" "${fixture_unit}" "${script}" <<'PY'
+import pathlib,sys
+source,target,helper=sys.argv[1:]
+value=pathlib.Path(source).read_text()
+old='ExecStart=/opt/opticable-api-platform/ops/backup/optibrain-backup.sh'
+assert value.count(old)==1
+pathlib.Path(target).write_text(value.replace(old,'ExecStart=/usr/bin/bash '+helper))
+PY
+  systemd-analyze verify "${fixture_unit}" "${timer}"
 else
   printf 'systemd-analyze unavailable; unit validation skipped\n' >&2
 fi

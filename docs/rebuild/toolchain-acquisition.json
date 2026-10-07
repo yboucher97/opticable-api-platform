@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "toolchain_sha": "1a78bc189d58a5cfc2e73a0ec1835c72bb37fcab",
+  "source_archive_url": "https://codeload.github.com/yboucher97/opticable-api-platform/tar.gz/1a78bc189d58a5cfc2e73a0ec1835c72bb37fcab",
+  "source_archive_sha256": "c434756eb5d8721b480f4d55ee416ec7f2addc738c1254e0ec3582d1d16a9fc9",
+  "source_archive_bytes": 2728651,
+  "launch_sha256": "7fb7ddf6871dd37be9183b6f2abbe7b695664f8756993dd48ebdb3fb735e2b79",
+  "review_pr": "https://github.com/yboucher97/opticable-api-platform/pull/147",
+  "ci_run": "https://github.com/yboucher97/opticable-api-platform/actions/runs/37577348571",
+  "ci_conclusion": "success",
+  "acquisition": "streamed checksum only; archive not staged on current VPS",
+  "application_sha": "be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa",
+  "application_api_version": "1.34.1"
+}

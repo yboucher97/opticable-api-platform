@@ -1,0 +1,19 @@
+[Unit]
+Description=Omada Site Creator
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=opticable-omada-site
+Group=opticable-omada-site
+WorkingDirectory=/opt/opticable-api-platform/apps/omada-site-service
+EnvironmentFile=/etc/opticable-omada-site.env
+Environment=HOME=/var/lib/opticable-omada-site
+ExecStart=/usr/bin/node /opt/opticable-api-platform/apps/omada-site-service/dist/server.js
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

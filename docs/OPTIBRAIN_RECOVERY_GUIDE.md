@@ -2,6 +2,12 @@
 
 RECOVERY — CURRENT SPECIALIZED GUIDE. Begin with [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md); [configuration](OPTIBRAIN_CONFIGURATION_INVENTORY.md) identifies every owner/secret boundary. Recovery starts with writers and schedulers OFF. Preserve provider-effect claims, journals and newer credential rotations. Never infer permission to execute from an old approval, backup, snapshot or successful health response.
 
+## Current automated replacement path
+
+For a new Ubuntu 24.04 amd64 VPS, use the [canonical rebuild manifest and architecture](rebuild/architecture.md) and [one-command bootstrap](rebuild/bootstrap.md). The idempotent toolchain wraps the recovery boundaries below with package/user/source installation, staged all-store verification, named permissions, reviewed units, private Caddy, provider reads and a new encrypted backup gate. [Restore](rebuild/restore.md), [migration/final sync](rebuild/migration.md), [cutover](rebuild/cutover.md) and [rollback](rebuild/rollback.md) describe that workflow. [Current host inventory](rebuild/current-host-inventory.md) and [secret paths](rebuild/secrets-manifest.md) contain metadata only.
+
+The [rebuild readiness report](rebuild/final-report.md) distinguishes tested components from the still-required fresh disposable VPS drill. The packaged manifest pins application API 1.34.1/SHA `be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa`; it does not infer that this remains latest. Refresh source/recovery receipts and compatible reviewed definitions before a future move. The manual Phase15 sequence below is retained as the underlying recovery contract and incident fallback; it is not an additional foundation phase or the normal owner installation path. Do not create its marker manually for the new toolchain: marker plus a private bound state receipt are created by bootstrap itself.
+
 ## Golden recovery layers
 
 | Layer | Verified reference / role |

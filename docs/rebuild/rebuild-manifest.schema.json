@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OptiBrain Rebuild Manifest v1",
+  "type": "object",
+  "required": [
+    "manifest_version",
+    "generated_at",
+    "source_production_sha",
+    "main_sha",
+    "api_version",
+    "recovery_generation",
+    "os",
+    "architecture",
+    "timezone",
+    "users",
+    "groups",
+    "packages",
+    "runtime_versions",
+    "directories",
+    "mounts",
+    "services",
+    "timers",
+    "database_inventory",
+    "secret_paths",
+    "provider_identities",
+    "reverse_proxy",
+    "firewall",
+    "health_endpoints",
+    "authority_expected_restore_state",
+    "recovery_sources",
+    "verification_suite",
+    "bootstrap"
+  ],
+  "properties": {
+    "generated_at": {
+      "type": "string"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "packages": {
+      "type": "string"
+    },
+    "mounts": {
+      "type": "string"
+    },
+    "firewall": {
+      "type": "string"
+    },
+    "os": {
+      "type": "object"
+    },
+    "runtime_versions": {
+      "type": "object"
+    },
+    "provider_identities": {
+      "type": "object"
+    },
+    "reverse_proxy": {
+      "type": "object"
+    },
+    "users": {
+      "type": "array",
+      "minItems": 1
+    },
+    "groups": {
+      "type": "array",
+      "minItems": 1
+    },
+    "directories": {
+      "type": "array",
+      "minItems": 1
+    },
+    "health_endpoints": {
+      "type": "array",
+      "minItems": 1
+    },
+    "verification_suite": {
+      "type": "array",
+      "minItems": 1
+    },
+    "manifest_version": {
+      "const": 1
+    },
+    "architecture": {
+      "const": "x86_64"
+    },
+    "source_production_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "main_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "api_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "recovery_generation": {
+      "type": "string",
+      "pattern": "^[0-9]{8}T[0-9]{6}Z$"
+    },
+    "services": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "Type",
+          "ExecStart",
+          "WorkingDirectory",
+          "EnvironmentFiles",
+          "After",
+          "Restart",
+          "UnitFileState",
+          "ActiveState",
+          "classification",
+          "expected_restore_state",
+          "health_check",
+          "authority_relationship",
+          "definition_hashes"
+        ]
+      }
+    },
+    "timers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "Triggers",
+          "TimersCalendar",
+          "TimersMonotonic",
+          "UnitFileState",
+          "LastTriggerUSec",
+          "NextElapseUSecRealtime",
+          "classification",
+          "expected_restore_state",
+          "authority_relationship"
+        ]
+      }
+    },
+    "database_inventory": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "owner",
+          "group",
+          "mode",
+          "size_bytes",
+          "snapshot",
+          "criticality",
+          "encryption",
+          "backup",
+          "restore"
+        ],
+        "properties": {
+          "snapshot": {
+            "type": "object",
+            "required": [
+              "integrity",
+              "foreign_keys",
+              "schema_sha256",
+              "user_version",
+              "tables",
+              "audit_chains_verified"
+            ],
+            "properties": {
+              "integrity": {
+                "const": "ok"
+              },
+              "foreign_keys": {
+                "const": "PASS"
+              },
+              "tables": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": {
+                  "type": "object",
+                  "required": [
+                    "count",
+                    "rows_sha256",
+                    "ids_sha256"
+                  ],
+                  "properties": {
+                    "count": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "rows_sha256": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "ids_sha256": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "secret_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "owner",
+          "group",
+          "mode",
+          "consumer",
+          "recovery_source",
+          "rotation",
+          "sha256"
+        ],
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "value"
+              ]
+            },
+            {
+              "required": [
+                "contents"
+              ]
+            },
+            {
+              "required": [
+                "plaintext"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "authority_expected_restore_state": {
+      "type": "object",
+      "required": [
+        "customer",
+        "customer_timer",
+        "internal",
+        "books",
+        "ads",
+        "outreach",
+        "conversion_uploads",
+        "production_website",
+        "persistent_development",
+        "english_real"
+      ],
+      "additionalProperties": {
+        "const": "OFF"
+      }
+    },
+    "recovery_sources": {
+      "type": "object",
+      "required": [
+        "generation",
+        "verification_status",
+        "source_sha256",
+        "encrypted_sha256",
+        "object_key",
+        "source_bundle"
+      ]
+    },
+    "bootstrap": {
+      "type": "object",
+      "required": [
+        "packages",
+        "ssh_port",
+        "node_version",
+        "node_sha256",
+        "retention_policy",
+        "reviewed_files",
+        "required_providers",
+        "default_data_root",
+        "optional_data_root"
+      ],
+      "properties": {
+        "retention_policy": {
+          "const": "preserve-existing"
+        },
+        "reviewed_files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "source",
+              "destination",
+              "mode",
+              "sha256"
+            ]
+          }
+        },
+        "required_providers": {
+          "type": "array",
+          "minItems": 1
+        }
+      }
+    }
+  }
+}
