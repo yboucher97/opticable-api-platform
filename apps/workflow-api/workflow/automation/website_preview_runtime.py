@@ -59,13 +59,16 @@ def _observed(operation,now,*args):
         return ReadResult('FAILED',None,None,now.isoformat(),1,0,1,'INVALID_OR_FAILED_PROVIDER_READ')
 
 
-def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_page='Security cameras',canonical_url='https://opticable.ca/fr/services/systemes-cameras-securite/',clock=None):
+def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_page='Security cameras',canonical_url='https://opticable.ca/fr/services/systemes-cameras-securite/',clock=None,site_id=None):
     """Callable by the existing infrastructure later. Stop denied reads, never retry."""
     if type(maximum) is not int or not 1<=maximum<=3:raise ValueError('Reconciliation bound required')
     results=[]
     for item in store.rows():
         now=clock() if clock else now
         if item['record']['target_system']!='WEBSITE':continue
+        from .website_registry import site_for
+        site=site_for(repository=item['detail'].get('repository'),page=item['record'].get('target_url_or_record'))
+        if site_id and (not site or site['site_id']!=site_id):continue
         v=store.preview(item['record']['proposal_id'],now)
         if not v or v['owner_status'] in {'REJECTED','DEFERRED','REVISION_REQUESTED'} or v['stale_state']=='SUPERSEDED':continue
         if len(results)>=maximum:break
@@ -105,7 +108,7 @@ def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_pag
         workflow=_observed(github.get_workflow_status,now,repo,v['head_sha']);reads['workflow']=workflow.metadata()
         now=clock() if clock else now
         # Live graduation requires a draft PR; legacy fake/local proof can be empty.
-        if getattr(github,'requires_draft_pr',False) and (pr.state!='COMPLETE' or not isinstance(pr.data,dict)
+        if getattr(github,'requires_draft_pr',False) and not v['package'].get('no_op') and (pr.state!='COMPLETE' or not isinstance(pr.data,dict)
                 or pr.data.get('state')!='open' or pr.data.get('auto_merge') is not None):
             _save(store,v,now,state='PROVIDER_BLOCKED',preview_state='BLOCKED_AUTH' if pr.state=='BLOCKED_AUTH' else 'FAILED',last_verified_at=None)
             results.append(v);continue
@@ -164,7 +167,8 @@ def reconcile(store,github,cloudflare,http,now,*,maximum=3,git=None,expected_pag
 
 def owner_package(item,value,now):
     r=item['record']
-    return {'WHY':r['business_problem'],'EVIDENCE':r['source_evidence']+value['evidence_refs'],
+    from .decision_card import decision_card
+    return {'decision_card':decision_card(item,value),'WHY':r['business_problem'],'EVIDENCE':r['source_evidence']+value['evidence_refs'],
         'CURRENT':{'page':r['target_url_or_record'],'repository':value['repository'],'base_sha':value['base_sha']},
         'PROPOSED':{'change':r['recommended_change'],'proposal_id':value['proposal_id'],'revision':value['proposal_revision'],'head_sha':value['head_sha']},
         'PREVIEW':{'state':value['preview_state'],'url':value.get('preview_url') if preview_ready(value,now) else None,'provider_reads':value['provider_reads']},
@@ -178,14 +182,16 @@ def manager_projection(item,value,now):
     state=value['state']
     if value['owner_status']=='STALE_APPROVAL':state='STALE_APPROVAL'
     if value['preview_state']=='PREVIEW_READY' and not ready and state not in {'STALE_BASE','CONFLICTED','SUPERSEDED','STALE_APPROVAL'}:state='STALE_PREVIEW'
-    return {**{k:value.get(k) for k in ('repository','base_sha','head_sha','branch','build_state','test_state','preview_state','stale_state','owner_status','proposal_revision')},
+    return {**{k:value.get(k) for k in ('repository','base_sha','head_sha','branch','build_state','test_state','preview_state','stale_state','owner_status','proposal_revision','updated_at')},
         'state':state,'verified_url':value.get('preview_url') if ready else None,'provider_blocked':value['preview_state']=='BLOCKED_AUTH',
         'approval_bound':approved,'execution_authorized':False,'review_package':owner_package(item,value,now)}
 
 
 def priority_action(projected):
-    if projected.get('owner_status') in {'REJECTED','DEFERRED','APPROVED'}:return None
+    if projected.get('owner_status') in {'REJECTED','DEFERRED'}:return None
+    if projected.get('owner_status')=='APPROVED':return 'READY FOR PRODUCTION EXECUTOR'
     if projected.get('owner_status')=='REVISION_REQUESTED':return 'REVISION REQUESTED'
+    if projected.get('state') in {'BUILD_FAILED','TEST_FAILED'}:return 'FIX PREVIEW VALIDATION'
     if projected.get('provider_blocked'):return 'PROVIDER ACCESS REQUIRED'
     if projected.get('stale_state') in {'NEEDS_REBASE','CONFLICTED','SUPERSEDED'} or projected.get('state') in {'STALE_PREVIEW','STALE_APPROVAL'}:return 'STALE PREVIEW'
     if projected.get('verified_url'):return 'REVIEW PREVIEW'

@@ -10,7 +10,7 @@ from .manager_sources import stamp
 
 STATES = set('NOT_ELIGIBLE PREPARATION_ELIGIBLE BRANCH_PENDING BRANCH_CREATED WORKTREE_CREATED PREPARING BUILDING BUILD_FAILED TESTING TEST_FAILED PREVIEW_PENDING PREVIEW_READY OWNER_REVIEW REVISION_REQUESTED APPROVED REJECTED DEFERRED STALE_BASE CONFLICTED SUPERSEDED PROVIDER_BLOCKED READY_FOR_PRODUCTION_EXECUTOR'.split())
 READ_STATES = set('COMPLETE VERIFIED_EMPTY PARTIAL FAILED NOT_COLLECTED STALE BLOCKED_AUTH'.split())
-TEST_CLASSES = set('BUILD LINT ROUTES FR EN FORMS GA4 ATTRIBUTION LINKS SCHEMA ACCESSIBILITY RESPONSIVE SECRET_SCAN'.split())
+TEST_CLASSES = set('BUILD LINT ROUTES FR EN FORMS GA4 ATTRIBUTION LINKS SCHEMA CANONICAL ASSETS ACCESSIBILITY RESPONSIVE SECRET_SCAN'.split())
 RUN_STATES = {'NOT_RUN', 'RUNNING', 'PASS', 'FAIL'}
 OWNER_STATES = {'PENDING', 'APPROVED', 'REVISION_REQUESTED', 'REJECTED', 'DEFERRED', 'STALE_APPROVAL'}
 STALE_STATES = {'UNKNOWN', 'CURRENT', 'NEEDS_REBASE', 'CONFLICTED', 'SUPERSEDED'}
@@ -80,14 +80,31 @@ class RepositoryState:
     preview_project: str | None = None
     health_state: str = 'NOT_COLLECTED'
     source_at: str | None = None
+    site_id: str | None = None
+    production_domain: str | None = None
+    production_target: str | None = None
+    build_definition: str | None = None
+    test_definition: str | None = None
+    github_installation_access: str = 'NOT_COLLECTED'
+    cloudflare_access: str = 'NOT_COLLECTED'
+    production_deployment_model: str | None = None
+    preview_deployment_model: str | None = None
+    last_production_sha: str | None = None
+    last_preview_state: str = 'NOT_COLLECTED'
+    last_measured_result: dict | None = None
 
     def value(self):
         value=asdict(self);repository_name(self.repository_full_name)
+        from .website_registry import validate_scope
+        site=validate_scope(self.repository_full_name,site_id=self.site_id,preview_target=self.preview_project)
+        if site:
+            for field in ('production_domain','production_target','production_deployment_model','preview_deployment_model'):
+                if getattr(self,field) is not None and getattr(self,field)!=site[field]:raise ValueError('Site registry identity mismatch')
         if self.repository_id != 'github:'+self.repository_full_name or self.provider!='GITHUB':raise ValueError('Repository identity mismatch')
         if self.health_state not in READ_STATES:raise ValueError('Repository health required')
         for b in (self.default_branch,self.production_branch):
             if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9/_-]{0,99}',b) or '..' in b:raise ValueError('Invalid repository branch')
-        for s in (self.last_observed_sha,self.last_analyzed_sha):
+        for s in (self.last_observed_sha,self.last_analyzed_sha,self.last_production_sha):
             if s is not None:sha(s)
         for at in (self.source_at,self.last_fetch_at):
             if at is not None and not stamp(at):raise ValueError('Dated repository state required')
@@ -99,10 +116,14 @@ def preparation_package(item, repository, base_sha, allowed_files, changes, requ
     if r['target_system']!='WEBSITE' or r['target_object'].get('system')!='WEBSITE' or r['target_object'].get('entity_type') not in {'WEBSITE_PAGE','LANDING_PAGE'} or type(r['revision']) is not int or r['revision']<1:raise ValueError('Website page proposal required')
     mapped=item['detail'].get('repository')
     if mapped!=repository:raise ValueError('Canonical repository mapping required')
-    if not isinstance(allowed_files,list) or not 1<=len(allowed_files)<=30 or len(set(allowed_files))!=len(allowed_files):raise ValueError('Bounded file scope required')
+    from .website_registry import validate_scope
+    validate_scope(repository,page=r.get('target_url_or_record'),site_id=item['detail'].get('site_id'))
+    no_op=r.get('proposal_type')=='SITE_PREVIEW_VERIFICATION' and item['detail'].get('no_op') is True and item['detail'].get('base_sha')==base_sha
+    if not isinstance(allowed_files,list) or not (0 if no_op else 1)<=len(allowed_files)<=30 or len(set(allowed_files))!=len(allowed_files):raise ValueError('Bounded file scope required')
     for f in allowed_files:relative_file(f)
     if not isinstance(required_tests,list) or not required_tests or not set(required_tests)<=TEST_CLASSES or len(set(required_tests))!=len(required_tests):raise ValueError('Required test classes invalid')
-    if not isinstance(changes,list) or not 1<=len(changes)<=30:raise ValueError('Structured changes required')
+    if not isinstance(changes,list) or not (0 if no_op else 1)<=len(changes)<=30:raise ValueError('Structured changes required')
+    if no_op and (allowed_files or changes):raise ValueError('No-op verification must have zero source changes')
     for c in changes:
         if not isinstance(c,dict) or set(c)!={'path','before','after'} or c['path'] not in allowed_files or not all(isinstance(c[k],str) for k in ('before','after')) or not c['before'] or c['before']==c['after']:
             raise ValueError('Exact scoped text replacement required')
@@ -112,6 +133,7 @@ def preparation_package(item, repository, base_sha, allowed_files, changes, requ
             'repository':repository,'base_sha':base_sha,'allowed_files':allowed_files,'changes':deepcopy(changes),
             'required_tests':sorted(required_tests),'evidence_refs':evidence_refs}
     safe(result)
+    if no_op:result['no_op']=True
     if len(str(result).encode())>131072:raise ValueError('Preparation package exceeds bound')
     result['semantic_hash']=digest([r['proposal_id'],repository,base_sha,allowed_files,changes,sorted(required_tests)])
     return result
@@ -142,6 +164,9 @@ def test_passes(value):
 
 def preview_ready(value, now):
     """Recompute instead of trusting persisted READY flags or imported report text."""
+    from .website_registry import validate_scope
+    try:validate_scope(value['repository'],preview_target=value.get('preview_project'),site_id=value.get('site_id'))
+    except (ValueError,KeyError):return False
     if not test_passes(value) or value.get('stale_state')!='CURRENT' or value.get('production_impact')!='NONE':return False
     last=stamp(value.get('last_verified_at'))
     if not last or not 0<=(now-last).total_seconds()<=3600:return False
@@ -179,6 +204,8 @@ def approval_current(value, now):
 
 
 def validate_preview_state(v):
+    from .website_registry import validate_scope
+    validate_scope(v['repository'],preview_target=v.get('preview_project'),site_id=v.get('site_id'))
     checks=v.get('tests',{})
     if not isinstance(checks,dict) or not set(checks)<=TEST_CLASSES:raise ValueError('Known independent test classes required')
     # SECRET_SCAN is a fixed enum label, not a credential field. Inspect its
@@ -203,7 +230,10 @@ def handoff_contract(value, now, *, authority_receipt, idempotency_key):
         raise ValueError('Exact scoped authority receipt required')
     if not re.fullmatch('[a-f0-9]{64}',idempotency_key):raise ValueError('Idempotency digest required')
     sha(value['rollback_base'])
+    from .website_registry import site_for
+    site=site_for(repository=value['repository'])
     return {'state':'READY_FOR_PRODUCTION_EXECUTOR','proposal_id':value['proposal_id'],'proposal_revision':value['proposal_revision'],
+        'site_id':site['site_id'] if site else None,'repository':value['repository'],'preview_target':value['preview_project'],
         'head_sha':value['head_sha'],'base_sha':value['base_sha'],'binding':approval_binding(value),'approval':value['approval'],
         'authority_receipt':deepcopy(authority_receipt),'idempotency_key':idempotency_key,'rollback_reference':value['rollback_base'],
         'current_base_required':True,'conflict_free_required':True,'read_after_write_required':True,'execution_authorized':False}

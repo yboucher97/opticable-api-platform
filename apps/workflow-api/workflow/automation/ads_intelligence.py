@@ -413,4 +413,6 @@ def render_summary(summary):
     html+=f"<p>Collection: {h(summary.get('collection_origin'))} · preparation: {h(summary.get('preparation_origin'))} · observed {h(summary.get('at'))}. No Ads business effect.</p>"
     for p in summary.get('proposals',[]):
         html+=f"<article><a href='/v1/operator/acquisition?proposal_id={h(p['proposal_id'])}'>{h(p['title'])}</a><p>{h(p['status'])} · confidence {h(p['confidence'])} · cost {h(p.get('budget'))} CAD/day suggested</p><small>{h(p['why'])}</small></article>"
+        from .decision_card import render_concise
+        html+=render_concise(p.get('decision_summary'))
     return html+'</section>'

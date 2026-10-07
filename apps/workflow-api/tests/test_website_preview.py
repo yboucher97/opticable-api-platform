@@ -185,7 +185,7 @@ class ProviderTests(PreviewCase):
     def test_exact_sha_preview_ready_and_owner_package(self):
         v=self.ready();self.assertTrue(preview_ready(v,NOW));p=manager_projection(self.store.website_proposal(PID),v,NOW)
         self.assertEqual(p['verified_url'],URL)
-        self.assertEqual(set(p['review_package']),{'WHY','EVIDENCE','CURRENT','PROPOSED','PREVIEW','TESTS','RISK','APPROVAL STATUS','production_action'})
+        self.assertEqual(set(p['review_package']),{'decision_card','WHY','EVIDENCE','CURRENT','PROPOSED','PREVIEW','TESTS','RISK','APPROVAL STATUS','production_action'})
     def test_preview_success_building_failure_missing(self):
         for state,expected in (('success','PREVIEW_READY'),('building','PREVIEW_PENDING'),('failure','FAILED'),('missing','VERIFIED_EMPTY')):
             with self.subTest(state=state):

@@ -475,7 +475,7 @@
             "type": "string",
             "minLength": 1
           },
-          "minItems": 1
+          "minItems": 0
         },
         "preview_location": {
           "type": [
@@ -592,6 +592,9 @@
             "string",
             "null"
           ]
+        },
+        "decision_card": {
+          "$ref": "#/$defs/decision_card"
         }
       },
       "required": [
@@ -747,6 +750,24 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "proposal_type": {
+                "not": {
+                  "const": "SITE_PREVIEW_VERIFICATION"
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "affected_files_or_records": {
+                "minItems": 1
+              }
+            }
+          }
         }
       ]
     },
@@ -884,6 +905,9 @@
         "next_action": {
           "type": "string",
           "minLength": 1
+        },
+        "decision_card": {
+          "$ref": "#/$defs/decision_card"
         }
       },
       "required": [
@@ -1121,6 +1145,30 @@
             }
           }
         }
+      ]
+    },
+    "decision_card": {
+      "type": "object",
+      "required": [
+        "summary",
+        "current_state",
+        "proposed_change",
+        "why_change",
+        "evidence",
+        "pros",
+        "cons",
+        "risks",
+        "expected_benefit",
+        "proven_vs_assumed",
+        "confidence",
+        "do_nothing",
+        "rollback",
+        "recommended_decision",
+        "owner_options",
+        "dependencies",
+        "before_after",
+        "measurement_plan",
+        "technical"
       ]
     }
   }

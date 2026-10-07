@@ -9,6 +9,7 @@ from .sales_conversations import build_bundle,ConversationStore
 from .ads_runtime import persist,invocation_origin
 from .sales_intelligence import stamp
 from .lifecycle_projection import collect_states,reconcile_priority,ref
+from .decision_card import concise_card
 from .manager_store import ManagerStore
 from .lifecycle_truth import context_key,priority_order,reply_draft_obsolete
 
@@ -78,7 +79,8 @@ def prepare(engine,apollo,crm,now):
             'prospects':{'fresh':usable,'omitted':prospects.get('omitted')},'sequence_metrics':{'fresh':seq_current,'at':sequences.get('at'),'automatic_refresh':'NOT IMPLEMENTED — CONNECTOR SNAPSHOT'}},
         'proposals':[{'proposal_id':p['record']['proposal_id'],'title':p['record']['recommended_change'],
             'status':'SUPERSEDED' if reply_draft_obsolete(states.get(context_key(p['record']['target_object']),{})) else p['effective_status'],
-            'type':p['record']['proposal_type']} for p in proposals],
+            'type':p['record']['proposal_type'],
+            'decision_summary':concise_card(p['decision_card'])} for p in proposals],
         'priorities':sorted(priorities,key=lambda r:priority_order({**r,'readiness':'CURRENT' if mail_fresh else 'NEEDS_REFRESH'},now)),
         'send_authority':'ABSENT','English_real_automation':'DISABLED','execution_authorized':False}
     # Bounded projection may omit detail but never delete canonical evidence.

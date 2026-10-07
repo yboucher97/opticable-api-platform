@@ -218,8 +218,8 @@ def observe(engine,*,now=None):
     view=refresh(collect(),ManagerStore(DATABASE),now,origin=invocation_origin())
     # Full manager canonical state has references only, never raw datasets.
     raw=json.dumps(view,ensure_ascii=False)
-    if len(raw.encode())>1048576:raise ValueError('Manager projection exceeds 1 MiB bound')
-    if len((json.dumps(view,sort_keys=True,ensure_ascii=False,indent=2)+'\n').encode())>2097152:
-        raise ValueError('Formatted Manager projection exceeds 2 MiB bound')
+    if len(raw.encode())>2097152:raise ValueError('Manager projection exceeds 2 MiB bound')
+    if len((json.dumps(view,sort_keys=True,ensure_ascii=False,indent=2)+'\n').encode())>4194304:
+        raise ValueError('Formatted Manager projection exceeds 4 MiB bound')
     atomic(DISPLAY,view,0o600);os.chown(DISPLAY,0,grp.getgrnam('opticable-workflow-api').gr_gid);os.chmod(DISPLAY,0o640)
     return {'state':'PREPARED','provider_reads':0,'provider_writes':0,'model_calls':0,'events_added':view['refresh']['events_added']}

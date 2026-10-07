@@ -53,6 +53,9 @@ class OptimizationStore:
 
     def record(self,record,detail=None,*,revision=None):
         validate(record);detail=deepcopy(detail or {});safe(detail)
+        if record['type'] in {'optibrain.optimization_proposal','optibrain.business_priority'}:
+            from .decision_card import decision_card
+            decision_card({'record':record,'detail':detail})
         kind=record['type'];identifier=record[KINDS[kind]];revision=record.get('revision',revision or 1)
         raw=json.dumps(record,sort_keys=True,ensure_ascii=False,allow_nan=False)
         details=json.dumps(detail,sort_keys=True,ensure_ascii=False,allow_nan=False)
@@ -101,6 +104,9 @@ class OptimizationStore:
                         repeat=f['choice'] in {'REJECT','NOT_RELEVANT','WAIT'} and value.get('semantic_evidence')==semantic_evidence(item['record'],item['detail'])
                         if same or repeat or f['choice']=='NEVER':
                             item['effective_status']={'APPROVE':'APPROVED','REJECT':'REJECTED','REQUEST_REVISION':'RESEARCHING'}.get(f['choice'],f['choice'])
+                if kind in {'optibrain.optimization_proposal','optibrain.business_priority'}:
+                    from .decision_card import decision_card
+                    item['decision_card']=decision_card(item)
                 result.append(item)
             return result
 

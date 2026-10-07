@@ -9,6 +9,7 @@ import grp,json,os
 from . import lifecycle_control as lc
 from .acquisition_store import digest
 from .optimization_store import OptimizationStore
+from .decision_card import concise_card
 from .ads_intelligence import build_bundle
 
 ROOT=Path('/var/lib/optibrain/acquisition-intelligence')
@@ -81,7 +82,8 @@ def projection(bundle,store,*,collection_origin,preparation_origin,health):
         'proposals':[{'proposal_id':r['record']['proposal_id'],'revision':r['record']['revision'],
             'title':r['record']['proposal_type']+' · '+str(r['detail'].get('service') or r['detail'].get('campaign_name') or 'FR/EN'),
             'status':r['effective_status'],'confidence':r['record']['confidence'],
-            'budget':r['detail'].get('budget',{}).get('average_daily'),'why':r['record']['business_problem']} for r in proposals],
+            'budget':r['detail'].get('budget',{}).get('average_daily'),'why':r['record']['business_problem'],
+            'decision_summary':concise_card(r['decision_card'])} for r in proposals],
         'priorities':[{**r['record'],'status':'REJECTED' if next((p['effective_status'] for p in proposals if p['record']['proposal_id']==r['record']['proposal_id']),None)=='REJECTED' else r['record']['status']} for r in priorities],
         'natural_lead':bundle['intelligence']['natural_lead'],
         'autonomy':'Existing daily Google reporting observer; bounded weekly inventory/preparation. No Ads effect or scheduled model calls.'}

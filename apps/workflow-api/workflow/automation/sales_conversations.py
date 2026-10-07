@@ -356,6 +356,8 @@ def render(view):
     out+='<h3>Drafts and sequence proposals ready for local review</h3>'
     for p in view.get('proposals',[]):
         out+="<p><a href='/v1/operator/acquisition?proposal_id="+h(p['proposal_id'])+"'>"+h(p['title'])+'</a> · '+h(p['status'])+'</p>'
+        from .decision_card import render_concise
+        out+=render_concise(p.get('decision_summary'))
     return out+'</section>'
 
 def render_proposal(item):
