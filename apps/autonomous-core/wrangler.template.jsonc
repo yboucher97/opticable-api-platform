@@ -1,0 +1,47 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "opticable-autonomous-core",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-25",
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "ENVIRONMENT": "production"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "opticable-autonomous-core",
+      "database_id": "__D1_DATABASE_ID__"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "EVENTS",
+        "queue": "opticable-autonomous-events"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "opticable-autonomous-events",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 5,
+        "dead_letter_queue": "opticable-autonomous-events-dlq"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "name": "opticable-automation-workflow",
+      "binding": "AUTOMATION_WORKFLOW",
+      "class_name": "AutomationWorkflow",
+      "default_retention": {
+        "success_retention": "7 days",
+        "error_retention": "30 days"
+      }
+    }
+  ]
+}
