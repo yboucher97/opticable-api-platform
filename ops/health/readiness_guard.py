@@ -26,6 +26,8 @@ def findings(payload):
                 or any(ord(ch) < 32 or ord(ch) == 127 for ch in name)
                 or not isinstance(state, str) or not state.strip()):
             return [f"invalid response: signal {index} has invalid name/state"]
+        if state not in ("OK", "UNKNOWN", "DEGRADED", "ACTION REQUIRED"):
+            return [f"invalid response: unexpected signal state at index {index}"]
         if name in encountered:
             return ["invalid response: duplicate signal name"]
         encountered.add(name)
