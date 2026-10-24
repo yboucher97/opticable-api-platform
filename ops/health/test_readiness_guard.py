@@ -32,7 +32,7 @@ class ReadinessGuardTests(unittest.TestCase):
                   {"signals": [{"name": "", "state": "OK"}]},
                   {"signals": [{"name": "Disk", "state": 0}]},
                   {"signals": [{"name": "Disk", "state": "UNRECOGNIZED"}]},
-                  {"signals": [{"name": "Disk\\nINJECT", "state": "OK"}]},
+                  {"signals": [{"name": "Disk\nINJECT", "state": "OK"}]},
                   {"signals": [{"name": "Disk", "state": "OK"}, {"name": "Disk", "state": "OK"}]}]
         for payload in inputs:
             with self.subTest(payload=payload):
