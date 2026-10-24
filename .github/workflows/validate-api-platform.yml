@@ -6,6 +6,7 @@ on:
       - "apps/workflow-api/**"
       - "apps/omada-site-service/**"
       - "ops/backup/**"
+      - "ops/health/**"
       - "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md"
       - "ops/admin/master-runbook.sha256"
       - "deploy/manual-guarded-release.py"
@@ -41,6 +42,7 @@ on:
       - "apps/workflow-api/**"
       - "apps/omada-site-service/**"
       - "ops/backup/**"
+      - "ops/health/**"
       - "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md"
       - "ops/admin/master-runbook.sha256"
       - "deploy/manual-guarded-release.py"
@@ -107,6 +109,9 @@ jobs:
           bash -n ../../deploy/bootstrap-github-actions-secrets.sh
           bash -n ../../deploy/production-root-command.sh
           bash -n ../../ops/phase6/git-hooks/pre-push
+
+      - name: Test production readiness guard
+        run: python -m unittest discover -s ../../ops/health -p 'test_*.py'
 
       - name: Verify authoritative runbook digest
         run: |
