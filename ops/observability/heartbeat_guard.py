@@ -38,7 +38,7 @@ def _name(value, label):
 
 
 def _items(doc, label):
-    if not isinstance(doc, dict) or doc.get("schema") != 1:
+    if not isinstance(doc, dict) or type(doc.get("schema")) is not int or doc["schema"] != 1:
         raise ValueError(f"Invalid {label} schema")
     jobs = doc.get("jobs")
     if not isinstance(jobs, list) or not jobs:
@@ -84,7 +84,7 @@ def evaluate(roster, snapshot, now, *, maximum_snapshot_age_seconds=_MAX_SNAPSHO
         if record.get("scheduler") != scheduler:
             raise ValueError("Snapshot scheduler does not match trusted roster")
         mode = config.get("expected")
-        if mode not in _VALID_EXPECTED:
+        if not isinstance(mode, str) or mode not in _VALID_EXPECTED:
             raise ValueError("Unrecognized expected state in trusted roster")
         # A reported disabled state cannot weaken the authoritative expected state.
         if "expected" in record or "max_silence_seconds" in record:
