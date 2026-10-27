@@ -115,6 +115,18 @@ class HeartbeatGuardTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             evaluate(roster, snap, NOW)
 
+    def test_boolean_schema_rejected(self):
+        roster, snap = fixture()
+        snap["schema"] = True
+        with self.assertRaises(ValueError):
+            evaluate(roster, snap, NOW)
+
+    def test_unhashable_expected_mode_rejected_safely(self):
+        roster, snap = fixture()
+        roster["jobs"][0]["expected"] = []
+        with self.assertRaises(ValueError):
+            evaluate(roster, snap, NOW)
+
     def test_boolean_max_silence_rejected(self):
         roster, snap = fixture()
         roster["jobs"][0]["max_silence_seconds"] = True
