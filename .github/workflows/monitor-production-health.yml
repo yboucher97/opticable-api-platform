@@ -13,6 +13,10 @@ permissions:
   contents: read
   issues: write
 
+concurrency:
+  group: optibrain-production-health
+  cancel-in-progress: false
+
 jobs:
   health:
     runs-on: ubuntu-latest
@@ -75,14 +79,21 @@ jobs:
               readiness_code="$(curl --silent --show-error --max-time 15 -o "$readiness_body" -w "%{http_code}" \
                 -H "X-API-Key: $CORE_API_KEY" "https://optibrain.opticable.ca/v1/system/readiness" 2>/dev/null || true)"
               if [[ "$readiness_code" == "200" ]]; then
+                # Fail closed on missing, malformed or unexpected readiness signals.
+                # UNKNOWN/DEGRADED are non-paging by established policy.
+                guard_findings="$(mktemp)"
+                guard_rc=0
+                python3 ops/health/readiness_guard.py "$readiness_body" > "$guard_findings" 2>/dev/null || guard_rc=$?
+                if (( guard_rc != 0 )) && ! grep -q '[^[:space:]]' "$guard_findings"; then
+                  failed+=("readiness: parser failed without diagnostic (exit $guard_rc)")
+                fi
                 while IFS= read -r attention; do
-                  failed+=("readiness: $attention")
-                done < <(jq -r '.signals[] | select(.state == "ACTION REQUIRED") | .name' "$readiness_body")
-              elif [[ "$readiness_code" != "404" ]]; then
+                  [[ -n "$attention" ]] && failed+=("readiness: $attention")
+                done < "$guard_findings"
+                rm -f "$guard_findings"
+              else
                 failed+=("readiness: authenticated summary HTTP $readiness_code")
               fi
-              # A missing endpoint during the bounded 1.11 -> 1.12 rollout is
-              # informational. UNKNOWN/soft warnings do not create incidents.
               rm -f "$readiness_body" "$provider_body"
             fi
           fi
@@ -99,7 +110,9 @@ jobs:
         if: steps.check.outputs.healthy == 'false'
         shell: bash
         run: |
-          existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$HEALTH_ISSUE_TITLE in:title" --json number --jq '.[0].number // empty')"
+          existing="$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues?state=open&per_page=100" \
+            --jq '.[] | select(.title == "OptiBrain production health check failing" and .pull_request == null) | .number' \
+            | sort -n | head -n 1)"
           body_file="$(mktemp)"
           printf 'Automated OptiBrain health check failed.\n\nFailed endpoints:\n\n' > "$body_file"
           sort -u /tmp/failed-health.txt | sed 's/^/- /' >> "$body_file"
@@ -118,7 +131,9 @@ jobs:
         if: steps.check.outputs.healthy == 'true'
         shell: bash
         run: |
-          existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$HEALTH_ISSUE_TITLE in:title" --json number --jq '.[0].number // empty')"
+          existing="$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues?state=open&per_page=100" \
+            --jq '.[] | select(.title == "OptiBrain production health check failing" and .pull_request == null) | .number' \
+            | sort -n | head -n 1)"
           if [[ -n "$existing" ]]; then
             gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "Automated health check recovered at $(date -u +'%Y-%m-%d %H:%M:%S') UTC. All monitored endpoints are healthy."
             gh issue close "$existing" --repo "$GITHUB_REPOSITORY" --reason completed
