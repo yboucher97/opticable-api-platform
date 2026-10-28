@@ -109,6 +109,10 @@ class EventIngestResponse(BaseModel):
     event_id: str
     correlation_id: str
     run_ids: list[str] = Field(default_factory=list)
+    durable: bool = False
+    intake_only: bool = False
+    held: bool = False
+    received_event_id: str | None = None
 
 
 class WorkflowRunSummary(BaseModel):

@@ -30,6 +30,9 @@ _PIN = re.compile(r"[0-9a-f]{32}\Z")
 _HASH = re.compile(r"[0-9a-f]{64}\Z")
 _PINNED_SOURCES = frozenset({
     "workflow/api.py", "workflow/phase7_registration.py",
+    "workflow/automation/intake_hold.py", "workflow/automation/events.py",
+    "workflow/automation/event_api.py", "workflow/automation/webhooks.py",
+    "workflow/automation/models.py", "workflow/automation/event_body_limit.py",
     "workflow/operator_access.py", "workflow/operator_phase7_api.py",
     "workflow/operator_manager_api.py",
     "workflow/automation/manager_store.py", "workflow/automation/manager_sources.py",

@@ -211,10 +211,14 @@ def verify_delivery(endpoint: WebhookEndpoint, headers: dict[str, str], raw: byt
     return event, quarantine
 
 
-def accept_delivery(ledger: EventLedger, endpoint: WebhookEndpoint, headers: dict[str, str], raw: bytes) -> dict[str, Any]:
+def accept_delivery(ledger: EventLedger, endpoint: WebhookEndpoint, headers: dict[str, str], raw: bytes,
+                    *, hold_policy=None) -> dict[str, Any]:
     from .native_notifications import effective_endpoint, capture_origin
     endpoint = effective_endpoint(ledger.store, endpoint)
     event, quarantine = verify_delivery(endpoint, headers, raw)
+    if hold_policy is not None and hold_policy.enabled:
+        from .intake_hold import hold_event
+        return hold_event(ledger, event, hold_policy, quarantine_reason=quarantine)
     with ledger.store._connect() as conn:
         conn.execute("BEGIN IMMEDIATE")
         accepted, event_id, correlation_id = ledger._capture(conn, event)

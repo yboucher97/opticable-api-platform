@@ -1,5 +1,5 @@
 import { NonRetryableError } from "cloudflare:workflows";
-import { lifecycleSchedules, deliverEvent, workflowInstanceId } from "./runtime-policy.js";
+import { lifecycleSchedules, deliverEvent, workflowInstanceId, validateHeldIdentity, captureHeldQueueMessage, holdRequired } from "./runtime-policy.js";
 import { WorkflowEntrypoint, WorkflowEvent, WorkflowStep } from "cloudflare:workers";
 
 type BusinessEvent = {
@@ -20,6 +20,7 @@ interface Env {
   CONTROL_PLANE_API_KEY: string;
   CORE_API_KEY: string;
   CORE_API_URL: string;
+  CORE_INTAKE_HOLD_REQUIRED?: string;
 }
 
 const json = (value: unknown, status = 200) =>
@@ -109,7 +110,7 @@ export default {
     if (request.method === "POST" && url.pathname === "/v1/events") {
       if (!authorized(request, env)) return json({ error: "Unauthorized" }, 401);
       let event: BusinessEvent;
-      try { event = normalizeEvent(await request.json()); }
+      try { event = normalizeEvent(validateHeldIdentity(env, await request.json())); }
       catch (error) { return json({ error: error instanceof Error ? error.message : "Invalid event" }, 400); }
 
       await env.EVENTS.send(event, { contentType: "json" });
@@ -130,6 +131,10 @@ export default {
   async queue(batch: MessageBatch<BusinessEvent>, env: Env): Promise<void> {
     for (const message of batch.messages) {
       const event = normalizeEvent(message.body);
+      if (holdRequired(env)) {
+        await captureHeldQueueMessage(env, message, event);
+        continue;
+      }
       try {
         await env.BUSINESS_WORKFLOW.create({ id: await workflowInstanceId(event.event_id), params: event });
         message.ack();

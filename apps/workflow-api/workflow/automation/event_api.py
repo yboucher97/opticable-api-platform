@@ -11,6 +11,7 @@ from .events import EventConflict, EventLedger
 from .delta_sync import DeltaSync
 from .event_schema import digest
 from .store import AutomationStore
+from .intake_hold import HoldUnavailable, IntakeHoldPolicy, hold_health
 from .webhooks import WebhookError, accept_delivery, load_endpoints
 
 
@@ -40,7 +41,8 @@ class BackfillPromotion(BaseModel):
 
 def install_event_routes(app: FastAPI, get_store: Callable[[], AutomationStore],
                          authenticate: Callable[[str | None], None], enabled: Callable[[], bool],
-                         sync_health: Callable[[], dict] | None = None) -> None:
+                         sync_health: Callable[[], dict] | None = None,
+                         intake_policy: Callable[[], IntakeHoldPolicy] = IntakeHoldPolicy) -> None:
     def ledger(key: str | None) -> EventLedger:
         authenticate(key)
         return EventLedger(get_store())
@@ -52,6 +54,7 @@ def install_event_routes(app: FastAPI, get_store: Callable[[], AutomationStore],
         result["native_notifications"] = await run_in_threadpool(native_health, get_store())
         if sync_health:
             result["sync_worker"] = sync_health()
+        result['intake_hold'] = await run_in_threadpool(hold_health, EventLedger(get_store()), intake_policy())
         return result
 
     @app.get("/v1/automation/usage", tags=["automation"])
@@ -65,6 +68,8 @@ def install_event_routes(app: FastAPI, get_store: Callable[[], AutomationStore],
     @app.post("/v1/automation/sync/promote-backfill", tags=["automation"])
     async def promote_backfill(body: BackfillPromotion, x_api_key: str | None = Header(None, alias="X-API-Key")) -> dict:
         selected = ledger(x_api_key)
+        if intake_policy().enabled:
+            raise HTTPException(403, 'Replay and sync controls are disabled during intake hold')
         try:
             return await run_in_threadpool(DeltaSync(selected.store).promote_backfill, body.provider, body.source_account,
                                           body.stream, expected_revision=body.expected_revision, actor="api", reason=body.reason)
@@ -85,6 +90,8 @@ def install_event_routes(app: FastAPI, get_store: Callable[[], AutomationStore],
     @app.post("/v1/automation/events/replay-batch", tags=["automation"])
     async def replay_batch(body: ReplayBatchRequest, x_api_key: str | None = Header(None, alias="X-API-Key")) -> dict:
         selected = ledger(x_api_key)
+        if intake_policy().enabled:
+            raise HTTPException(403, 'Replay and sync controls are disabled during intake hold')
         if body.event_ids is not None:
             if any(value is not None for value in (body.after, body.through, body.start, body.end)):
                 raise HTTPException(422, "Select event identities or a bounded range")
@@ -118,6 +125,8 @@ def install_event_routes(app: FastAPI, get_store: Callable[[], AutomationStore],
     async def replay_event(event_id: str, body: ReplayRequest,
                            x_api_key: str | None = Header(None, alias="X-API-Key")) -> dict:
         selected = ledger(x_api_key)
+        if intake_policy().enabled:
+            raise HTTPException(403, 'Replay and sync controls are disabled during intake hold')
         try:
             return await run_in_threadpool(selected.replay, event_id, request_key=body.request_key, actor="api", reason=body.reason)
         except LookupError:
@@ -127,7 +136,8 @@ def install_event_routes(app: FastAPI, get_store: Callable[[], AutomationStore],
 
     @app.post("/v1/automation/webhooks/{endpoint_name}", status_code=202, tags=["automation"])
     async def webhook(endpoint_name: str, request: Request) -> dict:
-        if not enabled():
+        policy = intake_policy()
+        if not enabled() and not policy.enabled:
             raise HTTPException(503, "Automation is disabled")
         try:
             endpoints = load_endpoints()
@@ -155,7 +165,10 @@ def install_event_routes(app: FastAPI, get_store: Callable[[], AutomationStore],
                 if len(raw) + len(chunk) > endpoint.max_body_bytes:
                     raise WebhookError("body_too_large", 413)
                 raw.extend(chunk)
-            return await run_in_threadpool(accept_delivery, selected, endpoint, dict(request.headers), bytes(raw))
+            return await run_in_threadpool(accept_delivery, selected, endpoint, dict(request.headers), bytes(raw),
+                                          hold_policy=policy)
+        except HoldUnavailable:
+            raise HTTPException(503, 'Durable intake unavailable; delivery not acknowledged', headers={'Retry-After': '30'}) from None
         except WebhookError as exc:
             await run_in_threadpool(selected.record_usage, source,
                 "webhook_verification_failures" if exc.status == 401 else "webhook_rejections")

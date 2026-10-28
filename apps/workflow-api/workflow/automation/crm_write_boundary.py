@@ -216,6 +216,8 @@ def _enabled(value):
 
 def require_authority(client, service, method, path, body, headers):
     if method == 'GET' or not is_crm(service,path): return
+    from .mutation_control import check_native_configuration
+    if check_native_configuration(client, service, method, path, body, headers): return
     from .lifecycle_control import check_crm_authority
     if check_crm_authority(client,method,path,body,headers): return
     value = _AUTHORITY.get()
@@ -240,6 +242,8 @@ def verify_transport_authority(client, service, method, path, body, headers):
     """Recheck the consumed exact grant immediately before local/standby transport."""
     if method == 'GET' or not is_crm(service, path):
         return
+    from .mutation_control import check_native_configuration
+    if check_native_configuration(client, service, method, path, body, headers, recheck=True): return
     from .lifecycle_control import check_crm_authority
     if check_crm_authority(client,method,path,body,headers,recheck=True): return
     value = _AUTHORITY.get()

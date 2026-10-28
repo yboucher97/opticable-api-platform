@@ -59,6 +59,7 @@ export function lifecycleSchedules(epochMs) {
 }
 
 export async function deliverEvent(env, event, PermanentError) {
+  const requireHold = holdRequired(env);
   const base = env.CORE_API_URL.replace(/\/$/, "");
   const response = await fetch(`${base}/v1/automation/events`, {
     method: "POST",
@@ -74,7 +75,42 @@ export async function deliverEvent(env, event, PermanentError) {
   const text = await response.text();
   let body = text;
   try { body = JSON.parse(text); } catch {}
+  if (requireHold) {
+    if (!body || typeof body !== 'object' || body.durable !== true || body.intake_only !== true ||
+        body.received_event_id !== event.event_id || typeof body.event_id !== 'string' || !body.event_id ||
+        typeof body.accepted !== 'boolean' || typeof body.duplicate !== 'boolean' ||
+        body.accepted === body.duplicate || !Array.isArray(body.run_ids) || body.run_ids.length !== 0 ||
+        (body.accepted && body.held !== true)) {
+      throw new Error('Durable intake receipt not confirmed');
+    }
+  }
   return {status: response.status, body};
+}
+
+export function holdRequired(env) {
+  const flag = env.CORE_INTAKE_HOLD_REQUIRED;
+  if (flag !== undefined && !['true','false'].includes(flag)) throw new Error('Invalid intake receipt policy');
+  return flag === 'true';
+}
+
+export function validateHeldIdentity(env, input) {
+  if (holdRequired(env) && (!input || typeof input !== 'object' ||
+      typeof input.event_id !== 'string' || !input.event_id.trim())) {
+    throw new Error('Original event_id required during intake hold');
+  }
+  return input;
+}
+
+export async function captureHeldQueueMessage(env, message, event) {
+  // Hold mode uses the SAME receiver/ledger, with no Workflow execution. ACK
+  // follows the committed SQLite receipt. A lost ACK retries the original ID.
+  try {
+    if (!holdRequired(env)) throw new Error('Hold queue transport requires explicit hold policy');
+    await deliverEvent(env, event, Error);
+    message.ack();
+  } catch {
+    message.retry();
+  }
 }
 
 export async function workflowInstanceId(eventId) {

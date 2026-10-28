@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 import yaml
-from fastapi import Body, FastAPI, Header, HTTPException, Query, Request
+from fastapi import Body, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field
@@ -49,6 +49,9 @@ from .automation.capabilities import capability_summary, load_capabilities
 from .automation.health_monitor import AutomationHealthMonitor
 from .automation.maintenance import AutomationMaintenance
 from .automation.events import EventLedger
+from .automation.intake_hold import (HoldUnavailable, IntakeHoldPolicy, RECEIVER_PATHS,
+                                      hold_event)
+from .automation.events import EventConflict
 from .automation.sync_runtime import DeltaWorker, initialize_jobs
 from .automation.event_api import install_event_routes
 from .automation.event_body_limit import EventBodyLimit
@@ -74,6 +77,7 @@ from .automation.native_notifications import NativeNotificationWorker, native_he
 
 
 settings = load_settings()
+intake_hold_policy = IntakeHoldPolicy.from_environment(execution_enabled=settings.automation.enabled)
 logger = configure_logging(ensure_directory(settings.output.root_dir / "logs"))
 job_store = JobStore(settings.output.jobs_dir, logger)
 automation_store = AutomationStore(settings.automation.db_path)
@@ -883,6 +887,15 @@ async def account_provider_transport(request, call_next):
 
 
 @app.middleware("http")
+async def contain_intake_hold(request, call_next):
+    if (intake_hold_policy.enabled and request.method not in {'GET', 'HEAD', 'OPTIONS'}
+            and request.url.path not in RECEIVER_PATHS
+            and not request.url.path.startswith('/v1/automation/webhooks/')):
+        return JSONResponse(status_code=403, content={'detail': 'Only durable receipt capture is enabled'})
+    return await call_next(request)
+
+
+@app.middleware("http")
 async def contain_retired_execution(request, call_next):
     path=request.url.path
     retired_post={PRIMARY_JOB_CREATE_PATH,WORKFLOW_CANONICAL_PATH,
@@ -897,7 +910,7 @@ async def contain_retired_execution(request, call_next):
 
 app.add_middleware(EventBodyLimit)
 install_event_routes(app, lambda: automation_store, _validate_inspection_api_key, lambda: settings.automation.enabled,
-                     delta_sync_worker.health)
+                     delta_sync_worker.health, lambda: intake_hold_policy)
 
 
 def _validate_browser_or_header_api_key(
@@ -1274,16 +1287,36 @@ async def automation_reload_workflows(
     return {"loaded": loaded, "count": len(loaded)}
 
 
+async def _receive_automation_event(event: AutomationEvent, response: Response) -> EventIngestResponse:
+    if intake_hold_policy.enabled:
+        if ('event_id' not in event.model_fields_set and not event.idempotency_key
+                and not event.provider_event_id and not event.dedupe_identity):
+            raise HTTPException(422, 'A stable event or delivery identity is required')
+        try:
+            result = await run_in_threadpool(hold_event, EventLedger(automation_store), event,
+                intake_hold_policy, legacy_identity=True)
+        except HoldUnavailable:
+            raise HTTPException(503, 'Durable intake unavailable; delivery not acknowledged', headers={'Retry-After': '30'}) from None
+        except EventConflict:
+            raise HTTPException(409, 'Delivery identity conflicts with durable evidence') from None
+        except ValueError:
+            raise HTTPException(422, 'Invalid event envelope') from None
+        response.status_code = 202
+        return EventIngestResponse(**result)
+    if not settings.automation.enabled:
+        raise HTTPException(503, 'Automation kernel is disabled.')
+    return await run_in_threadpool(automation_engine.ingest, event)
+
+
 @app.post("/v1/automation/events", response_model=EventIngestResponse, tags=["automation"])
 async def automation_ingest_event(
     event: AutomationEvent,
+    response: Response,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> EventIngestResponse:
     _validate_inspection_api_key(x_api_key)
-    if not settings.automation.enabled:
-        raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
     try:
-        return await run_in_threadpool(automation_engine.ingest, event)
+        return await _receive_automation_event(event, response)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -1291,10 +1324,11 @@ async def automation_ingest_event(
 @app.post("/v1/lifecycle/leads", response_model=EventIngestResponse, tags=["automation"])
 async def lifecycle_ingest_lead(
     payload: LeadIntakeRequest,
+    response: Response,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> EventIngestResponse:
     _validate_api_key(x_api_key)
-    if not settings.automation.enabled:
+    if not settings.automation.enabled and not intake_hold_policy.enabled:
         raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
 
     raw = payload.model_dump(exclude_none=True)
@@ -1306,7 +1340,7 @@ async def lifecycle_ingest_lead(
         payload=raw,
     )
     try:
-        return await run_in_threadpool(automation_engine.ingest, event)
+        return await _receive_automation_event(event, response)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -1314,10 +1348,11 @@ async def lifecycle_ingest_lead(
 @app.post("/v1/lifecycle/emails", response_model=EventIngestResponse, tags=["automation"])
 async def lifecycle_ingest_email(
     payload: EmailIntakeRequest,
+    response: Response,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> EventIngestResponse:
     _validate_api_key(x_api_key)
-    if not settings.automation.enabled:
+    if not settings.automation.enabled and not intake_hold_policy.enabled:
         raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
     raw = payload.model_dump(exclude_none=True)
     event = AutomationEvent(
@@ -1327,16 +1362,17 @@ async def lifecycle_ingest_email(
         idempotency_key=email_event_idempotency_key(raw),
         payload=raw,
     )
-    return await run_in_threadpool(automation_engine.ingest, event)
+    return await _receive_automation_event(event, response)
 
 
 @app.post("/v1/lifecycle/meetings", response_model=EventIngestResponse, tags=["automation"])
 async def lifecycle_create_meeting(
     payload: MeetingRequest,
+    response: Response,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> EventIngestResponse:
     _validate_api_key(x_api_key)
-    if not settings.automation.enabled:
+    if not settings.automation.enabled and not intake_hold_policy.enabled:
         raise HTTPException(status_code=503, detail="Automation kernel is disabled.")
     raw = payload.model_dump(exclude_none=True)
     event = AutomationEvent(
@@ -1348,7 +1384,7 @@ async def lifecycle_create_meeting(
         ),
         payload=raw,
     )
-    return await run_in_threadpool(automation_engine.ingest, event)
+    return await _receive_automation_event(event, response)
 
 
 @app.post("/v1/automation/smoke-test", response_model=EventIngestResponse, tags=["automation"])

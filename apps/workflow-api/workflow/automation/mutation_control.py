@@ -87,6 +87,9 @@ def require_business_transport(client, service, method, path, body, headers=None
     if method == 'GET':
         safe_read(service, path, headers)
         return
+    if check_native_configuration(client, service, method, path, body, headers,
+                                  recheck=recheck, consume=True, query=query, content_type=content_type):
+        return
     from .lifecycle_control import check_transport
     if check_transport(client,service,method,path,body,headers,recheck=recheck,
                        content_type=content_type,query=query):
@@ -131,6 +134,9 @@ def require_business_transport(client, service, method, path, body, headers=None
 
 
 def record_business_response(response):
+    if (_ADMIN.get() or {}).get('provider') == 'zoho_crm_notification':
+        record_technical_response(response)
+        return
     from .customer_send_control import GRANT as CUSTOMER_GRANT
     customer=CUSTOMER_GRANT.get()
     if customer and customer['used']:
@@ -149,9 +155,9 @@ def record_business_response(response):
 @contextmanager
 def technical_admin_call(client, provider, method, path, body=None, *, audit=None, action_id=None):
     """Root CLI only; never issuable by runtime API/workflow inputs."""
-    if os.geteuid() != 0 or provider not in {'cloudflare', 'github'} or method == 'GET' or _ADMIN.get():
+    if os.geteuid() != 0 or provider not in {'cloudflare', 'github', 'zoho_crm_notification'} or method == 'GET' or _ADMIN.get():
         raise ValueError('Explicit root technical administration required')
-    from .action_evidence import ActionEvidence,envelope
+    from .action_evidence import ActionEvidence,envelope,redact
     from datetime import datetime,timezone
     semantic_read=provider=='cloudflare' and method=='POST' and path.endswith('/messages/peek')
     if semantic_read and audit is None:
@@ -163,13 +169,62 @@ def technical_admin_call(client, provider, method, path, body=None, *, audit=Non
             authority_class='ROOT_TECHNICAL_OBSERVATION',automatic_rule='Explicit root read-only queue inspection')
         audit.plan(plan,now);audit.start(action_id,now,authority_check=lambda:None)
     plan=audit.get(action_id) if isinstance(audit,ActionEvidence) and action_id else None
-    if not plan or plan['status']!='STARTED' or plan['provider'].casefold()!=provider.casefold() or plan['target']['identity']!=path or plan['proposed_state']!=body:
+    proposal = redact(body) if provider == 'zoho_crm_notification' else body
+    if not plan or plan['status']!='STARTED' or plan['provider'].casefold()!=provider.casefold() or plan['target']['identity']!=path or plan['proposed_state']!=proposal:
         raise ValueError('Exact started durable technical action and before/rollback contract required')
+    if provider == 'zoho_crm_notification':
+        from datetime import timedelta
+        import hmac
+        expected = {'channel_id', 'events', 'notify_url', 'token', 'channel_expiry',
+                    'notify_on_related_action', 'return_affected_field_values'}
+        rows = body.get('watch') if isinstance(body, dict) and set(body) == {'watch'} else None
+        row = rows[0] if isinstance(rows, list) and len(rows) == 1 and isinstance(rows[0], dict) else {}
+        record = plan.get('approval_record') or {}
+        try:
+            expiry = datetime.fromisoformat(row['channel_expiry'].replace('Z', '+00:00'))
+            approved_until = datetime.fromisoformat(record['expires_at'])
+            valid = (method == 'POST' and path == '/crm/v8/actions/watch' and set(row) == expected
+                and row['channel_id'] == '5062683202609281'
+                and row['events'] == ['Leads.create', 'Leads.edit']
+                and row['notify_url'] == os.getenv('OPTIBRAIN_PHASE5_CRM_NOTIFY_ENDPOINT')
+                == 'https://optibrain.opticable.ca/v1/automation/webhooks/phase5-crm-leads'
+                and 32 <= len(row['token'].encode()) <= 50
+                and hmac.compare_digest(row['token'], os.getenv('OPTIBRAIN_PHASE5_CRM_CHANNEL_CREDENTIAL', ''))
+                and row['notify_on_related_action'] is False and row['return_affected_field_values'] is False
+                and expiry.tzinfo is not None and datetime.now(timezone.utc) < expiry <= datetime.now(timezone.utc)+timedelta(days=7)
+                and plan.get('approval_required') is True and bool(record.get('actor'))
+                and plan.get('exact_versions', {}).get('owner_phase') == 'CRM_NOTIFICATION_RECREATE_ONLY'
+                and re.fullmatch('[0-9a-f]{64}', plan.get('exact_versions', {}).get('owner_approval_sha256', '')) is not None
+                and datetime.now(timezone.utc) < approved_until
+                and client.settings.standby_enabled is False)
+        except (KeyError, TypeError, ValueError, AttributeError):
+            valid = False
+        if not valid:
+            raise ValueError('Exact owner-approved native notification creation required')
+    lifetime = min(120, (approved_until-datetime.now(timezone.utc)).total_seconds()) if provider == 'zoho_crm_notification' else 120
     value = {'audit':audit,'action_id':action_id,'semantic_read':semantic_read,'client': client, 'hash': fingerprint(provider, method, path, body),
-             'deadline': monotonic() + 120, 'used': False}
+             'deadline': monotonic() + lifetime, 'used': False, 'provider': provider}
     token = _ADMIN.set(value)
     try: yield
     finally: _ADMIN.reset(token)
+
+
+def check_native_configuration(client, service, method, path, body, headers=None, *,
+                               recheck=False, consume=False, query=None, content_type='application/json'):
+    """Root one-use configuration authority; never a runtime business grant."""
+    value = _ADMIN.get()
+    if not value or value.get('provider') != 'zoho_crm_notification':
+        return False
+    if (os.geteuid() != 0 or value['client'] is not client or service != 'zohoapis'
+            or method != 'POST' or path != '/crm/v8/actions/watch' or headers or query
+            or content_type != 'application/json' or monotonic() >= value['deadline']
+            or value['hash'] != fingerprint('zoho_crm_notification', method, path, body)
+            or (value['audit'].get(value['action_id']) or {}).get('status') != 'STARTED'
+            or value['used'] is not recheck):
+        raise ValueError('Native notification configuration authority changed or consumed')
+    if consume and not recheck:
+        value['used'] = True
+    return True
 
 
 def require_technical_admin(client, provider, method, path, body=None):
