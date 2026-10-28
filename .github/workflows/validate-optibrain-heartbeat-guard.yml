@@ -1,0 +1,24 @@
+name: Validate OptiBrain Heartbeat Guard (read only)
+
+on:
+  pull_request:
+    paths:
+      - "ops/observability/**"
+      - ".github/workflows/validate-optibrain-heartbeat-guard.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  standalone-heartbeat-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Run provider-free fail-closed tests
+        working-directory: ops/observability
+        run: python -m unittest -v test_heartbeat_guard.py
