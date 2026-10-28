@@ -23,7 +23,7 @@
   "counts": {
     "SUPERSEDED": 10,
     "HISTORICAL": 48,
-    "AUDIT EVIDENCE": 140,
+    "AUDIT EVIDENCE": 141,
     "AUTHORITATIVE CURRENT": 71,
     "SECURITY / CONTROL": 2,
     "RECOVERY": 1
@@ -1884,6 +1884,13 @@
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "purpose": "Post-foundation implementation, preserving exact-SHA release and required recovery",
+      "superseded_by": null
+    },
+    {
+      "path": "ops/observability/README.md",
+      "classification": "AUDIT EVIDENCE",
+      "current": false,
+      "purpose": "Staging-only independent heartbeat evaluator documentation; no runtime or provider-write authority",
       "superseded_by": null
     }
   ]
