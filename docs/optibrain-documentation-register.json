@@ -21,12 +21,12 @@
     "HISTORICAL EVIDENCE"
   ],
   "counts": {
-    "SUPERSEDED": 10,
-    "HISTORICAL": 48,
     "AUDIT EVIDENCE": 140,
     "AUTHORITATIVE CURRENT": 71,
-    "SECURITY / CONTROL": 2,
-    "RECOVERY": 1
+    "HISTORICAL": 48,
+    "RECOVERY": 1,
+    "SECURITY / CONTROL": 3,
+    "SUPERSEDED": 10
   },
   "documents": [
     {
@@ -671,39 +671,39 @@
       "path": "docs/PHASE22_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE22_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE23_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE23_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/PHASE24_CHECKPOINT.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/PHASE24_CHECKPOINT.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/PHASE25_CHECKPOINT.json",
@@ -1443,14 +1443,14 @@
       "path": "docs/phase22-provider-observations.json",
       "classification": "AUDIT EVIDENCE",
       "current": false,
-      "purpose": "Phase22\u201323 bounded native-provider proof/checkpoint; not action authority"
+      "purpose": "Phase22–23 bounded native-provider proof/checkpoint; not action authority"
     },
     {
       "path": "docs/phase25-owner-actions.md",
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "superseded_by": "docs/OPTIBRAIN_MEASUREMENT_CONTRACT.md",
-      "purpose": "Bounded Phase24\u201325 evidence/provider action batch; no runtime authority"
+      "purpose": "Bounded Phase24–25 evidence/provider action batch; no runtime authority"
     },
     {
       "path": "docs/phase26-27-final-report.md",
@@ -1884,6 +1884,13 @@
       "classification": "AUDIT EVIDENCE",
       "current": false,
       "purpose": "Post-foundation implementation, preserving exact-SHA release and required recovery",
+      "superseded_by": null
+    },
+    {
+      "path": "docs/rebuild/intake-handoff-20261028.md",
+      "classification": "SECURITY / CONTROL",
+      "current": true,
+      "purpose": "Prepared intake-only capture protocol, exact provider handoff inventory, root-only native configuration review and migration approval boundaries; inactive until approved",
       "superseded_by": null
     }
   ]

@@ -97,7 +97,7 @@ class EventLedger:
 
     def _capture(self, conn: sqlite3.Connection, event: AutomationEvent, *,
                  legacy_identity: bool = False, replay_of: str | None = None,
-                 root_event_id: str | None = None) -> tuple[bool, str, str]:
+                 root_event_id: str | None = None, strict_identity: bool = False) -> tuple[bool, str, str]:
         event = safe_event(event)
         if event.idempotency_key and (event.provider_event_id or event.dedupe_identity):
             raise ValueError("provider dedupe must be separate from internal idempotency")
@@ -135,7 +135,7 @@ class EventLedger:
         if existing is not None:
             # Existing Phase 3 idempotency identities intentionally ignore content
             # differences. Provider identities require identical immutable content.
-            if (not legacy_identity or event.provider_event_id or event.dedupe_identity) and existing["content_hash"] != content_hash:
+            if (strict_identity or not legacy_identity or event.provider_event_id or event.dedupe_identity) and existing["content_hash"] != content_hash:
                 raise EventConflict("provider event identity has conflicting content")
             now = utc_now_iso()
             conn.execute("UPDATE automation_event_processing SET last_seen_at=?,duplicate_count=duplicate_count+1 "

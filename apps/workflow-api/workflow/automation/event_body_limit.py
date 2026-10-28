@@ -14,7 +14,9 @@ class EventBodyLimit:
         self.app = app
 
     async def __call__(self, scope, receive, send) -> None:
-        if scope["type"] != "http" or scope["method"] != "POST" or not scope["path"].startswith("/v1/automation/"):
+        if scope["type"] != "http" or scope["method"] != "POST" or not (
+                scope["path"].startswith("/v1/automation/") or
+                scope["path"] in {'/v1/lifecycle/leads', '/v1/lifecycle/emails', '/v1/lifecycle/meetings'}):
             await self.app(scope, receive, send)
             return
         total = bytearray()
