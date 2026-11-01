@@ -21,6 +21,12 @@ STAGE_SCOPE={'FORMS_HELD':'native_forms_maintenance','QUEUE_HELD':'queue_hold','
 STAGES=('PREPARED','APPROVED',*STAGE_SCOPE)
 TIMED_SCOPES=tuple(s for s in SCOPES if s!='crm_notification_recreation')
 
+def window_approvals(profile,path):
+ a=approvals(profile,path,required=TIMED_SCOPES)
+ require(a['scopes']['source_freeze_final_sync'].get('conditional_rollback_approved') is True,'conditional_source_rollback_permission_required_before_window')
+ require(a['scopes']['safe_queue_observer_resume'].get('conditional_OLD_queue_resume_approved') is True,'conditional_OLD_queue_resume_permission_required_before_window')
+ return a
+
 def run(argv,timeout=60,**kw):return subprocess.run(argv,check=True,capture_output=True,timeout=timeout,**kw)
 def load(path):return json.loads(Path(path).read_text())
 def utc(epoch):return datetime.fromtimestamp(epoch,timezone.utc).isoformat()
@@ -210,7 +216,7 @@ class Live:
  def preconditions(self,stage,before):
   if stage=='FORMS_HELD':
    # Do not begin a timed window unless every indispensable downstream scope is already granted.
-   approvals(self.p,'/etc/optibrain/migration/owner-approvals.json',required=TIMED_SCOPES)
+   window_approvals(self.p,'/etc/optibrain/migration/owner-approvals.json')
    require(self.c.state().get('notification_test',{}).get('state')=='DELIVERED' and not self.c.state().get('notification_failure'),'owner_notification_unreliable')
   if stage=='QUEUE_HELD':
    q=before['queue'];require(q.get('queue_id')=='31c6f7026fe142d8959a09613b87c5dd' and q.get('settings',{}).get('message_retention_period')==86400 and not q.get('settings',{}).get('delivery_paused',False),'queue_before_changed')

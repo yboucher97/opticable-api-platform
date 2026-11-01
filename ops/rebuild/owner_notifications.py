@@ -23,6 +23,7 @@ from durable_migration import Control,load_profile,timestamp
 OWNER='yboucher@opticable.ca'
 ACCOUNT='1083319000000008002'
 BASE='https://mail.zoho.com'
+MAX_ALERT_INCIDENTS=16
 KINDS={'TEST','BLOCKED','CRITICAL','ROLLBACK','SUCCESS'}
 AUTHORITY_REFERENCE='owner-request:2026-11-01:AUTONOMOUS-MIGRATION:DURABLE-RECOVERY-NOTIFICATIONS:section-4'
 
@@ -121,7 +122,7 @@ def notify(control,profile,policy_path,kind,incident,*,mail_factory=Mail,delays=
     if fresh:
         with control.connect() as db:
             count=db.execute('SELECT COUNT(*) FROM migration_alerts WHERE execution_id=?',(control.run_id,)).fetchone()[0]
-        require(count<=8,'owner_alert_run_limit_reached')
+        require(count<=MAX_ALERT_INCIDENTS,'owner_alert_run_limit_reached')
         # Explicit current owner instruction authorizes only this fixed technical channel.
         aid='migration-owner-alert:'+control.run_id+':'+incident
         action=control.audit.envelope(aid,'migration.owner_notification',{'type':'MAIL','identity':OWNER},timestamp(),
@@ -155,10 +156,22 @@ def notify(control,profile,policy_path,kind,incident,*,mail_factory=Mail,delays=
             action=control.audit.store.get(aid)
             if action and action['status']=='STARTED':control.audit.store.finish(aid,timestamp(),provider_success=True,actual_after=result,verified=True)
             if kind=='TEST':control.transition({'notification_test':result},'owner_delivery_test_passed')
+            clear_verified_notification_failure(control,result)
             return result
     row.update(state='UNKNOWN',subject=subject,error='InboxDeliveryNotVerified');control.save_alert(incident,row)
     return row
 
+
+def clear_verified_notification_failure(control,result):
+    if not (control.state() or {}).get('notification_failure') or result.get('state')!='DELIVERED':return
+    try:fresh=0<=time.time()-datetime.fromisoformat(result['verified_at']).timestamp()<180
+    except (KeyError,ValueError):return
+    if not fresh:return
+    with control.connect() as db:
+        rows=[json.loads(r[0]) for r in db.execute('SELECT state_json FROM migration_alerts WHERE execution_id=?',(control.run_id,))]
+    # A later successful message cannot resolve an earlier uncertain send.
+    if all(r.get('state') in ('DELIVERED','NOT_SENT_CANONICAL_GUARD_REFUSED') for r in rows):
+        control.transition({'notification_failure':None,'notification_recovery_evidence':{'received_message_id':result.get('message_id'),'verified_at':result['verified_at'],'all_uncertain_alerts_reconciled':True}},'notification_failure_resolved_by_received_readback')
 
 def main():
     a=argparse.ArgumentParser();a.add_argument('kind',choices=sorted(KINDS));a.add_argument('incident')

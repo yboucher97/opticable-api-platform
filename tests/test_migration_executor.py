@@ -236,4 +236,29 @@ class CanonicalStageAuditTests(unittest.TestCase):
   self.assertEqual(live.c.audit.store.get(aid)['status'],'SUCCEEDED')
   with self.assertRaises(RebuildError):live.stage_intent('QUEUE_HELD',{'held':False},self.a,'i'*64)
 
+class WindowPermissionTests(unittest.TestCase):
+ setUp=ExecutorTests.setUp
+ tearDown=ExecutorTests.tearDown
+ def test_forward_approval_does_not_authorize_a_timed_window_without_compensation(self):
+  from migration_adapters import window_approvals
+  with self.assertRaises(RebuildError):window_approvals(self.p,self.ap)
+ def test_explicit_both_compensations_and_optional_CRM_deferral(self):
+  from migration_adapters import window_approvals
+  self.a['scopes']['source_freeze_final_sync']['conditional_rollback_approved']=True;self.a['scopes']['safe_queue_observer_resume']['conditional_OLD_queue_resume_approved']=True;self.a['scopes']['crm_notification_recreation']['approved']=False;atomic_json(self.ap,self.a)
+  self.assertTrue(window_approvals(self.p,self.ap))
+
+class NotificationRecoveryTests(unittest.TestCase):
+ setUp=ExecutorTests.setUp
+ tearDown=ExecutorTests.tearDown
+ def test_fresh_received_readback_can_clear_an_old_resolved_error(self):
+  from owner_notifications import clear_verified_notification_failure
+  c=Control(self.root/'notify.db','fixture-run');c.transition({'notification_failure':'OldError'},'fixture');c.alert_intent('old-rejected','hash');c.save_alert('old-rejected',{'state':'NOT_SENT_CANONICAL_GUARD_REFUSED'})
+  from datetime import datetime,timezone
+  result={'state':'DELIVERED','message_id':'fixture-received','verified_at':datetime.now(timezone.utc).isoformat()};clear_verified_notification_failure(c,result);self.assertIsNone(c.state()['notification_failure'])
+ def test_later_delivery_does_not_clear_an_uncertain_earlier_send(self):
+  from owner_notifications import clear_verified_notification_failure
+  from datetime import datetime,timezone
+  c=Control(self.root/'notify.db','fixture-run');c.transition({'notification_failure':'UnknownSend'},'fixture');c.alert_intent('uncertain','hash')
+  clear_verified_notification_failure(c,{'state':'DELIVERED','verified_at':datetime.now(timezone.utc).isoformat()});self.assertEqual(c.state()['notification_failure'],'UnknownSend')
+
 if __name__=='__main__':unittest.main(verbosity=2)

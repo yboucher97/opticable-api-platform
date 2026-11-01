@@ -107,3 +107,10 @@ transfer prefix validation and nine SQLite stores. Real maintenance/provider-wri
 branches remain unexecuted until exact owner approvals. WINDOW_READY requires the
 pinned fixture evidence, effective OLD fence and current read-only window checks;
 it is not evidence of a completed cutover or a real OLD reboot test.
+
+Before the first timed stage, scopes 3 and 8 must also explicitly authorize their
+narrow pre-NEW compensations; forward approval alone is insufficient. Significant
+owner alerts are deduplicated and bounded to sixteen incidents per execution.
+A stale notification error is cleared only by fresh received-folder readback when
+all earlier sends are delivered or proven never sent; a later successful message
+cannot clear an unresolved uncertain send.

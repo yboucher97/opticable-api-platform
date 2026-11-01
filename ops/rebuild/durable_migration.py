@@ -201,10 +201,11 @@ class Runner:
         require(self.p.get('rollback_verified') is True,'rollback_not_verified')
         require(self.p.get('source_reboot_fence_verified') is True,'source_reboot_fence_missing')
         if self.p.get('version',1)==2:
-            from migration_adapters import STAGE_SCOPE,TIMED_SCOPES
+            from migration_adapters import STAGE_SCOPE,TIMED_SCOPES,window_approvals
             stage=next((x for x in stage_order(self.p) if x not in s['completed_stages']),None)
             required=TIMED_SCOPES if stage in ('APPROVED','FORMS_HELD') else () if stage=='CRM_VERIFIED' else (STAGE_SCOPE[stage],)
             approvals(self.p,self.approval_path,required=required)
+            if stage in ('APPROVED','FORMS_HELD'):window_approvals(self.p,self.approval_path)
             if stage=='FORMS_HELD':
                 from migration_adapters import Live
                 Live(self.p).forms()  # Await real owner UI evidence before creating any stage attempt.
