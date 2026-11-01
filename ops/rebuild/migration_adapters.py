@@ -25,6 +25,12 @@ def run(argv,timeout=60,**kw):return subprocess.run(argv,check=True,capture_outp
 def load(path):return json.loads(Path(path).read_text())
 def utc(epoch):return datetime.fromtimestamp(epoch,timezone.utc).isoformat()
 
+def runtime_directory():
+ # The independent watchdog must still sign/reconcile when the runner is down.
+ for name in ('/run/optibrain-migration','/run/optibrain-migration-watchdog'):
+  if Path(name).is_dir():return name
+ raise RuntimeError('migration_runtime_directory_missing')
+
 def rollback_choice(done,observed):
  """Conservative split. Releasing NEW intake is the point of no blind return."""
  if observed.get('new_data') or 'INTAKE_RELEASED' in done or observed.get('dns')!='148.113.249.7' or observed.get('worker_changed'):
@@ -53,6 +59,7 @@ class Adapters:
   self.io.preconditions(stage,before)
   intent={'execution_id':self.p['execution_id'],'stage':stage,'input_sha256':inputs,'before_state':before,'at_epoch':time.time(),'state':'ATTEMPTED','approval_sha256':file_hash(self.approval_path)}
   atomic_json(path,intent)
+  if hasattr(self.io,'stage_intent'):self.io.stage_intent(stage,before,self.authorized(stage),inputs)
   result=self.io.effect(stage,before,self.authorized(stage))
   atomic_json(self.root/(stage+'.transport.json'),result)
   return self.verify(stage,inputs)
@@ -61,12 +68,26 @@ class Adapters:
   # Do not accept the command result file as evidence of its own success.
   observed=self.io.observe(stage);self.io.verify(stage,v['before_state'],observed)
   receipt={'status':'PASS','execution_id':self.p['execution_id'],'stage':stage,'input_sha256':inputs,'source':self.p['source'],'target':self.p['target'],'before_state':v['before_state'],'after_state':observed,'output_sha256':digest(observed),'verified_epoch':time.time(),'effect_started_epoch':v['at_epoch'],'evidence':[str(self.path(stage)),*self.io.evidence(stage)]}
-  atomic_json(self.root/(stage+'.verified.json'),receipt);return receipt
+  atomic_json(self.root/(stage+'.verified.json'),receipt)
+  if hasattr(self.io,'stage_verified'):self.io.stage_verified(stage,receipt)
+  return receipt
 
 class Live:
  def __init__(self,p):
   self.p=p;self.c=Control(CONTROL/'actions.db',p['execution_id']);self.cf=None
   self.root=ROOT;self.root.mkdir(mode=0o700,parents=True,exist_ok=True)
+ def stage_intent(self,stage,before,authorization,inputs):
+  if stage=='CRM_VERIFIED' and authorization['scopes']['crm_notification_recreation'].get('approved') is False:return
+  scope=STAGE_SCOPE[stage];approval=self.approval(scope);aid='migration-stage:'+self.p['execution_id']+':'+stage
+  store=self.c.audit.store;old=store.get(aid)
+  if old:
+   require(old['status']=='STARTED','verified_stage_cannot_be_reexecuted');return
+  now=datetime.now(timezone.utc);mutating=stage in ('QUEUE_HELD','SOURCE_FROZEN','TARGET_SYNCHRONIZED','INTAKE_RELEASED','WORKER_HELD','CUTOVER','CRM_VERIFIED','INTAKE_VERIFIED')
+  record=self.c.audit.envelope(aid,'migration.exact_stage.'+stage,{'type':'RECOVERY','identity':self.p['execution_id']+':'+stage},now,initiator='OWNER',trigger=approval['owner_authorization_reference'],before_state=before,proposed_state={'stage':stage,'scope_sha256':digest(self.p['scopes'][scope]),'input_sha256':inputs,'business_execution':'OFF'},reason='Exact action-bound owner migration scope',business_rationale='Preserve all history and a single production authority',authority_class='OWNER_EXACT_MIGRATION',automatic_rule='Reconcile uncertainty; bounded idempotent local retry only',mutation=mutating,approval_required=True,rollback_capability='COMPENSATING_ACTION_ONLY',consequence='Only the exact reviewed migration stage',compensating_action='Conditional pre-NEW rollback; otherwise retain OLD fence and preserve NEW',exact_versions={'package_sha256':profile_binding(self.p),'approval_sha256':file_hash('/etc/optibrain/migration/owner-approvals.json')})
+  store.plan(record,now);store.approve(aid,approval['owner_authorization_reference'],now,binding=self.c.canonical.approval_binding(record),expires_at=utc(approval['expires_epoch']));store.start(aid,now,authority_check=lambda:self.approval(scope))
+ def stage_verified(self,stage,receipt):
+  store=self.c.audit.store;aid='migration-stage:'+self.p['execution_id']+':'+stage;action=store.get(aid)
+  if action and action['status']=='STARTED':store.finish(aid,datetime.now(timezone.utc),provider_success=True,actual_after=receipt['after_state'],verified=True,response={'independent_readback_sha256':receipt['output_sha256']})
  def evidence(self,stage):
   evidence=['independent-readback:'+stage,'canonical-actions.db',str(self.root/(stage+'.verified.json'))]
   if stage in ('SOURCE_FROZEN','CAPTURED','RECOVERY_VERIFIED','CUTOVER','INTAKE_VERIFIED','COMPLETE'):
@@ -81,7 +102,7 @@ class Live:
  def source(self,verb,*,scope=None,extra=None,destination=None):
   payload={'verb':verb,'execution_id':self.p['execution_id'],'source':self.p['source'],'target':self.p['target'],'package_sha256':profile_binding(self.p),'issued_epoch':time.time(),'expires_epoch':time.time()+100,**(extra or {})}
   if scope:payload['scope_approval']=scope
-  with tempfile.TemporaryDirectory(dir='/run/optibrain-migration',prefix='signed-stage-') as t:
+  with tempfile.TemporaryDirectory(dir=runtime_directory(),prefix='signed-stage-') as t:
    msg=Path(t)/'payload';sig=Path(t)/'signature';msg.write_text(json.dumps(payload,sort_keys=True,separators=(',',':')))
    run(['openssl','pkeyutl','-sign','-inkey','/etc/optibrain/migration/source-stage-signing-key.pem','-rawin','-in',str(msg),'-out',str(sig)])
    wire=json.dumps({'payload':payload,'signature':base64.b64encode(sig.read_bytes()).decode()}).encode()
@@ -90,7 +111,7 @@ class Live:
    path=Path(destination)
    if path.exists():
     payload['offset']=path.stat().st_size;payload['prefix_sha256']=file_hash(path)
-    with tempfile.TemporaryDirectory(dir='/run/optibrain-migration',prefix='signed-resume-') as t:
+    with tempfile.TemporaryDirectory(dir=runtime_directory(),prefix='signed-resume-') as t:
      msg=Path(t)/'payload';sig=Path(t)/'signature';msg.write_text(json.dumps(payload,sort_keys=True,separators=(',',':')))
      run(['openssl','pkeyutl','-sign','-inkey','/etc/optibrain/migration/source-stage-signing-key.pem','-rawin','-in',str(msg),'-out',str(sig)])
      wire=json.dumps({'payload':payload,'signature':base64.b64encode(sig.read_bytes()).decode()}).encode()
@@ -107,6 +128,10 @@ class Live:
   result=self.cf.request(path,params=params)['data'];require(result.get('success') is True,'Cloudflare_GET_failed');return result['result']
  def edge_write(self,path,body,scope,method='PATCH'):
   before=self.edge(path);a=self.approval(scope)
+  if scope=='dns_cutover':
+   expected=self.p['scopes'][scope];require(before.get('name')==expected['name'] and all(before.get(k)==v for k,v in expected['before'].items()),'DNS_changed_since_approval')
+  elif scope=='queue_hold':require(before.get('settings',{}).get('message_retention_period')==86400 and not before.get('settings',{}).get('delivery_paused',False),'queue_changed_since_approval')
+  elif scope=='safe_queue_observer_resume':require(before.get('settings',{}).get('delivery_paused') is True,'queue_resume_before_changed')
   from workflow.automation.action_evidence import ActionEvidence,envelope,approval_binding
   from workflow.automation.mutation_control import technical_admin_call
   audit=ActionEvidence(CONTROL/'actions.db');aid='migration-provider:'+self.p['execution_id']+':'+scope
@@ -276,7 +301,7 @@ class Live:
   atomic_json(d/'offhost.json',receipt)
   run([PYTHON,'-B',str(ART/'final_identity_check.py'),'--pins',str(ART/'final-identity-pins.json'),'--archive',str(a),'--sha256',s['archive_sha256']],timeout=180)
   sys.path.insert(0,str(TOOL/'ops/rebuild'));from recovery import build_catalog
-  catalog=build_catalog(a,receipt,Path('/run/optibrain-migration'));atomic_json(d/'verified-catalog.json',catalog);return {'status':'PASS','generation':s['generation']}
+  catalog=build_catalog(a,receipt,Path(runtime_directory()));atomic_json(d/'verified-catalog.json',catalog);return {'status':'PASS','generation':s['generation']}
  def worker_deploy(self,before):
   r=self.p['runtime'];bundle=Path(r['worker_bundle']);require(file_hash(bundle)==r['worker_bundle_sha256'],'Worker_bundle_changed')
   require(digest(before['settings'])==self.p['scopes']['worker_hold_deployment']['before_settings_sha256'],'Worker_settings_changed_requires_approval_refresh')

@@ -187,4 +187,53 @@ class StreamRecoveryTests(unittest.TestCase):
     with sqlite3.connect(p) as src,sqlite3.connect(snapshot) as dst:src.backup(dst)
     self.assertEqual(database_snapshot(snapshot),before)
 
+class IndependentWatchdogTests(unittest.TestCase):
+ def test_watchdog_can_sign_when_runner_runtime_is_absent(self):
+  from migration_adapters import runtime_directory
+  with patch('migration_adapters.Path.is_dir',side_effect=[False,True]):self.assertEqual(runtime_directory(),'/run/optibrain-migration-watchdog')
+ def test_no_runtime_fails_closed(self):
+  from migration_adapters import runtime_directory
+  with patch('migration_adapters.Path.is_dir',return_value=False),self.assertRaises(RuntimeError):runtime_directory()
+
+class ConditionalRollbackExecutionTests(unittest.TestCase):
+ setUp=ExecutorTests.setUp
+ tearDown=ExecutorTests.tearDown
+ def prepare_live(self,released=False):
+  from types import SimpleNamespace
+  from migration_adapters import WORKER,DNS,QUEUE
+  c=Control(self.root/'rollback-actions.db','fixture-run');c.transition({'completed_stages':['SOURCE_FROZEN']+(['INTAKE_RELEASED'] if released else []),'current_stage':'SOURCE_FROZEN','authority':'OLD','status':'FAILED'},'fixture')
+  self.p['runtime']['worker_before_versions_sha256']=digest({'version':'original'});self.p['scopes']['worker_hold_deployment']['before_settings_sha256']=digest({'bindings':[]})
+  calls=[]
+  def edge(path):
+   return {'content':'148.113.249.7'} if path==DNS else {'settings':{'delivery_paused':True}} if path==QUEUE else {'bindings':[]} if path==WORKER+'/settings' else {'version':'original'}
+  def source(verb,**kw):
+   if verb=='rollback':calls.append('restore_OLD')
+   return {'fenced':True}
+  live=SimpleNamespace(c=c,root=self.root,edge=edge,source=source,forms=lambda:{'held':True},approval=lambda scope:{'conditional_rollback_approved':True,'conditional_OLD_queue_resume_approved':True},edge_write=lambda *args:calls.append('resume_queue'))
+  return live,c,calls
+ def test_real_conditional_rollback_function_restores_only_approved_pre_NEW_state(self):
+  from types import SimpleNamespace
+  from migration_adapters import conditional_rollback
+  live,c,calls=self.prepare_live();health=SimpleNamespace(stdout=b'{"API":{"status":"ok"},"services":{"API":"active"}}')
+  with patch('migration_adapters.Live',return_value=live),patch('migration_adapters.run',return_value=health):conditional_rollback(self.p)
+  self.assertEqual(calls,['restore_OLD','resume_queue']);self.assertEqual(c.state()['status'],'ROLLED_BACK')
+ def test_real_conditional_rollback_function_retains_NEW_and_never_reverses_DNS(self):
+  from migration_adapters import conditional_rollback
+  live,c,calls=self.prepare_live(True)
+  with patch('migration_adapters.Live',return_value=live),patch('migration_adapters.run') as run:conditional_rollback(self.p);run.assert_not_called()
+  self.assertEqual(calls,[]);self.assertEqual(c.state()['status'],'REQUIRES_OWNER');self.assertEqual(c.state()['rollback_decision'],'CONTAIN_AND_RECONCILE_NEW')
+
+class CanonicalStageAuditTests(unittest.TestCase):
+ setUp=ExecutorTests.setUp
+ tearDown=ExecutorTests.tearDown
+ def test_stage_has_exact_approval_before_effect_and_finishes_only_after_readback(self):
+  from migration_adapters import Live
+  live=Live.__new__(Live);live.p=self.p;live.c=Control(self.root/'stage-audit.db','fixture-run')
+  grant={'owner_authorization_reference':'ISOLATED_FIXTURE_OWNER','expires_epoch':time.time()+100};live.approval=lambda scope:grant
+  with patch('migration_adapters.file_hash',return_value='f'*64):live.stage_intent('QUEUE_HELD',{'held':False},self.a,'i'*64)
+  aid='migration-stage:fixture-run:QUEUE_HELD';self.assertEqual(live.c.audit.store.get(aid)['status'],'STARTED')
+  live.stage_verified('QUEUE_HELD',{'after_state':{'held':True},'output_sha256':digest({'held':True})})
+  self.assertEqual(live.c.audit.store.get(aid)['status'],'SUCCEEDED')
+  with self.assertRaises(RebuildError):live.stage_intent('QUEUE_HELD',{'held':False},self.a,'i'*64)
+
 if __name__=='__main__':unittest.main(verbosity=2)
