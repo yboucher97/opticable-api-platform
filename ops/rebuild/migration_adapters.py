@@ -375,6 +375,12 @@ class Live:
   drop=Path('/etc/systemd/system/opticable-phase9-intake-receipts.service.d/zzzz-migration-safe.conf');drop.parent.mkdir(exist_ok=True);drop.write_text('[Service]\nEnvironmentFile=\nEnvironmentFile=/etc/opticable-workflow-api.env\nEnvironmentFile=/etc/optibrain/phase9-receipt-export.env\nEnvironmentFile=/etc/optibrain/migration/observer-off.env\n');drop.chmod(0o644)
   run(['systemctl','daemon-reload']);run(['systemctl','start','opticable-phase9-intake-receipts.service'],timeout=120);run(['systemctl','enable','--now','opticable-phase9-intake-receipts.timer'])
 
+def legacy_upload(module,client,cipher,key,root):
+ # The legacy uploader emits progress. Keep helper stdout a single JSON result.
+ from contextlib import redirect_stdout
+ with redirect_stdout(sys.stderr):module.transfer(client,cipher,key,root)
+
+
 def offhost(cipher,label):
  spec=importlib.util.spec_from_file_location('migration_existing_upload','/usr/local/lib/optibrain-backup/optibrain-phase2a-upload.py');u=importlib.util.module_from_spec(spec);spec.loader.exec_module(u)
  import boto3
@@ -384,7 +390,7 @@ def offhost(cipher,label):
   if line.strip() and not line.lstrip().startswith('#'):
    k,v=line.split('=',1);values[k.strip()]=shlex.split(v)[0]
  cred=configparser.ConfigParser();cred.read('/etc/optibrain/r2-uploader.env');c=boto3.client('s3',endpoint_url='https://'+values['OPTIBRAIN_PHASE2A_ACCOUNT_ID']+'.r2.cloudflarestorage.com',aws_access_key_id=cred['default']['aws_access_key_id'],aws_secret_access_key=cred['default']['aws_secret_access_key'],region_name='auto',config=Config(signature_version='s3v4',connect_timeout=10,read_timeout=45,retries={'mode':'standard','total_max_attempts':3}))
- c.meta.events.register('before-call.s3.PutObject',u.create_only_header);key='backups/'+datetime.now(timezone.utc).strftime('%Y/%m/%d')+'/migration-executor-'+label+'.tar.gz.age';u.transfer(c,cipher,key,ROOT)
+ c.meta.events.register('before-call.s3.PutObject',u.create_only_header);key='backups/'+datetime.now(timezone.utc).strftime('%Y/%m/%d')+'/migration-executor-'+label+'.tar.gz.age';legacy_upload(u,c,cipher,key,ROOT)
  head=c.head_object(Bucket=u.BUCKET,Key=key);v=c.get_object(Bucket=u.BUCKET,Key=key,IfMatch=head['ETag']);h=hashlib.sha256();size=0
  try:
   for b in v['Body'].iter_chunks(chunk_size=1024**2):h.update(b);size+=len(b)

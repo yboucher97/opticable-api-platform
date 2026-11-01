@@ -261,4 +261,18 @@ class NotificationRecoveryTests(unittest.TestCase):
   c=Control(self.root/'notify.db','fixture-run');c.transition({'notification_failure':'UnknownSend'},'fixture');c.alert_intent('uncertain','hash')
   clear_verified_notification_failure(c,{'state':'DELIVERED','verified_at':datetime.now(timezone.utc).isoformat()});self.assertEqual(c.state()['notification_failure'],'UnknownSend')
 
+class RecoveryCommandOutputTests(unittest.TestCase):
+ def test_legacy_progress_cannot_corrupt_the_helper_JSON_result(self):
+  import io
+  from contextlib import redirect_stdout,redirect_stderr
+  from migration_adapters import legacy_upload
+  class ExistingUploader:
+   @staticmethod
+   def transfer(*args):
+    print('put_intent');print('put_reconciled');print('download_hash_verified')
+  output=io.StringIO();errors=io.StringIO()
+  with redirect_stdout(output),redirect_stderr(errors):
+   legacy_upload(ExistingUploader,None,None,None,None);print(json.dumps({'status':'PASS','full_get_verified':True}))
+  self.assertEqual(json.loads(output.getvalue())['status'],'PASS');self.assertIn('put_intent',errors.getvalue());self.assertIn('download_hash_verified',errors.getvalue())
+
 if __name__=='__main__':unittest.main(verbosity=2)
