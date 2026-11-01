@@ -10,6 +10,7 @@ User=root
 UMask=0077
 RuntimeDirectory=optibrain-migration
 RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=restart
 ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python -B /opt/optibrain-migration-control/20261101/ops/rebuild/durable_migration.py runner --profile /etc/optibrain/migration/profile.json
 Restart=on-failure
 RestartSec=20

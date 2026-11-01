@@ -38,16 +38,28 @@ def seal():
             with sqlite3.connect(snapshot) as db:marker=db.execute('SELECT max(event_id) FROM action_evidence').fetchone()[0]
             identity=digest({'execution_id':profile['execution_id'],'profile_sha256':digest(profile),'canonical_event_id':marker})
             atomic_json(p/'snapshot-integrity.json',verified)
-            for f in ['profile.json','owner-approvals.json']:
-                shutil.copyfile('/etc/optibrain/migration/'+f,p/f)
-            for f in ['migration-health.json','migration-status.txt','state.json','backup-verified.json']:
+            for f in ['profile.json','owner-approvals.json','window-verification.json']:
+                if Path('/etc/optibrain/migration/'+f).exists():shutil.copyfile('/etc/optibrain/migration/'+f,p/f)
+            for f in ['window-verification.json','migration-health.json','migration-status.txt','state.json','backup-verified.json']:
                 if (CONTROL/f).exists():shutil.copyfile(CONTROL/f,p/f)
             status=Path('/recovery/migration-preparation/autonomous-20261101/owner-status.txt')
             if status.exists():shutil.copyfile(status,p/'owner-status.txt')
             code=Path(__file__).resolve().parents[2]
-            for f in code.rglob('*'):
+            for f in [*list((code/'ops/rebuild').glob('*.py')),*list((code/'systemd').glob('*'))]:
                 if f.is_file() and not f.is_symlink():
                     dest=p/'control-code'/f.relative_to(code);dest.parent.mkdir(mode=0o700,parents=True,exist_ok=True);shutil.copyfile(f,dest)
+            evidence=ROOT/'executor'
+            if evidence.exists():
+                dest=p/'stage-evidence';dest.mkdir(mode=0o700)
+                for f in [*evidence.glob('*.json'),*evidence.glob('source-control-*.tar.gz')]:
+                    if f.stat().st_size<1024**2:shutil.copyfile(f,dest/f.name)
+            authorizations=ROOT/'executor/owner-authorizations'
+            if authorizations.exists():
+                out=p/'actual-owner-authorization';out.mkdir(mode=0o700)
+                for f in authorizations.iterdir():
+                    if f.is_file() and f.stat().st_size<=65536:shutil.copyfile(f,out/f.name)
+            # Large immutable deployment runtimes are sealed once in the completion packet,
+            # not copied into every heartbeat/stage checkpoint. Exact hashes stay in profile.
             archive=p/'control.tar.gz'
             with tarfile.open(archive,'w:gz') as t:
                 for f in sorted(p.iterdir()):

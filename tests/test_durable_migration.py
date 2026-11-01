@@ -183,4 +183,10 @@ class Tests(unittest.TestCase):
   value=watchdog(self.c,self.p,{'checked_epoch':time.time(),'status':'PASS'})
   self.assertIn('CRITICAL_hold_limit_reached',value['issues'])
 
+ def test_detached_stage_survives_runner_disconnect_without_parallel_attempt(self):
+  step,inputs=self.setup_stage(1,'IDEMPOTENT_LOCAL');row=self.c.attempt('QUEUE_HELD');row['unit']='fixture-detached-stage';self.c.save_attempt('QUEUE_HELD',row)
+  with patch.object(self.r,'unit_running',return_value=True),patch.object(self.r,'execute') as execute,patch.object(self.r,'readback') as readback:
+   self.r.tick();execute.assert_not_called();readback.assert_not_called()
+  self.assertEqual(self.c.attempt('QUEUE_HELD')['attempt'],1)
+
 if __name__=='__main__':unittest.main(verbosity=2)

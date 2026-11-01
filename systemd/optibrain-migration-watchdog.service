@@ -8,6 +8,7 @@ User=root
 UMask=0077
 RuntimeDirectory=optibrain-migration-watchdog
 RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=restart
 ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python -B /opt/optibrain-migration-control/20261101/ops/rebuild/migration_health.py
 TimeoutStartSec=180
 NoNewPrivileges=true

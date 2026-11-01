@@ -1,0 +1,16 @@
+[Unit]
+Description=Owner-only alert for independent OLD fence supervisor failure
+After=network-online.target
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+RuntimeDirectory=optibrain-migration-watchdog
+RuntimeDirectoryMode=0700
+ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python -B /usr/local/lib/optibrain-migration/source_executor.py notify-failure
+TimeoutStartSec=60
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/optibrain-migration-source /run/optibrain-migration-watchdog
+PrivateTmp=true

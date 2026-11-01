@@ -8,6 +8,13 @@ on:
       - 'ops/rebuild/migration_checkpoint.py'
       - 'ops/rebuild/source_status.py'
       - 'tests/test_durable_migration.py'
+      - 'tests/test_migration_executor.py'
+      - 'ops/rebuild/migration_adapters.py'
+      - 'ops/rebuild/source_executor.py'
+      - 'ops/rebuild/source_ssh_command.py'
+      - 'ops/rebuild/migration_window.py'
+      - 'ops/rebuild/migration_authority.py'
+      - 'systemd/optibrain-migration-*'
       - '.github/workflows/validate-migration-control.yml'
 permissions:
   contents: read
@@ -29,4 +36,4 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install 'httpx==0.28.1'
       - name: Verify durable stages, exact scopes, lost acknowledgements and owner-only notifications
-        run: sudo env PYTHONPATH="$GITHUB_WORKSPACE/.reviewed-pr147/ops/rebuild" "$(command -v python)" -B tests/test_durable_migration.py
+        run: sudo env PYTHONPATH="$GITHUB_WORKSPACE/.reviewed-pr147/ops/rebuild" "$(command -v python)" -B -m unittest discover -s tests -p 'test*migration*.py'

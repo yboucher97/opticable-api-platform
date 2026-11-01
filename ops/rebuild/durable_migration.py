@@ -122,7 +122,7 @@ class Control:
 def load_profile(path):
     trusted_manifest(path)
     p=json.loads(Path(path).read_text())
-    require(p['version']==1 and p['source']=={'host':'vps-214ba8cd','ip':'148.113.249.7'} and
+    require(p['version'] in (1,2) and p['source']=={'host':'vps-214ba8cd','ip':'148.113.249.7'} and
             p['target']=={'host':'vps-f8e9b20e','ip':'15.235.100.76'},'identity_binding_failed')
     require(p['hold_max_seconds']==3600 and p['rollback_review_seconds']==2700,'hold_policy_invalid')
     require(set(p['scopes'])==set(SCOPES),'eight_separate_scopes_required')
@@ -154,16 +154,30 @@ def verify_receipt(value, profile, stage, inputs, *, now_epoch=None):
     return value
 
 
-def approvals(profile, path, *, epoch=None):
+def profile_binding(profile):
+    # Operational arming and evidence change without changing the reviewed action.
+    if profile.get('version',1)==1:return digest(profile)
+    return digest({k:profile[k] for k in ('version','execution_id','source','target','production_sha','scopes','steps','runtime','code_sha256','hold_max_seconds','rollback_review_seconds','business_automation')})
+
+
+def stage_order(profile):
+    if profile.get('version',1)==1:return STAGES
+    return ('PREPARED','APPROVED','FORMS_HELD','QUEUE_HELD','SOURCE_FROZEN','CAPTURED','RECOVERY_VERIFIED','TARGET_SYNCHRONIZED','INTAKE_RELEASED','PRIVATE_VERIFIED','WORKER_HELD','CUTOVER','CRM_VERIFIED','INTAKE_VERIFIED','COMPLETE')
+
+
+def approvals(profile, path, *, epoch=None, required=None):
     private_file(path)
     a=json.loads(Path(path).read_text());epoch=time.time() if epoch is None else epoch
-    require(a.get('execution_id')==profile['execution_id'] and a.get('profile_sha256')==digest(profile),'approval_profile_changed')
+    require(a.get('execution_id')==profile['execution_id'] and a.get('profile_sha256')==profile_binding(profile),'approval_profile_changed')
     require(a.get('owner_authorization_reference') and a.get('owner_authorization_sha256'),'actual_owner_authorization_required')
     require(isinstance(a.get('issued_epoch'),(int,float)) and isinstance(a.get('expires_epoch'),(int,float)),'owner_approval_not_issued')
     require(a['issued_epoch']<=epoch<a['expires_epoch']<=a['issued_epoch']+86400,'approval_expired_or_unbounded')
-    for scope in SCOPES:
+    for scope in (SCOPES if required is None else required):
         v=a.get('scopes',{}).get(scope,{})
         require(v.get('approved') is True and v.get('binding_sha256')==digest(profile['scopes'][scope]),'owner_scope_required:'+scope)
+        issued=v.get('issued_epoch',a['issued_epoch']);until=v.get('expires_epoch',a['expires_epoch'])
+        require(issued<=epoch<until<=issued+3600,'scope_expired_or_window_unbounded:'+scope)
+        require(v.get('owner_authorization_reference',a['owner_authorization_reference']) and v.get('owner_authorization_sha256',a['owner_authorization_sha256']),'scope_owner_reference_required')
     return a
 
 
@@ -177,7 +191,7 @@ class Runner:
         return self.c.transition({'status':'REQUIRES_OWNER','blocker':reason,'next_resumable_stage':old.get('next_resumable_stage','APPROVED')},'requires_owner')
 
     def gates(self):
-        s=self.c.state(); require(s['profile_sha256']==digest(self.p),'profile_changed')
+        s=self.c.state(); require(s['profile_sha256']==profile_binding(self.p),'profile_changed')
         require(s.get('notification_test',{}).get('state')=='DELIVERED','owner_notification_delivery_unverified')
         require(time.time()-s.get('watchdog_heartbeat_epoch',0)<90,'independent_watchdog_not_current')
         h=json.loads(self.health_path.read_text())
@@ -186,7 +200,22 @@ class Runner:
         require(self.p.get('execution_enabled') is True,'reviewed_execution_profile_not_armed')
         require(self.p.get('rollback_verified') is True,'rollback_not_verified')
         require(self.p.get('source_reboot_fence_verified') is True,'source_reboot_fence_missing')
-        approvals(self.p,self.approval_path)
+        if self.p.get('version',1)==2:
+            from migration_adapters import STAGE_SCOPE,TIMED_SCOPES
+            stage=next((x for x in stage_order(self.p) if x not in s['completed_stages']),None)
+            required=TIMED_SCOPES if stage in ('APPROVED','FORMS_HELD') else () if stage=='CRM_VERIFIED' else (STAGE_SCOPE[stage],)
+            approvals(self.p,self.approval_path,required=required)
+            if stage=='FORMS_HELD':
+                from migration_adapters import Live
+                Live(self.p).forms()  # Await real owner UI evidence before creating any stage attempt.
+        else:approvals(self.p,self.approval_path)
+
+    def unit_running(self,row):
+        if not row or not row.get('unit'):return False
+        result=subprocess.run(['/usr/bin/systemctl','show',row['unit'],'-p','ActiveState','--value'],capture_output=True,text=True,timeout=10)
+        # A disconnected runner cannot launch a second local writer while the
+        # independently supervised original host unit may still own the stage.
+        return result.returncode!=0 or result.stdout.strip() in ('active','activating','deactivating','reloading')
 
     def readback(self, step, inputs):
         argv=pinned_command(step['verify'])
@@ -222,16 +251,17 @@ class Runner:
             state=self.c.state()
             if not state:
                 self.c.transition({'status':'PREPARED','completed_stages':['PREPARED'],'current_stage':'PREPARED',
-                    'next_resumable_stage':'APPROVED','profile_sha256':digest(self.p),'source':self.p['source'],
+                    'next_resumable_stage':'APPROVED','profile_sha256':profile_binding(self.p),'source':self.p['source'],
                     'target':self.p['target'],'authority':'OLD','evidence':[],
                     'rollback':'Before target intake: approved source restore/readback, then approved queue resume. After target writes: preserve NEW and reconcile; never overwrite with OLD.'},'prepared')
             self.c.heartbeat('runner');state=self.c.state()
             if state['status'] in TERMINAL:return state
-            require(state['profile_sha256']==digest(self.p),'profile_changed')
-            pending=next((s for s in STAGES if s not in state['completed_stages']),None)
+            require(state['profile_sha256']==profile_binding(self.p),'profile_changed')
+            pending=next((s for s in stage_order(self.p) if s not in state['completed_stages']),None)
             pending_step=next((s for s in self.p['steps'] if s['stage']==pending),None)
             prior=self.c.attempt(pending) if pending_step else None
             if prior:
+                if self.unit_running(prior):return self.c.state()
                 # Reconciliation is read-only and remains allowed after approval expiry.
                 # A lost DNS/queue ACK must not prevent its own independent readback.
                 try:observed=self.readback(pending_step,prior['input_sha256'])
@@ -239,16 +269,16 @@ class Runner:
                 if observed:return self.complete(state,pending,observed,prior)
             try:self.gates()
             except (RebuildError,FileNotFoundError,json.JSONDecodeError) as e:return self.block(str(e) if isinstance(e,RebuildError) else type(e).__name__)
-            if state.get('hold_started_epoch') and time.time()-state['hold_started_epoch']>=2700:
+            if min((state[k] for k in ('hold_started_epoch','forms_hold_started_epoch') if state.get(k)),default=time.time())<=time.time()-2700:
                 return self.block('hold_deadline_review_required_no_blind_resume')
             done=state['completed_stages']
             if 'APPROVED' not in done:
                 return self.c.transition({'status':'APPROVED','current_stage':'APPROVED','completed_stages':done+['APPROVED'],'blocker':None},'approved')
-            todo=[s for s in STAGES if s not in done]
+            todo=[s for s in stage_order(self.p) if s not in done]
             if not todo:return state
             stage=todo[0];step=next((s for s in self.p['steps'] if s['stage']==stage),None)
             if not step:return self.block('stage_adapter_unbound:'+stage)
-            inputs=digest({'profile':digest(self.p),'previous_verified_output':state.get('last_output_sha256'), 'stage':stage})
+            inputs=digest({'profile':profile_binding(self.p),'previous_verified_output':state.get('last_output_sha256'), 'stage':stage})
             old=self.c.attempt(stage)
             if old:
                 require(old['input_sha256']==inputs,'attempt_inputs_changed')
@@ -275,13 +305,15 @@ class Runner:
     def complete(self,state,stage,receipt,row):
         row.update(state='VERIFIED',readback=receipt);self.c.save_attempt(stage,row)
         changes={'status':stage,'current_stage':stage,'completed_stages':state['completed_stages']+[stage],
-            'next_resumable_stage':STAGES[STAGES.index(stage)+1] if stage!='COMPLETE' else None,
+            'next_resumable_stage':stage_order(self.p)[stage_order(self.p).index(stage)+1] if stage!='COMPLETE' else None,
             'last_output_sha256':receipt['output_sha256'],'evidence':receipt['evidence'],'blocker':None}
-        if stage=='QUEUE_HELD':
+        if stage in ('QUEUE_HELD','FORMS_HELD'):
             # Use the original effect intent as a conservative hold start. Reboot or
             # late readback cannot extend the owner's 60-minute maintenance limit.
             require(bool(row.get('at')),'original_hold_intent_timestamp_required')
-            changes['hold_started_epoch']=min(time.time(),datetime.fromisoformat(row['at']).timestamp())
+            started=min(time.time(),datetime.fromisoformat(row['at']).timestamp(),receipt.get('after_state',{}).get('disabled_epoch',time.time()))
+            key='forms_hold_started_epoch' if stage=='FORMS_HELD' else 'hold_started_epoch'
+            changes[key]=min(state.get(key,started),started)
         if stage=='CUTOVER':changes['authority']='NEW'
         return self.c.transition(changes,'stage_verified')
 
@@ -294,13 +326,13 @@ def watchdog(control, profile, health):
     if health.get('status')!='PASS':issues.extend(health.get('issues',['health_probe_failed']))
     starts=[state[k] for k in ['hold_started_epoch','forms_hold_started_epoch'] if state.get(k)]
     held=min(starts) if starts else None
-    if held and 'INTAKE_VERIFIED' not in state.get('completed_stages',[]):
+    if held and 'COMPLETE' not in state.get('completed_stages',[]):
         age=epoch-held
         if age>=3600:issues.append('CRITICAL_hold_limit_reached')
         elif age>=2700:issues.append('hold_rollback_review_due')
     # The watchdog never resumes a queue or restarts a writer by timer alone.
     value={'at':stamp(),'issues':sorted(set(issues)),'stage':state.get('current_stage'),
-           'automatic_recovery':'Local runner systemd Restart=on-failure only; provider reconciliation requires exact approved adapter'}
+           'automatic_recovery':'Stage-specific conditional rollback before NEW release; otherwise preserve NEW and retain OLD fence' if profile.get('version',1)==2 else 'Local runner systemd Restart=on-failure only; provider reconciliation requires exact approved adapter'}
     control.heartbeat('watchdog')
     if value['issues']!=(state.get('watchdog') or {}).get('issues',[]):
         control.transition({'watchdog':value},'watchdog_incident')

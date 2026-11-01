@@ -4,7 +4,7 @@ import json,os,shutil,subprocess,sys,time
 from pathlib import Path
 from urllib.request import Request,urlopen
 from common import atomic_json,env_file,require
-from durable_migration import Control,load_profile,watchdog
+from durable_migration import Control,load_profile,watchdog,profile_binding
 
 
 def check(profile):
@@ -17,8 +17,11 @@ def check(profile):
         command=['/usr/bin/ssh','-i','/etc/optibrain/migration/source-probe-key','-o','IdentitiesOnly=yes','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','UserKnownHostsFile=/etc/optibrain/migration/source-known-hosts','-o','ConnectTimeout=10','optibrain@148.113.249.7','status']
         p=subprocess.run(command,capture_output=True,text=True,timeout=30);require(p.returncode==0,'source_probe_failed');v=json.loads(p.stdout)
         require(v['host']==profile['source']['host'] and v['production_sha']==profile['production_sha'],'source_identity_changed')
-        require(v['API'].get('ok') is True or v['API'].get('status')=='ok','source_api_unhealthy')
-        require(all(s=='active' for s in v['services'].values()),'source_services_unhealthy')
+        if v.get('fenced') and not v.get('freeze_transition'):
+            require(all(v['services'][u] in ('inactive','failed') for u in v['services'] if u!='caddy.service'),'fenced_source_writer_active')
+        elif not v.get('freeze_transition'):
+            require(v['API'].get('ok') is True or v['API'].get('status')=='ok','source_api_unhealthy')
+            require(all(s=='active' for s in v['services'].values()),'source_services_unhealthy')
         if v['root_free_bytes']<256*1024**2:result['issues'].append('source_disk_critical')
         if v['root_free_bytes']<64*1024**2:result['issues'].append('source_disk_emergency')
         return v
@@ -27,10 +30,19 @@ def check(profile):
     def target():
         require(os.uname().nodename==profile['target']['host'],'target_identity_changed')
         key=env[env.get('SITE_WORKFLOW_API_KEY_ENV','SITE_WORKFLOW_API_KEY')]
+        control=Control('/var/lib/optibrain-rebuild/actions.db',profile['execution_id'])
+        for stage in ('TARGET_SYNCHRONIZED','INTAKE_RELEASED'):
+            attempt=control.attempt(stage)
+            if attempt and attempt.get('state')=='ATTEMPTED' and time.time()<attempt.get('deadline_epoch',0):
+                unit=subprocess.check_output(['systemctl','show',attempt['unit'],'-p','ActiveState','--value'],text=True).strip()
+                if unit in ('active','activating'):
+                    return {'host':os.uname().nodename,'API':{'status':'approved_isolated_maintenance'},'root_free_bytes':shutil.disk_usage('/').free,'all_45_flags_off':None,'active_reviewed_stage':stage}
         with urlopen(Request('http://127.0.0.1:8100/v1/system/health',headers={'X-API-Key':key}),timeout=10) as response:h=json.load(response)
         require(h.get('ok') is True or h.get('status')=='ok','target_api_unhealthy')
         free=shutil.disk_usage('/').free
-        if free<48*1024**3:result['issues'].append('target_capacity_below_final_sync_budget')
+        state=Control('/var/lib/optibrain-rebuild/actions.db',profile['execution_id']).state() or {}
+        minimum=12*1024**3 if 'TARGET_SYNCHRONIZED' in state.get('completed_stages',[]) else 48*1024**3
+        if free<minimum:result['issues'].append('target_capacity_below_final_sync_budget')
         sys.path.insert(0,'/opt/optibrain-rebuild-toolchain/migration-20261027/ops/rebuild')
         from engine import APP_UNITS,SAFETY
         flags={}
@@ -39,7 +51,7 @@ def check(profile):
             values=dict(x.split(b'=',1) for x in Path('/proc/'+pid+'/environ').read_bytes().split(b'\0') if b'=' in x)
             flags[unit]=all(values.get(k.encode(),b'').decode()==v for k,v in SAFETY.items())
         require(all(flags.values()),'target_automation_authority_changed')
-        return {'host':os.uname().nodename,'API':{'ok':h.get('ok'),'version':h.get('version')},'root_free_bytes':free,'all_45_flags_off':all(flags.values())}
+        return {'host':os.uname().nodename,'API':{'ok':h.get('ok') is True or h.get('status')=='ok','version':h.get('version')},'root_free_bytes':free,'all_45_flags_off':all(flags.values())}
     probe('target',target)
     def edge():
         sys.path.insert(0,'/opt/opticable-api-platform/apps/workflow-api');os.environ.update(env)
@@ -83,7 +95,26 @@ def check(profile):
                 'encrypted_archive_sha256':matches[-1]['sha256'],'offhost_full_readback_record':True,
                 'protects_current_source':False,'journal_sha256':__import__('hashlib').sha256(journal.read_bytes()).hexdigest()}
     probe('backups',backups)
-    result['issues']=sorted(set(result['issues']));result['status']='PASS' if not result['issues'] else 'BLOCKED'
+    result['issues']=sorted(set(result['issues']))
+    # The documented nearly-full source is usable only with RAM capture and >=64MiB.
+    hard=[x for x in result['issues'] if x!='source_disk_critical']
+    result['status']='PASS' if not hard else 'BLOCKED'
+    if profile.get('version',1)==2:
+        blockers=list(hard)
+        try:
+            from migration_adapters import Live
+            live=Live(profile);source=live.source('status')
+            require(source.get('persistent_fence_installed'),'source_fence_missing')
+            try:proof=live.current_proofs()
+            except Exception:
+                refreshed=subprocess.run(['/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python','-B',str(Path(__file__).with_name('migration_window.py'))],capture_output=True,timeout=120)
+                require(refreshed.returncode==0,'safe_window_verification_failed');proof=live.current_proofs()
+            require(proof.get('rollback') and proof.get('reboot_fence'),'rollback_or_fence_fixture_missing')
+            require(not (live.c.state() or {}).get('notification_failure'),'notification_failure_unresolved')
+        except Exception as e:blockers.append(str(e) if isinstance(e,ValueError) else type(e).__name__)
+        result['timed_maintenance_blockers']=sorted(set(blockers))
+        result['timed_maintenance_ready']=not blockers
+
     return result
 
 
@@ -91,6 +122,15 @@ def main():
     p=load_profile('/etc/optibrain/migration/profile.json');c=Control('/var/lib/optibrain-rebuild/actions.db',p['execution_id'])
     value=check(p);atomic_json('/var/lib/optibrain-rebuild/migration-health.json',value)
     w=watchdog(c,p,value)
+    if p.get('version',1)==2:
+        from migration_adapters import Live,conditional_rollback
+        state=c.state() or {}
+        try:Live(p).source('heartbeat',extra={'window_complete':state.get('status')=='COMPLETE','new_intake_exposed':('INTAKE_RELEASED' in state.get('completed_stages',[]))})
+        except Exception:pass  # Separate source supervisor still retains the reboot fence.
+        if any(x in w['issues'] for x in ('hold_rollback_review_due','CRITICAL_hold_limit_reached')) or state.get('status')=='FAILED' and state.get('hold_started_epoch'):
+            try:conditional_rollback(p)
+            except Exception as e:c.transition({'status':'REQUIRES_OWNER','blocker':'conditional_rollback_blocked:'+str(e),'rollback':'Keep existing hold/fence; no blind resume or authority reversal'},'rollback_blocked')
+
     # Send meaningful, deduplicated incidents; never routine heartbeat messages.
     incidents=[]
     if 'source_disk_critical' in value['issues']:incidents.append(('CRITICAL','source-disk-critical'))
@@ -125,7 +165,7 @@ def main():
         text=template.read_text()+'\nLATEST DURABLE CONTROL CHECKPOINT (America/Toronto timestamps)\n'+json.dumps(c.state(),indent=2,sort_keys=True)+'\nCURRENT INDEPENDENT HEALTH\n'+json.dumps(value,indent=2,sort_keys=True)+'\nOFF-HOST CONTROL READBACK\n'+(receipt.read_text() if receipt.exists() else 'BLOCKED')+'\n'
         data=text.encode();require(len(data)<=65536,'owner_report_size_limit')
         owner=pwd.getpwnam('optibrain')
-        for name in ['optibrain-migration-progress-20261101.txt','optibrain-autonomous-migration-20261101.txt']:
+        for name in ['optibrain-migration-progress-20261101.txt','optibrain-autonomous-migration-20261101.txt','optibrain-executor-completion-20261101.txt']:
             path=Path('/home/optibrain')/name;atomic_bytes(path,data,0o600);os.chown(path,owner.pw_uid,owner.pw_gid)
         cmd=['/usr/bin/ssh','-i','/etc/optibrain/migration/source-probe-key','-o','IdentitiesOnly=yes','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','UserKnownHostsFile=/etc/optibrain/migration/source-known-hosts','-o','ConnectTimeout=10','optibrain@148.113.249.7','publish-report']
         published=subprocess.run(cmd,input=data,capture_output=True,timeout=20)

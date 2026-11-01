@@ -31,11 +31,11 @@ def body_for(kind,run_id,state,report_ref):
     require(kind in KINDS,'invalid_alert_category')
     require(re.fullmatch(r'[A-Za-z0-9_-]{1,100}',run_id) is not None,'invalid_run_id')
     stage=state.get('current_stage','PREPARED')
-    require(stage in {'PREPARED','APPROVED','QUEUE_HELD','SOURCE_FROZEN','RECOVERY_VERIFIED','TARGET_SYNCHRONIZED','PRIVATE_VERIFIED','CUTOVER','INTAKE_VERIFIED','COMPLETE'},'invalid_stage')
+    require(stage in {'PREPARED','APPROVED','FORMS_HELD','CAPTURED','INTAKE_RELEASED','WORKER_HELD','CRM_VERIFIED','QUEUE_HELD','SOURCE_FROZEN','RECOVERY_VERIFIED','TARGET_SYNCHRONIZED','PRIVATE_VERIFIED','CUTOVER','INTAKE_VERIFIED','COMPLETE'},'invalid_stage')
     authority=state.get('authority','OLD');require(authority in {'OLD','NEW'},'invalid_authority')
     reference='/home/optibrain/optibrain-migration-progress-20261101.txt'
     require(report_ref==reference,'fixed_report_reference_required')
-    detail={'BLOCKED':'No maintenance started. Historical Forms retention is waived. A bounded new-submission maintenance hold and exact separately bound migration approvals are still required.', 'CRITICAL':'A monitored migration safety condition requires attention. Check the disk/hold/authority evidence in the current report; uncertain effects are contained, never blindly retried.', 'ROLLBACK':'A rollback or containment checkpoint was recorded. NEW data is retained; consult the exact verified authority in the report.', 'SUCCESS':'Consult the independently verified completion evidence and final authority in the report.'}.get(kind,'')
+    detail={'BLOCKED':'Execution stopped at an approval or safety boundary. Consult the durable current-stage report for exact live intake and authority; no uncertain effect is retried.', 'CRITICAL':'A monitored migration safety condition requires attention. Check the disk/hold/authority evidence in the current report; uncertain effects are contained, never blindly retried.', 'ROLLBACK':'A rollback or containment checkpoint was recorded. NEW data is retained; consult the exact verified authority in the report.', 'SUCCESS':'Consult the independently verified completion evidence and final authority in the report.'}.get(kind,'')
     extra=('What happened: '+detail+'\n' if detail else '')
     return ('OptiBrain migration '+kind+'\n'+extra+'Execution: '+run_id+'\nStage: '+stage+
       '\nAuthoritative server recorded: '+authority+
@@ -112,7 +112,7 @@ def notify(control,profile,policy_path,kind,incident,*,mail_factory=Mail,delays=
             available=(src.get('API',{}).get('status')=='ok' and all(v=='active' for v in src.get('services',{}).values())) if state.get('authority')=='OLD' else dst.get('API',{}).get('ok') is True
             body+='Verified production available: '+str(bool(available))+'; health evidence current: '+str(fresh_health)+'; source free bytes: '+str(int(src.get('root_free_bytes',0)))+'\n'
         except Exception:body+='Current production availability: UNKNOWN; timed maintenance remains blocked.\n'
-        body+='Automatic recovery: local systemd runner restart only; no unapproved provider or business effects.\n'
+        body+='Automatic recovery: bounded local restart and stage-specific approved compensation; ambiguous effects remain contained.\n'
     subject='OPTIBRAIN MIGRATION '+kind+' '+control.run_id+'-'+digest(incident)[:12]
     row,fresh=control.alert_intent(incident,digest(body))
     if row.get('state')=='DELIVERED':return row
