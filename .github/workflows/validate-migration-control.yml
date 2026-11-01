@@ -1,0 +1,32 @@
+name: Validate Migration Control
+on:
+  pull_request:
+    paths:
+      - 'ops/rebuild/durable_migration.py'
+      - 'ops/rebuild/owner_notifications.py'
+      - 'ops/rebuild/migration_health.py'
+      - 'ops/rebuild/migration_checkpoint.py'
+      - 'ops/rebuild/source_status.py'
+      - 'tests/test_durable_migration.py'
+      - '.github/workflows/validate-migration-control.yml'
+permissions:
+  contents: read
+jobs:
+  focused-control-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v6
+        with:
+          ref: 439027baaafcdfb9a87fdfb424b84f6593f31dea
+          path: .reviewed-pr147
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'httpx==0.28.1'
+      - name: Verify durable stages, exact scopes, lost acknowledgements and owner-only notifications
+        run: sudo env PYTHONPATH="$GITHUB_WORKSPACE/.reviewed-pr147/ops/rebuild" "$(command -v python)" -B tests/test_durable_migration.py

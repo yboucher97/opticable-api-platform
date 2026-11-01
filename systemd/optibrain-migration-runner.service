@@ -1,0 +1,27 @@
+[Unit]
+Description=OptiBrain durable approval-gated migration runner
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=3
+[Service]
+Type=simple
+User=root
+UMask=0077
+RuntimeDirectory=optibrain-migration
+RuntimeDirectoryMode=0700
+ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python -B /opt/optibrain-migration-control/20261101/ops/rebuild/durable_migration.py runner --profile /etc/optibrain/migration/profile.json
+Restart=on-failure
+RestartSec=20
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/optibrain-rebuild /run/optibrain-migration
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=multi-user.target

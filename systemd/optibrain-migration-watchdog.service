@@ -1,0 +1,22 @@
+[Unit]
+Description=OptiBrain independent read-only migration watchdog and owner alerting
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+RuntimeDirectory=optibrain-migration-watchdog
+RuntimeDirectoryMode=0700
+ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python -B /opt/optibrain-migration-control/20261101/ops/rebuild/migration_health.py
+TimeoutStartSec=180
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/optibrain /var/lib/optibrain-rebuild /recovery/migration-preparation/autonomous-20261101 /run/optibrain-migration-watchdog -/run/optibrain-migration
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+StandardOutput=journal
+StandardError=journal

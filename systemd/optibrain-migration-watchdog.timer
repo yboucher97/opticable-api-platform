@@ -1,0 +1,10 @@
+[Unit]
+Description=Check OptiBrain migration checkpoint and health independently every minute
+[Timer]
+OnBootSec=90
+OnUnitActiveSec=60
+AccuracySec=5
+Persistent=true
+Unit=optibrain-migration-watchdog.service
+[Install]
+WantedBy=timers.target
