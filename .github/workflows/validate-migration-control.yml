@@ -10,6 +10,8 @@ on:
       - 'tests/test_durable_migration.py'
       - 'tests/test_migration_executor.py'
       - 'ops/rebuild/migration_adapters.py'
+      - 'ops/rebuild/migration_origin.py'
+      - 'tests/test_migration_origin.py'
       - 'ops/rebuild/source_executor.py'
       - 'ops/rebuild/source_ssh_command.py'
       - 'ops/rebuild/migration_window.py'
