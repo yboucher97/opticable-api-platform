@@ -56,7 +56,7 @@ class OriginTests(unittest.TestCase):
   x=Live();x.root.mkdir();x.commands=[];return x
  def enable_fixture(self,live,readback):
   real=Path
-  with patch.object(m,'Path',side_effect=lambda p: self.dest if str(p)=='/var/lib/caddy/.local/share/caddy' else real(p)),patch.object(m,'probe',side_effect=readback),patch.object(m.os,'geteuid',return_value=0),patch.object(m.os,'uname',return_value=types.SimpleNamespace(nodename='vps-f8e9b20e')),patch.object(m.os,'chown'):
+  with patch.object(m,'Path',side_effect=lambda p: self.dest if str(p)=='/var/lib/caddy/.local/share/caddy' else real(p)),patch.object(m,'probe',side_effect=readback),patch.object(m.os,'geteuid',return_value=0),patch.object(m.os,'uname',return_value=types.SimpleNamespace(nodename='vps-f8e9b20e')),patch.object(m.os,'chown'),patch.object(m.pwd,'getpwnam',return_value=types.SimpleNamespace(pw_uid=0,pw_gid=0)):
    return m.enable(live)
  def test_success_installs_and_proves_origin_before_DNS(self):
   x=self.live();self.enable_fixture(x,lambda h:{'hold':{'http':200}});self.assertTrue((x.root/'origin-verified.json').exists());self.assertEqual(Path(self.scope['current_config']).read_bytes(),Path(self.scope['production_config']).read_bytes());self.assertTrue(all((self.dest/n).exists() for n in m.NAMES))
