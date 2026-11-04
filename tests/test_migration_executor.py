@@ -147,6 +147,22 @@ class AuthorityTests(unittest.TestCase):
   self.assertFalse(any(v['approved'] for v in result['scopes'].values()));self.assertEqual(result['owner_authorization_sha256'],hashlib.sha256(message.read_bytes()).hexdigest())
   with self.assertRaises(RebuildError):issue(self.p,message,'FIXTURE_ONLY',d,'wrong-reviewed-package')
 
+ def test_expired_reviewed_scope_cannot_be_renewed_by_receipt(self):
+  from migration_authority import issue
+  from datetime import datetime,timezone
+  message=self.root/'owner.txt';message.write_text('ISOLATED FIXTURE ONLY, explicit queue decision.');message.chmod(0o600)
+  decisions={s:{'approved':s=='queue_hold'} for s in self.p['scopes']};d=self.root/'decisions.json';atomic_json(d,decisions)
+  self.p['scopes']['queue_hold']['approval_expiry_utc']=datetime.fromtimestamp(time.time()-1,timezone.utc).isoformat()
+  with self.assertRaises(RebuildError):issue(self.p,message,'FIXTURE_ONLY',d,profile_binding(self.p))
+ def test_receipt_cannot_outlive_reviewed_package_deadline(self):
+  from migration_authority import issue
+  from datetime import datetime,timezone
+  message=self.root/'owner.txt';message.write_text('ISOLATED FIXTURE ONLY, explicit queue decision.');message.chmod(0o600)
+  d=self.root/'decisions.json';atomic_json(d,{s:{'approved':s=='queue_hold'} for s in self.p['scopes']})
+  end=time.time()+120;self.p['scopes']['queue_hold']['approval_expiry_utc']=datetime.fromtimestamp(end,timezone.utc).isoformat()
+  result=issue(self.p,message,'FIXTURE_ONLY',d,profile_binding(self.p));self.assertLessEqual(result['expires_epoch'],end+0.000001);self.assertLessEqual(result['scopes']['queue_hold']['expires_epoch'],end+0.000001)
+
+
 class ForcedSSHTests(unittest.TestCase):
  def test_internal_commands_shells_and_SFTP_are_unreachable(self):
   from source_ssh_command import dispatch
