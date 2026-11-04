@@ -278,13 +278,19 @@ class Live:
    s,d,a=self.final_paths();approval=self.approval('new_only_intake_release');receipt={'approved':True,'phase':'NEW_INTAKE_HOLD_RELEASE_ONLY','candidate_sha':'ec9a8e85095b57faf21212000652912e08093da4','baseline_sha':self.p['production_sha'],'ci_run_id':40763886958,'approved_at':utc(approval['issued_epoch']),'expires_at':utc(approval['expires_epoch']),'artifact_sha256':file_hash(ART/'new-only-intake-release.py'),'freeze_receipt':str(d/'source-freeze.json'),'freeze_receipt_sha256':file_hash(d/'source-freeze.json'),'owner_authorization_reference':approval['owner_authorization_reference']};f=Path('/etc/optibrain/new-intake-release-owner-approval.json');atomic_json(f,receipt)
    run([PYTHON,'-B',str(ART/'new-only-intake-release.py'),str(f)],timeout=180);return {'candidate':receipt['candidate_sha']}
   if stage=='WORKER_HELD':return self.worker_deploy(before)
-  if stage=='CUTOVER':return self.edge_write(DNS,self.p['scopes']['dns_cutover']['after'],'dns_cutover')
+  if stage=='CUTOVER':
+   from migration_origin import enable
+   enable(self)
+   return self.edge_write(DNS,self.p['scopes']['dns_cutover']['after'],'dns_cutover')
   if stage=='CRM_VERIFIED':
    if approvals_document['scopes']['crm_notification_recreation'].get('approved') is False:return {'read_only':True,'disposition':'EXPLICIT_OWNER_DEFERRED_NO_WRITE'}
    return self.crm(plan_only=False)
   if stage=='INTAKE_VERIFIED':
    self.resume_observer();return self.edge_write(QUEUE,{'queue_name':'opticable-business-events','settings':{'delivery_paused':False}},'safe_queue_observer_resume')
   raise RuntimeError('unbound_effect')
+ def run_origin(self,argv):return run(argv,timeout=45)
+ def origin_headers(self):
+  e=env_file('/etc/opticable-workflow-api.env');return {'X-API-Key':e[e.get('SITE_WORKFLOW_API_KEY_ENV','SITE_WORKFLOW_API_KEY')]}
  def current_proofs(self):
   proof=load('/var/lib/optibrain-rebuild/window-verification.json');private_file('/var/lib/optibrain-rebuild/window-verification.json')
   require(proof.get('package_sha256')==profile_binding(self.p) and 0<=time.time()-proof['verified_epoch']<1800,'current_window_proofs_missing_or_stale')
