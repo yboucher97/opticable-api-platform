@@ -4,6 +4,7 @@ Operator supplies the verbatim authorization artifact and independent decisions.
 No production operation occurs here. Exact immutable package is checked again.
 """
 import argparse,json,os,time
+from datetime import datetime
 from pathlib import Path
 from common import atomic_json,digest,file_hash,private_file,require
 from durable_migration import Control,load_profile,profile_binding,SCOPES
@@ -13,10 +14,15 @@ def issue(p,owner_message,reference,decisions,expected,now=None):
  require(expected==profile_binding(p),'owner_reviewed_package_changed');private_file(owner_message);private_file(decisions)
  text=Path(owner_message).read_text();require(len(text)>20 and reference and 'NOT-AUTHORIZED-TEMPLATE' not in text,'actual_owner_authorization_artifact_required')
  d=json.loads(Path(decisions).read_text());require(set(d)==set(SCOPES),'eight_independent_decisions_required')
- out={'execution_id':p['execution_id'],'profile_sha256':expected,'owner_authorization_reference':reference,'owner_authorization_sha256':file_hash(owner_message),'issued_epoch':epoch,'expires_epoch':epoch+3600,'scopes':{}}
+ deadlines=[]
+ for scope,value in d.items():
+  if value.get('approved') is True and p['scopes'][scope].get('approval_expiry_utc'):
+   end=datetime.fromisoformat(p['scopes'][scope]['approval_expiry_utc']);require(end.tzinfo is not None and end.timestamp()>epoch,'reviewed_scope_document_expired:'+scope);deadlines.append(end.timestamp())
+ until=min([epoch+3600,*deadlines])
+ out={'execution_id':p['execution_id'],'profile_sha256':expected,'owner_authorization_reference':reference,'owner_authorization_sha256':file_hash(owner_message),'issued_epoch':epoch,'expires_epoch':until,'scopes':{}}
  for scope in SCOPES:
   v=d[scope];require(isinstance(v.get('approved'),bool),'explicit_yes_or_no_required:'+scope)
-  out['scopes'][scope]={'approved':v['approved'],'binding_sha256':digest(p['scopes'][scope]),'issued_epoch':epoch,'expires_epoch':epoch+3600,'owner_authorization_reference':reference,'owner_authorization_sha256':file_hash(owner_message),'conditional_rollback_approved':v.get('conditional_rollback_approved') is True,'conditional_OLD_queue_resume_approved':v.get('conditional_OLD_queue_resume_approved') is True}
+  out['scopes'][scope]={'approved':v['approved'],'binding_sha256':digest(p['scopes'][scope]),'issued_epoch':epoch,'expires_epoch':until,'owner_authorization_reference':reference,'owner_authorization_sha256':file_hash(owner_message),'conditional_rollback_approved':v.get('conditional_rollback_approved') is True,'conditional_OLD_queue_resume_approved':v.get('conditional_OLD_queue_resume_approved') is True}
  return out
 
 def main():
