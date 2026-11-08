@@ -45,6 +45,33 @@ def rollback_choice(done,observed):
  if 'SOURCE_FROZEN' in done or observed.get('source_fenced'):return 'RESTORE_OLD_UNDER_EXACT_ROLLBACK_APPROVAL'
  return 'RESUME_OLD_QUEUE_UNDER_EXACT_ROLLBACK_APPROVAL'
 
+def verify_workflow_drain(profile,edge):
+ # A terminal failure cannot be terminated safely; retain only exact approved evidence.
+ path=profile['runtime']['workflow_instances_path']
+ def entries(value):
+  require(isinstance(value,(list,dict)),'malformed_workflow_status_response')
+  rows=value if isinstance(value,list) else value.get('instances',value.get('items'))
+  require(isinstance(rows,list) and all(isinstance(row,dict) for row in rows),'malformed_workflow_status_response');return rows
+ for status in ('queued','running','paused','waitingForPause','waiting','rollingBack'):
+  rows=entries(edge(path,{'status':status,'per_page':1}))
+  require(not rows,'remote_workflow_not_drained:'+status)
+ retained=profile['scopes']['source_freeze_final_sync'].get('retained_errored_workflows')
+ approved={}
+ if retained:
+  approved=retained['instances'];require(isinstance(approved,dict) and len(approved)<100,'bounded_exact_terminal_error_set_required')
+  proof=Path(retained['evidence_file']);private_file(proof)
+  require(file_hash(proof)==retained['evidence_sha256'],'terminal_error_evidence_changed')
+  saved=load(proof);snapshots={row['id']:digest(row['detail']) for row in saved['items']}
+  require(snapshots==approved,'terminal_error_evidence_identity_mismatch')
+  seal=load(CONTROL/'migration-offhost.json');require(seal.get('status')=='PASS' and seal.get('full_R2_readback')=='PASS' and datetime.fromisoformat(seal['at']).timestamp()>=proof.stat().st_mtime,'terminal_error_evidence_not_protected_offhost')
+ rows=entries(edge(path,{'status':'errored','per_page':max(1,len(approved)+1)}))
+ require(len(rows)<=len(approved) and len({row.get('id') for row in rows})==len(rows),'unknown_or_duplicate_terminal_workflow_error')
+ for row in rows:
+  ident=row.get('id');require(isinstance(ident,str) and ident in approved and re.fullmatch(r'[A-Za-z0-9_-]{1,100}',ident),'unapproved_terminal_workflow_error')
+  detail=edge(path+'/'+ident);require(detail.get('status')=='errored' and detail.get('end') and digest(detail)==approved[ident],'terminal_workflow_error_changed')
+ # No status change, retry, restart, ACK, deletion or provider effect occurs here.
+ return {'active_drained':True,'preserved_terminal_failures':len(rows)}
+
 class Adapters:
  def __init__(self,p,platform,root,approval_path):
   self.p,self.io,self.root,self.approval_path=p,platform,Path(root),Path(approval_path);self.root.mkdir(mode=0o700,parents=True,exist_ok=True)
@@ -225,10 +252,7 @@ class Live:
   if stage=='SOURCE_FROZEN':
    require(self.forms()['held'] and self.edge(QUEUE)['settings'].get('delivery_paused') is True,'external_hold_missing')
    require(before['persistent_fence_installed'] and not before['fenced'],'source_fence_not_ready')
-   workflows=self.p['runtime']['workflow_instances_path']
-   for status in ('queued','running','paused','waitingForPause','waiting','rollingBack','errored'):
-    v=self.edge(workflows,{'status':status,'per_page':1});rows=v if isinstance(v,list) else v.get('instances',v.get('items',[]))
-    require(not rows,'remote_workflow_not_drained:'+status)
+   verify_workflow_drain(self.p,self.edge)
   if stage in ('RECOVERY_VERIFIED','TARGET_SYNCHRONIZED'):
    require(shutil.disk_usage('/').free>=48*1024**3,'target_final_sync_capacity_below_48GiB_no_deletion')
   if stage=='CUTOVER':
