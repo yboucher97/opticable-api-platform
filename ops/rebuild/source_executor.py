@@ -146,7 +146,7 @@ def owner_alert(incident):
  cfg=private(CONFIG);c=Control(ROOT/'alerts.db',cfg['execution_id']+'-old-supervisor')
  if not c.state():c.transition({'current_stage':'SOURCE_FROZEN','authority':'OLD','status':'REQUIRES_OWNER'},'OLD_independent_supervision')
  # Same pre-authorized owner-only mailbox and canonical notifier; no second TEST.
- return notify(c,{'execution_id':cfg['execution_id'],'source':cfg['source'],'target':cfg['target']},CODE/'owner-notification-policy.json','CRITICAL',incident,delays=(0,))
+ return notify(c,{'execution_id':c.run_id,'source':cfg['source'],'target':cfg['target']},CODE/'owner-notification-policy.json','CRITICAL',incident,delays=(0,))
 
 def verified_stream(path,offset,prefix,output):
  need(isinstance(offset,int) and 0<=offset<=path.stat().st_size,'stream_offset_invalid')
