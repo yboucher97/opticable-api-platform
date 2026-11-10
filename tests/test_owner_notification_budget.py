@@ -94,4 +94,19 @@ class BudgetTests(unittest.TestCase):
    with self.assertRaises(RebuildError):n.notify(self.c,self.p,policy,'BLOCKED','new',mail_factory=mail)
    mail.assert_not_called()
 
+
+class SourceFallbackTests(unittest.TestCase):
+ def test_independent_OLD_alert_uses_its_actual_audited_execution_identity(self):
+  import source_executor as source
+  from types import SimpleNamespace
+  cfg={'execution_id':'fixture-main','source':{'host':'OLD'},'target':{'host':'NEW'}}
+  control=SimpleNamespace(run_id='fixture-main-old-supervisor',state=lambda:{'current_stage':'SOURCE_FROZEN'})
+  def guarded(c,p,*args,**kwargs):
+   self.assertEqual(c.run_id,p['execution_id'])
+   self.assertEqual(args[1:3],('CRITICAL','fixture-critical'))
+   self.assertEqual(kwargs['delays'],(0,))
+   return {'state':'FIXTURE_ONLY_NO_PROVIDER'}
+  with patch.object(source,'private',return_value=cfg),patch('durable_migration.Control',return_value=control),patch('owner_notifications.notify',side_effect=guarded):
+   self.assertEqual(source.owner_alert('fixture-critical')['state'],'FIXTURE_ONLY_NO_PROVIDER')
+
 if __name__=='__main__':unittest.main()
