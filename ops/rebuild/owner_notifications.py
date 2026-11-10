@@ -18,7 +18,7 @@ import tempfile
 import time
 import httpx
 from common import atomic_json,digest,env_file,file_hash,private_file,require,trusted_manifest
-from durable_migration import Control,load_profile,timestamp
+from durable_migration import Control,load_profile,profile_binding,timestamp
 
 OWNER='yboucher@opticable.ca'
 ACCOUNT='1083319000000008002'
@@ -97,6 +97,44 @@ def delivery(mail,subject,earliest_epoch):
     return None
 
 
+AUTHORIZATION_ROOT=Path('/recovery/migration-preparation/autonomous-20261101/executor/owner-authorizations')
+
+
+def check_alert_budget(control,profile,incident=None):
+    """One explicit, audited renewal; preserve every old incident and the 16-slot guard."""
+    with control.connect() as db:
+        rows={r[0]:json.loads(r[1]) for r in db.execute(
+            'SELECT incident,state_json FROM migration_alerts WHERE execution_id=?',(control.run_id,))}
+    projected=len(rows)+int(incident is not None and incident not in rows)
+    plan=profile.get('runtime',{}).get('owner_notification_renewal')
+    if not plan:
+        require(projected<=MAX_ALERT_INCIDENTS,'owner_alert_run_limit_reached')
+        return
+    require(plan.get('additional_incident_limit')==MAX_ALERT_INCIDENTS,'notification_budget_limit_changed')
+    baseline=plan.get('baseline_incident_hashes',{})
+    require(len(baseline)==MAX_ALERT_INCIDENTS and all(
+        name in rows and rows[name].get('state') in ('DELIVERED','NOT_SENT_CANONICAL_GUARD_REFUSED')
+        and digest(rows[name])==checksum for name,checksum in baseline.items()),'notification_history_changed')
+    path=Path(plan['approval_file']);private_file(path);approval=json.loads(path.read_text())
+    require(approval.get('approved') is True and approval.get('execution_id')==control.run_id
+        and approval.get('package_sha256')==profile_binding(profile)
+        and approval.get('plan_sha256')==digest(plan),'exact_notification_renewal_required')
+    require(approval.get('issued_epoch',float('inf'))<=time.time()<approval.get('expires_epoch',0)
+        <=datetime.fromisoformat(plan['expires_utc']).timestamp(),'notification_renewal_expired')
+    owner=Path(approval['owner_authorization_file']);private_file(owner)
+    require(owner.resolve().parent==AUTHORIZATION_ROOT.resolve()
+        and file_hash(owner)==approval.get('owner_authorization_sha256')
+        and approval.get('owner_authorization_reference'),'actual_notification_owner_artifact_required')
+    action=control.audit.store.get(approval.get('action_id',''))
+    require(action and action['status']=='SUCCEEDED'
+        and action['trigger']==approval['owner_authorization_reference']
+        and action['authority_class']=='OWNER_ONLY_MIGRATION_NOTIFICATION_RENEWAL'
+        and action['exact_versions'].get('package_sha256')==profile_binding(profile)
+        and action['after_state'].get('receipt_sha256')==file_hash(path),'notification_renewal_not_audited')
+    require(projected<=2*MAX_ALERT_INCIDENTS
+        and projected-len(baseline)<=MAX_ALERT_INCIDENTS,'owner_alert_renewal_limit_reached')
+
+
 def notify(control,profile,policy_path,kind,incident,*,mail_factory=Mail,delays=(0,2,4,8,12,20)):
     private_file(policy_path);policy=json.loads(Path(policy_path).read_text())
     require(policy['recipient']==OWNER and policy['account_id']==ACCOUNT and policy['authority_reference']==AUTHORITY_REFERENCE,'owner_channel_not_authorized')
@@ -115,14 +153,13 @@ def notify(control,profile,policy_path,kind,incident,*,mail_factory=Mail,delays=
         except Exception:body+='Current production availability: UNKNOWN; timed maintenance remains blocked.\n'
         body+='Automatic recovery: bounded local restart and stage-specific approved compensation; ambiguous effects remain contained.\n'
     subject='OPTIBRAIN MIGRATION '+kind+' '+control.run_id+'-'+digest(incident)[:12]
+    check_alert_budget(control,profile,incident)
     row,fresh=control.alert_intent(incident,digest(body))
     if row.get('state')=='DELIVERED':return row
     if fresh:require(row['body_sha256']==digest(body),'alert_incident_body_changed_do_not_resend')
     mail=mail_factory()
     if fresh:
-        with control.connect() as db:
-            count=db.execute('SELECT COUNT(*) FROM migration_alerts WHERE execution_id=?',(control.run_id,)).fetchone()[0]
-        require(count<=MAX_ALERT_INCIDENTS,'owner_alert_run_limit_reached')
+        check_alert_budget(control,profile)
         # Explicit current owner instruction authorizes only this fixed technical channel.
         aid='migration-owner-alert:'+control.run_id+':'+incident
         action=control.audit.envelope(aid,'migration.owner_notification',{'type':'MAIL','identity':OWNER},timestamp(),
