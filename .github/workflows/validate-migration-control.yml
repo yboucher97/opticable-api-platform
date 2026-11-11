@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - 'ops/rebuild/durable_migration.py'
+      - 'ops/rebuild/ram_stream_verify.py'
+      - 'tests/test_ram_stream_verify.py'
+      - 'tests/test_migration_window_rearm.py'
+      - 'tests/test_owner_notification_budget.py'
       - 'ops/rebuild/owner_notifications.py'
       - 'ops/rebuild/migration_health.py'
       - 'ops/rebuild/migration_checkpoint.py'
@@ -39,3 +43,8 @@ jobs:
       - run: python -m pip install 'httpx==0.28.1'
       - name: Verify durable stages, exact scopes, lost acknowledgements and owner-only notifications
         run: sudo env PYTHONPATH="$GITHUB_WORKSPACE/.reviewed-pr147/ops/rebuild" "$(command -v python)" -B -m unittest discover -s tests -p 'test*migration*.py'
+
+      - name: Verify retained RAM references and unchanged owner notification budget
+        run: |
+          sudo env PYTHONPATH="$GITHUB_WORKSPACE/.reviewed-pr147/ops/rebuild" "$(command -v python)" -B -m unittest discover -s tests -p 'test_ram_stream_verify.py'
+          sudo env PYTHONPATH="$GITHUB_WORKSPACE/.reviewed-pr147/ops/rebuild" "$(command -v python)" -B -m unittest discover -s tests -p 'test_owner_notification_budget.py'
