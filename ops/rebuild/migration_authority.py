@@ -29,6 +29,7 @@ def issue(p,owner_message,reference,decisions,expected,now=None):
 def window_changes(p,control,out,prior_snapshot):
  # One root execution/notification ledger; only stage evidence and action IDs
  # receive a fresh namespace after a proved closed pre-NEW attempt.
+ require(p.get('runtime',{}).get('windowed_maintenance_evidence') is True,'windowed_evidence_configuration_not_reviewed')
  state=control.state() or {}
  require(not any(state.get(k) for k in ('forms_hold_started_epoch','hold_started_epoch')),'previous_maintenance_window_not_closed')
  done=state.get('completed_stages',[])
