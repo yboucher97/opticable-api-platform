@@ -183,6 +183,11 @@ class Live:
   scope=self.p['scopes']['native_forms_maintenance'];receipt=Path('/etc/optibrain/migration/forms-maintenance-evidence.json')
   require(receipt.exists(),'OWNER_FORMS_UI_HOLD_REQUIRED_no_admin_API')
   private_file(receipt);r=load(receipt);require(r.get('execution_id')==self.p['execution_id'] and r.get('scope_sha256')==digest(scope) and r.get('owner_action_reference'),'Forms_owner_evidence_not_bound')
+  window=self.c.window_id()
+  if window:
+   started=self.c.state().get('forms_hold_started_epoch')
+   require(r.get('maintenance_window_id')==window and isinstance(started,(int,float))
+    and r.get('earliest_window_epoch')==started and r.get('disabled_epoch',0)>=started,'Forms_owner_evidence_wrong_window')
   require(r.get('disabled')==['FR','EN'] and r.get('disabled_epoch',0)<=time.time() and time.time()-r['disabled_epoch']<3600,'Forms_hold_receipt_invalid')
   proofs={}
   for language,form in scope['forms'].items():
