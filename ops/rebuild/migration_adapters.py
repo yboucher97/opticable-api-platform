@@ -108,10 +108,11 @@ class Adapters:
 class Live:
  def __init__(self,p):
   self.p=p;self.c=Control(CONTROL/'actions.db',p['execution_id']);self.cf=None
-  self.root=ROOT;self.root.mkdir(mode=0o700,parents=True,exist_ok=True)
+  window=self.c.window_id();self.root=ROOT/'windows'/window if window else ROOT
+  self.root.mkdir(mode=0o700,parents=True,exist_ok=True)
  def stage_intent(self,stage,before,authorization,inputs):
   if stage=='CRM_VERIFIED' and authorization['scopes']['crm_notification_recreation'].get('approved') is False:return
-  scope=STAGE_SCOPE[stage];approval=self.approval(scope);aid='migration-stage:'+self.p['execution_id']+':'+stage
+  scope=STAGE_SCOPE[stage];approval=self.approval(scope);aid=self.c.action_id('migration-stage',stage)
   store=self.c.audit.store;old=store.get(aid)
   if old:
    require(old['status']=='STARTED','verified_stage_cannot_be_reexecuted');return
@@ -119,7 +120,7 @@ class Live:
   record=self.c.audit.envelope(aid,'migration.exact_stage.'+stage,{'type':'RECOVERY','identity':self.p['execution_id']+':'+stage},now,initiator='OWNER',trigger=approval['owner_authorization_reference'],before_state=before,proposed_state={'stage':stage,'scope_sha256':digest(self.p['scopes'][scope]),'input_sha256':inputs,'business_execution':'OFF'},reason='Exact action-bound owner migration scope',business_rationale='Preserve all history and a single production authority',authority_class='OWNER_EXACT_MIGRATION',automatic_rule='Reconcile uncertainty; bounded idempotent local retry only',mutation=mutating,approval_required=True,rollback_capability='COMPENSATING_ACTION_ONLY',consequence='Only the exact reviewed migration stage',compensating_action='Conditional pre-NEW rollback; otherwise retain OLD fence and preserve NEW',exact_versions={'package_sha256':profile_binding(self.p),'approval_sha256':file_hash('/etc/optibrain/migration/owner-approvals.json')})
   store.plan(record,now);store.approve(aid,approval['owner_authorization_reference'],now,binding=self.c.canonical.approval_binding(record),expires_at=utc(approval['expires_epoch']));store.start(aid,now,authority_check=lambda:self.approval(scope))
  def stage_verified(self,stage,receipt):
-  store=self.c.audit.store;aid='migration-stage:'+self.p['execution_id']+':'+stage;action=store.get(aid)
+  store=self.c.audit.store;aid=self.c.action_id('migration-stage',stage);action=store.get(aid)
   if action and action['status']=='STARTED':store.finish(aid,datetime.now(timezone.utc),provider_success=True,actual_after=receipt['after_state'],verified=True,response={'independent_readback_sha256':receipt['output_sha256']})
  def evidence(self,stage):
   evidence=['independent-readback:'+stage,'canonical-actions.db',str(self.root/(stage+'.verified.json'))]
@@ -167,7 +168,7 @@ class Live:
   elif scope=='safe_queue_observer_resume':require(before.get('settings',{}).get('delivery_paused') is True,'queue_resume_before_changed')
   from workflow.automation.action_evidence import ActionEvidence,envelope,approval_binding
   from workflow.automation.mutation_control import technical_admin_call
-  audit=ActionEvidence(CONTROL/'actions.db');aid='migration-provider:'+self.p['execution_id']+':'+scope
+  audit=ActionEvidence(CONTROL/'actions.db');aid=self.c.action_id('migration-provider',scope)
   require(audit.get(aid) is None,'provider_effect_already_attempted_GET_only')
   now=datetime.now(timezone.utc);record=envelope(aid,'EXACT_MIGRATION_'+scope.upper(),{'type':'CONFIGURATION','identity':path},now,provider='cloudflare',mutation=True,approval_required=True,approval_record=a,exact_versions={'package_sha256':profile_binding(self.p)},before_state=before,proposed_state=body,reason='Exact separately owner-approved migration scope',business_rationale='Preserve intake and a single authoritative server',rollback_capability='COMPENSATING_ACTION_ONLY',consequence='Exact approved migration configuration only',compensating_action='Conditional rollback; preserve NEW data and never blindly revert authority',authority_class='OWNER_EXACT_MIGRATION',automatic_rule='One transport; GET-only reconciliation after ambiguous outcome')
   audit.plan(record,now);audit.approve(aid,a['owner_authorization_reference'],now,binding=approval_binding(record),expires_at=utc(a['expires_epoch']));audit.start(aid,now,authority_check=lambda:None)
@@ -182,6 +183,11 @@ class Live:
   scope=self.p['scopes']['native_forms_maintenance'];receipt=Path('/etc/optibrain/migration/forms-maintenance-evidence.json')
   require(receipt.exists(),'OWNER_FORMS_UI_HOLD_REQUIRED_no_admin_API')
   private_file(receipt);r=load(receipt);require(r.get('execution_id')==self.p['execution_id'] and r.get('scope_sha256')==digest(scope) and r.get('owner_action_reference'),'Forms_owner_evidence_not_bound')
+  window=self.c.window_id()
+  if window:
+   started=self.c.state().get('forms_hold_started_epoch')
+   require(r.get('maintenance_window_id')==window and isinstance(started,(int,float))
+    and r.get('earliest_window_epoch')==started and r.get('disabled_epoch',0)>=started,'Forms_owner_evidence_wrong_window')
   require(r.get('disabled')==['FR','EN'] and r.get('disabled_epoch',0)<=time.time() and time.time()-r['disabled_epoch']<3600,'Forms_hold_receipt_invalid')
   proofs={}
   for language,form in scope['forms'].items():
@@ -427,9 +433,28 @@ def offhost(cipher,label):
  finally:v['Body'].close()
  require(h.hexdigest()==file_hash(cipher) and size==cipher.stat().st_size==head['ContentLength'],'offhost_full_hash_failed');return {'status':'PASS','object_key':key,'ciphertext_sha256':h.hexdigest(),'bytes':size,'full_get_verified':True}
 
+def verified_OLD_health(live,p):
+ monitor=['ssh','-i','/etc/optibrain/migration/source-probe-key','-o','IdentitiesOnly=yes','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','UserKnownHostsFile=/etc/optibrain/migration/source-known-hosts','-o','ConnectTimeout=10','optibrain@148.113.249.7','status']
+ health=json.loads(run(monitor,timeout=30).stdout)
+ require(health.get('host')==p['source']['host'] and health.get('production_sha')==p['production_sha']
+  and not health.get('fenced') and health['API'].get('status')=='ok'
+  and all(v=='active' for v in health['services'].values()),'OLD_private_API_not_healthy_do_not_resume_queue')
+ return health
+
 def conditional_rollback(p):
- live=Live(p);c=live.c;s=c.state() or {};done=s.get('completed_stages',[])
- observed={'dns':live.edge(DNS)['content'],'source_fenced':live.source('status')['fenced'],'queue_held':live.edge(QUEUE)['settings'].get('delivery_paused') is True,'forms_held':live.forms()['held'],'new_data':'INTAKE_RELEASED' in done or (live.root/'INTAKE_RELEASED.json').exists(),'worker_changed':'WORKER_HELD' in done or (live.root/'worker-attempted.json').exists() or digest(live.edge(WORKER+'/settings'))!=p['scopes']['worker_hold_deployment']['before_settings_sha256'] or digest(live.edge(WORKER+'/versions'))!=p['runtime']['worker_before_versions_sha256']}
+ live=Live(p);c=live.c;s=c.state() or {};done=s.get('completed_stages',[]);source=live.source('status')
+ observed={'dns':live.edge(DNS)['content'],'source_fenced':source['fenced'],'queue_held':live.edge(QUEUE)['settings'].get('delivery_paused') is True,'forms_held':live.forms()['held'],'new_data':source.get('state',{}).get('new_data_observed') is True or 'INTAKE_RELEASED' in done or (live.root/'INTAKE_RELEASED.json').exists(),'worker_changed':'WORKER_HELD' in done or (live.root/'worker-attempted.json').exists() or digest(live.edge(WORKER+'/settings'))!=p['scopes']['worker_hold_deployment']['before_settings_sha256'] or digest(live.edge(WORKER+'/versions'))!=p['runtime']['worker_before_versions_sha256']}
+ resume_id=c.action_id('migration-provider','safe_queue_observer_resume');resume_action=c.audit.store.get(resume_id)
+ if (not observed['new_data'] and not observed['worker_changed'] and observed['dns']=='148.113.249.7'
+  and not observed['source_fenced'] and not observed['queue_held'] and observed['forms_held']
+  and source.get('state',{}).get('event')=='ROLLED_BACK' and source['state'].get('rollback_verified_epoch')
+  and resume_action and resume_action['status'] in ('STARTED','SUCCEEDED')
+  and resume_action['exact_versions'].get('package_sha256')==profile_binding(p)
+  and resume_action['proposed_state'].get('settings',{}).get('delivery_paused') is False):
+  verified_OLD_health(live,p)
+  if resume_action['status']=='STARTED':
+   c.audit.store.finish(resume_id,datetime.now(timezone.utc),provider_success=True,actual_after=live.edge(QUEUE),verified=True,response={'verification':'independent_GET_after_uncertain_ack_no_provider_retry'})
+  return c.transition({'status':'ROLLED_BACK','authority':'OLD','rollback':'OLD healthy and original Worker; approved queue resume independently reconciled without retry; Forms await owner reopen'},'rollback_resume_readback_verified')
  choice=rollback_choice(done,observed)
  if s.get('rollback_decision')==choice and s.get('rollback_observed')==observed and s.get('status') in ('REQUIRES_OWNER','ROLLED_BACK'):return s
  c.transition({'rollback_decision':choice,'rollback_observed':observed},'conditional_rollback_review')
@@ -438,9 +463,10 @@ def conditional_rollback(p):
  # Automatic compensation requires explicit rollback permission INSIDE the existing exact scopes.
  a=live.approval('source_freeze_final_sync');require(a.get('conditional_rollback_approved') is True,'conditional_rollback_not_approved')
  if choice.startswith('RESTORE_OLD'):
-  live.source('rollback',scope=a,extra={'rollback_proof':{'dns':observed['dns'],'worker_original_verified':True,'queue_held':True,'forms_held':True,'target_intake_never_released':True}})
- monitor=['ssh','-i','/etc/optibrain/migration/source-probe-key','-o','IdentitiesOnly=yes','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','UserKnownHostsFile=/etc/optibrain/migration/source-known-hosts','-o','ConnectTimeout=10','optibrain@148.113.249.7','status']
- health=json.loads(run(monitor,timeout=30).stdout);require(health['API'].get('status')=='ok' and all(v=='active' for v in health['services'].values()),'OLD_private_API_not_healthy_do_not_resume_queue')
+  if observed['source_fenced']:
+   live.source('rollback',scope=a,extra={'rollback_proof':{'dns':observed['dns'],'worker_original_verified':True,'queue_held':True,'forms_held':True,'target_intake_never_released':True}})
+  else:require(source.get('state',{}).get('event')=='ROLLED_BACK' and source['state'].get('rollback_verified_epoch'),'source_rollback_unverified_no_duplicate_restore')
+ verified_OLD_health(live,p)
  resume=live.approval('safe_queue_observer_resume');require(resume.get('conditional_OLD_queue_resume_approved') is True,'OLD_queue_resume_not_approved')
  live.edge_write(QUEUE,{'queue_name':'opticable-business-events','settings':{'delivery_paused':False}},'safe_queue_observer_resume');return c.transition({'status':'ROLLED_BACK','authority':'OLD','rollback':'OLD healthy, original Worker verified; Forms remain explicitly held for owner reopen'},'rollback_verified')
 
@@ -449,7 +475,7 @@ def main():
  if args.mode=='rollback':print(json.dumps(conditional_rollback(p)));return
  if args.mode=='seal-final':
   live=Live(p);s,d,a=live.final_paths();print(json.dumps(offhost(d/(a.name+'.age'),'final-'+s['generation'])));return
- require(args.stage in STAGE_SCOPE,'unknown_stage');adapter=Adapters(p,Live(p),ROOT,'/etc/optibrain/migration/owner-approvals.json');inputs=os.environ['OPTIBRAIN_MIGRATION_INPUT_SHA256'];print(json.dumps(getattr(adapter,args.mode)(args.stage,inputs)))
+ require(args.stage in STAGE_SCOPE,'unknown_stage');live=Live(p);adapter=Adapters(p,live,live.root,'/etc/optibrain/migration/owner-approvals.json');inputs=os.environ['OPTIBRAIN_MIGRATION_INPUT_SHA256'];print(json.dumps(getattr(adapter,args.mode)(args.stage,inputs)))
 if __name__=='__main__':
  try:main()
  except Exception as e:print(json.dumps({'status':'BLOCKED','error':str(e),'retry':'RECONCILE_ONLY'}));raise SystemExit(1)
