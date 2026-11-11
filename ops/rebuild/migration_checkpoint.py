@@ -14,6 +14,15 @@ from common import atomic_json,digest,file_hash,require
 ROOT=Path('/recovery/migration-preparation/autonomous-20261101')
 CONTROL=Path('/var/lib/optibrain-rebuild')
 
+def copy_stage_evidence(evidence,destination):
+    # Preserve identical stage basenames from separate approved windows.
+    for source in [*evidence.glob('*.json'),*evidence.glob('source-control-*.tar.gz'),*evidence.glob('windows/*/*.json'),*evidence.glob('windows/*/source-control-*.tar.gz')]:
+        if source.is_file() and not source.is_symlink() and source.stat().st_size<1024**2:
+            out=destination/source.relative_to(evidence)
+            out.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
+            shutil.copyfile(source,out)
+
+
 def seal():
     require(os.geteuid()==0 and os.uname().nodename=='vps-f8e9b20e','replacement_root_only')
     with (CONTROL/'migration-checkpoint.lock').open('a') as lock:
@@ -51,8 +60,7 @@ def seal():
             evidence=ROOT/'executor'
             if evidence.exists():
                 dest=p/'stage-evidence';dest.mkdir(mode=0o700)
-                for f in [*evidence.glob('*.json'),*evidence.glob('source-control-*.tar.gz')]:
-                    if f.stat().st_size<1024**2:shutil.copyfile(f,dest/f.name)
+                copy_stage_evidence(evidence,dest)
             authorizations=ROOT/'executor/owner-authorizations'
             if authorizations.exists():
                 out=p/'actual-owner-authorization';out.mkdir(mode=0o700)
