@@ -43,6 +43,10 @@ class WindowTests(unittest.TestCase):
   self.c.transition({'status':'ROLLED_BACK','authority':'OLD','forms_hold_started_epoch':None,
    'hold_started_epoch':None,'maintenance_closeout':{'path':str(path),'sha256':file_hash(path)}},'fixture_closeout')
   return path
+ def test_window_namespace_requires_explicit_reviewed_configuration(self):
+  self.p['runtime']['windowed_maintenance_evidence']=False
+  with self.assertRaisesRegex(RebuildError,'windowed_evidence_configuration_not_reviewed'):
+   self.begin(self.receipt())
  def test_active_clock_prevents_new_authority_and_does_not_change_state(self):
   self.c.transition({'forms_hold_started_epoch':time.time()-10},'fixture_held');before=self.c.state()
   with self.assertRaisesRegex(RebuildError,'previous_maintenance_window_not_closed'):self.begin(self.receipt())
@@ -91,6 +95,15 @@ class WindowTests(unittest.TestCase):
   self.assertNotEqual(one,two);self.assertEqual((one/'QUEUE_HELD.json').read_text(),'preserved-first-intent')
   self.assertFalse((two/'QUEUE_HELD.json').exists())
   self.assertNotEqual(first_id,self.c.action_id('migration-provider','queue_hold'))
+ def test_closed_Forms_receipt_cannot_be_reused_in_a_fresh_window(self):
+  self.begin(self.receipt());live=adapters.Live.__new__(adapters.Live);live.p=self.p;live.c=self.c
+  evidence={'execution_id':self.p['execution_id'],'scope_sha256':digest(self.p['scopes']['native_forms_maintenance']),
+   'owner_action_reference':'FIXTURE_PRIOR_OWNER_CONFIRMATION','maintenance_window_id':'f'*24,
+   'earliest_window_epoch':self.c.state()['forms_hold_started_epoch'],'disabled_epoch':time.time(),
+   'disabled':['FR','EN']}
+  with patch.object(adapters.Path,'exists',return_value=True),patch.object(adapters,'private_file'),patch.object(adapters,'load',return_value=evidence),patch.object(adapters,'urlopen') as network:
+   with self.assertRaisesRegex(RebuildError,'Forms_owner_evidence_wrong_window'):live.forms()
+   network.assert_not_called()
  def test_null_queue_clock_completion_uses_original_intent_and_preserves_Forms_clock(self):
   issued=time.time()-60;self.c.transition({'completed_stages':['PREPARED','APPROVED','FORMS_HELD'],'forms_hold_started_epoch':issued,'hold_started_epoch':None},'fixture')
   at=stamp();row={'attempt':1,'at':at,'input_sha256':'test'}
