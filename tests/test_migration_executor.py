@@ -230,7 +230,7 @@ class ConditionalRollbackExecutionTests(unittest.TestCase):
  def test_real_conditional_rollback_function_restores_only_approved_pre_NEW_state(self):
   from types import SimpleNamespace
   from migration_adapters import conditional_rollback
-  live,c,calls=self.prepare_live();health=SimpleNamespace(stdout=b'{"API":{"status":"ok"},"services":{"API":"active"}}')
+  live,c,calls=self.prepare_live();health=SimpleNamespace(stdout=json.dumps({'host':self.p['source']['host'],'production_sha':self.p['production_sha'],'fenced':False,'API':{'status':'ok'},'services':{'API':'active'}}).encode())
   with patch('migration_adapters.Live',return_value=live),patch('migration_adapters.run',return_value=health):conditional_rollback(self.p)
   self.assertEqual(calls,['restore_OLD','resume_queue']);self.assertEqual(c.state()['status'],'ROLLED_BACK')
  def test_real_conditional_rollback_function_retains_NEW_and_never_reverses_DNS(self):
