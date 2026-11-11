@@ -88,16 +88,31 @@ class Control:
             except BlockingIOError: raise RebuildError('runner_already_active')
             yield
 
+    def window_id(self):
+        value=(self.state() or {}).get('maintenance_window_id')
+        require(value is None or isinstance(value,str) and len(value)==24 and all(x in '0123456789abcdef' for x in value),'invalid_maintenance_window_id')
+        return value
+
+    def attempt_key(self, stage):
+        window=self.window_id()
+        return stage+'@'+window if window else stage
+
+    def action_id(self, prefix, suffix):
+        window=self.window_id()
+        return prefix+':'+self.run_id+(':'+window if window else '')+':'+suffix
+
     def attempt(self, stage):
         with self.connect() as db:
-            row = db.execute('SELECT state_json FROM migration_attempts WHERE execution_id=? AND stage=? ORDER BY attempt DESC LIMIT 1',(self.run_id,stage)).fetchone()
+            row = db.execute('SELECT state_json FROM migration_attempts WHERE execution_id=? AND stage=? ORDER BY attempt DESC LIMIT 1',(self.run_id,self.attempt_key(stage))).fetchone()
             return json.loads(row[0]) if row else None
 
     def save_attempt(self, stage, value):
+        key=self.attempt_key(stage)
+        if self.window_id():value={**value,'maintenance_window_id':self.window_id()}
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            old = db.execute('SELECT state_json FROM migration_attempts WHERE execution_id=? AND stage=? AND attempt=?',(self.run_id,stage,value['attempt'])).fetchone()
-            db.execute('INSERT OR REPLACE INTO migration_attempts VALUES(?,?,?,?)',(self.run_id,stage,value['attempt'],json.dumps(value,sort_keys=True)))
+            old = db.execute('SELECT state_json FROM migration_attempts WHERE execution_id=? AND stage=? AND attempt=?',(self.run_id,key,value['attempt'])).fetchone()
+            db.execute('INSERT OR REPLACE INTO migration_attempts VALUES(?,?,?,?)',(self.run_id,key,value['attempt'],json.dumps(value,sort_keys=True)))
             self.canonical.local_record(db,'migration:'+self.run_id+':attempt:'+uuid.uuid4().hex,
                 'migration.stage_attempt',{'type':'RECOVERY','identity':stage},timestamp(),
                 before=json.loads(old[0]) if old else None,after=value,
@@ -230,11 +245,15 @@ class Runner:
         require(step.get('retry') in ['NEVER','IDEMPOTENT_LOCAL'],'invalid_retry_class')
         require(0<int(step['timeout_seconds'])<=900,'unbounded_stage_timeout')
         argv=pinned_command(step['execute']);pinned_command(step['verify'])
-        unit='optibrain-migration-step-'+digest([self.p['execution_id'],step['stage'],attempt])[:24]
+        unit='optibrain-migration-step-'+digest([self.p['execution_id'],step['stage'],attempt,*([self.c.window_id()] if self.c.window_id() else [])])[:24]
         value={'attempt':attempt,'stage':step['stage'],'state':'ATTEMPTED','at':stamp(),
             'input_sha256':inputs,'command_sha256':digest(step['execute']),
             'approval_reference':file_hash(self.approval_path),'unit':unit,'deadline_epoch':time.time()+step['timeout_seconds']}
         self.c.save_attempt(step['stage'],value) # fsynced before any external effect
+        if step['stage']=='QUEUE_HELD':
+            original=datetime.fromisoformat(value['at']).timestamp()
+            previous=(self.c.state() or {}).get('hold_started_epoch')
+            self.c.transition({'hold_started_epoch':original if previous is None else min(previous,original)},'queue_hold_intent_clock_started')
         envargs=['--setenv=OPTIBRAIN_MIGRATION_EXECUTION_ID='+self.p['execution_id'],
                  '--setenv=OPTIBRAIN_MIGRATION_INPUT_SHA256='+inputs]
         # Host transient unit: restore bind mounts must affect host, not a private mount namespace.
@@ -314,7 +333,8 @@ class Runner:
             require(bool(row.get('at')),'original_hold_intent_timestamp_required')
             started=min(time.time(),datetime.fromisoformat(row['at']).timestamp(),receipt.get('after_state',{}).get('disabled_epoch',time.time()))
             key='forms_hold_started_epoch' if stage=='FORMS_HELD' else 'hold_started_epoch'
-            changes[key]=min(state.get(key,started),started)
+            previous=state.get(key)
+            changes[key]=started if previous is None else min(previous,started)
         if stage=='CUTOVER':changes['authority']='NEW'
         return self.c.transition(changes,'stage_verified')
 
