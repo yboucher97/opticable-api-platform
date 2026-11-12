@@ -198,6 +198,15 @@ class CheckpointTests(unittest.TestCase):
         f = self.fixture;f.contract.pop('compatibility_evidence');f.approve()
         with self.assertRaises(ValueError):f.supervisor()
 
+    def test_supervisor_and_release_guard_cannot_rollback_their_own_controls(self):
+        f = self.fixture
+        for path in ['deploy/manual-guarded-release.py',
+                     'apps/workflow-api/workflow/automation/operational_recovery.py',
+                     'apps/workflow-api/workflow/automation/release_recovery.py',
+                     'apps/workflow-api/workflow/automation/defect_development.py']:
+            f.contract['targets'][0]['path'] = path;f.approve()
+            with self.assertRaises(ValueError):f.supervisor()
+
     def test_existing_sigv4_client_is_reused_with_exact_complete_object_get(self):
         client = Mock();client.meta = SimpleNamespace(endpoint_url='https://' + 'a'*32 + '.r2.cloudflarestorage.com',
             config=SimpleNamespace(signature_version='s3v4'))

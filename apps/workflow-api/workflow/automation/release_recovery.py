@@ -17,6 +17,8 @@ from .operational_recovery import DevelopmentScope
 
 REPOSITORY = 'yboucher97/opticable-api-platform'
 PROTECTED = re.compile(r'(^|/)(\.git(?:/|$)|\.github(?:/|$)|.*(?:\.db|\.sqlite|\.sqlite3)(?:$|-)|.*(?:-wal|-shm)$|.*\.env(?:$|\.)|.*(?:credential|secret|oauth|sudoers|mutation.control|business.autonomy|master.runbook|safety|approval|authorization|policy).*)', re.I)
+CONTROL_FILES = {'manual-guarded-release.py', 'operational_recovery.py',
+                 'release_recovery.py', 'defect_development.py'}
 
 
 class ExistingR2Reader:
@@ -47,7 +49,7 @@ def file_sha(path):
 def checked_path(value):
     p = Path(value)
     if (not isinstance(value, str) or p.is_absolute() or value != p.as_posix()
-            or not p.parts or '..' in p.parts or PROTECTED.search(value)
+            or not p.parts or '..' in p.parts or PROTECTED.search(value) or p.name in CONTROL_FILES
             or p.suffix not in {'.py', '.json', '.toml', '.conf', '.txt', '.js', '.ts'}):
         raise ValueError('Only exact non-security code/config targets are supported')
     return value
