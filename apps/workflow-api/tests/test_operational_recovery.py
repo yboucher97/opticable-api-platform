@@ -111,6 +111,13 @@ class RecoveryTests(unittest.TestCase):
             with self.assertRaises(FileNotFoundError):RecoveryCoordinator(DevelopmentScope(root), now=NOW)
             self.assertFalse((root / 'state.sqlite').exists())
 
+    def test_writable_by_others_workspace_cannot_grant_repair(self):
+        self.root.chmod(0o777)
+        try:
+            with self.assertRaises(ValueError):self.repair()
+        finally:self.root.chmod(0o700)
+        self.assertFalse((self.root / 'derived').exists())
+
     def test_production_paths_root_and_symlink_scope_are_refused(self):
         for root in ('/opt/opticable-api-platform', '/etc/optibrain', '/var/lib/optibrain', '/'):
             with self.assertRaises(ValueError):DevelopmentScope(root)

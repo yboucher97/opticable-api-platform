@@ -37,6 +37,10 @@ class DevelopmentScope:
         self.marker = self.root / '.optibrain-development.json'
 
     def verify(self, now):
+        directory = self.root.lstat()
+        if (not stat.S_ISDIR(directory.st_mode) or directory.st_uid != os.geteuid()
+                or directory.st_mode & 0o022 or self.root.is_symlink()):
+            raise ValueError('Private development workspace required')
         fd = os.open(self.marker, os.O_RDONLY | os.O_NOFOLLOW)
         with os.fdopen(fd) as stream:
             info = os.fstat(stream.fileno())
