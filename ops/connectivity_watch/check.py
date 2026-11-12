@@ -125,9 +125,11 @@ def main():
         checked_age = age_hours(old.get("last_checked"), now)
         success_age = age_hours(last_success, now)
         use_age = age_hours(old.get("last_use"), now)
+        first_seen = old.get("first_seen") or now.isoformat()
+        first_seen_age = age_hours(first_seen, now)
         result.update(last_checked=now.isoformat(), last_success=last_success,
             check_gap_over_24h=checked_age is not None and checked_age > 24,
-            no_success_over_72h=success_age is not None and success_age > 72,
+            no_success_over_72h=(success_age if success_age is not None else first_seen_age) is not None and (success_age if success_age is not None else first_seen_age) > 72,
             unused_over_30d=use_age is not None and use_age > 720,
             never_verified=last_success is None)
         status = result["status"]
@@ -136,7 +138,7 @@ def main():
         prior_event_status = old.get("event_status")
         if event_status != prior_event_status and (event_status != "HEALTHY" or prior_event_status not in (None, "HEALTHY")):
             events.append({"name": name, "event": "RECOVERED" if event_status == "HEALTHY" else "ATTENTION", "status": event_status, "key": event_key(name, event_status)})
-        history[name] = {"last_checked": now.isoformat(), "last_success": last_success, "status": status, "event_status": event_status}
+        history[name] = {"last_checked": now.isoformat(), "last_success": last_success, "status": status, "event_status": event_status, "first_seen": first_seen}
         if old.get("last_use"):
             history[name]["last_use"] = old["last_use"]
         results.append(result)
