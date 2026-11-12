@@ -37,3 +37,13 @@ Readiness endpoints returning HTTP 200 are only transport checks: actionable rea
 - Live readiness causes for Native watch / Queue remain unresolved: issue #98 reflects readiness state, not definitive root cause. Investigate service logs and queue internals with authorized VPS access.
 - The full application regression suite and on-host tests have NOT run; do not infer production readiness from the 10 offline watchdog tests.
 - Draft PR remains unmerged; production and OLD fenced server unchanged.
+
+## Verified correction and existing-monitor reconciliation
+
+The main loop now dispatches `probe_with_retry(item)`. Four CLI-level tests cover the actual HTTP boundary, not only the retry helper:503->200 makes two calls and records success; repeated503 caps at three attempts despite an excessive config;401/403 make one call;zero retries makes one call. The two retry-sensitive CLI tests fail against the original main dispatcher. All14tests pass after correction.
+
+Live NEW audit is complete. Exact monitoring-only candidate b5dcf192e16d034fbe4f508f13b2b17168b17841 was owner-approved and installed separately. The EXISTING resource timer ran both samplers successfully at2026-11-12T21:37:17–19UTC. No API restart, business flag, OAuth scope or queue replay occurred. Current facts supersede the earlier unresolved-audit section:expired/absent CRM watch remains approval-blocked;local queue has17retained failures and no active work;Cloudflare main0/DLQ8. Missing/stale runtime projection was repaired through the existing resource schedule.
+
+Do not install this standalone checker on the VPS. Use the existing resource/operations/capability/credential-refresh/platform timers and their audit records. Provider inventory/permissions and owner notifications already have canonical stores;the example registry is documentation only. No second state directory, token cache, provider gateway, timer or alert stream is authorized by this PR. Existing Google Ads/GA4/Search Console/Cloudflare native collection stays active;Windsor real reporting remains plan-blocked. Public/financial/customer actions stay closed.
+
+Rollback of this development correction is its exact Git commit only. It has no installed production artifact. Monitoring rollout preimages and validation receipts are under `/var/lib/optibrain/monitoring-self-healing-20261112`;the current master is `/var/lib/optibrain/universal-platform-access/MASTER_UNIVERSAL_PLATFORM_RUNBOOK.txt`.

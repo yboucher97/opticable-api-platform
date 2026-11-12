@@ -27,7 +27,7 @@
     {
       "name": "optibrain-provider-inventory",
       "url": "https://optibrain.opticable.ca/v1/system/providers",
-      "auth_env": "OPTICABLE_CORE_API_KEY",
+      "auth_env": "SITE_WORKFLOW_API_KEY",
       "auth_header": "X-API-Key",
       "retries": 1,
       "timeout": 10
@@ -35,7 +35,7 @@
     {
       "name": "optibrain-readiness",
       "url": "https://optibrain.opticable.ca/v1/system/readiness",
-      "auth_env": "OPTICABLE_CORE_API_KEY",
+      "auth_env": "SITE_WORKFLOW_API_KEY",
       "auth_header": "X-API-Key",
       "retries": 1,
       "timeout": 10

@@ -120,7 +120,7 @@ def main():
     for item in checks:
         name = item["name"]
         old = previous.get(name, {})
-        result = probe(item)
+        result = probe_with_retry(item)
         last_success = now.isoformat() if result["status"] == "HEALTHY" else old.get("last_success")
         checked_age = age_hours(old.get("last_checked"), now)
         success_age = age_hours(last_success, now)
