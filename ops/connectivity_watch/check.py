@@ -76,7 +76,7 @@ def probe(item):
 def probe_with_retry(item):
     retries = min(max(int(item.get("retries", 1)), 0), 2)
     for attempt in range(retries + 1):
-        result = probe_with_retry(item)
+        result = probe(item)
         if result["status"] not in ("UNREACHABLE", "SERVER_ERROR", "RATE_LIMITED"):
             return result
         if attempt < retries:
