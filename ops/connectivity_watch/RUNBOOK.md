@@ -28,3 +28,12 @@ Readiness endpoints returning HTTP 200 are only transport checks: actionable rea
 - Run offline tests and isolated dry-run on the VPS using approved service credentials.
 - Do not deploy or start a new production timer without approval, and do not alter migration fences, business flags, security controls or financial data.
 - Keep exact old production SHA and backup/rollback evidence before any future authorized production change.
+
+## Execution results (2026-11-12)
+- Added CI workflow test-connection-watchdog.yml scoped to the draft feature branch; no deployment steps and contents:read permission only.
+- GitHub Actions run 43287399096 at commit c1427936876ae19c7c9eb8e2e50fdf09e7cc6a3c: completed success. Python compileall passed; 10 offline watchdog unit tests passed. See https://github.com/yboucher97/opticable-api-platform/actions/runs/43287399096
+- Optional provider identity probes documented in providers.example.json: GitHub GET /user and Zoho CRM GET /crm/v2/org. They are not active and require approved read-only credentials. They have not been tested against those providers from the VPS.
+- WATCHDOG SOURCE CHANGE: status transition events are emitted via JSON only; no customer mail, no external notifications, no new scheduler. This is intended to integrate with the existing alert route rather than produce a duplicate alert stream.
+- Live readiness causes for Native watch / Queue remain unresolved: issue #98 reflects readiness state, not definitive root cause. Investigate service logs and queue internals with authorized VPS access.
+- The full application regression suite and on-host tests have NOT run; do not infer production readiness from the 10 offline watchdog tests.
+- Draft PR remains unmerged; production and OLD fenced server unchanged.
