@@ -48,7 +48,10 @@ def probe(item):
         return {"name": name, "status": "MISSING_CREDENTIAL"}
     headers = {"User-Agent": "OptiBrain-Connection-Watch/1"}
     if token:
-        headers["Authorization"] = f'{item.get("auth_scheme", "Bearer")} {token}'
+        header_name = item.get("auth_header", "Authorization")
+        if header_name not in ("Authorization", "X-API-Key"):
+            return {"name": name, "status": "CONFIG_ERROR"}
+        headers[header_name] = f'{item.get("auth_scheme", "Bearer")} {token}' if header_name == "Authorization" else token
     req = urllib.request.Request(url, headers=headers, method="GET")
     try:
         with OPENER.open(req, timeout=min(max(float(item.get("timeout", 10)), 1), 30)) as response:
