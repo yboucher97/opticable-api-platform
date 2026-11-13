@@ -2,6 +2,8 @@ import ast
 import importlib.util
 from pathlib import Path
 import unittest
+import tempfile
+import hashlib
 from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[3]
@@ -26,3 +28,21 @@ class FoundationGateTests(unittest.TestCase):
         code=ast.get_source_segment(source,node)
         self.assertLess(code.index('module.verify_runtime'),code.index('from workflow.automation.release_recovery'))
         self.assertNotIn('module.activate()',code)
+
+    def test_rollback_accepts_only_exact_candidate_files_and_link(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);env=root/'env';manifest=root/'manifest';venv=root/'candidate-venv';venv.mkdir()
+            env.write_bytes(b'exact-environment');manifest.write_bytes(b'exact-manifest');live=root/'live';live.symlink_to(venv)
+            expected={'candidate_sha':'a'*40,'env_sha256':hashlib.sha256(env.read_bytes()).hexdigest(),
+                'manifest_sha256':hashlib.sha256(manifest.read_bytes()).hexdigest(),'venv':str(venv)}
+            def command(*args):return 'a'*40 if args[-2:]==('rev-parse','HEAD') else ''
+            with patch.object(gate,'run',command):gate.require_rollback_state(expected,env=env,manifest=manifest,live=live)
+            env.write_bytes(b'NEWER_CREDENTIAL_CONFIGURATION')
+            with patch.object(gate,'run',command),self.assertRaises(RuntimeError):
+                gate.require_rollback_state(expected,env=env,manifest=manifest,live=live)
+            self.assertEqual(env.read_bytes(),b'NEWER_CREDENTIAL_CONFIGURATION')
+
+    def test_unknown_source_and_incomplete_checkpoint_stop_before_rollback(self):
+        with self.assertRaises(RuntimeError):gate.require_rollback_state(None)
+        with patch.object(gate,'run',return_value='newer-source'),self.assertRaises(RuntimeError):
+            gate.require_rollback_state({'candidate_sha':'a'*40})

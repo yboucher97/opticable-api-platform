@@ -519,3 +519,9 @@ offline-only procedure is in the recovery guide. Application rollback, service
 recovery and full host/data disaster recovery remain distinct approval boundaries.
 Final regression counts, development/PR commits and installed file identities are
 recorded in the completion receipt and protected operational master appendices.
+The staged guarded-release helper additionally checks exact candidate code,
+configuration hashes and environment link before rollback. Unknown/newer edits or
+an incomplete candidate checkpoint stop recovery and persist an owner-review hold;
+failed rollback health verification also holds subsequent releases. A real isolated
+newer-credential/configuration file is preserved in the regression. This helper
+improvement is not installed and does not change PR161's application source.
