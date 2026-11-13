@@ -139,19 +139,23 @@ def native_watch_signal(native, now):
 
 
 def public_verification_signal(observation, now):
-    """Classify an existing probe receipt; no second collector or auth inference."""
+    if not isinstance(observation, dict):
+        return signal('Public verification','UNKNOWN','Public evidence is malformed',automatic_policy_change_authorized=False)
     age=age_seconds(observation.get('at'),now)
     if age is None or age>900:
-        return signal('Public verification','UNKNOWN','Public-path evidence is absent or stale')
+        return signal('Public verification','UNKNOWN','Public-path evidence is absent or stale',automatic_policy_change_authorized=False)
     status=observation.get('http_status');origin=observation.get('origin_healthy')
-    denied=status in {401,403}
-    verified=status==200 and observation.get('semantic_health_verified') is True
-    return signal('Public verification','ACTION REQUIRED' if denied or origin is False else 'OK' if verified else 'UNKNOWN',
+    valid=type(status) is int and 100<=status<=599
+    denied=valid and status in {401,403}
+    failed=origin is False
+    verified=valid and status==200 and observation.get('semantic_health_verified') is True and (origin is True or origin is None)
+    return signal('Public verification','ACTION REQUIRED' if denied or failed else 'OK' if verified else 'UNKNOWN',
+        'Independent origin-health evidence reports failure' if failed else
         'This public-path check was denied; provider cause and policy intent remain unproven' if denied else
         'Existing public semantic health evidence verified' if verified else 'Public semantic verification is incomplete',
-        at=observation.get('at'),http_status=status,origin_healthy=origin,
-        classification='EDGE_CHECK_DENIAL' if denied else 'VERIFIED_PUBLIC_PATH' if verified else 'INCOMPLETE_VERIFICATION',
-        origin_outage_proven=origin is False,automatic_policy_change_authorized=False)
+        at=observation.get('at'),http_status=status if valid else None,origin_healthy=origin,
+        classification='ORIGIN_HEALTH_FAILURE' if failed else 'EDGE_CHECK_DENIAL' if denied else 'VERIFIED_PUBLIC_PATH' if verified else 'INCOMPLETE_VERIFICATION',
+        origin_outage_proven=failed,automatic_policy_change_authorized=False)
 
 
 def build_readiness(store, native, *, api_version, auth_configured, runtime_path=RUNTIME, now=None,

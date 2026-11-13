@@ -30,6 +30,19 @@ _watch=importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_watch)
 age_hours=_watch.age_hours
 '''
+PUBLIC_TEST_PREFIX = '''import unittest,datetime as dt,importlib.util
+from pathlib import Path
+_spec=importlib.util.spec_from_file_location('v2_readiness',Path(__file__).resolve().parents[3]/'apps/workflow-api/workflow/automation/readiness.py')
+_watch=importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_watch)
+def classify_public(value,now):
+ try:return _watch.public_verification_signal(value,now)
+ except (TypeError,AttributeError,ValueError):return {'state':'CRASHED','classification':'CRASHED'}
+'''
+GENERATION_TARGETS = {
+    'future_timestamp':('ops/connectivity_watch/check.py','age_hours',GENERATED_TEST_PREFIX),
+    'public_evidence_consistency':('apps/workflow-api/workflow/automation/readiness.py','public_verification_signal',PUBLIC_TEST_PREFIX),
+}
 REPOSITORY = 'yboucher97/opticable-api-platform'
 SAFE_ENV = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'GIT_CONFIG_NOSYSTEM': '1',
             'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_TERMINAL_PROMPT': '0'}
@@ -173,6 +186,13 @@ def prepare_defect(source_repo, scope, patch, regression_code, *, source_sha, gi
                 if not retained_before['passed'] or not retained_after['passed'] or retained_after['tests'] != retained_before['tests']:
                     raise ValueError('Existing regression coverage must be preserved')
                 retained = {'before': retained_before, 'after': retained_after}
+            if 'apps/workflow-api/workflow/automation/readiness.py' in patch:
+                diagnostic_before=run_regression(before,'test_issue98_readiness.py',hardened=True)
+                diagnostic_after=run_regression(candidate,'test_issue98_readiness.py',hardened=True)
+                if (not diagnostic_before['passed'] or not diagnostic_after['passed']
+                        or diagnostic_before['tests']!=diagnostic_after['tests']):
+                    raise ValueError('Existing readiness regressions must be preserved')
+                retained={**(retained or {}),'readiness_before':diagnostic_before,'readiness_after':diagnostic_after}
         branch = 'repair/verified-defect-' + fingerprint[:16]
         git(candidate, 'checkout', '-b', branch)
         git(candidate, 'add', '--', *patch, 'apps/workflow-api/tests/' + name)
@@ -269,16 +289,54 @@ class DiagnosticCodingEnvironment:
     requiring an input patch or regression. Unknown problems fail closed. No model
     key, paid call, scheduler or unrestricted tool-executing agent is introduced.
     """
-    version = 'diagnostic-coding-v2.2'
+    version = 'diagnostic-coding-v2.3'
 
     def propose(self, context):
-        if context['diagnostic'].get('rule') != 'future_timestamp':
+        rule=context['diagnostic'].get('rule')
+        if rule not in GENERATION_TARGETS:
             raise ValueError('No validated generation rule for this diagnosis')
+        path,function,prefix=GENERATION_TARGETS[rule]
         if context.get('validated_recipe'):
             recipe = context['validated_recipe']
-            return {'path':'ops/connectivity_watch/check.py','function':'age_hours',
+            return {'path':path,'function':function,
                     'replacement':recipe['replacement'],'regression':recipe['regression'],
                     'usage':{'cost_microusd':0,'tokens':1}}
+        if rule=='public_evidence_consistency':
+            replacement='''def public_verification_signal(observation, now):
+    if not isinstance(observation, dict):
+        return signal('Public verification','UNKNOWN','Public evidence is malformed',automatic_policy_change_authorized=False)
+    age=age_seconds(observation.get('at'),now)
+    if age is None or age>900:
+        return signal('Public verification','UNKNOWN','Public-path evidence is absent or stale',automatic_policy_change_authorized=False)
+    status=observation.get('http_status');origin=observation.get('origin_healthy')
+    valid=type(status) is int and 100<=status<=599
+    denied=valid and status in {401,403}
+    failed=origin is False
+    verified=valid and status==200 and observation.get('semantic_health_verified') is True and (origin is True or origin is None)
+    return signal('Public verification','ACTION REQUIRED' if denied or failed else 'OK' if verified else 'UNKNOWN',
+        'Independent origin-health evidence reports failure' if failed else
+        'This public-path check was denied; provider cause and policy intent remain unproven' if denied else
+        'Existing public semantic health evidence verified' if verified else 'Public semantic verification is incomplete',
+        at=observation.get('at'),http_status=status if valid else None,origin_healthy=origin,
+        classification='ORIGIN_HEALTH_FAILURE' if failed else 'EDGE_CHECK_DENIAL' if denied else 'VERIFIED_PUBLIC_PATH' if verified else 'INCOMPLETE_VERIFICATION',
+        origin_outage_proven=failed,automatic_policy_change_authorized=False)
+'''
+            regression=prefix+'''class PublicEvidenceRegression(unittest.TestCase):
+ def test_malformed_status_is_unknown(self):
+  self.assertEqual(classify_public({'at':'2026-11-13T00:00:00Z','http_status':[]},dt.datetime(2026,11,13,tzinfo=dt.timezone.utc))['state'],'UNKNOWN')
+ def test_nonobject_is_unknown(self):
+  self.assertEqual(classify_public([],dt.datetime(2026,11,13,tzinfo=dt.timezone.utc))['state'],'UNKNOWN')
+ def test_conflicting_origin_is_not_verified(self):
+  self.assertEqual(classify_public({'at':'2026-11-13T00:00:00Z','http_status':200,'origin_healthy':False,'semantic_health_verified':True},dt.datetime(2026,11,13,tzinfo=dt.timezone.utc))['classification'],'ORIGIN_HEALTH_FAILURE')
+ def test_denial_does_not_prove_origin_outage(self):
+  self.assertFalse(classify_public({'at':'2026-11-13T00:00:00Z','http_status':403,'origin_healthy':True},dt.datetime(2026,11,13,tzinfo=dt.timezone.utc))['origin_outage_proven'])
+ def test_good_public_health_retained(self):
+  self.assertEqual(classify_public({'at':'2026-11-13T00:00:00Z','http_status':200,'origin_healthy':True,'semantic_health_verified':True},dt.datetime(2026,11,13,tzinfo=dt.timezone.utc))['state'],'OK')
+ def test_security_authority_remains_false(self):
+  self.assertFalse(classify_public({'at':'2026-11-13T00:00:00Z','http_status':403},dt.datetime(2026,11,13,tzinfo=dt.timezone.utc))['automatic_policy_change_authorized'])
+'''
+            return {'path':path,'function':function,'replacement':replacement,'regression':regression,
+                    'usage':{'cost_microusd':0,'tokens':(len(replacement)+len(regression)+3)//4}}
         replacement = '''def age_hours(value, now):
     try:
         instant = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
@@ -303,13 +361,15 @@ class DiagnosticCodingEnvironment:
 
 def validate_generated_change(original, proposal):
     """Only the registered pure diagnostic function can change; guards survive."""
-    if proposal.get('path') != 'ops/connectivity_watch/check.py' or proposal.get('function') != 'age_hours':
+    choice=next((r for r in GENERATION_TARGETS.values() if r[:2]==(proposal.get('path'),proposal.get('function'))),None)
+    if not choice:
         raise ValueError('Generated code cannot select unrelated or protected files')
+    path,function,prefix=choice
     replacement = proposal.get('replacement', '')
     if not isinstance(replacement, str) or not 1 <= len(replacement.encode()) <= 4096:
         raise ValueError('Bounded generated function required')
     tree = ast.parse(original);new = ast.parse(replacement)
-    target = next((n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'age_hours'), None)
+    target = next((n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == function), None)
     if (not target or len(new.body) != 1 or not isinstance(new.body[0], ast.FunctionDef)
             or new.body[0].name != target.name or ast.dump(new.body[0].args) != ast.dump(target.args)
             or new.body[0].decorator_list):
@@ -319,6 +379,8 @@ def validate_generated_change(original, proposal):
     locals_ = {n.id for n in ast.walk(new) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store)}
     names = locals_ | {a.arg for a in target.args.args} | {'dt','ValueError','AttributeError','TypeError'}
     attributes = {'datetime','fromisoformat','replace','utcoffset','total_seconds'}
+    if function=='public_verification_signal':
+        names|={'signal','age_seconds','isinstance','dict','type','int'};attributes={'get'}
     for n in ast.walk(new):
         if isinstance(n, forbidden) or isinstance(n, ast.Name) and n.id not in names:
             raise ValueError('Generated diagnostics must remain pure and scoped')
@@ -326,12 +388,16 @@ def validate_generated_change(original, proposal):
             raise ValueError('Generated diagnostic access exceeds reviewed grammar')
         if isinstance(n, ast.Assign) and any(not isinstance(t, ast.Name) for t in n.targets):
             raise ValueError('Generated diagnostics cannot alter global objects')
+        if function=='public_verification_signal' and isinstance(n,ast.Return):
+            if (not isinstance(n.value,ast.Call) or not isinstance(n.value.func,ast.Name) or n.value.func.id!='signal'
+                    or not any(k.arg=='automatic_policy_change_authorized' and isinstance(k.value,ast.Constant) and k.value.value is False for k in n.value.keywords)):
+                raise ValueError('Generated classification cannot grant security-policy authority')
     regression = proposal.get('regression')
     if not isinstance(regression, str) or not 1 <= len(regression.encode()) <= 4096:
         raise ValueError('Bounded generated regression required')
-    if not regression.startswith(GENERATED_TEST_PREFIX):
+    if not regression.startswith(prefix):
         raise ValueError('Trusted immutable regression loader required')
-    tests = ast.parse(regression[len(GENERATED_TEST_PREFIX):]);assertions = 0
+    tests = ast.parse(regression[len(prefix):]);assertions = 0
     for n in ast.walk(tests):
         if isinstance(n, ast.Import) and any(a.name not in {'unittest','datetime'} for a in n.names):
             raise ValueError('Generated regression import refused')
@@ -345,7 +411,7 @@ def validate_generated_change(original, proposal):
             raise ValueError('Generated regression reflection refused')
         if isinstance(n, (ast.Global,ast.Nonlocal,ast.With,ast.Lambda)):
             raise ValueError('Generated regression side effect refused')
-        if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id != 'age_hours':
+        if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id != ('age_hours' if function=='age_hours' else 'classify_public'):
             raise ValueError('Generated regression call refused')
     if assertions < 3:
         raise ValueError('Positive and negative regression coverage required')
@@ -404,14 +470,18 @@ def develop_from_incident(coordinator, incident_id, source_repo, *, source_sha, 
         DevelopmentScope(source)
         if git(source,'rev-parse','HEAD') != source_sha or git(source,'status','--porcelain'):
             raise ValueError('Exact clean baseline required before generation')
-        original = subprocess.check_output(['git','-C',str(source),'show',source_sha+':ops/connectivity_watch/check.py'],env=SAFE_ENV,timeout=10).decode()
+        diagnostic=observations[-1].get('diagnostic',{})
+        if diagnostic.get('rule') not in GENERATION_TARGETS:raise ValueError('No registered bounded diagnostic rule')
+        source_path,function,_=GENERATION_TARGETS[diagnostic['rule']]
+        original = subprocess.check_output(['git','-C',str(source),'show',source_sha+':'+source_path],env=SAFE_ENV,timeout=10).decode()
         if len(original.encode()) > 32768: raise ValueError('Source context exceeds budget')
-        target = next(n for n in ast.parse(original).body if isinstance(n,ast.FunctionDef) and n.name=='age_hours')
+        target = next(n for n in ast.parse(original).body if isinstance(n,ast.FunctionDef) and n.name==function)
         function_hash = hashlib.sha256(ast.get_source_segment(original,target).encode()).hexdigest()
         learned = None;learned_ref = None
         for row in previous:
             state = audit.get(row[0]);saved = state.get('after_state') or {}
-            if state['status']=='SUCCEEDED' and saved.get('recipe',{}).get('source_function_sha256')==function_hash:
+            if (state['status']=='SUCCEEDED' and saved.get('recipe',{}).get('source_function_sha256')==function_hash
+                    and saved['recipe'].get('rule')==diagnostic['rule']):
                 audit.verify_integrity(row[0]);learned=saved['recipe'];learned_ref=row[0];break
         context = {'source':original,'source_sha':source_sha,'diagnostic':observations[-1].get('diagnostic',{}),
                    'observations':observations[-4:], 'validated_recipe':learned}
@@ -419,7 +489,7 @@ def develop_from_incident(coordinator, incident_id, source_repo, *, source_sha, 
         if proposal.get('usage',{}).get('cost_microusd') != 0 or not 0 < proposal['usage']['tokens'] <= 4000:
             raise ValueError('Generation resource or cost budget exceeded')
         data, test = validate_generated_change(original,proposal)
-        result = prepare_defect(source,scope,{'ops/connectivity_watch/check.py':data},test,
+        result = prepare_defect(source,scope,{source_path:data},test,
             source_sha=source_sha,github_read=github_read,now=now,generated=True)
         if result['candidate_validation']['network_isolation'] != 'Landlock+seccomp':
             raise ValueError('Generated code isolation not verified')

@@ -50,12 +50,21 @@ def validate_ci(ci,target):
             and ci.get('head_branch')=='main' and ci.get('event') in {'push','workflow_dispatch'},'exact_ci_missing')
 
 def recovery_validator():
-    """Future installation must pin the reviewed helper in the existing root runtime."""
-    path=Path('/usr/local/lib/optibrain/operations-runtime.py')
+    """Use the independently protected passive capsule; leave operational readers intact.
+
+    Preparing this helper does not install it or enable recovery execution.
+    The existing exact owner, main CI and release contracts still gate deployment.
+    """
+    policy=read_private(Path('/etc/optibrain/recovery-passive.json'))
+    path=Path('/usr/local/lib/optibrain/recovery-observer.py')
     info=path.lstat()
     require(not path.is_symlink() and info.st_uid==0 and not info.st_mode&0o022,'untrusted_recovery_runtime')
+    require(sha(path)==policy.get('observer_sha256'),'independent_observer_pin_changed')
     spec=importlib.util.spec_from_file_location('release_recovery_runtime',path)
-    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);module.activate()
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    runtime=Path('/usr/local/lib/optibrain-recovery')
+    module.verify_runtime(runtime,policy)
+    sys.path[:0]=[str(runtime),str(runtime/'vendor')]
     from workflow.automation.release_recovery import validate_contract
     return validate_contract
 

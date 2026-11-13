@@ -132,3 +132,73 @@ durability, independently pinned188-file capsule, disabled playbook exercises an
 current off-host/key-custody evidence. Capsule staging does not authorize production
 execution. An external root pin and reviewed production adapter remain prerequisites.
 No old business database or offline AGE identity is copied into production.
+
+## Protected passive supervision and the first readiness adapter
+
+The NEW host now has the exact existing188-file recovery capsule installed read-only,
+with an independently pinned copy of381 existing dependency files. System Python
+can verify it without the application virtual environment. A root-owned observer
+verifies the complete inventory before starting one unscheduled systemd verification
+child as nobody, with an empty capability set and per-process network denial.
+The existing resource timer invokes observation; no timer, watchdog or alert stream
+was added. Main-API unavailability is simulated only in the observer process.
+Production repairs, restarts and rollback dispatch are absent from this entry point.
+Protected installation, initial failed attempts and exact component rollback are in
+`/var/lib/optibrain/recovery-foundation-20261113`.
+
+The readiness refresh entry point and adapter are development artifacts only.
+They permit exactly the existing runtime snapshot command, with one attempt,
+45seconds and900seconds cooldown. Root-owned policy and a separate exact operation
+approval are required after releaseb0b94f1; boolean enablement alone is insufficient.
+The adapter checks the current45flags,76setting checkpoint, sampler identities,
+idle invocation, stale observation and existing immutable journal. It verifies real
+output independently, preserves source timestamps and genuine failures, restores
+only its exact bad derived output, and holds on timer races, timeout or unfinished
+audit. It never controls systemd or restores business databases. It is not installed,
+and no production grant has been created.
+
+### Owner offline AGE check
+
+Use the owner's existing trusted offline recovery device. Do not paste, upload or
+copy the private identity to NEW/OLD, GitHub or chat. Do not create a replacement
+identity to make this check pass. Installed age-keygen help confirms the following
+local-only public-recipient derivation:
+
+```sh
+umask 077
+age-keygen -y /OWNER/EXISTING/PRIVATE/identity.txt > /OWNER/PRIVATE-SCRATCH/recipient.txt
+```
+
+On that offline device, hash the UTF-8 recipient text after trimming surrounding
+whitespace; it must equal
+`d3593cf7f443701fe9d863b6fa2b7ba7ff17ed216f6a6f463e1333589cd8a96f`.
+With multiple identities, compare the intended recipient individually. This proves
+local possession of a matching identity, not recovery of a particular archive.
+
+For an end-to-end check, obtain the existing encrypted artifact through the owner's
+off-host access, without copying production credentials. Generation023658Z object:
+`backups/2026/11/13/20261113T023658Z.tar.gz.age`,423135047bytes, SHA256
+`aef442ba13a1940dcbe757ca90bd684a288dc0202f2c8c0e5c030236e8cf2ef8`.
+Verify that ciphertext hash before decrypting locally into private disposable
+scratch on an encrypted volume with sufficient capacity:
+
+```sh
+age --decrypt --identity /OWNER/EXISTING/PRIVATE/identity.txt \
+  --output /OWNER/PRIVATE-SCRATCH/recovery.tar.gz /OWNER/DOWNLOAD/generation.tar.gz.age
+```
+
+The decrypted archive SHA256 must equal
+`fe445293e5022df2a814f3fa9e7878f22dbbe286e07d2588f414e4342e268c01`.
+Use the existing checksum-pinned isolated restore validator on the isolated recovery
+device, with recovery authority conversion disabled. Never extract this archive over
+a live production root or database. Report only matching recipient/hash and the
+isolated restore result/time; private identity and archive contents remain offline.
+No such current owner-key/decryption attestation has yet been received.
+
+Application rollback changes only an exact approved code/configuration version.
+Service recovery changes only an explicitly approved service operation and can have
+ambiguous effects that require stopping. Full VPS recovery also requires off-host
+access, bootstrap, an available owner identity and separately authorized data restore
+and provider reconciliation. GitHub availability and encrypted readback do not prove
+those disaster-recovery dependencies. Newer business and audit records must never be
+replaced by an older database during ordinary application rollback.
