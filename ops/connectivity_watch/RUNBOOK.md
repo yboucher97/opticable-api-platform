@@ -20,7 +20,7 @@ Scope: Existing draft PR #159, development branch only. No production changes.
 python3 -m unittest discover -s ops/connectivity_watch -p 'test_*.py'
 python3 ops/connectivity_watch/check.py --config ops/connectivity_watch/endpoints.example.json --state /tmp/optibrain-connection-state.json --output /tmp/optibrain-connection-last.json
 
-The registry's authenticated probes require OPTICABLE_CORE_API_KEY in a restricted environment. Do not commit credentials or check config into production until owner-approved.
+The registry's authenticated probes require SITE_WORKFLOW_API_KEY in a restricted environment. Do not commit credentials or check config into production until owner-approved.
 Readiness endpoints returning HTTP 200 are only transport checks: actionable readiness content remains interpreted by the existing GitHub workflow.
 
 ## Remaining gates
@@ -47,3 +47,26 @@ Live NEW audit is complete. Exact monitoring-only candidate b5dcf192e16d034fbe4f
 Do not install this standalone checker on the VPS. Use the existing resource/operations/capability/credential-refresh/platform timers and their audit records. Provider inventory/permissions and owner notifications already have canonical stores;the example registry is documentation only. No second state directory, token cache, provider gateway, timer or alert stream is authorized by this PR. Existing Google Ads/GA4/Search Console/Cloudflare native collection stays active;Windsor real reporting remains plan-blocked. Public/financial/customer actions stay closed.
 
 Rollback of this development correction is its exact Git commit only. It has no installed production artifact. Monitoring rollout preimages and validation receipts are under `/var/lib/optibrain/monitoring-self-healing-20261112`;the current master is `/var/lib/optibrain/universal-platform-access/MASTER_UNIVERSAL_PLATFORM_RUNBOOK.txt`.
+
+
+## Production and recovery integration review — 2026-11-13 UTC
+
+Current main remains be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa. Production NEW is
+ec9a8e85095b57faf21212000652912e08093da4, one intake-hold commit ahead of main.
+The seven files in this utility are additions with no overlap against the
+production-based PR160 recovery changes. They were integrated in an isolated
+development branch; all14 CLI tests pass. PR160 includes the same utility and
+requires its offline tests in its CI. No scheduled watchdog was installed.
+
+The approved additional current_readiness.py correction was installed separately
+as the only production file change, SHA256
+dc842c0ba4ee696f24cd65a6f51d47fe91e5d734003497a8d07f8a6bf543c921.
+It reports missing R2 restore/readback proof as UNKNOWN; provider/delta source
+timestamps remain unchanged. This utility stays offline/manual with transport
+status only. Existing operations/credential/resource/platform collectors and
+notification ledgers remain canonical.
+
+Review and integration do not authorize merging, application deployment, Native
+watch recreation, historical acknowledgements/replay or production self-repair.
+PR160 retains the exact-production recovery base; bringing the intake-hold
+revision into main requires its own reviewed integration and release approval.
