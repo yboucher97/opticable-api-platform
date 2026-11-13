@@ -448,3 +448,80 @@ No application deployment, production pin/grant change or monitoring reinstall i
 part of this task. Development rollback is source-only; installed monitoring retains
 its separately verified prior monitoring-correction preimage. Never overwrite newer
 business databases, notification ledgers, approvals or immutable incident history.
+
+## Production recovery foundation — passive only, 2026-11-13
+
+The protected existing capsule0cf13bab21142641900c013ba49e578cf69c9002 is installed on
+NEW with its original manifestbf40ab9729ef2b341bccba25679c35a76e455d7fdc662572464b6ab790811b6f.
+It contains188Python files. System-Python dependency closure381files/12772825bytes,
+copied from existing installed packages without downloads, is independently pinned
+asfa1fa6c7c3d0a7d6c519a3b258bf8d7c3e447b74cbdd0da95605b11f2725433c.
+Installation integration sourcebf9016b;576protected static files, including one
+unscheduled capability-free nobody verification service and one drop-in on the
+existing resource timer. No new schedule or notification sender exists. Complete
+file hashes, preimages, failures, fixes and rollback receipts are kept under
+`/var/lib/optibrain/recovery-foundation-20261113`.
+
+Initial system-Python dependency failure and service-context privilege-drop failures
+were detected, then all changed supervisor components were restored. The final child
+is started unprivileged by systemd rather than inheriting privilege changes from the
+resource service. Actual resource-service execution, separate runtime verification,
+main-API-unavailable process-local simulation and restricted-operation rejection
+pass. The main API was never stopped. Runtime code, vendor files and service pins
+are root-owned; application imports run without capabilities and with network denial.
+Passive status cannot execute application restart, repair, rollback or deployment.
+
+PR161 remains exactb0b94f118a22e0dfcbee8d3f729f67d618cf99da, not merged/deployed.
+Full2061test baseline and exact-head3jobCI are reverified. Preflight identifies two
+pre-existing tracked documentation overlays, preserved in release161-preimages.tar.gz
+SHA256ba0779aa174342fe5b7e8d9bf3825101225cb522fbf544efdbc9ce7fee89d126.
+The actual master document ise35a269f...82226d; Git baseline isd66c9322...9c4f1,
+candidate iscec6eaab...f3ca4. No reset or trust-pin update was performed. Existing gate
+requires clean tracked files and exact main push/workflow_dispatch CI; PR CI alone
+does not satisfy it. A reviewed read-only validator bridge is staged in development
+and leaves existing operational reader pins unchanged. Main promotion, exact overlay
+reconciliation, root helper installation, release environment and release/config pins
+remain part of the separate exact release approval, never inferred from credentials.
+
+New readiness adapter/entrypoint are isolated development only. The fixed command is
+`/usr/bin/python3 -I -B /usr/local/lib/optibrain/phase14-runtime-snapshot.py --current-services`.
+Exact operation/grant/service/source/checkpoint binding,1attempt/45seconds/900seconds,
+global lock, immutable existing phase12journal claim, audit interruption hold,
+independent output/clock/source checks, timer-race stop and exact-derived-preimage
+recovery are implemented. No production grant or installed caller exists. Original
+PDF/Omada and application rollback grants remain disabled.
+
+Generationv2.3 adds two public-evidence defect classes to the existing narrow
+diagnostic workflow: malformed status/object evidence and contradictory origin/
+public health classification. Two real isolated reproductions against authenticated
+GitHub sourceb0b94f1 produced branchrepair/verified-defect-974b056d725edefc,
+commit1263ae433690c0f85a1bff86ba879c34c072b690. Six paired regressions and retained
+utility/readiness tests pass. The outcome is appended to the existing demonstration
+learning database; one-hour development scope was renewed explicitly within this
+session's isolated-work authority. The two-attempt/day budget was preserved.
+Current live malformed/conflicting evidence is not claimed. Root/security/grant/
+recovery-control paths remain ineligible; generated classification cannot change its
+policy-authority=false field. No general agent, model call, merge or deployment.
+
+Native authenticatedGET23:01UTC still204/absent. A diagnostic child initially omitted
+the existing API supplementary groups; correcting that local test context restored
+the read, without a credential or permission change. It was not a provider outage.
+Historical17failures,10unacknowledged,17unclassified reviews and8Cloudflare dead
+letters remain. Public health/receiver403 remains distinct from healthy origin;
+delta execution staysOFF and source evidence stale. Short-interval growth warnings
+are measured independently of negative long-term trend. Existing samples show backup/
+spool/history growth and later development/runtime staging; attribution is bounded
+by overlapping category estimates. No warning, evidence or queue was suppressed.
+
+Current R2HEAD and local archive rehash pass; retained complete readback/10store restore
+proof remains valid. Owner offline AGE availability is still unverified. The exact
+offline-only procedure is in the recovery guide. Application rollback, service
+recovery and full host/data disaster recovery remain distinct approval boundaries.
+Final regression counts, development/PR commits and installed file identities are
+recorded in the completion receipt and protected operational master appendices.
+The staged guarded-release helper additionally checks exact candidate code,
+configuration hashes and environment link before rollback. Unknown/newer edits or
+an incomplete candidate checkpoint stop recovery and persist an owner-review hold;
+failed rollback health verification also holds subsequent releases. A real isolated
+newer-credential/configuration file is preserved in the regression. This helper
+improvement is not installed and does not change PR161's application source.

@@ -50,12 +50,21 @@ def validate_ci(ci,target):
             and ci.get('head_branch')=='main' and ci.get('event') in {'push','workflow_dispatch'},'exact_ci_missing')
 
 def recovery_validator():
-    """Future installation must pin the reviewed helper in the existing root runtime."""
-    path=Path('/usr/local/lib/optibrain/operations-runtime.py')
+    """Use the independently protected passive capsule; leave operational readers intact.
+
+    Preparing this helper does not install it or enable recovery execution.
+    The existing exact owner, main CI and release contracts still gate deployment.
+    """
+    policy=read_private(Path('/etc/optibrain/recovery-passive.json'))
+    path=Path('/usr/local/lib/optibrain/recovery-observer.py')
     info=path.lstat()
     require(not path.is_symlink() and info.st_uid==0 and not info.st_mode&0o022,'untrusted_recovery_runtime')
+    require(sha(path)==policy.get('observer_sha256'),'independent_observer_pin_changed')
     spec=importlib.util.spec_from_file_location('release_recovery_runtime',path)
-    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);module.activate()
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    runtime=Path('/usr/local/lib/optibrain-recovery')
+    module.verify_runtime(runtime,policy)
+    sys.path[:0]=[str(runtime),str(runtime/'vendor')]
     from workflow.automation.release_recovery import validate_contract
     return validate_contract
 
@@ -72,6 +81,22 @@ def validate_release_recovery(auth,previous,target):
     return {'last_good_sha':previous,'candidate_sha':target,'generation':receipt['generation'],
             'r2_object_key':receipt['r2_object_key'],'contract_sha256':auth['recovery_contract_sha256'],
             'database_restore_allowed':False}
+
+def require_rollback_state(expected,*,env=ENV,manifest=MANIFEST,live=None):
+    """Never overwrite an unknown/newer edit with an earlier release preimage."""
+    require(isinstance(expected,dict),'rollback_candidate_checkpoint_incomplete')
+    require(run(*GIT,'rev-parse','HEAD')==expected['candidate_sha'],'newer_source_edit_blocks_rollback')
+    require(not run(*GIT,'diff','--name-only') and not run(*GIT,'diff','--cached','--name-only'),'newer_tracked_edit_blocks_rollback')
+    require(sha(env)==expected['env_sha256'] and sha(manifest)==expected['manifest_sha256'],'newer_configuration_edit_blocks_rollback')
+    live=live or PROD/'apps/workflow-api/.venv'
+    require(live.is_symlink() and str(live.resolve())==expected['venv'],'newer_environment_link_blocks_rollback')
+
+def recovery_hold(reason,target,previous):
+    directory=Path('/var/lib/optibrain/releases');directory.mkdir(mode=0o700,exist_ok=True)
+    path=directory/'autonomy-hold.json'
+    if not path.exists():
+        atomic(path,json.dumps({'state':'OWNER_REVIEW_REQUIRED','reason':reason,'candidate':target,
+            'previous':previous,'database_restore_allowed':False,'at':datetime.now(timezone.utc).isoformat()},sort_keys=True)+'\n')
 def health(expected_version=None):
     for _ in range(20):
         try:
@@ -158,6 +183,7 @@ def main(target):
         require(manifest['candidate_sha']==target,'deployed_manifest_drift')
         for p,h in manifest['source_hashes'].items():require(hashlib.sha256((PROD/'apps/workflow-api'/p).read_bytes()).hexdigest()==h,'deployed_source_drift')
         require(health(),'current_release_unhealthy');print(json.dumps({'state':'verified_current','sha':target}));return
+    require(not Path('/var/lib/optibrain/releases/autonomy-hold.json').exists(),'unresolved_recovery_hold')
     auth=read_private(AUTH);now=datetime.now(timezone.utc)
     require(auth.get('candidate_sha')==target and auth.get('baseline_sha')==previous and now<datetime.fromisoformat(auth['expires_at']),'release_authorization_mismatch_or_expired')
     require(auth.get('tests_passed') is True and auth.get('failures')==auth.get('errors')==auth.get('skipped')==0,'validation_failed')
@@ -188,11 +214,13 @@ def main(target):
         live.rename(preserved);old_venv=str(preserved)
     old_manifest=MANIFEST.read_text();old_env=ENV.read_text()
     old_receipt=json.loads((ROOT/'deployment.json').read_text())
+    rollback_state=None
     try:
         run(*GIT,'reset','--hard',target)
         pin_manifest(target,manifest)
         if live.is_symlink():live.unlink()
         live.symlink_to(venv,target_is_directory=True)
+        rollback_state={'candidate_sha':target,'env_sha256':sha(ENV),'manifest_sha256':sha(MANIFEST),'venv':str(venv.resolve())}
         run('/usr/bin/systemctl','restart','opticable-workflow-api.service')
         require(health(candidate_version()),'candidate_health_failed');verify_closed()
         require(run(*GIT,'rev-parse','HEAD')==target,'deployed_sha_changed')
@@ -204,12 +232,18 @@ def main(target):
         atomic(ROOT/'deployment.json',json.dumps(receipt,indent=2)+'\n')
         print(json.dumps({'state':'deployed','sha':target,'baseline':previous,'ci_run_id':auth['ci_run_id']}))
     except Exception:
+        try:require_rollback_state(rollback_state)
+        except Exception:
+            recovery_hold('UNKNOWN_OR_NEWER_CODE_CONFIGURATION',target,previous)
+            raise RuntimeError('candidate_failed_unknown_state_preserved_owner_review_required')
         run(*GIT,'reset','--hard',previous)
         atomic(MANIFEST,old_manifest,0o644);atomic(ENV,old_env)
         if live.is_symlink():live.unlink()
         live.symlink_to(old_venv,target_is_directory=True)
         run('/usr/bin/systemctl','restart','opticable-workflow-api.service')
-        require(health(),'rollback_failed')
+        if not health():
+            recovery_hold('ROLLBACK_HEALTH_VERIFICATION_FAILED',target,previous)
+            raise RuntimeError('rollback_failed_owner_review_required')
         rolled_back={**old_receipt,'schema':1,'type':'optibrain.release','state':'rolled_back','failed_candidate':target,
                      'sha':previous,'writers_enabled':False,'at':datetime.now(timezone.utc).isoformat()}
         releases=Path('/var/lib/optibrain/releases');releases.mkdir(mode=0o700,exist_ok=True)
