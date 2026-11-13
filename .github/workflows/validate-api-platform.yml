@@ -124,6 +124,9 @@ jobs:
       - name: Run automation kernel tests
         run: python -I ../../ops/phase6/validate.py --suite full
 
+      - name: Validate integrated offline connection diagnostics
+        run: python -B -m unittest discover -s ../../ops/connectivity_watch -p 'test_*.py' -v
+
 
   control-plane-worker:
     runs-on: ubuntu-latest

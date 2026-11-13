@@ -6,6 +6,7 @@ for a new release. A repeated current release is only an integrity/health check.
 No approval or business authority is created by deployment.
 """
 import ast,fcntl,hashlib,json,os,re,shutil,stat,subprocess,sys,time,urllib.request
+import importlib.util
 from datetime import datetime,timezone
 from pathlib import Path
 
@@ -47,6 +48,30 @@ def validate_ci(ci,target):
     require(ci.get('head_sha')==target and ci.get('conclusion')=='success'
             and ci.get('name')=='Validate API Platform' and ci.get('repository',{}).get('full_name')==REPO
             and ci.get('head_branch')=='main' and ci.get('event') in {'push','workflow_dispatch'},'exact_ci_missing')
+
+def recovery_validator():
+    """Future installation must pin the reviewed helper in the existing root runtime."""
+    path=Path('/usr/local/lib/optibrain/operations-runtime.py')
+    info=path.lstat()
+    require(not path.is_symlink() and info.st_uid==0 and not info.st_mode&0o022,'untrusted_recovery_runtime')
+    spec=importlib.util.spec_from_file_location('release_recovery_runtime',path)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);module.activate()
+    from workflow.automation.release_recovery import validate_contract
+    return validate_contract
+
+def validate_release_recovery(auth,previous,target):
+    required={'recovery_contract_file','recovery_verification_file','recovery_contract_sha256'}
+    require(required<=set(auth),'verified_github_r2_recovery_contract_missing')
+    paths=[Path(auth[k]) for k in ('recovery_contract_file','recovery_verification_file')]
+    require(all(p.parent==Path('/var/lib/optibrain/releases/recovery') and re.fullmatch(r'[A-Za-z0-9_.-]+\.json',p.name) for p in paths),'untrusted_recovery_reference')
+    contract,receipt=[read_private(p) for p in paths]
+    require(contract.get('environment')=='production' and contract.get('last_good_sha')==previous
+            and contract.get('candidate_sha')==target,'recovery_source_binding_mismatch')
+    require(receipt.get('archive_sha256')==auth.get('backup_sha256'),'recovery_archive_binding_mismatch')
+    recovery_validator()(contract,receipt,expected_digest=auth['recovery_contract_sha256'],now=datetime.now(timezone.utc))
+    return {'last_good_sha':previous,'candidate_sha':target,'generation':receipt['generation'],
+            'r2_object_key':receipt['r2_object_key'],'contract_sha256':auth['recovery_contract_sha256'],
+            'database_restore_allowed':False}
 def health(expected_version=None):
     for _ in range(20):
         try:
@@ -154,6 +179,9 @@ def main(target):
         s=p.lstat();require(s.st_uid==0 and (p.is_symlink() or not s.st_mode&0o022),'untrusted_release_environment')
     archive=Path(auth['backup_archive']);require(archive.parent==Path('/var/backups/optibrain') and archive.is_file(),'rollback_backup_absent')
     require(sha(archive)==auth['backup_sha256'],'rollback_backup_changed')
+    # Fail closed before code/config changes unless GitHub, R2 readback and an
+    # isolated source/database restoration bind the exact last-known-good release.
+    recovery_reference=validate_release_recovery(auth,previous,target)
     live=PROD/'apps/workflow-api/.venv';old_venv=str(live.resolve())
     if not live.is_symlink():
         preserved=PROD/'apps/workflow-api/.venv.phase13-baseline';require(not preserved.exists(),'baseline_environment_already_preserved')
@@ -169,6 +197,7 @@ def main(target):
         require(health(candidate_version()),'candidate_health_failed');verify_closed()
         require(run(*GIT,'rev-parse','HEAD')==target,'deployed_sha_changed')
         receipt=runtime_receipt(target,previous,auth)
+        receipt['verified_recovery']=recovery_reference
         releases=Path('/var/lib/optibrain/releases');releases.mkdir(mode=0o700,exist_ok=True)
         atomic(releases/(target+'.json'),json.dumps(receipt,indent=2)+'\n')
         atomic(releases/'current.json',json.dumps(receipt,indent=2)+'\n')

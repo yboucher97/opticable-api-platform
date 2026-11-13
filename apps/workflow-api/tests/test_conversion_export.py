@@ -1,5 +1,5 @@
 from copy import deepcopy
-from datetime import datetime,timezone
+from datetime import datetime,timedelta,timezone
 from io import BytesIO
 import json,unittest
 from pathlib import Path
@@ -10,6 +10,10 @@ from workflow.automation.action_evidence import ActionEvidence
 from test_marketing_attribution import fixture
 
 NOW=datetime(2026,10,3,14,tzinfo=timezone.utc)
+
+class FixtureClock(datetime):
+ @classmethod
+ def now(cls,tz=None):return NOW if tz is not None else NOW.replace(tzinfo=None)
 
 def control():
  d={'account_id':'6808491878','action_id':'123456','type':'UPLOAD_CLICKS','status':'ENABLED',
@@ -28,6 +32,8 @@ def event(kind='qualified_lead',rid='3'):
    'immutable_source_sha256':'e'*64,'captured_at':'2026-10-03T01:00:00Z'}}
 
 class ConversionPlanTests(unittest.TestCase):
+ def setUp(self):
+  clock=patch.object(c,'datetime',FixtureClock);clock.start();self.addCleanup(clock.stop)
  def plan(self,e=None,s=None,p=None):return c.build_plan(e or event(),s or fixture(),p or control(),now=NOW)
  def test_qualified_no_invented_money_or_pii(self):
   p=self.plan();payload=p['body']['events'][0]
@@ -120,12 +126,20 @@ class ConversionPlanTests(unittest.TestCase):
   d['local_enabled']=False;p['validated_families']['qualified_lead']['destination_sha256']=c.digest(d)
   with patch.object(c,'trusted_control',return_value=p),patch.object(c,'verify_plan'),self.assertRaises(ValueError):
    client.authorize(self.plan(p=p),live=True)
+ def test_fixture_clock_keeps_expired_conversion_authority_closed(self):
+  p=control();p['enabled']=True;p['expires_at']=(NOW-timedelta(seconds=1)).isoformat()
+  d=p['destinations']['qualified_lead'];d['local_enabled']=True;d['allowed_event_keys']=[c.event_key(event())]
+  p['validated_families']={'qualified_lead':{'passed':True,'destination_sha256':c.digest(d)}}
+  client=c.DataManager(Mock())
+  with patch.object(c,'trusted_control',return_value=p),patch.object(c,'verify_plan'):
+   with self.assertRaisesRegex(ValueError,'authorization expired'):client.authorize(self.plan(p=p),live=True)
+  client.oauth.access_token.assert_not_called()
  def test_central_conversion_grant_is_exact_and_one_use(self):
   client=c.DataManager(Mock());p=self.plan();client.authorize=Mock();body={**p['body'],'validateOnly':False}
   temporary=TemporaryDirectory();self.addCleanup(temporary.cleanup);audit=ActionEvidence(Path(temporary.name)/'existing.db')
   with self.assertRaises(ValueError):
    with c.conversion_scope(client,p,live=True,claim={'key':p['key'],'payload_hash':p['payload_hash']}):pass
-  c.prepare_conversion_audit(p,client,audit,control(),datetime.now(timezone.utc))
+  c.prepare_conversion_audit(p,client,audit,control(),NOW)
   with c.conversion_scope(client,p,live=True,claim={'key':p['key'],'payload_hash':p['payload_hash']},audit=audit):
    with self.assertRaises(ValueError):c.check_transport(client,'google_datamanager','POST','/v1/campaigns',body,{})
    self.assertTrue(c.check_transport(client,'google_datamanager','POST','/v1/events:ingest',body,{}))
@@ -152,6 +166,7 @@ class S3:
 
 class ConversionEffectTests(unittest.TestCase):
  def setUp(self):
+  clock=patch.object(c,'datetime',FixtureClock);clock.start();self.addCleanup(clock.stop)
   self.plan=c.build_plan(event(),fixture(),control(),now=NOW);self.claims=c.ConversionClaims(S3());self.client=Mock()
   temporary=TemporaryDirectory();self.addCleanup(temporary.cleanup)
   self.client.audit=ActionEvidence(Path(temporary.name)/'existing.db');self.client.authorize.return_value=control()

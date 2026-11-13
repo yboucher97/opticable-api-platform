@@ -105,3 +105,20 @@ Customer communications recovery: bootstrap installs `/etc/optibrain/customer-co
 ## Foundation authority boundary
 
 Fresh restoration explicitly preserves conversion destination configuration while resetting export execution to OFF, including every local enable/event key and release/source/window grant. Internal/customer controls stay closed and timers masked under the existing fresh-host policy. Ordinary exact-SHA releases preserve original12/4 scope cutoffs, expiry and effect claims, without renewal. Use [recovery authority contract](OPTIBRAIN_RECOVERY_AUTHORITY_CONTRACT.md) for per-authority policy and verification. No owner private AGE key is requested. The final archive drill verifies destination preservation with authority OFF using the reviewed helper; it is not a full DNS/provider failover.
+
+
+## Independent recovery integration — development only, 2026-11-13
+
+The [master runbook](OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md) records the approved
+single-file monitoring correction and exact preimage rollback. The existing
+GitHub/R2 recovery contract and independent supervisor now require an exact
+code/config checkpoint and independent data verification. Fresh-process isolated
+recovery, fatal cross-operation holds and preserved newer records are tested.
+
+The [standing repair catalog](../ops/phase14/production_repair_catalog.json) is a
+disabled proposal, not a production grant. Its validator and the new recovery code
+are not installed. Do not weaken the current release guard, change runtime pins,
+restore old databases or move the offline AGE private identity into production.
+Existing encrypted R2 recovery and isolated restore machinery remain canonical;
+code rollback does not recover a lost VPS, and ciphertext readback does not prove
+owner-key availability.
