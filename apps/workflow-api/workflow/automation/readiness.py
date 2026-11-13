@@ -100,7 +100,62 @@ def usage_anomalies(directory,now):
                   'Repeated soft-budget excess requires review' if count else 'No repeated recent soft-budget excess',jobs_over_budget=count)
 
 
-def build_readiness(store, native, *, api_version, auth_configured, runtime_path=RUNTIME, now=None):
+def native_watch_signal(native, now):
+    """Describe retained verification, never renew or clear an ambiguous intent."""
+    status = native.get('native_subscription_status', 'unconfigured')
+    at = native.get('native_subscription_last_verified_at')
+    reason = {
+        'verified': 'Notification binding verified',
+        'unconfigured': 'Native observer is not configured; no delivery claim',
+        'human_action_required': 'Unresolved native configuration intent; read-only reconciliation and owner review required',
+        'configuration_drift': 'Native binding changed; old verification cannot authorize renewal',
+        'expired': 'Native subscription expired; no automatic recreation or replay',
+        'verification_stale': 'Native binding verification is stale',
+        'pending_subscription': 'No verified native subscription',
+    }.get(status, 'Notification verification needs review')
+    expiry = native.get('native_subscription_expires_at')
+    expired = False
+    if expiry:
+        try:
+            when = datetime.fromisoformat(expiry.replace('Z', '+00:00'))
+            if when.utcoffset() is None:
+                raise ValueError('Timezone required')
+            expired = when <= now
+        except (TypeError, ValueError, AttributeError):
+            return signal('Native watch', 'UNKNOWN', 'Native expiry evidence is malformed',
+                          at=at, verification_status=status, expiry=None)
+    if expired and status == 'human_action_required':
+        reason += '; last verified subscription has expired'
+    state = 'OK' if status == 'verified' else 'UNKNOWN' if status == 'unconfigured' else 'ACTION REQUIRED'
+    age = age_seconds(at, now)
+    if status == 'verified' and (expired or age is None or age > 86400):
+        state = 'ACTION REQUIRED'
+        reason = 'Native subscription expired' if expired else 'Native verification timestamp is absent, invalid or stale'
+    return signal('Native watch', state, reason, at=at, verification_status=status,
+                  expiry=expiry, last_verified_subscription_expired=expired,
+                  verification_age_seconds=age, automatic_recreation_authorized=False,
+                  classification='CAPABILITY_GAP_WITH_UNRESOLVED_HISTORY' if expired and status=='human_action_required'
+                      else 'VERIFIED_CONFIGURATION' if state=='OK' else 'INCOMPLETE_CONFIGURATION_VERIFICATION')
+
+
+def public_verification_signal(observation, now):
+    """Classify an existing probe receipt; no second collector or auth inference."""
+    age=age_seconds(observation.get('at'),now)
+    if age is None or age>900:
+        return signal('Public verification','UNKNOWN','Public-path evidence is absent or stale')
+    status=observation.get('http_status');origin=observation.get('origin_healthy')
+    denied=status in {401,403}
+    verified=status==200 and observation.get('semantic_health_verified') is True
+    return signal('Public verification','ACTION REQUIRED' if denied or origin is False else 'OK' if verified else 'UNKNOWN',
+        'This public-path check was denied; provider cause and policy intent remain unproven' if denied else
+        'Existing public semantic health evidence verified' if verified else 'Public semantic verification is incomplete',
+        at=observation.get('at'),http_status=status,origin_healthy=origin,
+        classification='EDGE_CHECK_DENIAL' if denied else 'VERIFIED_PUBLIC_PATH' if verified else 'INCOMPLETE_VERIFICATION',
+        origin_outage_proven=origin is False,automatic_policy_change_authorized=False)
+
+
+def build_readiness(store, native, *, api_version, auth_configured, runtime_path=RUNTIME, now=None,
+                    delta_execution_enabled=None):
     now = now or datetime.now(timezone.utc)
     rows = [signal('API', 'OK', 'API process is responding', at=now.isoformat(), version=api_version),
             signal('Auth', 'OK' if auth_configured else 'ACTION REQUIRED',
@@ -118,9 +173,15 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
         else:
             bad = any(c['status'] in {'failed','resync_required'} for c in checkpoints)
             stale = any(age_seconds(c['last_success_at'],now) is None or age_seconds(c['last_success_at'],now)>900 for c in checkpoints)
+            disabled = delta_execution_enabled is False
+            source_times = [c['last_success_at'] for c in checkpoints if age_seconds(c['last_success_at'], now) is not None]
             rows.append(signal('Delta checkpoint','ACTION REQUIRED' if bad else 'DEGRADED' if stale else 'OK',
                                'Observation stopped; reconcile the saved checkpoint' if bad else
+                               'Historical delta evidence is stale while the bundled observer is disabled' if stale and disabled else
                                'Observation is stale' if stale else 'Incremental observation is current',
+                               at=min(source_times) if len(source_times)==len(checkpoints) else None,
+                               sampled_at=now.isoformat(), execution_enabled=delta_execution_enabled,
+                               classification='DISABLED_OBSERVER' if disabled else 'ACTIVE_OR_UNCONFIRMED_OBSERVER',
                                checkpoint_count=len(checkpoints), failed_count=sum(c['status'] in {'failed','resync_required'} for c in checkpoints)))
         health = store.execution_health()
         try:
@@ -139,14 +200,20 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
         with readonly(store.db_path) as db:
             last_failed=db.execute("SELECT MAX(created_at) FROM automation_runs WHERE status IN ('failed','dead_letter')").fetchone()[0]
         failure_age=age_seconds(last_failed,now)
-        historical=bool(blocked and not current_delivery and not health.get('queued',0) and not health.get('running',0)
+        historical=bool(blocked and not current_delivery and not health.get('queued',0) and not health.get('running',0) and not health.get('claimed',0)
                         and failure_age is not None and failure_age>86400)
-        rows.append(signal('Queue','ACTION REQUIRED' if blocked else 'OK',
+        claimed_unknown = bool(health.get('claimed',0))
+        rows.append(signal('Queue','ACTION REQUIRED' if blocked else 'UNKNOWN' if claimed_unknown else 'OK',
                            'Historical failures retained for review; no current queued/running delivery problem observed' if historical else
-                           'Work requires reconciliation' if blocked else 'No stale or failed queued work',
+                           'Work requires reconciliation' if blocked else
+                           'Claimed work requires independent lease and age verification' if claimed_unknown else 'No stale or failed queued work',
                            queued=health.get('queued',0),running=health.get('running',0),blocked=blocked,
+                           claimed=health.get('claimed',0),
+                           retained_failure_count=health.get('failed',0)+health.get('dead_letter',0),
+                           current_delivery_state='ACTION REQUIRED' if current_delivery else
+                               'UNKNOWN' if health.get('claimed',0) else 'OK',
                            current_delivery_problems=current_delivery,last_failed_at=last_failed,
-                           classification='HISTORICAL RETAINED EXCEPTION' if historical else 'CURRENT OR UNCLASSIFIED' if blocked else 'CLEAR'))
+                           classification='HISTORICAL RETAINED EXCEPTION' if historical else 'CURRENT OR UNCLASSIFIED' if blocked or claimed_unknown else 'CLEAR'))
         pending=health.get('human_action_required',0)
         rows.append(signal('Retained exceptions','UNKNOWN' if pending else 'OK',
                            'Retained review items are unclassified; review provenance before treating them as current failures'
@@ -156,11 +223,7 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
                            accepted_exceptions=0))
     except (OSError,sqlite3.Error):
         rows.extend([signal('Delta checkpoint','UNKNOWN','Checkpoint unavailable'),signal('Queue','UNKNOWN','Queue state unavailable')])
-    status = native.get('native_subscription_status','unconfigured')
-    at = native.get('native_subscription_last_verified_at')
-    rows.append(signal('Native watch','OK' if status=='verified' else 'UNKNOWN' if status=='unconfigured' else 'ACTION REQUIRED',
-                       'Notification binding verified' if status=='verified' else 'Notification verification needs review',
-                       at=at,verification_status=status,expiry=native.get('native_subscription_expires_at')))
+    rows.append(native_watch_signal(native, now))
     activity = None
     try:
         snapshot = json.loads(Path(runtime_path).read_text())
@@ -201,13 +264,20 @@ def queue_depth_signal(now, path=Path('/run/optibrain-readiness/queue-depth.json
         if type(oldest) is not int or oldest < 0 or oldest > int(now.timestamp()*1000):
             raise ValueError('Invalid oldest message timestamp')
         active = queues['opticable-business-events']['backlog_count']
+        age_unknown = bool(active and not oldest)
         stalled = bool(active and oldest and now.timestamp()*1000-oldest > 1800000)
         dlq = queues['opticable-business-events-dlq']['backlog_count']
-        state = 'ACTION REQUIRED' if dlq or stalled else 'DEGRADED' if active > 100 else 'OK'
+        state = 'ACTION REQUIRED' if dlq or stalled else 'DEGRADED' if active > 100 or age_unknown else 'OK'
         return signal('Cloudflare queue depth',state,
-                      'Dead-letter or stalled delivery needs reconciliation' if dlq or stalled else
+                      'Active delivery is stalled; preserved evidence needs reconciliation' if stalled else
+                      'Preserved dead letters require review; no active backlog observed' if dlq and not active else
+                      'Preserved dead letters require engineering review' if dlq else
+                      'Active backlog age unavailable; delivery freshness is unproven' if age_unknown else
                       'Approximate read-only queue backlog measured',at=value['captured_at'],
-                      approximate=True,age_seconds=age,queues=queues)
+                      approximate=True,age_seconds=age,oldest_active_age_unknown=age_unknown,queues=queues,
+                      active_delivery_state='STALLED' if stalled else 'AGE_UNVERIFIED' if age_unknown else 'BACKLOG_MONITORED' if active else 'NO_ACTIVE_BACKLOG',
+                      retained_dead_letter_count=dlq,dead_letter_age_verified=False,
+                      classification='ACTIVE_DELIVERY_FAILURE' if stalled else 'RETAINED_DLQ_REVIEW' if dlq else 'CURRENT_BACKLOG_OBSERVATION')
     except (OSError,ValueError,TypeError,KeyError):
         return signal('Cloudflare queue depth','UNKNOWN',
                       'Queue metrics unavailable or stale; inspect the read-only sampler')

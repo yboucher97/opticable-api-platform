@@ -849,7 +849,8 @@ from .phase7_registration import maybe_install_phase7
 def _readiness_payload():
     from .automation.readiness import build_readiness
     return build_readiness(automation_store,native_health(automation_store),api_version=API_VERSION,
-                           auth_configured=bool(os.getenv(settings.api.api_key_env)))
+                           auth_configured=bool(os.getenv(settings.api.api_key_env)),
+                           delta_execution_enabled=settings.automation.enabled)
 
 phase7_registration = maybe_install_phase7(
     app, client=zoho_gateway_client, store=automation_store,

@@ -249,9 +249,24 @@ def collect(now=None):
 
 
 def main():
+    import argparse
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--current-services',action='store_true',help='Project current NEW resource/monitoring evidence; no legacy TEST-runner expectation')
+    args=parser.parse_args()
     if os.geteuid()!=0:raise PermissionError('Root sampler required')
     target=Path('/run/optibrain-readiness');target.mkdir(mode=0o755,exist_ok=True)
-    value=collect()
+    if args.current_services:
+        path=Path(__file__).with_name('current_readiness.py')
+        info=path.lstat()
+        if path.is_symlink() or info.st_uid!=0 or info.st_mode&0o022:
+            raise ValueError('Untrusted installed current-services projection')
+        spec=importlib.util.spec_from_file_location('current_readiness',path)
+        projection=importlib.util.module_from_spec(spec);spec.loader.exec_module(projection)
+        value=projection.collect(classify_job,SERVICE_FIELDS)
+        value['resolved_read_only_run_ids']=resolved_read_reviews(
+            '/var/lib/optibrain/phase14/observer-reconciliation/lead-review-resolution.json',
+            '/opt/opticable-api-platform/apps/workflow-api/workflow/automation/providers/crm_leads.py',DB_ROOT/'automation.db')
+    else:value=collect()
     fd,name=tempfile.mkstemp(prefix='.status-',dir=target)
     with os.fdopen(fd,'w') as stream:
         json.dump(value,stream,sort_keys=True);stream.write('\n');stream.flush();os.fsync(stream.fileno())

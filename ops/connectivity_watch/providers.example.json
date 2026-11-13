@@ -1,0 +1,19 @@
+{
+  "_comment": "Optional direct provider GET probes. Requires approved read-only tokens in service environment. Do not run until those variables exist. Never commit tokens.",
+  "checks": [
+    {
+      "name": "github-identity",
+      "url": "https://api.github.com/user",
+      "auth_env": "GITHUB_READ_TOKEN",
+      "auth_scheme": "Bearer",
+      "retries": 1
+    },
+    {
+      "name": "zoho-crm-identity",
+      "url": "https://www.zohoapis.com/crm/v2/org",
+      "auth_env": "ZOHO_READ_ACCESS_TOKEN",
+      "auth_scheme": "Zoho-oauthtoken",
+      "retries": 1
+    }
+  ]
+}
