@@ -1,0 +1,44 @@
+{
+  "checks": [
+    {
+      "name": "optibrain-workflow-api",
+      "url": "https://optibrain.opticable.ca/v1/system/health",
+      "retries": 1,
+      "timeout": 10
+    },
+    {
+      "name": "optibrain-password-pdf",
+      "url": "https://optibrain.opticable.ca/pdf/health",
+      "retries": 1,
+      "timeout": 10
+    },
+    {
+      "name": "optibrain-omada",
+      "url": "https://optibrain.opticable.ca/omada/api/health",
+      "retries": 1,
+      "timeout": 10
+    },
+    {
+      "name": "cloudflare-control-plane",
+      "url": "https://opticable-control-plane.yboucher.workers.dev/health",
+      "retries": 1,
+      "timeout": 10
+    },
+    {
+      "name": "optibrain-provider-inventory",
+      "url": "https://optibrain.opticable.ca/v1/system/providers",
+      "auth_env": "SITE_WORKFLOW_API_KEY",
+      "auth_header": "X-API-Key",
+      "retries": 1,
+      "timeout": 10
+    },
+    {
+      "name": "optibrain-readiness",
+      "url": "https://optibrain.opticable.ca/v1/system/readiness",
+      "auth_env": "SITE_WORKFLOW_API_KEY",
+      "auth_header": "X-API-Key",
+      "retries": 1,
+      "timeout": 10
+    }
+  ]
+}
