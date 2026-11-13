@@ -37,6 +37,18 @@ class ProjectionTests(unittest.TestCase):
         self.safety = dict(flag_checks=[True] * 45, controls_closed=True)
         self.deployment = dict(actual_sha='e' * 40, registered_sha='e' * 40,
                                authoritative_host=True, local_recovery_verified=True)
+        generation = '20261112T195422Z'
+        self.resource['backup_generation'] = generation
+        key = 'backups/2026/11/12/' + generation + '.tar.gz.age'
+        self.proof = dict(generation=generation, at=NOW.timestamp(),
+            archive_path='/var/backups/optibrain/optibrain-backup-' + generation + '.tar.gz',
+            plaintext_sha256='a' * 64, ciphertext_sha256='b' * 64,
+            remote_object_key=key, remote_bytes=4096,
+            prepared_metadata=dict(generation=generation, source_sha256='a' * 64,
+                encrypted_sha256='b' * 64, object_key=key, recipient_sha256='c' * 64),
+            restore=dict(result='PASS', generation=generation, source_extraction='PASS',
+                source_sha256='a' * 64, source_commit='d' * 40, databases_restored=10))
+        self.deployment['recovery_proof'] = self.proof
         self.credential = dict(at=NOW.timestamp(), results={
             'GOOGLE': dict(status='VERIFIED_OPERATIONAL_CACHE'), 'ZOHO': dict(status='VERIFIED')})
 
@@ -91,6 +103,81 @@ class ProjectionTests(unittest.TestCase):
         self.assertFalse(rows['Off-host backup']['offline_decryption_verified'])
         self.deployment['local_recovery_verified'] = False
         self.assertEqual(self.result()['Backup']['state'], 'ACTION REQUIRED')
+
+    def test_fresh_local_backup_without_offhost_proof_is_not_readback_success(self):
+        self.deployment.pop('recovery_proof')
+        self.assertEqual(self.result()['Backup']['state'], 'OK')
+        self.assertEqual(self.result()['Off-host backup']['state'], 'UNKNOWN')
+
+    def test_offhost_proof_must_bind_exact_generation_hashes_and_restore(self):
+        original = deepcopy(self.proof)
+        for section, key, value in [
+                (None, 'generation', '20261111T195422Z'),
+                (None, 'remote_object_key', 'wrong-object.age'),
+                (None, 'remote_bytes', 0), (None, 'remote_bytes', True),
+                (None, 'ciphertext_sha256', 'malformed'),
+                ('prepared_metadata', 'encrypted_sha256', 'e' * 64),
+                ('prepared_metadata', 'source_sha256', 'e' * 64),
+                ('prepared_metadata', 'object_key', 'wrong-object.age'),
+                ('prepared_metadata', 'generation', '20261111T195422Z'),
+                ('restore', 'result', 'FAIL'), ('restore', 'source_extraction', 'FAIL'),
+                ('restore', 'generation', '20261111T195422Z'),
+                ('restore', 'source_sha256', 'e' * 64),
+                ('restore', 'databases_restored', 0)]:
+            with self.subTest(section=section, field=key, value=value):
+                proof = deepcopy(original)
+                (proof if section is None else proof[section])[key] = value
+                self.deployment['recovery_proof'] = proof
+                self.assertEqual(self.result()['Off-host backup']['state'], 'UNKNOWN')
+
+    def test_offhost_proof_age_is_not_refreshed_by_new_resource_sample(self):
+        for at in [NOW.timestamp() + 1, float('nan'), float('inf'), 'invalid', True]:
+            with self.subTest(at=at):
+                self.proof['at'] = at
+                self.assertEqual(self.result()['Off-host backup']['state'], 'UNKNOWN')
+        self.proof['at'] = (NOW - timedelta(hours=37)).timestamp()
+        self.assertEqual(self.result()['Off-host backup']['state'], 'ACTION REQUIRED')
+        self.proof['at'] = (NOW - timedelta(hours=2)).timestamp()
+        row = self.result()['Off-host backup']
+        self.assertEqual(row['state'], 'OK')
+        self.assertEqual(row['proof_age_seconds'], 7200)
+        self.assertEqual(row['original_observed_at'], self.proof['at'])
+        self.assertFalse(row['offline_decryption_verified'])
+
+    def test_malformed_offhost_proof_is_unknown_without_crashing_projection(self):
+        for proof in [None, [], {'prepared_metadata': []}, {'restore': None}]:
+            with self.subTest(proof=proof):
+                self.deployment['recovery_proof'] = proof
+                self.assertEqual(self.result()['Off-host backup']['state'], 'UNKNOWN')
+
+    def test_collect_uses_existing_trusted_proof_without_new_provider_calls(self):
+        proof_path = '/var/lib/optibrain/autonomous-operations/retention-generation-proofs/' + self.resource['backup_generation'] + '.json'
+        values = {'/var/lib/optibrain/resource-management/latest.json': self.resource,
+                  '/etc/optibrain/phase7-canary-registration.json': {'candidate_sha': 'e' * 40},
+                  proof_path: {}}
+        path = Mock();path.read_text.return_value = '1234 4321';path.is_file.return_value = True
+        def read(p, *, trusted=False):
+            if p == proof_path:
+                self.assertTrue(trusted)
+            return values.get(p, {})
+        with patch.object(projection, 'read_json', side_effect=read) as reader, \
+                patch.object(projection, 'Path', return_value=path), \
+                patch.object(projection.subprocess, 'check_output', return_value='e' * 40), \
+                patch.object(projection.subprocess, 'run', return_value=Mock(stdout='active')):
+            for proof, expected in [({}, 'UNKNOWN'), (self.proof, 'OK'), ([], 'UNKNOWN'),
+                                     ({'restore': None}, 'UNKNOWN')]:
+                with self.subTest(proof=proof):
+                    values[proof_path] = proof
+                    snapshot = projection.collect(lambda *a, **k: {'state': 'COMPLETED_SUCCESS'}, [], now=NOW)
+                    row = next(r for r in snapshot['signals'] if r['name'] == 'Off-host backup')
+                    self.assertEqual(row['state'], expected)
+                    self.assertEqual(snapshot['provider_calls'], 0)
+            reader.assert_any_call(proof_path, trusted=True)
+            self.resource['backup_generation'] = '../unexpected'
+            reader.reset_mock()
+            snapshot = projection.collect(lambda *a, **k: {'state': 'COMPLETED_SUCCESS'}, [], now=NOW)
+            self.assertFalse(any('/retention-generation-proofs/' in str(c) for c in reader.call_args_list))
+            self.assertEqual(next(r for r in snapshot['signals'] if r['name'] == 'Off-host backup')['state'], 'UNKNOWN')
 
     def test_stale_integrity_and_missing_required_db_cannot_be_green(self):
         self.resource['database_checks']['at'] = (NOW - timedelta(days=2)).isoformat()

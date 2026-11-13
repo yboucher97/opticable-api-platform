@@ -48,6 +48,43 @@ def read_json(path, *, trusted=False):
         return {}
 
 
+def offhost_evidence(proof, generation, now):
+    """Project the existing root readback/restore receipt, never an upload ACK.
+
+    Retention writes this receipt only after a complete authenticated R2 GET,
+    ciphertext hash comparison and isolated restore. Sampling it does not repeat
+    provider reads or change its original verification timestamp.
+    """
+    unknown = dict(state='UNKNOWN', proof_age_seconds=None, original_observed_at=None)
+    if not isinstance(proof, dict) or not isinstance(generation, str) or not re.fullmatch(r'\d{8}T\d{6}Z', generation):
+        return unknown
+    metadata, restored = proof.get('prepared_metadata'), proof.get('restore')
+    if not isinstance(metadata, dict) or not isinstance(restored, dict):
+        return unknown
+    observed = proof.get('at')
+    if type(observed) not in (int, float) or not math.isfinite(observed):
+        return unknown
+    seconds = now.timestamp() - observed
+    if seconds < 0:
+        return unknown
+    key = f'backups/{generation[:4]}/{generation[4:6]}/{generation[6:8]}/{generation}.tar.gz.age'
+    plaintext, ciphertext = proof.get('plaintext_sha256'), proof.get('ciphertext_sha256')
+    hashes = (plaintext, ciphertext, metadata.get('recipient_sha256'))
+    if (not all(isinstance(h, str) and re.fullmatch(r'[0-9a-f]{64}', h) for h in hashes)
+            or proof.get('generation') != generation or metadata.get('generation') != generation
+            or proof.get('remote_object_key') != key or metadata.get('object_key') != key
+            or type(proof.get('remote_bytes')) is not int or not 0 < proof['remote_bytes'] <= 20 * GIB
+            or metadata.get('source_sha256') != plaintext or metadata.get('encrypted_sha256') != ciphertext
+            or restored.get('result') != 'PASS' or restored.get('source_extraction') != 'PASS'
+            or restored.get('generation') != generation or restored.get('source_sha256') != plaintext
+            or not isinstance(restored.get('source_commit'), str)
+            or not re.fullmatch(r'[0-9a-f]{40}', restored['source_commit'])
+            or type(restored.get('databases_restored')) is not int or restored['databases_restored'] < 1):
+        return unknown
+    return dict(state='OK' if seconds < 129600 else 'ACTION REQUIRED',
+                proof_age_seconds=seconds, original_observed_at=observed)
+
+
 def build_snapshot(resource, jobs, safety, deployment, credential, *, now):
     """Pure, bounded projection; old observations keep their original timestamps."""
     signals = []
@@ -78,9 +115,15 @@ def build_snapshot(resource, jobs, safety, deployment, credential, *, now):
         add('Backup', 'OK' if deployment.get('local_recovery_verified') is True and backup_seconds is not None and backup_seconds < 129600
             else 'ACTION REQUIRED', 'Current verified local recovery generation',
             generation=resource.get('backup_generation'), verified_age_seconds=backup_seconds)
-        add('Off-host backup', 'UNKNOWN' if backup_seconds is None else 'OK' if backup_seconds < 129600 else 'ACTION REQUIRED',
+        remote = offhost_evidence(deployment.get('recovery_proof'), resource.get('backup_generation'), now)
+        remote_state = remote.pop('state')
+        if backup_seconds is None:
+            remote_state = 'UNKNOWN'
+        elif backup_seconds >= 129600 and remote_state == 'OK':
+            remote_state = 'ACTION REQUIRED'
+        add('Off-host backup', remote_state,
             'Existing complete-object download/hash proof; no offline private-key decryption claim',
-            verified_age_seconds=backup_seconds, offline_decryption_verified=False)
+            verified_age_seconds=backup_seconds, offline_decryption_verified=False, **remote)
         free = resource.get('available')
         valid_free = type(free) is int and free >= 0
         add('Disk', 'UNKNOWN' if not valid_free else 'ACTION REQUIRED' if free < 35 * GIB else 'DEGRADED' if free < 50 * GIB else 'OK',
@@ -170,14 +213,22 @@ def collect(classify_job, service_fields, *, now=None):
     registration = read_json('/etc/optibrain/phase7-canary-registration.json', trusted=True)
     sha = subprocess.check_output(['git', '-c', 'safe.directory=/opt/opticable-api-platform', '-C',
                                   '/opt/opticable-api-platform', 'rev-parse', 'HEAD'], text=True, timeout=5).strip()
+    generation = resource.get('backup_generation')
     proof = read_json('/var/lib/optibrain/autonomous-operations/retention-generation-proofs/' +
-                      str(resource.get('backup_generation', '')) + '.json', trusted=True)
+                      generation + '.json', trusted=True) if isinstance(generation, str) and re.fullmatch(r'\d{8}T\d{6}Z', generation) else {}
+    if not isinstance(proof, dict):
+        proof = {}
+    restored = proof.get('restore')
+    if not isinstance(restored, dict):
+        restored = {}
+    archive_path = proof.get('archive_path')
     verified_local = (proof.get('generation') == resource.get('backup_generation')
-                      and proof.get('restore', {}).get('result') == 'PASS'
-                      and re.fullmatch(r'[0-9a-f]{64}', proof.get('plaintext_sha256', '')) is not None
-                      and Path(proof.get('archive_path', '/nonexistent')).is_file())
+                      and restored.get('result') == 'PASS'
+                      and isinstance(proof.get('plaintext_sha256'), str)
+                      and re.fullmatch(r'[0-9a-f]{64}', proof['plaintext_sha256']) is not None
+                      and isinstance(archive_path, str) and Path(archive_path).is_file())
     deployment = dict(actual_sha=sha, registered_sha=registration.get('candidate_sha'),
         authoritative_host=os.uname().nodename == 'vps-f8e9b20e' and Path('/etc/optibrain-rebuild-target').is_file(),
-        local_recovery_verified=bool(verified_local))
+        local_recovery_verified=bool(verified_local), recovery_proof=proof)
     credential = read_json('/var/lib/opticable-workflow-api/output/automation/credential-health.json')
     return build_snapshot(resource, jobs, safety, deployment, credential, now=now)

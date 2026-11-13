@@ -79,6 +79,89 @@ Daily API-user collector runs01:45UTC before backups with fixed read-only endpoi
 
 Daily capability audit now checks a bounded no-PII raw Cloudflare security sample; grouped dataset remains separately authz-denied. Current source failure/staleness monitoring uses existing C limits. All45 consequential flags, Books approval, source SHA, production authority/DNS and OLD fence remain unchanged. Public publishing, paid inference/ad changes and conversion uploads remain disabled. One disabled owner authorization packet covers proposed scopes/app approvals/asset bindings and draft content policy; it grants no current execution authority. Exact tests, preimages, verified checkpoint, recovery and configuration-only rollback are in the current procedure.
 
+## Independent monitoring revalidation and recovery development — 2026-11-12 Toronto
+
+The approved rollout was already complete. Reverification at 2026-11-13T01:41Z
+confirmed the exact four installed artifacts from candidate
+`b5dcf192e16d034fbe4f508f13b2b17168b17841`; no repeat installation was needed.
+NEW remains `vps-f8e9b20e`, production `ec9a8e85095b57faf21212000652912e08093da4`,
+API PID981189 with zero restarts. API, PDF, Omada and Caddy are active;
+their liveness reads passed. All45 flags remain closed and all76 protected settings
+match the prechange checkpoint. The existing resource timer ran queue/resource/local
+projection successfully at01:01,01:17 and01:33UTC; no new scheduler or alert route.
+The complete installed hashes/modes/owners and live audit are in
+`/var/lib/optibrain/monitoring-self-healing-20261112/reverification-20261113/production-audit.json`.
+
+Recovery generation `20261112T221338Z` was rehashed:
+plaintext SHA256 `4c595da695fabdbc579aa32876dd7533031fb78f738627a627d9c21aad283494`,
+ciphertext SHA256 `5f7ef5a1993e5addf44bf757afe379b365bc1f9fa41af0e1e9feb0516b0bba6a`.
+The retained authenticated complete R2 readback and isolated10-store restore proof
+are intact. This revalidation did not repeat a remote download or private AGE
+decryption. Monitoring preimages were independently reverified. Existing OLD fence,
+credentials, owner approvals and notification budgets were untouched.
+
+PR159 remains draft at `e74b4413019db9cdec99bc30266ce307a1d78d10`, branch
+`feature/connection-watchdog-20261112`. All14 tests passed again, including main
+dispatch through configured retries at the HTTP boundary. It remains offline/manual;
+do not install a duplicate watchdog. Prior exact-head CI43312673936 passed.
+
+Additional development fix `2d0725945467674a52e03a0d1ace7cf20ac12e69` on local branch
+`fix/recovery-readback-evidence-20261113` corrects a discovered readiness defect:
+local backup age alone previously allowed an off-host OK label. The candidate now
+consumes the existing trusted retention receipt and binds generation, object key,
+plaintext/ciphertext hashes, preparation metadata, isolated restore and original
+verification time. Missing/malformed/unbound proof is UNKNOWN, stale proof needs
+action, and a fresh resource sample cannot refresh old proof. It adds no remote
+read, cache or state store. Its collect-path integration test checks real dispatch
+into this projection. This follow-up is DEVELOPMENT ONLY; the approved installed
+sampler bytes remain unchanged. Actual retained production proof passes the new
+projection in an unprivileged shadow read.
+
+Before the fix,33tests reproduced25failing assertions with zero errors. Afterward,
+95focused tests/27subtests passed; the full fake-provider suite passed2020tests/
+1947subtests with zero failures/errors/skips/network attempts. Contracts checked
+273documents/98configuration sources; syntax and whitespace passed. Logs:
+`/home/ubuntu/optibrain-development/readback-regression-before-20261113.log`,
+`reverification-targeted-after-20261113.log` and `reverification-full-regression-20261113.log`
+in that same directory. A verification command initially probed Omada `/health`
+and received the expected containment403; the documented `/api/health` returned200.
+No service repair was required. Local commit identity was supplied per command
+after Git refused an unset identity; global Git settings were not changed.
+
+The fresh isolated demonstration is
+`/home/ubuntu/optibrain-development/recovery-demonstration-20261113/result.json`.
+Broken fixture `2b1a5a658ad25704b3f96d61e10ed4ab98b15d07` rolled back to
+`2f5eab874986f944446be2fce455cf3b85d93b37`; final code SHA256
+`1e992949a22a6e3f8f8efb1594ef95c8dba044fb5830c18866b8080d7f2e6101`,
+health and journal integrity passed, and newer business rows1->2 survived without
+any database restore. Fixture R2/encryption are explicitly SIMULATED; actual
+production recovery evidence above is separate. The verified diagnostic-defect
+workflow again failed before/passed after and automatically prepared local branch
+`repair/verified-defect-e0600ea806b8d928`, commit
+`c678cedf75b4a52992d7ab10287580896b2c0d62`, and a draft PR request. It was not
+published as a duplicate of existing issue98 work. The new off-host defect's
+symptom/cause/action/tests/outcome are in the same isolated ActionEvidence journal
+under `operations-diagnosis`; learning integrity passed and business reuse is OFF.
+
+Issue98 remains open: expired/absent Native watch,17retained local failures
+(10unacknowledged),8Cloudflare dead letters, stale disabled delta observation and
+unclassified review. Main queue has no current backlog. No watch recreation,
+historical replay or dead-letter purge was performed. Bounded non-production
+playbooks, locks/cooldowns/circuits, health verification, deduplicated incidents,
+learning, defect branch preparation and the independent GitHub/R2 rollback contract
+remain development capabilities in draftPR160. Production activation, the new
+sampler fix and any guarded-release/root-runtime roster change need their own
+applicable approval. Do not weaken the installed legacy timer gate.
+
+Rollback remains exact monitoring files only: compare installed hashes for newer
+edits; restore prior queue-metrics.py and phase14-runtime-snapshot.py from the
+verified `monitoring-prechange.tar.gz`; move only readiness.conf out of the existing
+resource service drop-in directory and daemon-reload. current_readiness.py may
+remain inert. Preserve the base resource unit/fallback/timer, all business records,
+credentials, approvals, notification/learning/action journals and existing recovery
+checkpoints. No API restart, VM snapshot or older database restoration is part of
+this rollback. Development changes have no installed production effect.
+
 ## Issue 98 and connection-watchdog review — 2026-11-12 — DEVELOPMENT ONLY
 
 Current authoritative production remains NEW vps-f8e9b20e at ec9a8e85095b57faf21212000652912e08093da4. API PID981189 has not restarted. Executable candidate b5dcf192e16d034fbe4f508f13b2b17168b17841 is isolated on fix/issue98-native-queue-readiness-20261112. No candidate was installed, pushed, merged or deployed; no timer was added or reactivated. Production root runbook authorization digest stays unchanged; the digest beside this candidate describes this candidate prose only.
