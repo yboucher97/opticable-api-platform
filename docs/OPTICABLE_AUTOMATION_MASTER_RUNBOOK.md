@@ -221,3 +221,129 @@ Future session:first verify productionec9a8e8/current process flags,read this la
 Final development hardening:6e63ddc9f5a318aa35810a5625f0b5476fbaf780 verifies workspace directory ownership and rejects group/world-write access before any development grant or repair. Its adversarial regression passes. The final full suite passes2014tests/1920subtests,0failures/errors/skips/network attempts;the earlier2013PASS log is retained separately. Production monitoring remains the exact approved b5dc artifacts;this hardening is development only.
 
 Recovery-control protection is explicit in bcf3472515982e77a73ea348ae6eb0129565710b:automatic rollback contracts reject the release gate,coordinator,supervisor and defect-preparation modules themselves. This prevents recovery from undoing its own safeguards. A dedicated adversarial regression and the final full suite pass2015tests/1920subtests with0failures/errors/skips/network attempts. Earlier2013/2014passing logs and the initial dated-fixture failures remain evidence,not reset history. Fresh actual production recovery point20261112T221338Z passed complete encrypted R2 readback and isolated10-store restoration;all four approved installed monitoring identities were found and hash-verified in its archive. Offline private AGE decryption was not performed.
+
+
+## Autonomous recovery integration — 2026-11-13 UTC
+
+NEW vps-f8e9b20e remains production ec9a8e85095b57faf21212000652912e08093da4,
+API PID981189/zero restarts. The only installed correction is
+/usr/local/lib/optibrain/current_readiness.py, root:root0755, SHA256
+`dc842c0ba4ee696f24cd65a6f51d47fe91e5d734003497a8d07f8a6bf543c921`.
+Its tested source is local2d0725945467674a52e03a0d1ace7cf20ac12e69 / GitHub
+`e7772f40acf609c4cf9feb0f23e990f88dac451f`. No other development file was installed.
+Preimage SHA256 `4b4585f92b227966c26409539ced02544e9b2e896b313679ac3c5204c0321487`
+is verified in `monitoring-correction-prechange.tar.gz`. All45 consequential flags
+stay OFF; all76 protected settings, three other monitoring artifacts and production
+pins are unchanged. OLD forced read-only status independently confirmed FROZEN,
+fenced=true, all three application services inactive. No API restart, new job,
+writer, security-policy change, watch recreation or historical/DLQ replay occurred.
+
+Private execution evidence:
+`/var/lib/optibrain/autonomous-recovery-integration-20261113`.
+The existing timer invoked the correction successfully at03:53UTC. Missing latest
+backup proof correctly changed the off-host result to UNKNOWN. The existing routine
+recovery verification subsequently produced generation20261113T023658Z's proof;
+no second backup/verification scheduler was created. Its archive rehash passed,
+plaintext SHA256 `fe445293e5022df2a814f3fa9e7878f22dbbe286e07d2588f414e4342e268c01`,
+ciphertext SHA256 `aef442ba13a1940dcbe757ca90bd684a288dc0202f2c8c0e5c030236e8cf2ef8`,
+R2 object `backups/2026/11/13/20261113T023658Z.tar.gz.age`,423135047bytes.
+Retained authenticated complete readback and isolated10-store restore PASS:
+6788files/8482metadata entries; sourceec9a8e8 and fresh conversion authority OFF.
+Preinstall checkpoint221338Z remains recorded. No owner private AGE identity was
+copied, generated or decrypted; readback is not proof of owner-key availability or
+full VPS disaster recovery.
+
+Current main is be8cdfe2b36b562ba9e2a57484d8a3d2e8c92caa, one intake-hold commit
+behind production. PR159's seven additions are disjoint from production/PR160.
+Its exact offline/manual utility and later documentation reconciliation were
+integrated locally; no collector/state/cache/timer/notification replacement.
+PR159 documentation head `ccf5cb2559f319b4d7cb98857890047cb56693ff` passed CI43363362307;
+its14 CLI tests retain the configured retry execution-path regressions. PR160 now
+also runs these tests in its main validation workflow. It retains the exact
+production recovery base; integration into main needs separate reviewed treatment
+of that intake-hold prerequisite. Neither application PR is merged/deployed.
+
+Development branch `feature/recovery-integration-20261113`, core implementation
+`aba5851d2c19673dd08aea418f2c6807451b145e`, evidence hardening
+`826ede983c124017149ad7d8af27e3b172eb22ff`:
+- Every attempted local repair independently verifies even after an execution
+  exception. Unavailable verification finishes FAILED, preserves evidence/learning
+  and raises a persistent hold. Another operation cannot bypass that hold.
+- Cause classification remains distinct from proof. Credential warnings no longer
+  imply401/403; recurrence cannot count missing service IDs. Local preconditions,
+  dead-owner/exclusive-lock proof, errors, tests and outcomes remain in ActionEvidence.
+- Fatal rollback incidents stop subsequent deployment/repair attempts in the same
+  journal. Existing-format escalation output is deduplicated; actual Mail delivery
+  still requires the existing owner-only budget/ledger. No new alert stream or
+  falsely claimed notification was created.
+- Independent supervisor requires current-data integrity evidence as well as code
+  and HTTP health, verifies code again after probes, and binds an exact relevant
+  code/config checkpoint. Recovered health may support change-associated recovery;
+  an unverified cause remains UNPROVEN. Data corruption stops/escalates even when
+  old code is healthy; no older database is restored.
+- A new regression resumes interrupted rollback in a fresh Python process without
+  importing the main API. Existing transient retry, dead/live worker locks,
+  interrupted-effect reconciliation, bounded failures and one-rollback tests remain
+  canonical. All fault injection uses private unprivileged fixtures.
+- Existing recurring software incidents now drive paired regression, branch and
+  draft PR-request preparation with operation binding, exact verified GitHub base
+  branch/SHA, idempotency and failure review. It still requires a reviewed diagnostic
+  patch/test; it is not an unrestricted code generator or auto-push/merge/deploy.
+- Readiness now labels stale disabled delta observations explicitly, retains source
+  timestamps and preserves real failed checkpoints. Claimed work without historical
+  failures cannot be labelled CLEAR. These API diagnostics are development only.
+
+The proposed catalog is `ops/phase14/production_repair_catalog.json`: exactly three
+playbooks (refresh-local-readiness, restart-contained-support, exact-approved-release-rollback).
+Every permission is DISABLED. Each binds exact actions/services/preconditions,
+one attempt, cooldown,45/90/180second timeout, success checks, rollback/escalation,
+maximum7day grant expiry, immutable audit and prohibit conditions. Canonical digest
+`634263b8e57909c8fd6b1d7a0e47dda7991232f77e7cafc54a7d74b3f08dc938`;
+file SHA256 `7cde890aaeb4005d78d5d14b5eae7ab699c2d730a7aafdbc567781e9eb5ef930`.
+The validator has no executor; enabled bits alone cannot supply root-verified owner
+approval/runtime pins. Automatic rollback cannot target the catalog or its validator.
+
+Validation:115focused tests/27subtests and full2040tests/1947subtests PASS,
+zero failures/errors/skips/network attempts, plus14 offline CLI tests. Final CI
+commit/run receipts are recorded separately to avoid a self-referential source SHA.
+An initial new delta fixture used invalid status 'success'; it was corrected to
+'idle', without changing production schema. Integrating two README/runbook files
+exposed missing document-register entries; both are now audit evidence. Contracts
+cover275documents/98configuration sources. Original failed logs are preserved.
+
+Issue98 remains open: exact channel5062683202609281 returned authenticated204 at
+03:59UTC;17historical local failures (7pre-existing reviewed displays,10unacknowledged),
+17unclassified review items, main queue0/DLQ8. Delta source remains stale because
+its bundled executor stays OFF; fresh readiness never fabricates a fresh delta.
+Separate `native-watch-owner-decision.json` is NOT APPROVED. It binds one exact
+POST/plan/expiry/current source and retains the old ambiguous intent. Private hold
+receiver200/ready; public event-health403 prevents complete receiver verification.
+Do not change Access policy or treat this proposal as execution authority.
+
+Monitoring-only rollback (root, compare exact current hash first; no daemon-reload
+or application restart is needed for this single Python-file correction):
+
+```bash
+sudo /usr/bin/python3 -I -B - <<'ROLLBACK'
+from pathlib import Path
+import hashlib,json,os,tarfile,tempfile,subprocess
+base=Path('/var/lib/optibrain/autonomous-recovery-integration-20261113')
+m=json.loads((base/'monitoring-manifest.json').read_text());p=Path(m['target'])
+assert hashlib.sha256(p.read_bytes()).hexdigest()==m['installed_sha256']
+with tarfile.open(base/'monitoring-correction-prechange.tar.gz') as t:
+    data=t.extractfile(str(p).lstrip('/')).read()
+assert hashlib.sha256(data).hexdigest()==m['before_sha256']
+fd,name=tempfile.mkstemp(dir=p.parent)
+with os.fdopen(fd,'wb') as f:
+    f.write(data);f.flush();os.fsync(f.fileno())
+os.chmod(name,0o755);os.chown(name,0,0);os.replace(name,p)
+assert hashlib.sha256(p.read_bytes()).hexdigest()==m['before_sha256']
+subprocess.run(['/usr/bin/python3','-I','-B','/usr/local/lib/optibrain/phase14-runtime-snapshot.py','--current-services'],check=True)
+ROLLBACK
+```
+
+Preserve the existing resource unit/drop-in/timer, all business databases, journals,
+credentials, approvals and newer edits. New production repair/supervisor/catalog
+activation and application release/root-runtime pin changes require separate approval.
+The native proposal additionally requires verified receiver access and fresh exact
+owner authorization. No optional integration blocks continuing isolated development.

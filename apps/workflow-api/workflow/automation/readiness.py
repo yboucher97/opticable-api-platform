@@ -136,7 +136,8 @@ def native_watch_signal(native, now):
                   verification_age_seconds=age, automatic_recreation_authorized=False)
 
 
-def build_readiness(store, native, *, api_version, auth_configured, runtime_path=RUNTIME, now=None):
+def build_readiness(store, native, *, api_version, auth_configured, runtime_path=RUNTIME, now=None,
+                    delta_execution_enabled=None):
     now = now or datetime.now(timezone.utc)
     rows = [signal('API', 'OK', 'API process is responding', at=now.isoformat(), version=api_version),
             signal('Auth', 'OK' if auth_configured else 'ACTION REQUIRED',
@@ -154,9 +155,15 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
         else:
             bad = any(c['status'] in {'failed','resync_required'} for c in checkpoints)
             stale = any(age_seconds(c['last_success_at'],now) is None or age_seconds(c['last_success_at'],now)>900 for c in checkpoints)
+            disabled = delta_execution_enabled is False
+            source_times = [c['last_success_at'] for c in checkpoints if age_seconds(c['last_success_at'], now) is not None]
             rows.append(signal('Delta checkpoint','ACTION REQUIRED' if bad else 'DEGRADED' if stale else 'OK',
                                'Observation stopped; reconcile the saved checkpoint' if bad else
+                               'Historical delta evidence is stale while the bundled observer is disabled' if stale and disabled else
                                'Observation is stale' if stale else 'Incremental observation is current',
+                               at=min(source_times) if len(source_times)==len(checkpoints) else None,
+                               sampled_at=now.isoformat(), execution_enabled=delta_execution_enabled,
+                               classification='DISABLED_OBSERVER' if disabled else 'ACTIVE_OR_UNCONFIRMED_OBSERVER',
                                checkpoint_count=len(checkpoints), failed_count=sum(c['status'] in {'failed','resync_required'} for c in checkpoints)))
         health = store.execution_health()
         try:
@@ -177,16 +184,18 @@ def build_readiness(store, native, *, api_version, auth_configured, runtime_path
         failure_age=age_seconds(last_failed,now)
         historical=bool(blocked and not current_delivery and not health.get('queued',0) and not health.get('running',0) and not health.get('claimed',0)
                         and failure_age is not None and failure_age>86400)
-        rows.append(signal('Queue','ACTION REQUIRED' if blocked else 'OK',
+        claimed_unknown = bool(health.get('claimed',0))
+        rows.append(signal('Queue','ACTION REQUIRED' if blocked else 'UNKNOWN' if claimed_unknown else 'OK',
                            'Historical failures retained for review; no current queued/running delivery problem observed' if historical else
-                           'Work requires reconciliation' if blocked else 'No stale or failed queued work',
+                           'Work requires reconciliation' if blocked else
+                           'Claimed work requires independent lease and age verification' if claimed_unknown else 'No stale or failed queued work',
                            queued=health.get('queued',0),running=health.get('running',0),blocked=blocked,
                            claimed=health.get('claimed',0),
                            retained_failure_count=health.get('failed',0)+health.get('dead_letter',0),
                            current_delivery_state='ACTION REQUIRED' if current_delivery else
                                'UNKNOWN' if health.get('claimed',0) else 'OK',
                            current_delivery_problems=current_delivery,last_failed_at=last_failed,
-                           classification='HISTORICAL RETAINED EXCEPTION' if historical else 'CURRENT OR UNCLASSIFIED' if blocked else 'CLEAR'))
+                           classification='HISTORICAL RETAINED EXCEPTION' if historical else 'CURRENT OR UNCLASSIFIED' if blocked or claimed_unknown else 'CLEAR'))
         pending=health.get('human_action_required',0)
         rows.append(signal('Retained exceptions','UNKNOWN' if pending else 'OK',
                            'Retained review items are unclassified; review provenance before treating them as current failures'

@@ -216,6 +216,32 @@ class ProjectionTests(unittest.TestCase):
 
 
 class NativeAndQueueTests(unittest.TestCase):
+    def test_claimed_work_without_old_failures_cannot_be_labelled_clear(self):
+        with tempfile.TemporaryDirectory() as t:
+            store = AutomationStore(Path(t)/'automation.db')
+            with sqlite3.connect(store.db_path) as db:
+                db.execute('INSERT INTO automation_runs(run_id,workflow_id,event_id,correlation_id,status,created_at) VALUES(?,?,?,?,?,?)',
+                    ('current','fixture','fixture','fixture','claimed',NOW.isoformat()))
+            row = next(r for r in build_readiness(store, {}, api_version='fixture', auth_configured=True,
+                runtime_path=Path(t)/'missing.json', now=NOW)['signals'] if r['name']=='Queue')
+            self.assertEqual(row['state'], 'UNKNOWN')
+            self.assertEqual(row['classification'], 'CURRENT OR UNCLASSIFIED')
+
+    def test_disabled_delta_projection_preserves_stale_source_and_real_failure(self):
+        with tempfile.TemporaryDirectory() as t:
+            store = AutomationStore(Path(t)/'automation.db')
+            from workflow.automation.delta_sync import DeltaSync
+            DeltaSync(store).initialize('fixture', 'fixture', 'fixture', cursor='fixture')
+            last_success = (NOW-timedelta(days=2)).isoformat()
+            with sqlite3.connect(store.db_path) as db:
+                db.execute("UPDATE automation_sync_checkpoints SET status='idle',last_success_at=?", (last_success,))
+            def row():return next(r for r in build_readiness(store,{},api_version='fixture',auth_configured=True,
+                runtime_path=Path(t)/'missing.json',now=NOW,delta_execution_enabled=False)['signals'] if r['name']=='Delta checkpoint')
+            self.assertEqual(row()['state'],'DEGRADED');self.assertEqual(row()['classification'],'DISABLED_OBSERVER')
+            self.assertEqual(row()['observed_at'],last_success);self.assertEqual(row()['sampled_at'],NOW.isoformat())
+            with sqlite3.connect(store.db_path) as db:db.execute("UPDATE automation_sync_checkpoints SET status='failed'")
+            self.assertEqual(row()['state'],'ACTION REQUIRED')
+
     def test_unresolved_expired_watch_is_never_relabelled_successful(self):
         row = native_watch_signal(dict(native_subscription_status='human_action_required',
             native_subscription_expires_at=(NOW - timedelta(days=30)).isoformat(),

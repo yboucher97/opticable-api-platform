@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 from workflow.automation.action_evidence import ActionEvidence, envelope
 from workflow.automation.operational_recovery import (
-    DevelopmentScope, RecoveryCoordinator, DerivedStatus, OrphanedLock, RULE, diagnose, observations_from_operations)
+    DevelopmentScope, RecoveryCoordinator, DerivedStatus, OrphanedLock, RULE, diagnose, observations_from_operations, recovery_alerts)
 
 NOW = datetime(2026, 11, 12, 21, 0, tzinfo=timezone.utc)
 
@@ -81,6 +81,54 @@ class RecoveryTests(unittest.TestCase):
             self.assertEqual(self.repair()['state'], 'FAILED')
             self.assertEqual(self.repair(now=NOW + timedelta(seconds=1))['state'], 'COOLDOWN')
         self.assertEqual(len(self.events('OPERATIONAL_INCIDENT_CREATED')), 1)
+
+    def test_execution_exception_still_verifies_completed_effect_without_retry(self):
+        execute = DerivedStatus.execute
+        def writes_then_raises(playbook, before):
+            execute(playbook, before)
+            raise OSError('fixture lost completion acknowledgement')
+        with patch.object(DerivedStatus, 'execute', writes_then_raises):
+            result = self.repair()
+        self.assertEqual(result['state'], 'REPAIRED')
+        self.assertEqual(self.repair(now=NOW + timedelta(minutes=2))['state'], 'ALREADY_HEALTHY')
+        learning = self.events('OPERATIONAL_LEARNING')[0]['value']
+        self.assertEqual(learning['error_type'], 'OSError')
+        self.assertEqual(learning['root_cause_evidence']['status'], 'LOCAL_PRECONDITION_AND_READBACK')
+
+    def test_verification_exception_creates_incident_learning_and_global_hold(self):
+        # First verify is the preflight; second is independent post-repair readback.
+        with patch.object(DerivedStatus, 'verify', side_effect=[False, OSError('fixture')]):
+            result = self.repair()
+        self.assertEqual(result['state'], 'FAILED')
+        self.assertEqual(self.coordinator.audit.get(result['action_id'])['status'], 'FAILED')
+        self.assertEqual(self.repair(now=NOW + timedelta(minutes=2))['state'], 'AMBIGUOUS_NO_RETRY')
+        (self.root / 'derived/status.json').unlink()
+        self.assertEqual(self.repair(observed(operation='different'), now=NOW + timedelta(minutes=3))['state'], 'RECOVERY_HOLD')
+        self.assertEqual(len(self.events('AUTONOMY_HOLD')), 1)
+        self.assertEqual(len(self.events('OPERATIONAL_LEARNING')), 1)
+
+    def test_after_readback_exception_is_not_left_as_an_unreported_started_action(self):
+        with patch.object(DerivedStatus, 'after', side_effect=OSError('fixture')):
+            result = self.repair()
+        self.assertEqual(self.coordinator.audit.get(result['action_id'])['status'], 'FAILED')
+        self.assertEqual(len(self.events('OPERATIONAL_INCIDENT_CREATED')), 1)
+        self.assertFalse(self.events('OPERATIONAL_LEARNING')[0]['value']['verified'])
+
+    def test_failed_repair_alert_reuses_existing_shape_and_deduplicates_without_sending(self):
+        with patch.object(DerivedStatus, 'verify', return_value=False):
+            self.repair();self.repair(now=NOW+timedelta(seconds=61))
+        alerts = recovery_alerts(self.coordinator.audit)
+        self.assertEqual(len(alerts),1)
+        self.assertEqual(alerts,recovery_alerts(self.coordinator.audit))
+        self.assertEqual(alerts[0]['escalation_route'],'existing-owner-operations')
+        self.assertFalse(alerts[0]['notification_delivered'])
+
+    def test_credential_alert_and_missing_service_do_not_invent_auth_cause_or_recurrence(self):
+        rows = observations_from_operations(dict(at=NOW.timestamp(),
+            alerts=[dict(incident='credential-health')], repairs=[{}]), evidence_ref='fixture', now=NOW)
+        self.assertEqual(rows[0]['symptom'], 'CREDENTIAL_OBSERVATION_FAILED')
+        self.assertEqual(rows[0]['recurrence_count'], 0)
+        self.assertEqual(diagnose(rows[0], NOW)['cause_confidence'], 'CLASSIFICATION_ONLY')
 
     def test_two_failures_open_circuit_and_never_loop(self):
         with patch.object(DerivedStatus, 'verify', return_value=False):

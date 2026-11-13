@@ -26,6 +26,37 @@ def sha(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def recovery_holds(audit):
+    """Fatal recovery incidents block other attempts in this existing journal.
+
+    No automatic expiry or reset: a new contract/operation cannot erase an
+    ambiguous effect or failed rollback. Production approval remains separate.
+    """
+    with audit.connect(readonly=True) as db:
+        return [r[0] for r in db.execute("SELECT DISTINCT action_id FROM action_evidence WHERE kind='universal_event' AND json_extract(evidence_json,'$.event')='AUTONOMY_HOLD' LIMIT 101")]
+
+
+def recovery_alerts(audit):
+    """Adapt local incidents to the existing operations alert shape; never send.
+
+    An installed trusted adapter must still apply the existing owner-only budget,
+    delivery ledger and approval. An incident is not a claimed notification.
+    """
+    holds = set(recovery_holds(audit));alerts = []
+    with audit.connect(readonly=True) as db:
+        rows = db.execute("SELECT action_id FROM action_envelopes WHERE json_extract(envelope_json,'$.action_type') IN ('OPERATIONAL_INCIDENT_CREATED','DEPLOYMENT_RECOVERY_INCIDENT') ORDER BY created_at DESC LIMIT 100").fetchall()
+        for row in rows:
+            aid = row['action_id'];state = audit.current(db, aid)
+            resolved = db.execute("SELECT 1 FROM action_evidence WHERE action_id=? AND json_extract(evidence_json,'$.event')='RESOLVED' LIMIT 1", (aid,)).fetchone()
+            if resolved and aid not in holds:
+                continue
+            alerts.append(dict(incident='recovery:' + digest(aid)[:32],
+                severity='CRITICAL' if aid in holds else 'HIGH', service='operational-recovery',
+                resolved=False, attempted=state['after_state']['reason_code'], evidence_ref=aid,
+                escalation_route='existing-owner-operations', notification_delivered=False))
+    return alerts
+
+
 class DevelopmentScope:
     """An explicit, expiring fixture grant; cannot select a production path."""
     def __init__(self, root):
@@ -115,6 +146,7 @@ def diagnose(observation, now):
         'DERIVED_REPORT_MISSING': ('DERIVED_ARTIFACT_UNAVAILABLE', 'rebuild-derived-status'),
         'ORPHANED_DEV_LOCK': ('LOCK_OWNERSHIP_REQUIRES_PROOF', 'release-orphaned-dev-lock'),
         'AUTH_REJECTED': ('EXISTING_REFRESH_OR_OWNER_CONSENT', None),
+        'CREDENTIAL_OBSERVATION_FAILED': ('EXISTING_REFRESH_DIAGNOSIS_REQUIRED', None),
         'SCOPE_MISSING': ('OWNER_PROVIDER_CONSENT_REQUIRED', None),
         'TRANSIENT_READ': ('EXISTING_BOUNDED_READ_RETRY', None),
         'RATE_LIMITED': ('RESPECT_PROVIDER_BACKOFF', None),
@@ -141,14 +173,15 @@ def observations_from_operations(status, *, evidence_ref, now):
         if not re.fullmatch(r'[A-Za-z0-9_.:-]{1,120}', incident):
             continue
         symptom = ('PRODUCTION_SERVICE_UNHEALTHY' if incident.startswith('service:') else
-                   'AUTH_REJECTED' if incident == 'credential-health' else
+                   'CREDENTIAL_OBSERVATION_FAILED' if incident == 'credential-health' else
                    'HISTORICAL_FAILURE' if incident == 'dlq-review' else
                    'CAPACITY_RISK' if incident in {'working-headroom', 'disk-reserve', 'disk-critical'} else
                    'UNKNOWN')
         observations.append(dict(operation_id='ops:' + digest(incident)[:32], service='existing-operations',
             symptom=symptom, observed_at=observed_at, evidence_ref=evidence_ref,
             evidence_sha256=source_hash, original_incident=incident,
-            recurrence_count=sum(r.get('unit') == alert.get('service') for r in status.get('repairs', []))))
+            recurrence_count=sum(bool(alert.get('service')) and r.get('unit') == alert['service']
+                                 for r in status.get('repairs', []))))
     return observations
 
 
@@ -220,6 +253,8 @@ class OrphanedLock:
             if self.retired.exists():
                 raise ValueError('Existing retirement evidence requires reconciliation')
             os.rename(self.path, self.retired)
+            self.execution_evidence = {'owner_pid': pid, 'owner_dead': True,
+                                       'exclusive_flock_verified': True, 'inode': info.st_ino}
         finally:
             os.close(fd)
 
@@ -251,9 +286,14 @@ class RecoveryCoordinator:
         return identity
 
     def _incident(self, key, reason, observation_id, now):
-        return self._record('incident:' + key, 'OPERATIONAL_INCIDENT_CREATED',
+        identity = self._record('incident:' + key, 'OPERATIONAL_INCIDENT_CREATED',
             {'incident_key': key, 'reason_code': reason, 'observation': observation_id,
+             'blocks_autonomy': reason in {'AMBIGUOUS_REPAIR_GET_ONLY', 'REPAIR_VERIFICATION_UNAVAILABLE'},
+             'escalation_route': 'existing-owner-operations', 'delivery_state': 'PENDING_EXISTING_DISPATCH',
              'owner_action': 'review evidence; no production authority granted'}, now)
+        if reason in {'AMBIGUOUS_REPAIR_GET_ONLY', 'REPAIR_VERIFICATION_UNAVAILABLE'}:
+            self.audit.event(identity, 'RECOVERY', 'AUTONOMY_HOLD', {'reason_code': reason}, now)
+        return identity
 
     def _plans(self):
         with self.audit.connect(readonly=True) as db:
@@ -280,15 +320,21 @@ class RecoveryCoordinator:
             latest = prior[0] if prior else None
             if latest and isinstance(latest.get('final_result'), dict) and latest['final_result'].get('error_class') == 'AmbiguousLocalRepair':
                 return {'state': 'AMBIGUOUS_NO_RETRY', 'executed': False}
+            holds = recovery_holds(self.audit)
+            if holds:
+                return {'state': 'RECOVERY_HOLD', 'executed': False, 'incidents': holds}
             identity = latest['action_id'] if latest and latest['status'] == 'STARTED' else 'repair:' + key + ':' + str(len(prior) + 1)
             playbook = PLAYBOOKS[diagnosis['playbook']](self.scope, params, identity)
             if latest and latest['status'] == 'STARTED':
-                verified = playbook.verify()
+                try:
+                    verified = playbook.verify();after = playbook.after()
+                except Exception:
+                    verified = False;after = {'readback': 'UNAVAILABLE'}
                 failure = None if verified else {'stage': 'READ_AFTER_WRITE', 'error_class': 'AmbiguousLocalRepair',
                     'provider_status': None, 'safe_details': 'Interrupted local repair could not be verified',
                     'partial_effects': 'UNKNOWN', 'recovery_action': 'Owner review; no repeated effect'}
                 self.audit.finish(identity, now, provider_success=verified, verified=verified,
-                                  actual_after=playbook.after(), failure=failure)
+                                  actual_after=after, failure=failure)
                 self.audit.event(identity, 'RECOVERY', 'OPERATIONAL_LEARNING',
                     {'environment': 'isolated-development', 'symptom': observation['symptom'],
                      'cause_class': diagnosis['cause_class'], 'action_id': identity,
@@ -318,27 +364,40 @@ class RecoveryCoordinator:
                 exact_versions={'environment': 'isolated-development', 'rule_version': RULE,
                                 'incident_key': key, 'parameter_hash': binding})
             self.audit.plan(plan, now);self.audit.start(identity, now, authority_check=lambda: self.scope.verify(now))
-            error = None
+            error = None;ambiguous = False
             try:
                 playbook.execute(before)
-                verified = playbook.verify()
             except Exception as exc:
-                error = type(exc).__name__;verified = False
-            after = playbook.after()
-            self.audit.finish(identity, now, provider_success=verified, actual_after=after, verified=verified)
+                error = type(exc).__name__
+            # Even an execution error can follow a completed local effect.
+            # Always independently read back; never repeat an unknown effect.
+            try:
+                verified = playbook.verify();after = playbook.after()
+            except Exception as exc:
+                error = type(exc).__name__;verified = False;ambiguous = True
+                after = {'readback': 'UNAVAILABLE'}
+            failure = {'stage': 'READ_AFTER_WRITE', 'error_class': 'AmbiguousLocalRepair',
+                'provider_status': None, 'safe_details': 'Independent verification unavailable',
+                'partial_effects': 'UNKNOWN', 'recovery_action': 'Existing owner incident; no retry'} if ambiguous else None
+            self.audit.finish(identity, now, provider_success=verified, actual_after=after,
+                              verified=verified, failure=failure)
             learning = {'environment': 'isolated-development', 'symptom': observation['symptom'],
                 'cause_class': diagnosis['cause_class'], 'cause_confidence': 'CLASSIFICATION_ONLY',
                 'action_id': identity, 'observation_id': oid, 'rule_version': RULE, 'before': before,
                 'after': after, 'verified': verified, 'error_type': error,
                 'tests': ['independent exact playbook readback'], 'reuse_eligible': False,
                 'business_impact': 'NOT_MEASURED', 'safeguard_changes': False}
+            learning['root_cause_evidence'] = {'source_ref': observation['evidence_ref'],
+                'source_sha256': observation['evidence_sha256'], 'measured_before': before,
+                'execution': getattr(playbook, 'execution_evidence', {}),
+                'status': 'LOCAL_PRECONDITION_AND_READBACK' if verified else 'UNPROVEN'}
             self.audit.event(identity, 'RECOVERY', 'OPERATIONAL_LEARNING', learning, now)
             ManagerStore(self.audit.path).receipt('operational-recovery', identity, now,
                 {'classification': 'TEST_ONLY', 'action_id': identity, 'outcome_verified': verified,
                  'invocation_origin': 'ISOLATED_RECOVERY', 'source_at': observation['observed_at'],
                  'business_effects': 0, 'learning_scope': 'OPERATIONAL_ONLY'})
             if not verified:
-                self._incident(key, 'RECOVERY_FAILED', oid, now)
+                self._incident(key, 'REPAIR_VERIFICATION_UNAVAILABLE' if ambiguous else 'RECOVERY_FAILED', oid, now)
             elif self.audit.get('incident:' + key):
                 self.audit.event('incident:' + key, 'RECOVERY', 'RESOLVED', {'action_id': identity}, now)
             return {'state': 'REPAIRED' if verified else 'FAILED', 'executed': True,

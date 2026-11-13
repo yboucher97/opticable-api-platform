@@ -1,0 +1,168 @@
+{
+  "schema": 1,
+  "environment": "production",
+  "permissions_enabled": false,
+  "authority": "PROPOSAL_ONLY_NO_EXECUTION_GRANT",
+  "existing_executor": "optibrain-operations; future independent approved release supervisor",
+  "playbooks": [
+    {
+      "id": "refresh-local-readiness",
+      "services": [
+        "optibrain-resource-sample.service"
+      ],
+      "actions": [
+        [
+          "/usr/bin/python3",
+          "-I",
+          "-B",
+          "/usr/local/lib/optibrain/phase14-runtime-snapshot.py",
+          "--current-services"
+        ]
+      ],
+      "preconditions": [
+        "fresh current root service/flag registry",
+        "existing sampler code hash matches approved manifest",
+        "no active sampler invocation",
+        "local observations stale; underlying source ages preserved"
+      ],
+      "maximum_attempts": 1,
+      "cooldown_seconds": 900,
+      "execution_timeout_seconds": 45,
+      "success_checks": [
+        "new status timestamp and exact installed sampler identity",
+        "45 flags still off",
+        "source timestamps not fabricated",
+        "no provider calls or business execution"
+      ],
+      "rollback": "restore only exact prior derived snapshot if newer output is invalid; preserve originals as evidence",
+      "escalation": "deduplicated existing operations incident; existing owner-notification budget only",
+      "enabled": false,
+      "approval": {
+        "approved": false,
+        "expires_at": null,
+        "maximum_permission_lifetime_seconds": 604800
+      },
+      "audit": [
+        "existing immutable ActionEvidence intent before effect",
+        "exact service/config/source hashes",
+        "independent health and data evidence after effect",
+        "existing incident/learning records on every failure"
+      ],
+      "prohibitions": [
+        "no current exact owner grant",
+        "any consequential flag on",
+        "unknown or changed root policy/runtime pin",
+        "active business effect or uncertain prior attempt",
+        "fatal recovery hold",
+        "unknown/newer configuration edit",
+        "resource reserve breached"
+      ]
+    },
+    {
+      "id": "restart-contained-support",
+      "services": [
+        "opticable-password-pdf.service",
+        "opticable-omada-site.service"
+      ],
+      "actions": [
+        [
+          "/usr/bin/systemctl",
+          "restart",
+          "{service}"
+        ]
+      ],
+      "preconditions": [
+        "exact service selected from catalog",
+        "two independent failed local health observations",
+        "no inflight job/lease and no business writer capability",
+        "configuration and environment hashes match current approved checkpoint",
+        "service binary/source pin verified"
+      ],
+      "maximum_attempts": 1,
+      "cooldown_seconds": 3600,
+      "execution_timeout_seconds": 90,
+      "success_checks": [
+        "same pinned code/configuration",
+        "documented HTTP health endpoint200",
+        "no extra job dispatch/provider mutation",
+        "45 flags remain off; existing receipts preserved"
+      ],
+      "rollback": "no code/data change; if restart fails stop attempts and preserve service logs",
+      "escalation": "deduplicated existing operations incident; existing owner-notification budget only",
+      "enabled": false,
+      "approval": {
+        "approved": false,
+        "expires_at": null,
+        "maximum_permission_lifetime_seconds": 604800
+      },
+      "audit": [
+        "existing immutable ActionEvidence intent before effect",
+        "exact service/config/source hashes",
+        "independent health and data evidence after effect",
+        "existing incident/learning records on every failure"
+      ],
+      "prohibitions": [
+        "no current exact owner grant",
+        "any consequential flag on",
+        "unknown or changed root policy/runtime pin",
+        "active business effect or uncertain prior attempt",
+        "fatal recovery hold",
+        "unknown/newer configuration edit",
+        "resource reserve breached"
+      ]
+    },
+    {
+      "id": "exact-approved-release-rollback",
+      "services": [
+        "opticable-workflow-api.service"
+      ],
+      "actions": [
+        [
+          "existing-independent-supervisor",
+          "EXACT_CODE_CONFIG_ONCE_V1"
+        ]
+      ],
+      "preconditions": [
+        "independent supervisor separately installed and root-pinned",
+        "fresh exact one-rollback owner approval bound to candidate and known-good GitHub commits",
+        "relevant configuration checkpoint and target preimages verified",
+        "complete encrypted R2 readback plus isolated restore receipt",
+        "old code reads current data schema",
+        "candidate failure evidence recorded and no unknown edits",
+        "business effect gates remain closed"
+      ],
+      "maximum_attempts": 1,
+      "cooldown_seconds": 3600,
+      "execution_timeout_seconds": 180,
+      "success_checks": [
+        "exact approved Git code/config hashes and modes restored",
+        "independent application health and current-data integrity",
+        "newer business rows and all audit/incident history preserved",
+        "45 flags off and unchanged protected settings"
+      ],
+      "rollback": "only approved code/config preimages; never DB/VM/credentials/security controls; failed rollback creates persistent autonomy hold",
+      "escalation": "persistent existing-journal incident blocks further repairs/releases; existing owner notification remains budget/approval gated",
+      "enabled": false,
+      "approval": {
+        "approved": false,
+        "expires_at": null,
+        "maximum_permission_lifetime_seconds": 604800
+      },
+      "audit": [
+        "existing immutable ActionEvidence intent before effect",
+        "exact service/config/source hashes",
+        "independent health and data evidence after effect",
+        "existing incident/learning records on every failure"
+      ],
+      "prohibitions": [
+        "no current exact owner grant",
+        "any consequential flag on",
+        "unknown or changed root policy/runtime pin",
+        "active business effect or uncertain prior attempt",
+        "fatal recovery hold",
+        "unknown/newer configuration edit",
+        "resource reserve breached"
+      ]
+    }
+  ]
+}

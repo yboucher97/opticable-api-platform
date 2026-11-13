@@ -6,8 +6,8 @@ import tempfile
 import unittest
 
 from test_operational_recovery import NOW, grant
-from workflow.automation.operational_recovery import DevelopmentScope
-from workflow.automation.defect_development import prepare_defect, git, run_regression
+from workflow.automation.operational_recovery import DevelopmentScope, RecoveryCoordinator, diagnose
+from workflow.automation.defect_development import prepare_defect, prepare_recurring_defect, git, run_regression
 
 CODE = 'ops/connectivity_watch/check.py'
 BAD = b'def dispatches_retry():\n return False\n'
@@ -38,7 +38,8 @@ class DefectDevelopmentTests(unittest.TestCase):
                               test, source_sha=self.sha, github_read=self.github, now=NOW)
 
     def github(self, repository, sha):
-        return dict(repository=repository, sha=sha, tree_sha=git(self.source, 'rev-parse', 'HEAD^{tree}'), authenticated_read=True)
+        return dict(repository=repository, sha=sha, tree_sha=git(self.source, 'rev-parse', 'HEAD^{tree}'),
+                    authenticated_read=True, base_ref='main', base_sha=sha)
 
     def test_real_paired_regression_creates_branch_commit_and_draft_request(self):
         result = self.prepare()
@@ -103,6 +104,44 @@ class Bad(unittest.TestCase):
     def test_unverified_or_wrong_github_base_cannot_prepare_a_branch(self):
         with self.assertRaises(ValueError):prepare_defect(self.source, self.scope, {CODE: FIXED}, REGRESSION,
             source_sha=self.sha, github_read=lambda *args: {'authenticated_read': False}, now=NOW)
+
+    def test_pr_base_must_be_verified_at_exact_source(self):
+        for base, sha in [('main', 'a'*40), ('unreviewed-branch', self.sha)]:
+            def identity(*args):return {**self.github(*args), 'base_ref': base, 'base_sha': sha}
+            with self.assertRaises(ValueError):prepare_defect(self.source, self.scope, {CODE: FIXED}, REGRESSION,
+                source_sha=self.sha, github_read=identity, now=NOW)
+
+    def recurring(self, fix=FIXED):
+        from test_operational_recovery import observed
+        c = RecoveryCoordinator(self.scope, now=NOW)
+        first = observed('SOFTWARE_DEFECT', 'recurring-fixture')
+        c.repair(first, {}, now=NOW)
+        incident = 'incident:' + diagnose(first, NOW)['incident_key']
+        return c, first, incident
+
+    def test_recurring_incident_drives_paired_tests_branch_and_pr_request_once(self):
+        c, first, incident = self.recurring()
+        args = dict(source_sha=self.sha, github_read=self.github, now=NOW + timedelta(minutes=2))
+        def run():return prepare_recurring_defect(c, incident, self.source, {CODE: FIXED}, REGRESSION, **args)
+        self.assertEqual(run()['state'], 'MORE_EVIDENCE_REQUIRED')
+        second = {**first, 'observed_at': (NOW + timedelta(minutes=1)).isoformat(), 'evidence_sha256': 'f'*64}
+        c.repair(second, {}, now=NOW + timedelta(minutes=1))
+        result = run();self.assertEqual(result['state'], 'PREPARED')
+        again = run();self.assertEqual(again['state'], 'ALREADY_PREPARED')
+        self.assertEqual(again['commit'], result['commit'])
+        self.assertTrue(result['draft_pr_request']['draft'])
+        with c.audit.connect(readonly=True) as db:
+            count = db.execute("SELECT COUNT(*) FROM action_envelopes WHERE json_extract(envelope_json,'$.action_type')='NONPROD_VERIFIED_DEFECT_PREPARATION'").fetchone()[0]
+        self.assertEqual(count, 1)
+        self.assertTrue(c.audit.verify_integrity(incident))
+
+    def test_failed_recurring_fix_stops_and_cannot_bypass_by_repetition(self):
+        c, first, incident = self.recurring()
+        c.repair({**first, 'observed_at': (NOW+timedelta(minutes=1)).isoformat(), 'evidence_sha256': 'f'*64}, {}, now=NOW+timedelta(minutes=1))
+        args = dict(source_sha=self.sha, github_read=self.github, now=NOW+timedelta(minutes=2))
+        def run():return prepare_recurring_defect(c, incident, self.source, {CODE: BAD}, REGRESSION, **args)
+        self.assertEqual(run()['state'], 'REVIEW_REQUIRED')
+        self.assertEqual(run()['state'], 'REVIEW_REQUIRED')
 
 
 if __name__ == '__main__':unittest.main()

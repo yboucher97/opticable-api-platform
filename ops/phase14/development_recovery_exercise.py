@@ -60,7 +60,8 @@ def main():
     identity = json.loads(args.github_identity.read_text())
     def verified_github(repo, sha):
         assert sha == identity['sha'] and identity['authenticated_native_read'] is True
-        return dict(repository=repo, sha=sha, tree_sha=identity['tree'], authenticated_read=True)
+        return dict(repository=repo, sha=sha, tree_sha=identity['tree'], authenticated_read=True,
+                    base_ref='recovery/production-ec9a8e8-20261112', base_sha=sha)
     defect_root = args.workspace/'diagnostic-defect';defect_root.mkdir(mode=0o700);grant(defect_root, now)
     diagnostic = 'apps/workflow-api/workflow/automation/readiness.py'
     prepared = prepare_defect(args.base_source, DevelopmentScope(defect_root),

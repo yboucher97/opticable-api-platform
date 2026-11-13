@@ -13,12 +13,13 @@ import re
 
 from .acquisition_store import digest
 from .action_evidence import ActionEvidence, envelope, local_record, stamp
-from .operational_recovery import DevelopmentScope
+from .operational_recovery import DevelopmentScope, recovery_holds
 
 REPOSITORY = 'yboucher97/opticable-api-platform'
 PROTECTED = re.compile(r'(^|/)(\.git(?:/|$)|\.github(?:/|$)|.*(?:\.db|\.sqlite|\.sqlite3)(?:$|-)|.*(?:-wal|-shm)$|.*\.env(?:$|\.)|.*(?:credential|secret|oauth|sudoers|mutation.control|business.autonomy|master.runbook|safety|approval|authorization|policy).*)', re.I)
 CONTROL_FILES = {'manual-guarded-release.py', 'operational_recovery.py',
-                 'release_recovery.py', 'defect_development.py'}
+                 'release_recovery.py', 'defect_development.py', 'repair_catalog.py',
+                 'production_repair_catalog.json'}
 
 
 class ExistingR2Reader:
@@ -159,6 +160,9 @@ def validate_contract(contract, trusted_receipt, *, expected_digest, now):
                 raise ValueError('Exact per-file preimage/candidate hash required')
     if len(set(paths)) != len(paths):
         raise ValueError('Duplicate rollback targets refused')
+    checkpoint = digest([{k: t[k] for k in ('path', 'mode', 'before_sha256')} for t in targets])
+    if contract.get('configuration_checkpoint_sha256') != checkpoint:
+        raise ValueError('Exact relevant code/config prechange checkpoint required')
     if contract.get('database_restore_allowed') is not False or contract.get('security_changes_allowed') is not False:
         raise ValueError('Routine rollback must preserve databases and security policy')
     compatibility = contract.get('compatibility_evidence', {})
@@ -172,7 +176,7 @@ def validate_contract(contract, trusted_receipt, *, expected_digest, now):
 
 class RecoverySupervisor:
     """Runs outside candidate code; independently validates and restores exact files."""
-    def __init__(self, scope, contract, trusted_receipt, *, expected_digest, git_file, probe, now):
+    def __init__(self, scope, contract, trusted_receipt, *, expected_digest, git_file, probe, data_probe, now):
         if not isinstance(scope, DevelopmentScope):
             raise ValueError('Explicit isolated supervisor scope required')
         scope.verify(now)
@@ -180,7 +184,10 @@ class RecoverySupervisor:
         if contract['environment'] != 'isolated-development':
             raise ValueError('Production supervisor execution is not installed or authorized')
         self.scope, self.contract, self.receipt = scope, contract, trusted_receipt
-        self.expected_digest, self.git_file, self.probe = expected_digest, git_file, probe
+        if not callable(data_probe):
+            raise ValueError('Independent current-data integrity verifier required')
+        self.expected_digest, self.git_file, self.probe, self.data_probe = expected_digest, git_file, probe, data_probe
+        self.last_health = None
         self.audit = ActionEvidence(scope.path('state.sqlite'))
         self.action_id = 'release:' + expected_digest[:40]
         with self.audit.connect() as db:self.audit.setup(db)
@@ -217,22 +224,42 @@ class RecoverySupervisor:
         with self.audit.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             local_record(db, key, 'DEPLOYMENT_RECOVERY_INCIDENT', {'type': 'INCIDENT', 'identity': key}, now,
-                before={'recorded': False}, after={'release': self.action_id, 'reason_code': reason},
+                before={'recorded': False}, after={'release': self.action_id, 'reason_code': reason,
+                    'blocks_autonomy': True, 'escalation_route': 'existing-owner-operations',
+                    'delivery_state': 'PENDING_EXISTING_DISPATCH'},
                 reason='Independent candidate/rollback verification failed; no retry or database restore')
+        self.audit.event(key, 'RECOVERY', 'AUTONOMY_HOLD', {'reason_code': reason}, now)
 
     def _health(self, expected):
         field = 'before_sha256' if expected == self.contract['last_good_sha'] else 'candidate_sha256'
         if any(file_sha(path) != target[field] for target, path, _, _ in self._files()):
+            self.last_health = {'healthy': False, 'source_sha': expected, 'reason': 'CODE_IDENTITY_MISMATCH'}
             return False
-        try:result = self.probe()
-        except Exception:return False
-        return isinstance(result, dict) and result.get('healthy') is True and result.get('source_sha') == expected
+        try:
+            result = self.probe();data = self.data_probe()
+        except Exception as exc:
+            self.last_health = {'healthy': False, 'error_type': type(exc).__name__}
+            return False
+        # Probe callbacks execute independently of candidate code. Recheck files
+        # after them, and require data evidence independently of HTTP liveness.
+        good = (isinstance(result, dict) and result.get('healthy') is True
+            and result.get('source_sha') == expected and isinstance(data, dict)
+            and data.get('healthy') is True and data.get('database_restore_performed') is False
+            and isinstance(data.get('evidence_sha256'), str)
+            and re.fullmatch('[0-9a-f]{64}', data['evidence_sha256']) is not None
+            and all(file_sha(path) == target[field] for target, path, _, _ in self._files()))
+        self.last_health = {'healthy': bool(good), 'source_sha': expected,
+                            'data_evidence_sha256': data.get('evidence_sha256') if isinstance(data, dict) else None}
+        return bool(good)
 
     def deploy(self, *, now):
         self._check(now)
         with self.scope.lock():
             if self.audit.get(self.action_id):
                 return self._reconcile(now)
+            holds = recovery_holds(self.audit)
+            if holds:
+                return {'state': 'RECOVERY_HOLD', 'incidents': holds, 'database_restored': False}
             files = self._files()
             if any(file_sha(path) != target['before_sha256'] for target, path, _, _ in files):
                 raise ValueError('Current release differs from approved prechange state')
@@ -241,7 +268,7 @@ class RecoverySupervisor:
                 return {'state': 'REJECTED', 'reason': 'LAST_KNOWN_GOOD_UNHEALTHY', 'database_restored': False}
             plan = envelope(self.action_id, 'ISOLATED_RELEASE_CHANGE', {'type': 'CODE', 'identity': self.expected_digest}, now,
                 mutation=True, authority_class='OWNER_ISOLATED_EXPERIMENT', automatic_rule='Preapproved exact one-rollback experiment',
-                before_state={'sha': self.contract['last_good_sha']}, proposed_state={'sha': self.contract['candidate_sha']},
+                before_state={'sha': self.contract['last_good_sha'], 'health': self.last_health}, proposed_state={'sha': self.contract['candidate_sha']},
                 rollback_capability='FULLY_REVERSIBLE', rollback_target=self.contract['last_good_sha'],
                 rollback_procedure='Restore only approved Git code/config blobs and independently verify health; never databases',
                 exact_versions={'environment': 'isolated-development', 'contract_sha256': self.expected_digest},
@@ -258,6 +285,9 @@ class RecoverySupervisor:
                     return {'state': 'CANDIDATE_VERIFIED', 'database_restored': False}
             except Exception as exc:
                 self.audit.event(self.action_id, 'RECOVERY', 'CANDIDATE_FAILED', {'error_type': type(exc).__name__}, now)
+            self.audit.event(self.action_id, 'RECOVERY', 'FAILURE_ATTRIBUTION',
+                {'classification': 'CANDIDATE_WINDOW_FAILURE', 'root_cause': 'UNPROVEN',
+                 'health': self.last_health}, now)
             return self._rollback(now)
 
     def _reconcile(self, now):
@@ -333,6 +363,8 @@ class RecoverySupervisor:
         self.audit.finish(aid, now, provider_success=verified and aid != self.action_id, verified=verified,
                           actual_after={'rollback_verified': verified, 'sha': self.contract['last_good_sha'] if verified else None})
         self.audit.event(aid, 'RECOVERY', 'ROLLBACK_VERIFIED' if verified else 'ROLLBACK_FAILED',
-                         {'database_restored': False, 'sha': self.contract['last_good_sha']}, now)
+                         {'database_restored': False, 'sha': self.contract['last_good_sha'],
+                          'data_integrity_evidence': self.last_health,
+                          'attribution': 'CHANGE_ASSOCIATED_RECOVERY' if verified else 'UNPROVEN'}, now)
         if not verified:self._incident('ROLLBACK_HEALTH_FAILED', now)
         return {'state': 'ROLLED_BACK' if verified else 'ROLLBACK_FAILED', 'database_restored': False}
