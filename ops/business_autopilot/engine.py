@@ -228,7 +228,7 @@ def make_artifacts(native, supplement, bank, now):
             'prohibited': ['Sending real customer data from preview', 'Changing live tags', 'Counting inventory as weekly acquisition']}
     put(f'{campaign}/measurement/draft/event-contract.json', spec)
     plan = [f'Opticable weekly business-growth plan — {monday} to {monday + timedelta(days=6)}',
-            'Completed: native analysis, ranked evidence, 14 bilingual social drafts, two articles, ad copy, video storyboards, FAQs and a staging measurement contract.',
+            'Available draft bank: bilingual social copy, articles, ad copy, video storyboards, FAQs and a staging measurement contract. Actual new work and counts are recorded in the daily completion artifact and existing manager receipts; reused drafts are not newly completed work.',
             'Monday: review measurement contract and camera private preview; retain baseline and obtain approval only for exact finished external changes.',
             'Tuesday: prepare camera/AI campaign assets and verify compatibility claims; no paid launch.',
             'Wednesday: inspect qualified-outcome and source mapping evidence; keep unidentified outcomes explicitly unknown.',
