@@ -37,7 +37,7 @@ def protect(root, native_source):
         text = guard(page.read_text())
         # Only the reviewed local brief script and inert structured data survive.
         text = re.sub(r'<script\b([^>]*)>.*?</script\s*>', lambda m: m.group(0) if
-            ('data-camera-brief' in m.group(1) or 'application/ld+json' in m.group(1)) else '', text, flags=re.S|re.I)
+            ('data-camera-brief' in m.group(1) or 'data-cabling-handover' in m.group(1) or 'application/ld+json' in m.group(1)) else '', text, flags=re.S|re.I)
         text = re.sub(r'<iframe\b.*?</iframe\s*>', '<p>Customer form disabled in private preview.</p>', text, flags=re.S|re.I)
         text = re.sub(r'<form\b.*?</form\s*>', '<p>Customer form disabled in private preview.</p>', text, flags=re.S|re.I)
         text = re.sub(r'(<a\b[^>]*?\s)href\s*=\s*([\"\'])(?:https?:|//|mailto:|tel:)[^\"\']*\2', r'\1href="#private-preview" data-external-disabled="true"', text, flags=re.I)
@@ -126,7 +126,7 @@ def serve(root, credentials, review=None, *, port=8876, stop_event=None, session
                     else:
                         identifier=path.rsplit('/',1)[-1] if path.startswith('/review/item/') else None
                         if path not in ('/review','/review/') and not identifier:self.send_error(404);return
-                        raw=review.render(params.get('q',[''])[0][:150],params.get('category',[''])[0],identifier=identifier);self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8')
+                        raw=review.render(params.get('q',[''])[0][:150],params.get('category',[''])[0],identifier=identifier,urgency=params.get('urgency',[''])[0][:10],filter_status=params.get('status',[''])[0][:20]);self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8')
                     self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw);return
                 except (ValueError,OSError):return self.json_response(409,{'error':'Artifact unavailable or integrity changed'})
 
