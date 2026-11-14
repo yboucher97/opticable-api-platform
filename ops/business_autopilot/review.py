@@ -12,7 +12,7 @@ import re
 import sqlite3
 from urllib.parse import urlencode
 
-CATEGORIES = ('Website improvements','Social content','Articles','Marketing reports','SEO opportunities','Pending decisions')
+CATEGORIES = ('Business work','Website improvements','Social content','Articles','Marketing reports','SEO opportunities','Pending decisions')
 CHOICES = {'APPROVE','REJECT','REQUEST_REVISION'}
 
 
@@ -21,6 +21,7 @@ def digest(value):
 
 
 def category(path):
+    if path.startswith('business-work/'):return 'Business work'
     if '/social/' in path or '/social-media/' in path or re.search(r'/(linkedin|facebook|instagram)/', path): return 'Social content'
     if '/articles/' in path or '/website/' in path: return 'Articles'
     if '/seo/' in path or 'ranked-improvements' in path: return 'SEO opportunities'
@@ -33,7 +34,7 @@ class Review:
     def __init__(self, database, artifacts):
         self.database = Path(database); self.artifacts = Path(artifacts).resolve()
 
-    def catalog(self, query='', section=''):
+    def catalog(self, query='', section='', urgency='', filter_status=''):
         # Read-only SQL: do not initialize or create a database during a GET.
         with sqlite3.connect(self.database.resolve().as_uri()+'?mode=ro',uri=True) as db:
             db.row_factory=sqlite3.Row
@@ -52,6 +53,10 @@ class Review:
                   'expected_benefit':'Clarify commercial scope and prepare useful evidence-backed inquiries; conversion lift is unmeasured.',
                   'estimated_cost':{'internal_incremental':'0','currency':'CAD','publication_or_media_spend':'NOT_AUTHORIZED'},
                   'tests':v.get('quality_checks',[]) or ['Registered content hash verified on read','Existing V1 draft-only generation and isolation tests'],
+                  'urgency':v.get('urgency','NORMAL'),'expected_business_impact':v.get('expected_impact') or v.get('objective','Prepare clearer project inquiries; lift unmeasured'),
+                  'approval_separation':{'editorial':'Accept this exact draft only','required_external_approval':v.get('required_execution_approval','PUBLICATION_OR_DEPLOYMENT_EXACT_SCOPE'),
+                     'publication':'Exact artifact + channel + time','website_release':'Exact source commit + manifest + rollback','advertising_or_expense':'Exact account/action + amount/currency + maximum cost',
+                     'customer_or_financial':'Exact recipient/record + content/operation; separate financial approval','execution_enabled':False},
                   'execution_scope':{'operation':'EDITORIAL_REVIEW_ONLY','artifact_sha256':v['sha256'],'platform':v.get('platform',platform),
                                      'language':v.get('language',lang),'publication':False,'spending':False,'deployment':False}}
             path=self.artifacts/v['path']
@@ -61,10 +66,12 @@ class Review:
                 if self.status(item,datetime.now(timezone.utc)) not in ('PENDING','REQUEST_REVISION','EXPIRED'):continue
             elif section and section!=item['category']:continue
             if query and query.casefold() not in json.dumps(item,ensure_ascii=False).casefold():continue
+            if urgency and item['urgency']!=urgency:continue
+            if filter_status and self.status(item,datetime.now(timezone.utc))!=filter_status:continue
             with sqlite3.connect(self.database.resolve().as_uri()+'?mode=ro',uri=True) as proof_db:
                 item['source_details']=[{'snapshot_id':x[0],'source':x[1],'url':x[2],'observed_at':x[3],'effective_from':x[4],'effective_to':x[5]} for sid in item['evidence'][:20] for x in proof_db.execute('SELECT id,source,source_url,retrieved_at,effective_from,effective_to FROM acquisition_snapshots WHERE id=?',(sid,))]
             result[item['id']]=item
-        return list(result.values())
+        return sorted(result.values(),key=lambda x:({'HIGH':0,'MEDIUM':1,'NORMAL':2}.get(x['urgency'],3),x['logical_path']))
 
     def source_evidence(self, asset_hash, logical):
         # V1 receipts are provenance references, not another artifact registry.
@@ -142,15 +149,18 @@ class Review:
         # Editorial acceptance cannot be promoted to a provider grant.
         return False
 
-    def render(self, query='', section='', identifier=None, now=None):
-        now=now or datetime.now(timezone.utc);items=self.catalog(query,section)
+    def render(self, query='', section='', identifier=None, now=None, urgency='', filter_status=''):
+        now=now or datetime.now(timezone.utc);items=self.catalog(query,section,urgency,filter_status)
         head='''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Opticable owner review</title><style>body{font:17px/1.5 system-ui;max-width:1150px;margin:30px auto;padding:20px;background:#10251b;color:#f2faf5}a{color:#8df1b2}input,select,textarea,button{font:inherit;padding:10px;margin:6px 0;max-width:100%;box-sizing:border-box}label{display:block}button{cursor:pointer;min-height:44px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#193c2a;padding:18px}article{min-width:0;overflow-wrap:anywhere;padding:18px;border:1px solid #779685;border-radius:12px;margin:15px 0}img{max-width:100%;width:540px}code{overflow-wrap:anywhere}h2{font-size:1.25rem;overflow-wrap:anywhere}.tag{color:#a8efc2}nav a{display:inline-block;padding:10px}#status{min-height:28px}</style></head><body><h1>Opticable owner review</h1><p>Finished drafts and evidence. Decisions accept or reject a draft only. Publication, spending and deployment remain separately gated.</p>'''
         nav='<nav aria-label="Review categories"><a href="/review/">All</a>'+''.join('<a href="/review/?'+urlencode({'category':c})+'">'+escape(c)+'</a>' for c in CATEGORIES)+'</nav>'
         search='<form method="get" action="/review/"><label>Search content metadata <input name="q" value="'+escape(query,quote=True)+'"></label><button>Search</button></form>'
+        search=search.replace('<button>Search</button>',
+          '<label>Urgency <select name="urgency">'+''.join('<option value="'+x+'"'+(' selected' if x==urgency else '')+'>'+ (x or 'All')+'</option>' for x in ('','HIGH','MEDIUM','NORMAL'))+'</select></label>'+
+          '<label>Editorial status <select name="status">'+''.join('<option value="'+x+'"'+(' selected' if x==filter_status else '')+'>'+ (x or 'All')+'</option>' for x in ('','PENDING','APPROVE','REJECT','REQUEST_REVISION','EXPIRED'))+'</select></label><button>Search</button>')
         if identifier:
             item,raw=self.item(identifier);history=self.history(item)
             body='<a href="/review/">Back to all artifacts</a><article><h2>'+escape(item['logical_path'])+'</h2>'
-            body+='<p class="tag">'+escape(' | '.join((item['service'],item['platform'],item['language'],self.status(item,now))))+'</p>'
+            body+='<p class="tag">'+escape(' | '.join((item['service'],item['platform'],item['language'],item['urgency'],self.status(item,now))))+'</p><p>Draft review only. Separate exact authorization required: '+escape(item['approval_separation']['required_external_approval'])+'. External execution is disabled.</p>'
             if item['path'].endswith(('.png','.svg')):body+='<img alt="Unpublished '+escape(item['service'])+' campaign graphic" src="/review/artifact/'+item['id']+'">'
             else:body+='<pre>'+escape(raw.decode('utf-8'))+'</pre>'
             body+='<details><summary>Evidence, exact revision, cost and tests</summary><pre>'+escape(json.dumps(item,indent=2,ensure_ascii=False))+'</pre></details>'
@@ -160,7 +170,7 @@ class Review:
             body+='<p id="status" role="status" aria-live="polite"></p><h3>Approval audit history</h3><pre>'+escape(json.dumps(history,indent=2,ensure_ascii=False))+'</pre></article>'
             body+='''<script>(async()=>{const initial=await fetch('/review/session',{cache:'no-store'});if(!initial.ok)return;let session=await initial.json();let pending=false;document.querySelectorAll('[data-decision]').forEach(button=>button.addEventListener('click',async()=>{if(pending)return;pending=true;try{const result=await fetch('/review/decision',{method:'POST',headers:{'Content-Type':'application/json','X-Review-CSRF':session.csrf},body:JSON.stringify({id:ITEM_ID,version:ITEM_VERSION,choice:button.dataset.decision,reason:document.querySelector('#reason').value,request_id:crypto.randomUUID().replaceAll('-','')})});const data=await result.json();document.querySelector('#status').textContent=result.ok?'Recorded '+data.choice+'. External execution remains disabled.':data.error;}finally{pending=false;}}));setInterval(async()=>{const response=await fetch('/review/session/refresh',{method:'POST',headers:{'X-Review-CSRF':session.csrf}});if(response.ok)session=await response.json();},600000);})();</script>'''.replace('ITEM_ID',json.dumps(item['id'])).replace('ITEM_VERSION',json.dumps(item['sha256']))
         else:
-            body='<p>'+str(len(items))+' registered artifacts. <a href="/fr/services/systemes-cameras-securite/">French camera preview</a> | <a href="/en/services/security-camera-systems/">English camera preview</a> | <a href="/review/website-package">Website review evidence</a> | <a href="/experiments/inquiry-attribution/">Protected tracking correction</a></p>'
+            body='<p>'+str(len(items))+' registered artifacts. <a href="/fr/services/systemes-cameras-securite/">French camera preview</a> | <a href="/en/services/security-camera-systems/">English camera preview</a> | <a href="/review/website-package">Website review evidence</a> | <a href="/experiments/inquiry-attribution/">Protected tracking correction</a> | <a href="/experiments/cabling-handover/">New bilingual cabling review</a></p>'
             for item in items:
-                body+='<article><h2><a href="/review/item/'+item['id']+'">'+escape(item['logical_path'])+'</a></h2><p>'+escape(' | '.join((item['category'],item['service'],item['platform'],item['language'],self.status(item,now))))+'</p><p>Revision <code>'+item['revision']+'</code>; internal incremental cost $0. Public execution disabled.</p></article>'
+                body+='<article><h2><a href="/review/item/'+item['id']+'">'+escape(item['title'])+'</a></h2><p>'+escape(' | '.join((item['category'],item['service'],item['platform'],item['language'],item['urgency'],self.status(item,now))))+'</p><p>'+escape(item['expected_business_impact'])+'</p><p>Revision <code>'+item['revision']+'</code>; internal incremental cost $0. Separate exact approval: '+escape(item['approval_separation']['required_external_approval'])+'. Public execution disabled.</p></article>'
         return (head+nav+search+body+'</body></html>').encode()

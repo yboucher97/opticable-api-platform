@@ -13,7 +13,7 @@ def context(database, artifacts, marketing=None, receipts=None):
         for (raw,) in db.execute("SELECT normalized_value FROM acquisition_facts WHERE source='platform:business_autopilot' ORDER BY retrieved_at,id LIMIT 3000"):
             value=json.loads(raw);h=value.get('sha256');assets[h]=value
             p=Path(artifacts)/value.get('path','')
-            if value.get('path','').endswith('.txt') and p.resolve().is_relative_to(Path(artifacts).resolve()) and p.is_file() and p.stat().st_size<20000:
+            if not value.get('business_private') and value.get('path','').endswith('.txt') and p.resolve().is_relative_to(Path(artifacts).resolve()) and p.is_file() and p.stat().st_size<20000:
                 text=p.read_text()
                 if sha256(text.encode()).hexdigest()==h:history.append(text)
         if db.execute("SELECT 1 FROM sqlite_master WHERE name='action_evidence'").fetchone():
@@ -25,6 +25,7 @@ def context(database, artifacts, marketing=None, receipts=None):
                                  'language':asset.get('language') or next((x for x in parts if x in ('fr','en')),'bilingual'),
                                  'choice':v['choice'],'rule':feedback_rule(v.get('reason','')),'at':v['at']})
     value={'artifact_hashes':sorted(h for h in assets if h),'prior_texts':history[-60:],'feedback':feedback,
+           'completion_dates':sorted({v['logical_path'].split('/')[2] for v in assets.values() if v.get('logical_path','').startswith('business-work/completion/')}),
            'external_outcomes':'Only existing verified production execution and measurement evidence may establish business lift; none inferred from editorial approval.'}
     if marketing and Path(marketing).is_file():
         m=json.loads(Path(marketing).read_text());groups=m.get('groups',[])
@@ -53,5 +54,5 @@ def funnel(native, ctx):
         'business_inventory':ctx.get('crm_inventory',{}),'qualified_leads':None,'recognized_revenue':None,'campaign_roas':None,
         'mapping':{'keys':['provider_receipt_id','obq inquiry_id','native CRM lead ID','explicit deal ID','explicit quote/invoice IDs'],
                    'forbidden':['Similar names','Shared email alone','Visitor cookie alone','UTM campaign label treated as verified Ads campaign','Historical attribution overwrite'],
-                   'remaining_gate':'New capture field/parser and native CRM field mapping require a separate approved release. No current inquiry IDs or retroactive attribution.'},
+                   'remaining_gate':'Inquiry_ID already exists in native Leads metadata; validate exact mapping and separately approve coordinated parser/capture release. Legacy IDs remain unchanged; no retroactive attribution.'},
         'production_changes':False,'provider_calls':0}

@@ -1,6 +1,6 @@
 """Fixed offline child runner attached to the existing native analytics schedule.
 
-No root execution, no credentials passed to child, no provider calls. Reuses
+No root execution, no credentials passed to child, bounded parent reads. Reuses
 AcquisitionStore CONTENT_ASSET/OBSERVATION records; creates no database/timer.
 """
 from datetime import datetime, timezone
@@ -40,7 +40,7 @@ def verify_runtime(root, require_root=True):
         if entry.is_symlink() or st.st_mode & 0o022 or (require_root and st.st_uid != 0):
             raise PermissionError('Protected runtime and manifest required')
     files = load(root / 'manifest.json')
-    if set(files) != {'engine.py', 'runner.py', 'content_bank.json', 'sandbox.py', 'content_variations.py', 'cycle.py', 'review.py', 'private_preview.py'}:
+    if set(files) != {'engine.py', 'runner.py', 'content_bank.json', 'sandbox.py', 'content_variations.py', 'cycle.py', 'review.py', 'private_preview.py', 'business_work.py', 'business_sources.py', 'content_expansion.py'}:
         raise ValueError('Exact reviewed manifest required')
     for name, digest in files.items():
         p = root / name; st = p.lstat()
@@ -94,6 +94,20 @@ def child(runtime, scratch, request, now):
     value = load(request)
     files = engine.make_artifacts(value['native'], value.get('supplement', {}), load(runtime / 'content_bank.json'), datetime.fromisoformat(now))
     additions=content_variations.generate(value['native'],value.get('context',{}),datetime.fromisoformat(now))
+    if value.get('context',{}).get('business_v12'):
+        import business_work
+        import content_expansion
+        ctx=value['context'];timestamp=datetime.fromisoformat(now)
+        business,report=business_work.generate(ctx.get('business',{}),ctx,timestamp)
+        additions+=business+content_expansion.generate(value['native'],ctx,timestamp)
+        date=timestamp.astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()
+        if date not in ctx.get('completion_dates',[]):files[f'business-work/completion/{date}/completed-work.json']=engine.encoded({
+            'date':date,'prepared_artifacts':[{'logical_path':a['logical_path'],'sha256':hashlib.sha256(a['content'].encode()).hexdigest()} for a in additions],
+            'prioritized_opportunities':report['opportunities'],'blocked':report['blocked'],
+            'external_actions_completed':0,'spending':0,'all_external_proposals_require_separate_exact_approval':True})
+        files['campaigns/service-intent/calendar/rolling-bilingual-calendar.txt']=content_expansion.calendar(timestamp).encode()
+        for lang in ('fr','en'):
+            files[f'campaigns/service-intent/fiber-optic-installation/{lang}/media/draft/original-link-records.svg']=content_expansion.diagram(lang).encode()
     for item in additions: files[item['logical_path']]=item['content'].encode()
     day=datetime.fromisoformat(now).astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()
     files[f'analytics/{day}/canonical-funnel.json']=engine.encoded(cycle.funnel(value['native'],value.get('context',{})))
@@ -143,15 +157,25 @@ def run():
             raise PermissionError('Read-only source configuration changed')
         native = collect_input(cfg['database'], summary)
         sys.path.insert(0,str(RUNTIME))
+        spec = importlib.util.spec_from_file_location('platform_native', '/usr/local/lib/optibrain-platform-intelligence.py')
+        native_module = importlib.util.module_from_spec(spec); spec.loader.exec_module(native_module)
+        native_module.verify_runtime(Path(cfg['runtime']))
+        from workflow.automation.acquisition_store import AcquisitionStore
+        from workflow.config import load_settings
+        store = AcquisitionStore(cfg['database']); store.initialized = True
+        from business_sources import refresh,with_quote_projection
+        business,source_state=refresh(cfg['database'],load_settings(),now,store)
+        business=with_quote_projection(business,'/run/optibrain-readiness/business.json')
         from cycle import context
         ctx=context(cfg['database'],OUTPUT/'artifacts','/run/optibrain-readiness/marketing.json','/var/lib/opticable-workflow-api/output/automation/phase9-form-receipts.db')
+        ctx.update(business_v12=True,business=business)
         supplemental = COLLECTOR / 'business-supplement-20261114.json'
         supplement = load(supplemental) if supplemental.exists() else {}
         # Supplement is a single evidence capture, never refresh or reuse for another period.
         if any(r.get('period') != summary['period'] for r in supplement.get('results', []) if not r['source'].endswith(':previous')):
             supplement = {}
         evidence_key = hashlib.sha256(json.dumps([summary['snapshot_ids'], summary['at'],
-                            supplement.get('observed_at'), [f['event_id'] for f in ctx['feedback']], hashlib.sha256((RUNTIME/'manifest.json').read_bytes()).hexdigest(), now.astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()], sort_keys=True).encode()).hexdigest()
+                            supplement.get('observed_at'), business.get('snapshot_ids',[]), business.get('quote_revision'), [f['event_id'] for f in ctx['feedback']], hashlib.sha256((RUNTIME/'manifest.json').read_bytes()).hexdigest(), now.astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()], sort_keys=True).encode()).hexdigest()
         receipt = OUTPUT / ('run-' + evidence_key + '.json')
         if receipt.exists():
             saved = load(receipt)
@@ -181,11 +205,6 @@ def run():
         finally:
             Path(request_name).unlink(missing_ok=True)
         # Reuse the pinned existing acquisition implementation after artifact isolation.
-        spec = importlib.util.spec_from_file_location('platform_native', '/usr/local/lib/optibrain-platform-intelligence.py')
-        native_module = importlib.util.module_from_spec(spec); spec.loader.exec_module(native_module)
-        native_module.verify_runtime(Path(cfg['runtime']))
-        from workflow.automation.acquisition_store import AcquisitionStore
-        store = AcquisitionStore(cfg['database']); store.initialized = True
         records = []
         for item in manifest:
             records.append(store.record('CONTENT_ASSET', {**item, 'scope': 'live', 'status': 'DRAFT_ONLY',
@@ -194,16 +213,16 @@ def run():
                           cost_class='NO EXTERNAL COST', observed_at=summary['at']))
         value = {'schema': 1, 'at': now.isoformat(), 'status': 'COMPLETED_INTERNAL_DRAFTS', 'manifest': manifest,
                  'evidence_ids': summary['snapshot_ids'], 'records': records, 'source_observed_at': summary['at'],
-                 'provider_calls': 0, 'paid_calls': 0, 'publishing': False, 'production_changes': False}
+                 'provider_calls': source_state.get('provider_calls',0), 'source_state':source_state, 'paid_calls': 0, 'publishing': False, 'production_changes': False}
         from workflow.automation.manager_store import ManagerStore
         created=sum(r['state']=='RECORDED' for r in records)
-        ManagerStore(cfg['database']).receipt('business-autopilot',evidence_key,now,{'state':'COMPLETED','origin':'AUTOMATIC_EXISTING_WORKFLOW','counters':{'registered_artifacts':created,'new_content_variations':sum(x.get('recipe') is not None and records[i]['state']=='RECORDED' for i,x in enumerate(manifest)),'external_mutations':0},'source_receipt':str(receipt),'provider_calls':0,'paid_calls':0,'feedback_events':[f['event_id'] for f in ctx['feedback']]})
+        ManagerStore(cfg['database']).receipt('business-autopilot',evidence_key,now,{'state':'COMPLETED','origin':'AUTOMATIC_EXISTING_WORKFLOW','counters':{'registered_artifacts':created,'new_content_variations':sum(x.get('recipe') is not None and records[i]['state']=='RECORDED' for i,x in enumerate(manifest)),'private_business_preparations':sum(x.get('business_private') is True and records[i]['state']=='RECORDED' for i,x in enumerate(manifest)),'external_mutations':0},'source_receipt':str(receipt),'provider_calls':source_state.get('provider_calls',0),'paid_calls':0,'feedback_events':[f['event_id'] for f in ctx['feedback']]})
         # Receipt only after all append-only asset registration succeeds. Replay deduplicates facts.
         with receipt.open('x') as stream:
             json.dump(value, stream, ensure_ascii=False, indent=2); stream.write('\n'); stream.flush(); os.fsync(stream.fileno())
         with (OUTPUT / 'outcomes.jsonl').open('a') as stream:
             stream.write(json.dumps({k: v for k, v in value.items() if k not in ('manifest', 'records')}) + '\n'); stream.flush(); os.fsync(stream.fileno())
-        print(json.dumps({'artifacts': len(manifest), 'provider_calls': 0, 'paid_calls': 0, 'publishing': False}))
+        print(json.dumps({'artifacts': len(manifest), 'provider_calls': source_state.get('provider_calls',0), 'paid_calls': 0, 'publishing': False}))
 
 
 if __name__ == '__main__':
