@@ -8,7 +8,8 @@ from publishing or customer/financial execution.
 
 Enforced admission
 2 new marketing files/Toronto calendar day; 10/rolling 168 hours; 30 active
-marketing/recommendation items awaiting review. An individual language, media
+items awaiting review across every registry category,including protected business
+drafts and analysis reports. An individual language, media
 file, calendar or content pack counts as one file; no free variants. Revisions
 consume the same marketing limits. Legacy excess is preserved and pauses new
 optional content; it is never deleted simply to satisfy a count.

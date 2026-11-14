@@ -190,8 +190,8 @@ def admission(db, root, now, policy=POLICY, free_bytes=None):
     marketing = [a for a in assets if family(a) == 'marketing']
     daily = sum(timestamp(a['registered_at']).astimezone(ZoneInfo('America/Toronto')).date() == today for a in marketing)
     weekly = sum(now - timedelta(days=7) < timestamp(a['registered_at']) <= now for a in marketing)
-    active = [a for a in assets if family(a) in ('marketing', 'recommendation')
-              and awaiting_review(a, decisions) and states.get(operation_id(a), {}).get('state') not in ('QUARANTINED', 'DELETED')
+    active = [a for a in assets if awaiting_review(a, decisions)
+              and states.get(operation_id(a), {}).get('state') not in ('QUARANTINED', 'DELETED')
               and now < activity(a, decisions) + timedelta(days=policy['draft_days'])]
     for v in reservations.values():
         if v['state'] != 'RESERVED': continue
@@ -252,10 +252,10 @@ def select(files, additions, ctx):
         requested = revision and any(f.get('asset_sha256') == revision and f.get('choice') == 'REQUEST_REVISION' for f in ctx.get('feedback', []))
         if key in pending and not requested: continue
         if kind == 'marketing' and (slots <= 0 or budget['optional_paused']): continue
-        if kind in ('marketing', 'recommendation') and pending_slots <= 0: continue
+        if pending_slots <= 0: continue
         if used + len(raw) > budget['generation_bytes']: continue
         if kind == 'marketing': slots -= 1
-        if kind in ('marketing', 'recommendation'): pending_slots -= 1
+        pending_slots -= 1
         selected[path] = raw; used += len(raw); pending[key] = sha256(raw).hexdigest()
         metadata_out[path] = {'storage_class': kind, 'semantic_key': key,
                               'disposable': kind in ('marketing', 'recommendation')}

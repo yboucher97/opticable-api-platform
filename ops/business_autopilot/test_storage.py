@@ -141,6 +141,12 @@ class StorageTests(unittest.TestCase):
         self.assertEqual(len(b['pending_semantics']), 30)
         self.assertTrue(all(p.is_file() for p in (self.f.root / 'artifacts').iterdir()))
 
+    def test_pending_ceiling_covers_business_drafts_and_analysis_too(self):
+        for i in range(15):self.f.add(days=1,path=f'business-work/response/client-{i}.txt')
+        for i in range(15):self.f.add(days=1,path=f'analytics/report-{i}.json')
+        b=self.f.budget();self.assertEqual(b['active_pending_items'],30)
+        self.assertEqual(storage.select({'business-work/new.txt':b'new draft'},[],{'storage_budget':b})[0],{})
+
     def test_minimum_free_disk_has_early_pause_margin(self):
         for free in (25, 34, 35): self.assertTrue(self.f.budget(free=free*storage.GIB)['disk_paused'])
         self.assertFalse(self.f.budget(free=36*storage.GIB)['disk_paused'])
