@@ -63,13 +63,17 @@ class BusinessTests(unittest.TestCase):
 class SourceTests(unittest.TestCase):
  def test_existing_quote_projection_joins_only_native_ids_and_minimizes_finance(self):
     with tempfile.TemporaryDirectory() as d:
-      p=Path(d)/'business.json';projection={'read_only':True,'snapshot':{'observed_at':NOW.isoformat(),'books_estimate_index':{'q1':{'estimate_id':'q1','estimate_number':'TEST-QUOTE','date':'2026-11-03','status':'sent','customer_id':'customer1','total':123456}},
+      p=Path(d)/'business.json';projection={'read_only':True,'snapshot':{'observed_at':NOW.isoformat(),
+       'collection':{'modules':{'books_estimate_index':{'state':'COMPLETE','source_at':NOW.isoformat()},'finance_estimates':{'state':'COMPLETE'}}},
+       'books_estimate_index':{'q1':{'estimate_id':'q1','estimate_number':'TEST-QUOTE','date':'2026-11-03','status':'sent','customer_id':'customer1','total':123456}},
        'finance_estimates':[{'id':'crm-quote1','Estimate_ID':'q1','Account_Name':{'name':'TEST ONLY Native Customer'}}]}}
       p.write_text(json.dumps(projection));before=sha256(p.read_bytes()).hexdigest();out=sources.with_quote_projection(business(),p)
       self.assertEqual(out['quotes']['items'][0]['crm_estimate_id'],'crm-quote1');self.assertNotIn('total',json.dumps(out['quotes']))
       self.assertEqual(before,sha256(p.read_bytes()).hexdigest())
       projection['snapshot']['observed_at']=(NOW+timedelta(minutes=5)).isoformat();p.write_text(json.dumps(projection))
       self.assertEqual(out['quote_revision'],sources.with_quote_projection(business(),p)['quote_revision'])
+      projection['snapshot']['collection']['modules']['books_estimate_index']['state']='PARTIAL';p.write_text(json.dumps(projection))
+      self.assertIsNone(sources.with_quote_projection(business(),p)['quotes']['observed_at'])
  def test_sent_quote_preparation_stops_after_invoicing_and_does_not_duplicate(self):
     v=business();v['quotes']={'observed_at':NOW.isoformat(),'items':[{'estimate_id':'quote1','estimate_number':'TEST-QUOTE','date':'2026-11-03','status':'sent','company':'TEST ONLY Native Customer'}]}
     first,report=work.generate(v,{},NOW);self.assertTrue(any(x['kind']=='SENT_QUOTE_STATUS_REVIEW' for x in report['opportunities']))

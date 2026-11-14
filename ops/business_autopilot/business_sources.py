@@ -78,7 +78,11 @@ def with_quote_projection(source, path):
         if path.is_symlink() or path.stat().st_size>8*1024*1024:raise ValueError('Projection size/path')
         projection=json.loads(path.read_text())
         if projection.get('read_only') is not True:raise ValueError('Read-only native projection required')
-        snapshot=projection['snapshot'];finance=snapshot.get('finance_estimates',[])
+        snapshot=projection['snapshot'];modules=snapshot.get('collection',{}).get('modules',{})
+        books=modules.get('books_estimate_index',{})
+        if books.get('state')!='COMPLETE' or not books.get('source_at'):
+            raise ValueError('Complete native quote source timestamp required; sampler clock is insufficient')
+        finance=snapshot.get('finance_estimates',[]) if modules.get('finance_estimates',{}).get('state')=='COMPLETE' else []
         mapping={r['Estimate_ID']:r for r in finance if isinstance(r.get('Estimate_ID'),str)}
         quotes=[]
         for identity,item in sorted(snapshot.get('books_estimate_index',{}).items())[:200]:
@@ -89,7 +93,7 @@ def with_quote_projection(source, path):
             if synthetic(record):continue
             quotes.append({k:item.get(k) for k in ('estimate_id','estimate_number','date','status','customer_id','last_modified_time','zcrm_potential_id')})
             quotes[-1].update(company=account.get('name') or 'Native customer '+str(item.get('customer_id','')),crm_estimate_id=record.get('id'))
-        value['quotes']={'observed_at':snapshot.get('observed_at') or projection.get('observed_at'),'items':quotes,
+        value['quotes']={'observed_at':books['source_at'],'items':quotes,
                          'source':str(path),'coverage':'Existing bounded native Books index joined by exact Estimate_ID; no communication-status or revenue inference'}
         value['quote_revision']=hashlib.sha256(json.dumps(quotes,sort_keys=True).encode()).hexdigest()
     except (OSError,ValueError,KeyError,TypeError) as error:
