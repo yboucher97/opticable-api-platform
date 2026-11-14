@@ -38,6 +38,8 @@ class QueueTests(unittest.TestCase):
         q=self.review.queue(NOW)
         self.assertEqual(q['registered_items'],91);self.assertEqual(q['package_count'],91);self.assertEqual(len(q['default_packages']),10)
         ids=[a['id'] for p in q['packages'] for a in p['items']];self.assertEqual(len(ids),len(set(ids)))
+        self.assertEqual(set(ids),set(q['ranked_item_ids']))
+        self.assertEqual(sorted(a['queue']['rank'] for p in q['packages'] for a in p['items']),list(range(1,92)))
         html=self.review.render(now=NOW).decode();self.assertEqual(len(re.findall('data-package=',html)),10)
         html=self.review.render(now=NOW,view='items').decode();self.assertEqual(len(re.findall('data-artifact=',html)),91)
 

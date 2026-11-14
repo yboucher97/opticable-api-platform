@@ -197,6 +197,8 @@ class Review:
                 'manifest_sha256':digest(sorted([m['id'],m['execution_scope']] for m in members)),
                 'approval_scope':'INDIVIDUAL_EXACT_DRAFT_ONLY','execution_enabled':False})
         packages.sort(key=lambda p:(-p['score'],p['key']))
+        ranked=sorted((m for p in packages for m in p['items']),key=lambda m:(-m['queue']['score'],m['logical_path'],m['id']))
+        for rank,item in enumerate(ranked,1):item['queue']['rank']=rank
         latest={};projection=self.artifacts.parent/'latest-cycle.json'
         if not projection.is_symlink() and projection.is_file() and projection.stat().st_size<=1024*1024:latest=json.loads(projection.read_text())
         actual={p['key']:p for p in packages};sales=[]
@@ -209,7 +211,7 @@ class Review:
                 'reply_status':op.get('reply_status','UNKNOWN'),'priority':package['score']})
         sales.sort(key=lambda x:(-x['priority'],x['native_id']))
         return {'schema':1,'at':now.isoformat(),'registered_items':len(items),'package_count':len(packages),
-            'default_package_limit':10,'default_packages':packages[:10],'packages':packages,
+            'default_package_limit':10,'default_packages':packages[:10],'packages':packages,'ranked_item_ids':[m['id'] for m in ranked],
             'top_decisions':[{'package_id':p['id'],'title':p['title'],'decision':p['decision'],'freshness':p['freshness']} for p in packages if p['status']=='PENDING_REVIEW'][:5],
             'sales_opportunities':sales,'classification_counts':dict(Counter(c for p in packages for m in p['items'] for c in m['queue']['classifications'])),
             'completed_summary':{'registered_artifacts_preserved':len(items),'source_analysis_at':latest.get('at'),
@@ -323,6 +325,8 @@ class Review:
                     body+='<li><a href="/review/?package='+op['package_id']+'">'+escape(op['summary'])+'</a> — '+escape(op['freshness'])+' source evidence; reply status '+escape(op['reply_status'])+'. Check current status before acting.</li>'
                 body+='</ul></section>'
             if view=='items' or query or section or urgency or filter_status:
+                rank_order={identifier:rank for rank,identifier in enumerate(queue['ranked_item_ids'])}
+                items=sorted(items,key=lambda item:rank_order[item['id']])
                 body+='<h2>Searchable artifact inventory</h2><p>'+str(len(items))+' matches. Every exact draft remains individually reviewable.</p>'
                 for item in items:
                     body+='<article data-artifact="'+item['id']+'"><h2><a href="/review/item/'+item['id']+'">'+escape(item['title'])+'</a></h2><p>'+escape(item['logical_path'])+'</p><p>SHA256 <code>'+item['sha256']+'</code>. '+escape(self.status(item,now))+'</p></article>'
