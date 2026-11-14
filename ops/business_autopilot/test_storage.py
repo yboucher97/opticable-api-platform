@@ -211,6 +211,25 @@ class StorageTests(unittest.TestCase):
         sample['business_storage']={'state':'ERROR'}
         self.assertTrue(any(x['key']=='business_storage' for x in monitor.assess(sample,None,None)))
 
+    def test_read_descriptor_supports_existing_monitor_lock(self):
+        import fcntl
+        p=self.f.root/'execution.lock';p.touch()
+        with p.open('r') as lock:
+            fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            with p.open('r') as other:
+                with self.assertRaises(BlockingIOError):fcntl.flock(other,fcntl.LOCK_EX|fcntl.LOCK_NB)
+
+    def test_future_mount_proposal_masks_other_databases_and_business_control(self):
+        from approved_cleanup_access import render
+        root=self.f.root/'automation';root.mkdir();business=root/'business-autopilot';business.mkdir()
+        for name in ('automation.db','phase9-intake.db','phase12-autonomy.db'):(root/name).touch()
+        for name in ('artifacts','execution.lock','owner-review-access.json'):(business/name).touch()
+        value=render(root)
+        self.assertIn('ReadOnlyPaths=-'+str(root/'automation.db'),value)
+        self.assertIn('ReadOnlyPaths=-'+str(business/'owner-review-access.json'),value)
+        self.assertIn('ReadOnlyPaths=-'+str(business/'execution.lock'),value)
+        self.assertNotIn('ReadOnlyPaths=-'+str(root/'phase12-autonomy.db'),value)
+
 
 def root_integration():
     """Actual root custody/rename/unlink tests on synthetic isolated data only."""

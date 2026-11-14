@@ -75,6 +75,13 @@ loads /etc/optibrain/business-storage-policy.json, root-owned, non-writable to t
 worker. The root-only approval file is ABSENT:
 /etc/optibrain/business-storage-approval.json
 Thus the existing resource timer performs classification/reporting only.
+Its application-state mount remains read-only. The approval packet also contains
+an INACTIVE exact resource-service drop-in. Activating cleanup later requires
+installing that reviewed drop-in under the same standing owner decision: SQLite
+needs its existing database parent writable for WAL/SHM creation, while every
+other current sibling database/path and private business-control file is masked
+read-only. The lifecycle still removes only the three exact allowlisted source
+families and sealed root quarantine. No mount access is broadened before approval.
 
 One future owner decision can authorize recurring eligible local disposal:
 "Approve the verified OptiBrain disposable storage policy [policy SHA256] and

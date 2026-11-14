@@ -290,8 +290,10 @@ def monitor():
     policy = storage.load_policy()
     owner = pwd.getpwnam('opticable-workflow-api').pw_uid
     database = storage.ROOT.parent / 'phase12-autonomy.db'
-    lockfd = os.open(storage.ROOT / 'execution.lock', os.O_RDWR | os.O_NOFOLLOW)
-    with os.fdopen(lockfd, 'r+') as lock:
+    # Linux flock works on a read descriptor. The existing monitor's read-only
+    # application mount must remain sufficient for unapproved classification.
+    lockfd = os.open(storage.ROOT / 'execution.lock', os.O_RDONLY | os.O_NOFOLLOW)
+    with os.fdopen(lockfd, 'r') as lock:
         try: fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError: return {'state': 'BUSY_EXISTING_WORKER'}
         now = datetime.now(timezone.utc)
