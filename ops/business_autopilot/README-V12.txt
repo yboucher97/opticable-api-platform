@@ -52,13 +52,16 @@ identity and expiry,CSRF,Origin,Host,session rotation and immutable audit remain
 All external execution adapters/grants remain absent/disabled.
 
 Development-only attribution_binding validates the existing native Inquiry_ID
-text field (observed length255,writable) and exact native receipt/lead relationship.
-It produces a proposal only. It rejects conflicting legacy IDs,missing native
-acknowledgement/readback,unsupported schema and name matching. It never overwrites
-first touch. Readback tests use a disposable fixture,not a live CRM mutation.
-Native field metadata proves no new CRM field is necessary; parser,capture and
-any real mapped write still require coordinated exact approval. Historic unknown
-attribution,legacy IDs and unqualified events remain unchanged.
+text field (observed length255) and exact native receipt/lead relationship. The
+field already holds business IDs; it is never overwritten with a browser ID.
+An exact link between browser attempt,native acknowledgement,lead and business
+inquiry ID uses the existing immutable ActionEvidence journal. One semantic link
+per native receipt deduplicates; conflicting attempt/lead identity stops. Tests
+use a disposable real journal and prove idempotency/conflict and immutable history.
+No schema change,CRM mutation or first-touch overwrite is needed by this adapter.
+Parser/capture and its production ingestion consumer still require a coordinated
+exact approved release; the adapter is not installed into production by this task.
+Historic unknown attribution,legacy IDs and unqualified events remain unchanged.
 
 Install only11 root-pinned artifact/review runtime files including unchanged
 sandbox.py. Before installation checkpoint all8 V1.1 files plus manifest and

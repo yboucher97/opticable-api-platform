@@ -118,7 +118,7 @@ def generate(source, context, now):
             identity=stable_id(task['id']);stable_id(lead['id'])
             evidence=[{'source':'Zoho CRM Tasks and Leads','task_id':identity,'lead_id':lead['id'],'join':'EXPLICIT_NATIVE_WHAT_ID','due':due,'observed_at':crm['observed_at'],'partial_inventory':crm.get('partial',True)}]
             name=' '.join(str(lead.get(k) or '') for k in ('First_Name','Last_Name')).strip()
-            text=f"Task: {task['Subject']}\nDue: {due}; native status: {task.get('Status')}\nLead: {lead.get('Company','')} ({lead['id']})\n\n"
+            text=f"Task: {task['Subject']}\nDue: {due}; native status: {task.get('Status')}\nLead: {lead.get('Company','')} ({lead['id']})\nTo / Destinataire: {lead.get('Email') or 'VERIFY_NATIVE_CONTACT_BEFORE_SEND'}\n\n"
             text+='Prepared French follow-up (send only after exact approval):\n\n'+f'Bonjour {name},\n\n'
             text+='Nous revenons sur votre projet de liaison entre immeubles. Est-il toujours d’actualité? Pour préparer la prochaine étape, pouvez-vous préciser les bâtiments à relier, les distances approximatives, les passages existants et les usages du réseau? Un plan sommaire sans mots de passe nous aiderait à cadrer une visite et une portée de travaux.\n\nOpticable\n\n'
             text+='Internal preparation completed:\n- Verify present customer/contact ownership and whether follow-up already occurred.\n- Confirm building ownership/access permissions and available pathways.\n- Inventory switches, existing links, distances and intended traffic.\n- Evaluate an appropriate copper/fiber route only after assessment.\n- Keep route, materials, testing, labeling and handover separate in unpriced scope.\nNo CRM status or task date was modified.'

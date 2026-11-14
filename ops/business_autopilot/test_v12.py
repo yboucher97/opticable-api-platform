@@ -16,7 +16,7 @@ import business_work as work
 import business_sources as sources
 import content_expansion as content
 import runner
-from attribution_binding import proposal,verify_readback
+from attribution_binding import proposal,verify_readback,record_verified_link
 from test_business_autopilot import fixtures
 from workflow.automation.acquisition_store import AcquisitionStore,digest
 from workflow.automation.manager_store import ManagerStore
@@ -94,14 +94,24 @@ class NativeMappingTests(unittest.TestCase):
             {'id':'lead1','Inquiry_ID':None,'First_Source':'historic_unknown','provider_evidence':'native:readback1'},
             [{'api_name':'Inquiry_ID','data_type':'text','length':255,'read_only':False,'field_read_only':False,'operation_type':{'api_update':True}}])
  def test_existing_native_field_maps_exact_attempt_and_first_touch_is_preserved(self):
-    r,l,f=self.fixture();p=proposal(r,l,f);self.assertEqual(p['fields'],{'Inquiry_ID':r['inquiry_id']});self.assertNotIn('First_Source',p['fields'])
+    r,l,f=self.fixture();p=proposal(r,l,f);self.assertEqual(p['fields'],{});self.assertEqual(p['local_lineage']['attempt_id'],r['inquiry_id'])
     self.assertFalse(p['native_schema_change_required']);self.assertFalse(p['execution_authorized'])
     native={**l,**p['fields']};self.assertTrue(verify_readback(p,native));self.assertFalse(verify_readback(p,{**native,'id':'other'}))
     self.assertEqual(proposal(r,native,f)['fields'],{})
  def test_legacy_conflict_unverified_ack_missing_contract_and_name_join_stop(self):
     r,l,f=self.fixture()
-    for receipt,lead,fields in [(r,{**l,'Inquiry_ID':'OB-I-LEGACY'},f),({**r,'acknowledgement_evidence':None},l,f),(r,l,[]),(r,{**l,'id':'different','name':'same'},f),(r,l,[{**f[0],'length':10}])]:
+    for receipt,lead,fields in [(r,{**l,'Inquiry_ID':'obq_'+'d'*32},f),({**r,'acknowledgement_evidence':None},l,f),(r,l,[]),(r,{**l,'id':'different','name':'same'},f),(r,l,[{**f[0],'length':10}])]:
       with self.subTest(receipt=receipt),self.assertRaises(ValueError):proposal(receipt,lead,fields)
+ def test_existing_business_id_is_preserved_in_real_immutable_lineage_journal(self):
+    r,l,f=self.fixture();l['Inquiry_ID']='OB-I-LEGACY'
+    with tempfile.TemporaryDirectory() as d:
+      db=Path(d)/'existing.db';one=record_verified_link(db,r,l,f,NOW)
+      self.assertEqual(one,record_verified_link(db,r,l,f,NOW+timedelta(minutes=1)))
+      self.assertEqual(one['lineage']['business_inquiry_id'],'OB-I-LEGACY');self.assertEqual(l['Inquiry_ID'],'OB-I-LEGACY')
+      with self.assertRaises(ValueError):record_verified_link(db,{**r,'inquiry_id':'obq_'+'e'*32},l,f,NOW)
+      with sqlite3.connect(db) as c:
+        self.assertEqual(c.execute("select count(*) from action_evidence where kind='business_inquiry_lineage'").fetchone()[0],1)
+        with self.assertRaises(sqlite3.IntegrityError):c.execute('delete from action_evidence')
 
 
 class ExpandedContentTests(unittest.TestCase):

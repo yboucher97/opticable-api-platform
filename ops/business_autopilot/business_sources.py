@@ -120,7 +120,7 @@ def refresh(database, settings, now, store):
     state='CURRENT';errors=[]
     try:
         # CRM first: precise existing tasks and links are valuable without any write.
-        leads=reader.get('zohoapis','/crm/v8/Leads',{'fields':'id,First_Name,Last_Name,Company,Description,Lead_Status,Inquiry_ID,First_Source,First_Campaign_ID,Last_Campaign_ID','per_page':50})
+        leads=reader.get('zohoapis','/crm/v8/Leads',{'fields':'id,First_Name,Last_Name,Company,Email,Description,Lead_Status,Inquiry_ID,First_Source,First_Campaign_ID,Last_Campaign_ID','per_page':50})
         tasks=reader.get('zohoapis','/crm/v8/Tasks',{'fields':'id,Subject,Due_Date,Status,What_Id,Who_Id,Description,Modified_Time','sort_by':'Modified_Time','sort_order':'desc','per_page':50})
         value['crm']={'observed_at':now.isoformat(),'leads':[x for x in rows(leads) if not synthetic(x)],'tasks':[x for x in rows(tasks) if not synthetic(x)],
                       'partial':any(x.get('data',{}).get('info',{}).get('more_records',True) for x in (leads,tasks))}
