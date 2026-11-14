@@ -143,12 +143,12 @@ class ExpandedContentTests(unittest.TestCase):
       ctx=context(db,p);self.assertEqual(ctx['prior_texts'],[]);self.assertIn(h,ctx['artifact_hashes'])
  def test_exact_runtime_manifest_rejects_tamper_and_extra_files(self):
     with tempfile.TemporaryDirectory() as d:
-      p=Path(d);names=('engine.py','runner.py','content_bank.json','sandbox.py','content_variations.py','cycle.py','review.py','private_preview.py','business_work.py','business_sources.py','content_expansion.py')
+      p=Path(d);names=('engine.py','runner.py','content_bank.json','sandbox.py','content_variations.py','cycle.py','review.py','private_preview.py','business_work.py','business_sources.py','content_expansion.py','storage.py','lifecycle.py')
       for name in names:
         (p/name).write_text('fixture '+name);(p/name).chmod(0o644)
       (p/'manifest.json').write_text(json.dumps({n:sha256((p/n).read_bytes()).hexdigest() for n in names}))
       (p/'manifest.json').chmod(0o644)
-      self.assertEqual(len(runner.verify_runtime(p,require_root=False)),11)
+      self.assertEqual(len(runner.verify_runtime(p,require_root=False)),13)
       (p/'business_work.py').write_text('modified')
       with self.assertRaises(ValueError):runner.verify_runtime(p,require_root=False)
  def test_four_distinct_bilingual_finished_packs_and_no_customer_details(self):
@@ -165,12 +165,12 @@ class ExpandedContentTests(unittest.TestCase):
     n,s=fixtures()
     with tempfile.TemporaryDirectory() as d:
       root=Path(d);runtime=root/'runtime';runtime.mkdir();out=root/'out';out.mkdir()
-      for name in ('engine.py','runner.py','content_bank.json','cycle.py','content_variations.py','business_work.py','content_expansion.py'):
+      for name in ('engine.py','runner.py','content_bank.json','cycle.py','content_variations.py','business_work.py','content_expansion.py','storage.py'):
         shutil.copyfile(ROOT/name,runtime/name)
       shutil.copyfile(ROOT.parents[1]/'apps/workflow-api/workflow/automation/development_sandbox.py',runtime/'sandbox.py')
-      request=out/'input.json';ctx={'business_v12':True,'business':business()}
+      request=out/'input.json';ctx={'business_v12':True,'business':business(),'storage_budget':{'pending_semantics':{},'marketing_slots':2,'pending_slots':30,'generation_bytes':8*1024**2,'disk_paused':False,'optional_paused':False}}
       request.write_text(json.dumps({'native':n,'supplement':s,'context':ctx}));first=runner.run_child(runtime,out,request,NOW)
-      self.assertTrue(any('/response-draft/' in x['logical_path'] for x in first));self.assertTrue(any(x.get('recipe')=='service-field-guide' for x in first))
+      self.assertTrue(any('/response-draft/' in x['logical_path'] for x in first));self.assertEqual(sum(x['storage_class']=='marketing' for x in first),2)
       ctx.update(artifact_hashes=[x['sha256'] for x in first],completion_dates=['2026-11-14'])
       request.write_text(json.dumps({'native':n,'supplement':s,'context':ctx}));second=runner.run_child(runtime,out,request,NOW)
       # Existing V1 intent bank advances to another missing recipe, never repeats.

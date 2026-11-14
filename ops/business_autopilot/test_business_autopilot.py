@@ -134,12 +134,12 @@ class BusinessAutopilotTests(unittest.TestCase):
         n,s=fixtures()
         with tempfile.TemporaryDirectory() as d:
             p=Path(d); runtime=p/'runtime';runtime.mkdir();out=p/'output';out.mkdir()
-            for name in ('engine.py','runner.py','content_bank.json','cycle.py','content_variations.py'):(runtime/name).write_bytes((ROOT/name).read_bytes())
+            for name in ('engine.py','runner.py','content_bank.json','cycle.py','content_variations.py','storage.py'):(runtime/name).write_bytes((ROOT/name).read_bytes())
             (runtime/'sandbox.py').write_bytes((ROOT.parents[1]/'apps/workflow-api/workflow/automation/development_sandbox.py').read_bytes())
-            request=out/'input.json';request.write_text(json.dumps({'native':n,'supplement':s}))
+            request=out/'input.json';request.write_text(json.dumps({'native':n,'supplement':s,'context':{'storage_budget':{'pending_semantics':{},'marketing_slots':2,'pending_slots':30,'generation_bytes':8*1024**2,'disk_paused':False,'optional_paused':False}}}))
             first=runner.run_child(runtime,out,request,NOW);second=runner.run_child(runtime,out,request,NOW)
-            self.assertEqual(first,second);self.assertEqual(len(first),42)
-            self.assertTrue(any(x['logical_path'].endswith('seven-day-bilingual-calendar.txt') for x in first))
+            self.assertEqual(first,second)
+            self.assertEqual(sum(x['storage_class']=='marketing' for x in first),2)
 
 
 if __name__=='__main__':unittest.main()

@@ -39,10 +39,13 @@ class Review:
         with sqlite3.connect(self.database.resolve().as_uri()+'?mode=ro',uri=True) as db:
             db.row_factory=sqlite3.Row
             rows=db.execute("SELECT id,entity,retrieved_at,normalized_value FROM acquisition_facts WHERE source='platform:business_autopilot' ORDER BY retrieved_at,id LIMIT 3000").fetchall()
+            from storage import metadata, operation_id
+            lifecycle_states = metadata(db)[2]
         result={}
         for row in rows:
             v=json.loads(row['normalized_value']); logical=v.get('logical_path','')
             if not v.get('path') or not re.fullmatch('[a-f0-9]{64}',v.get('sha256','')):continue
+            if lifecycle_states.get(operation_id(v), {}).get('state') in ('QUARANTINE_INTENT','QUARANTINED','DELETE_INTENT','DELETED','RECONCILE_HOLD'):continue
             parts=Path(logical).parts
             lang=next((p for p in parts if p in ('fr','en')),'bilingual')
             service=parts[3] if len(parts)>4 and parts[0]=='campaigns' else 'all services'
@@ -63,7 +66,7 @@ class Review:
             if v['path'].endswith('.txt') and not path.is_symlink() and path.resolve().is_relative_to(self.artifacts) and path.is_file():
                 with path.open() as text_file:item['title']=text_file.readline(500).strip()[:180]
             if section=='Pending decisions':
-                if self.status(item,datetime.now(timezone.utc)) not in ('PENDING','REQUEST_REVISION','EXPIRED'):continue
+                if self.status(item,datetime.now(timezone.utc)) not in ('PENDING','REQUEST_REVISION','EXPIRED','EXPIRED_DRAFT'):continue
             elif section and section!=item['category']:continue
             if query and query.casefold() not in json.dumps(item,ensure_ascii=False).casefold():continue
             if urgency and item['urgency']!=urgency:continue
@@ -103,7 +106,10 @@ class Review:
 
     def status(self, item, now):
         history=self.history(item)
-        if not history:return 'PENDING'
+        if not history:
+            from storage import POLICY, timestamp
+            if item.get('registered_at') and now >= timestamp(item['registered_at']) + timedelta(days=POLICY['draft_days']):return 'EXPIRED_DRAFT'
+            return 'PENDING'
         last=history[-1]
         if last['choice']=='APPROVE' and now>=datetime.fromisoformat(last['expires_at']):return 'EXPIRED'
         return last['choice']
@@ -126,6 +132,11 @@ class Review:
         aid=self.action_id(item);audit=ActionEvidence(self.database)
         with audit.connect() as db:
             db.execute('BEGIN IMMEDIATE');ActionEvidence.setup(db)
+            # Cleanup uses the same SQLite writer lock; never approve a file
+            # moved after the initial catalog read.
+            from storage import metadata, operation_id
+            if metadata(db)[2].get(operation_id(item), {}).get('state') in ('QUARANTINE_INTENT','QUARANTINED','DELETE_INTENT','DELETED','RECONCILE_HOLD'):
+                raise ValueError('Artifact entered disposable lifecycle; restore and review exact identity first')
             prior=db.execute("SELECT evidence_json FROM action_evidence WHERE action_id=? AND kind='business_review_decision' AND json_extract(evidence_json,'$.request_id')=?",(aid,payload['request_id'])).fetchone()
             if prior:
                 saved=json.loads(prior[0])

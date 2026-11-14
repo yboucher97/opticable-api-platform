@@ -1,5 +1,7 @@
 # Opticable Automation Master Runbook
 
+Storage budget extension (2026-11-14): see [the exact disposable policy and recovery procedure](../ops/business_autopilot/README-STORAGE.txt). Business Autopilot V1.2 now admits at most 2 marketing files/Toronto day, 10/rolling 168 hours and 30 active pending marketing/recommendation items, with a 2 GiB disposable ceiling and early disk pause at 35 GiB plus an 8 MiB run reserve. Native observations, analysis and useful business preparation continue. Existing resource monitoring classifies 30-day drafts, 7-day released temporary tests and 14-day unused private staging; seven-day root quarantine and final deletion require the separate exact standing policy approval. Initial production moves/deletions remain zero. Protected records, source, unresolved incident/test evidence and all recovery/R2 material remain excluded. This private-runtime update does not deploy the API or enable any of the 45 consequential flags.
+
 AUTHORITATIVE CURRENT. API `1.34.1`. This is the operating contract; [onboarding](OPTIBRAIN_CODEX_ONBOARDING.md) establishes precedence. [Operator](OPTIBRAIN_OPERATOR_GUIDE.md), [deployment](OPTIBRAIN_DEPLOYMENT_GUIDE.md) and [recovery](OPTIBRAIN_RECOVERY_GUIDE.md) are the only current procedures for those tasks. Historical phase instructions cannot override them.
 
 ## Standing safety state
