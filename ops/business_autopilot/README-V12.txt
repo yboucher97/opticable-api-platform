@@ -32,6 +32,14 @@ separately captured authorized Google Calendar has explicit freshness and does
 not create a new calendar credential binding. A failed group retains its old
 timestamp; other work continues. Every read/result/cost state is journaled.
 
+Quote triage reuses the existing read-only business sampler projection without
+another Books request. It minimizes away amounts,invoices and unrelated records,
+joins CRM estimate context by exact native Estimate_ID,and prepares at most3
+status-review checklists for sent quotes7–90days old in Toronto time. Sent is not
+proof of unanswered mail,a sale or revenue. Invoiced/accepted/stale records cannot
+generate a new sent-quote task. A semantic source revision excludes sampler clock
+changes,preventing repeated work. No Books/CRM financial record is modified.
+
 Four added service recipes produce distinct French/English field-guide packs:
 structured-cabling handover,fiber routes,access administration and intercom call
 flows. Each includes article/page copy,social copy,FAQs,video storyboard and an

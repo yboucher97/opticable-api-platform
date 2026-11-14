@@ -71,6 +71,33 @@ def latest(database):
     result=json.loads(raw);result['snapshot_ids']=[row[0]];return result
 
 
+def with_quote_projection(source, path):
+    """Reuse existing native business projection; no additional Books calls."""
+    value={**source};path=Path(path)
+    try:
+        if path.is_symlink() or path.stat().st_size>8*1024*1024:raise ValueError('Projection size/path')
+        projection=json.loads(path.read_text())
+        if projection.get('read_only') is not True:raise ValueError('Read-only native projection required')
+        snapshot=projection['snapshot'];finance=snapshot.get('finance_estimates',[])
+        mapping={r['Estimate_ID']:r for r in finance if isinstance(r.get('Estimate_ID'),str)}
+        quotes=[]
+        for identity,item in sorted(snapshot.get('books_estimate_index',{}).items())[:200]:
+            stable_id(identity)
+            if item.get('estimate_id')!=identity:raise ValueError('Native estimate identity mismatch')
+            record=mapping.get(identity,{});account=record.get('Account_Name') or {}
+            if not isinstance(account,dict):account={}
+            if synthetic(record):continue
+            quotes.append({k:item.get(k) for k in ('estimate_id','estimate_number','date','status','customer_id','last_modified_time','zcrm_potential_id')})
+            quotes[-1].update(company=account.get('name') or 'Native customer '+str(item.get('customer_id','')),crm_estimate_id=record.get('id'))
+        value['quotes']={'observed_at':snapshot.get('observed_at') or projection.get('observed_at'),'items':quotes,
+                         'source':str(path),'coverage':'Existing bounded native Books index joined by exact Estimate_ID; no communication-status or revenue inference'}
+        value['quote_revision']=hashlib.sha256(json.dumps(quotes,sort_keys=True).encode()).hexdigest()
+    except (OSError,ValueError,KeyError,TypeError) as error:
+        value['quotes']={'observed_at':None,'items':[],'source':str(path),'error_class':type(error).__name__}
+        value['quote_revision']='UNAVAILABLE'
+    return value
+
+
 class Reader:
     def __init__(self,client):self.client=client;self.calls=0;self.bytes=0
     def get(self,service,path,query):

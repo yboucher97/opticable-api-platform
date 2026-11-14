@@ -163,8 +163,9 @@ def run():
         from workflow.automation.acquisition_store import AcquisitionStore
         from workflow.config import load_settings
         store = AcquisitionStore(cfg['database']); store.initialized = True
-        from business_sources import refresh
+        from business_sources import refresh,with_quote_projection
         business,source_state=refresh(cfg['database'],load_settings(),now,store)
+        business=with_quote_projection(business,'/run/optibrain-readiness/business.json')
         from cycle import context
         ctx=context(cfg['database'],OUTPUT/'artifacts','/run/optibrain-readiness/marketing.json','/var/lib/opticable-workflow-api/output/automation/phase9-form-receipts.db')
         ctx.update(business_v12=True,business=business)
@@ -174,7 +175,7 @@ def run():
         if any(r.get('period') != summary['period'] for r in supplement.get('results', []) if not r['source'].endswith(':previous')):
             supplement = {}
         evidence_key = hashlib.sha256(json.dumps([summary['snapshot_ids'], summary['at'],
-                            supplement.get('observed_at'), business.get('snapshot_ids',[]), [f['event_id'] for f in ctx['feedback']], hashlib.sha256((RUNTIME/'manifest.json').read_bytes()).hexdigest(), now.astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()], sort_keys=True).encode()).hexdigest()
+                            supplement.get('observed_at'), business.get('snapshot_ids',[]), business.get('quote_revision'), [f['event_id'] for f in ctx['feedback']], hashlib.sha256((RUNTIME/'manifest.json').read_bytes()).hexdigest(), now.astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()], sort_keys=True).encode()).hexdigest()
         receipt = OUTPUT / ('run-' + evidence_key + '.json')
         if receipt.exists():
             saved = load(receipt)

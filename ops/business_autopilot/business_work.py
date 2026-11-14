@@ -4,10 +4,11 @@ Customer text is evidence, never instructions. No name/email matching, prices,
 qualification, reply status or revenue are invented. Business drafts never enter
 the public marketing history. Stable source revisions prevent daily duplicate work.
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from hashlib import sha256
 import json
 import re
+from zoneinfo import ZoneInfo
 
 
 def synthetic(record):
@@ -125,6 +126,26 @@ def generate(source, context, now):
             h=add(identity,'Overdue inquiry review — '+lead.get('Company',''),text,'fr','network interconnection','overdue-task','HIGH',evidence,'CUSTOMER_COMMUNICATION')
             opportunities.append({'native_id':identity,'kind':'OVERDUE_NATIVE_TASK','priority':100,'confidence':'EXACT_TASK_LEAD_LINK','summary':task['Subject']+' — due '+due,'artifact_sha256':h})
     else:blocked.append('CRM task evidence absent/stale; no current overdue-inventory assertion')
+    quotes=source.get('quotes',{})
+    if fresh(quotes.get('observed_at'),now):
+        selected=[]
+        for item in quotes.get('items',[]):
+            if item.get('status')!='sent' or synthetic(item):continue
+            try:age=(now.astimezone(ZoneInfo('America/Toronto')).date()-date.fromisoformat(item['date'])).days
+            except (TypeError,ValueError,KeyError):
+                blocked.append('Quote date invalid; cannot classify native record '+str(item.get('estimate_id')));continue
+            if 7<=age<=90:selected.append(item)
+        for item in sorted(selected,key=lambda x:(x['date'],x['estimate_id']),reverse=True)[:3]:
+            identity=stable_id(item['estimate_id']);number=item.get('estimate_number') or identity
+            evidence=[{'source':quotes.get('source'),'observed_at':quotes['observed_at'],'estimate_id':identity,'crm_estimate_id':item.get('crm_estimate_id'),
+                       'join':'EXACT_NATIVE_ESTIMATE_ID','status':'sent','date':item['date'],'coverage':quotes.get('coverage')}]
+            text=f"Quotation: {number}\nCustomer: {item.get('company','Native customer')}\nDate: {item['date']}\nNative status: sent\n\n"
+            text+='Prepared status-review checklist:\n- Check communication history before deciding whether follow-up is appropriate. Sent does not prove unanswered.\n- Confirm current scope and terms; do not extend validity or promise a schedule.\n- Use only an explicitly linked native contact for a finished message draft. No name matching.\n- Verify any required subscription,travel or equipment expense separately with the owner.\n- Preserve quotation,pricing,CRM stage and financial history; no record is modified.\n'
+            if not item.get('zcrm_potential_id'):text+='\nAttribution gap: native CRM potential ID is absent. No lead,campaign,won-project or revenue attribution is inferred.\n'
+            h=add(identity,'Sent quote status review — '+number,text,'bilingual','sales administration','quote-review','MEDIUM',evidence)
+            opportunities.append({'native_id':identity,'kind':'SENT_QUOTE_STATUS_REVIEW','priority':85,'confidence':'NATIVE_CACHED_STATUS_EXACT_ID',
+                                  'summary':number+' — '+item.get('company','Native customer'),'reply_status':'UNKNOWN','artifact_sha256':h})
+    else:blocked.append('Quote projection absent/stale; no current sent-quote follow-up claim')
     calendar=source.get('calendar',{})
     if fresh(calendar.get('observed_at'),now):
         for event in calendar.get('events',[])[:20]:
