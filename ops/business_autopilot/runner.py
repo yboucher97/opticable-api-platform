@@ -40,7 +40,7 @@ def verify_runtime(root, require_root=True):
         if entry.is_symlink() or st.st_mode & 0o022 or (require_root and st.st_uid != 0):
             raise PermissionError('Protected runtime and manifest required')
     files = load(root / 'manifest.json')
-    if set(files) != {'engine.py', 'runner.py', 'content_bank.json', 'sandbox.py', 'content_variations.py', 'cycle.py', 'review.py', 'private_preview.py', 'business_work.py', 'business_sources.py', 'content_expansion.py'}:
+    if set(files) != {'engine.py', 'runner.py', 'content_bank.json', 'sandbox.py', 'content_variations.py', 'cycle.py', 'review.py', 'private_preview.py', 'business_work.py', 'business_sources.py', 'content_expansion.py', 'storage.py', 'lifecycle.py'}:
         raise ValueError('Exact reviewed manifest required')
     for name, digest in files.items():
         p = root / name; st = p.lstat()
@@ -91,6 +91,7 @@ def child(runtime, scratch, request, now):
     import engine
     import content_variations
     import cycle
+    import storage
     value = load(request)
     files = engine.make_artifacts(value['native'], value.get('supplement', {}), load(runtime / 'content_bank.json'), datetime.fromisoformat(now))
     additions=content_variations.generate(value['native'],value.get('context',{}),datetime.fromisoformat(now))
@@ -111,12 +112,12 @@ def child(runtime, scratch, request, now):
     for item in additions: files[item['logical_path']]=item['content'].encode()
     day=datetime.fromisoformat(now).astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()
     files[f'analytics/{day}/canonical-funnel.json']=engine.encoded(cycle.funnel(value['native'],value.get('context',{})))
-    prior=set(value.get('context',{}).get('artifact_hashes',[]))
-    files={p:raw for p,raw in files.items() if hashlib.sha256(raw).hexdigest() not in prior}
+    files, storage_metadata = storage.select(files, additions, value.get('context', {}))
     manifest = engine.write_bundle(scratch, files)
     by_path={x['logical_path']:x for x in additions}
     for item in manifest:
         if item['logical_path'] in by_path:item.update({k:v for k,v in by_path[item['logical_path']].items() if k not in ('content','logical_path')})
+        item.update(storage_metadata[item['logical_path']])
     print(json.dumps(manifest, ensure_ascii=False))
 
 
@@ -169,6 +170,10 @@ def run():
         from cycle import context
         ctx=context(cfg['database'],OUTPUT/'artifacts','/run/optibrain-readiness/marketing.json','/var/lib/opticable-workflow-api/output/automation/phase9-form-receipts.db')
         ctx.update(business_v12=True,business=business)
+        import storage
+        policy = storage.load_policy()
+        with sqlite3.connect(cfg['database']) as budget_db:
+            ctx['storage_budget'] = storage.admission(budget_db, OUTPUT, now, policy)
         supplemental = COLLECTOR / 'business-supplement-20261114.json'
         supplement = load(supplemental) if supplemental.exists() else {}
         # Supplement is a single evidence capture, never refresh or reuse for another period.
@@ -179,14 +184,34 @@ def run():
         receipt = OUTPUT / ('run-' + evidence_key + '.json')
         if receipt.exists():
             saved = load(receipt)
+            with sqlite3.connect(cfg['database']) as state_db:
+                states = storage.metadata(state_db)[2]
             for item in saved['manifest']:
                 p = OUTPUT / 'artifacts' / item['path']
+                if states.get(storage.operation_id(item), {}).get('state') in ('QUARANTINED', 'DELETE_INTENT', 'DELETED'):
+                    continue  # exact immutable lifecycle receipt replaces disposable bytes
                 if p.is_symlink() or not p.resolve().is_relative_to((OUTPUT/'artifacts').resolve()) or hashlib.sha256(p.read_bytes()).hexdigest() != item['sha256']:
                     raise ValueError('Previously completed artifact integrity failure')
             print('CACHED verified business artifacts; no provider or paid call'); return
         failed = OUTPUT / ('failed-' + evidence_key + '.json')
         if failed.exists():
             print('HELD prior failed attempt for this evidence/day/runtime; no retry or business action'); return
+        # Derivable latest analysis stays useful even when optional drafting is
+        # paused; replace this bounded projection instead of making daily copies.
+        import engine
+        import business_work
+        _, business_report = business_work.generate(business, ctx, now)
+        storage.replace_report(OUTPUT / 'latest-cycle.json', {
+            'at': now.isoformat(), 'analysis': engine.analyse(native, supplement, now),
+            'business_opportunities': business_report['opportunities'], 'blocked': business_report['blocked'],
+            'storage': {k:v for k,v in ctx['storage_budget'].items() if k not in ('pending_semantics','protected_hashes')},
+            'derived_projection': True, 'execution_authority': False})
+        # Global execution.lock plus a durable reservation prevents concurrent
+        # admission and conservatively charges interrupted generation attempts.
+        with sqlite3.connect(cfg['database']) as budget_db:
+            budget_db.row_factory = sqlite3.Row
+            budget_db.execute('BEGIN IMMEDIATE')
+            reservation, reservation_value = storage.reserve(budget_db, evidence_key, ctx['storage_budget'], now)
         scratch = OUTPUT / 'artifacts'; scratch.mkdir(mode=0o700, exist_ok=True)
         fd, request_name = tempfile.mkstemp(prefix='.input-', suffix='.json', dir=scratch)
         try:
@@ -211,6 +236,10 @@ def run():
                           'published': False, 'incremental_cost': '0', 'local_root': str(scratch)},
                           source='platform:business_autopilot', native_id=item['sha256'], url='https://opticable.ca/', now=now,
                           cost_class='NO EXTERNAL COST', observed_at=summary['at']))
+        with sqlite3.connect(cfg['database']) as budget_db:
+            budget_db.row_factory = sqlite3.Row
+            budget_db.execute('BEGIN IMMEDIATE')
+            storage.complete(budget_db, reservation, reservation_value, manifest, now)
         value = {'schema': 1, 'at': now.isoformat(), 'status': 'COMPLETED_INTERNAL_DRAFTS', 'manifest': manifest,
                  'evidence_ids': summary['snapshot_ids'], 'records': records, 'source_observed_at': summary['at'],
                  'provider_calls': source_state.get('provider_calls',0), 'source_state':source_state, 'paid_calls': 0, 'publishing': False, 'production_changes': False}
