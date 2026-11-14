@@ -134,11 +134,11 @@ class BusinessAutopilotTests(unittest.TestCase):
         n,s=fixtures()
         with tempfile.TemporaryDirectory() as d:
             p=Path(d); runtime=p/'runtime';runtime.mkdir();out=p/'output';out.mkdir()
-            for name in ('engine.py','runner.py','content_bank.json'):(runtime/name).write_bytes((ROOT/name).read_bytes())
+            for name in ('engine.py','runner.py','content_bank.json','cycle.py','content_variations.py'):(runtime/name).write_bytes((ROOT/name).read_bytes())
             (runtime/'sandbox.py').write_bytes((ROOT.parents[1]/'apps/workflow-api/workflow/automation/development_sandbox.py').read_bytes())
             request=out/'input.json';request.write_text(json.dumps({'native':n,'supplement':s}))
             first=runner.run_child(runtime,out,request,NOW);second=runner.run_child(runtime,out,request,NOW)
-            self.assertEqual(first,second);self.assertEqual(len(first),37)
+            self.assertEqual(first,second);self.assertEqual(len(first),42)
             self.assertTrue(any(x['logical_path'].endswith('seven-day-bilingual-calendar.txt') for x in first))
 
 

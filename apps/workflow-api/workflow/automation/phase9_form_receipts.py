@@ -220,10 +220,12 @@ def parse_notification(*, message_id, details, content, headers, now):
             raise ValueError('Form acquisition language mismatch')
         from .lifecycle_control import ATTR_FIELDS
         keys = {k.casefold() for k in ATTR_FIELDS} | {'google_gclid','google_gbraid','google_wbraid','meta_fbclid',
-                'meta_fbp','meta_fbc','msclkid','origin_site','origin_path','origin_service','visitor_id'}
+                'meta_fbp','meta_fbc','msclkid','origin_site','origin_path','origin_service','visitor_id','inquiry_id'}
         incoming = context.get('attribution', {})
         if not isinstance(incoming, dict) or any(k not in keys or not isinstance(v,str) or len(v)>2000 for k,v in incoming.items()):
             raise ValueError('Invalid form attribution fields')
+        if 'inquiry_id' in incoming and not re.fullmatch(r'obq_[a-f0-9]{32}', incoming['inquiry_id']):
+            raise ValueError('Invalid inquiry correlation ID')
         attribution = incoming
         for k,v in attribution.items():
             if k.endswith('_touch_time') and v and datetime.fromisoformat(instant(v)) > occurred + timedelta(minutes=5):

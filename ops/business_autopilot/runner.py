@@ -40,7 +40,7 @@ def verify_runtime(root, require_root=True):
         if entry.is_symlink() or st.st_mode & 0o022 or (require_root and st.st_uid != 0):
             raise PermissionError('Protected runtime and manifest required')
     files = load(root / 'manifest.json')
-    if set(files) != {'engine.py', 'runner.py', 'content_bank.json', 'sandbox.py'}:
+    if set(files) != {'engine.py', 'runner.py', 'content_bank.json', 'sandbox.py', 'content_variations.py', 'cycle.py', 'review.py', 'private_preview.py'}:
         raise ValueError('Exact reviewed manifest required')
     for name, digest in files.items():
         p = root / name; st = p.lstat()
@@ -89,9 +89,20 @@ def child(runtime, scratch, request, now):
     # Imports stay within reviewed runtime; no workflow/app or credential imports.
     sys.path.insert(0, str(runtime))
     import engine
+    import content_variations
+    import cycle
     value = load(request)
     files = engine.make_artifacts(value['native'], value.get('supplement', {}), load(runtime / 'content_bank.json'), datetime.fromisoformat(now))
+    additions=content_variations.generate(value['native'],value.get('context',{}),datetime.fromisoformat(now))
+    for item in additions: files[item['logical_path']]=item['content'].encode()
+    day=datetime.fromisoformat(now).astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()
+    files[f'analytics/{day}/canonical-funnel.json']=engine.encoded(cycle.funnel(value['native'],value.get('context',{})))
+    prior=set(value.get('context',{}).get('artifact_hashes',[]))
+    files={p:raw for p,raw in files.items() if hashlib.sha256(raw).hexdigest() not in prior}
     manifest = engine.write_bundle(scratch, files)
+    by_path={x['logical_path']:x for x in additions}
+    for item in manifest:
+        if item['logical_path'] in by_path:item.update({k:v for k,v in by_path[item['logical_path']].items() if k not in ('content','logical_path')})
     print(json.dumps(manifest, ensure_ascii=False))
 
 
@@ -131,13 +142,16 @@ def run():
         if any(cfg.get(k) is not False for k in ('writes_allowed', 'publishing_allowed', 'paid_operations_allowed')):
             raise PermissionError('Read-only source configuration changed')
         native = collect_input(cfg['database'], summary)
+        sys.path.insert(0,str(RUNTIME))
+        from cycle import context
+        ctx=context(cfg['database'],OUTPUT/'artifacts','/run/optibrain-readiness/marketing.json','/var/lib/opticable-workflow-api/output/automation/phase9-form-receipts.db')
         supplemental = COLLECTOR / 'business-supplement-20261114.json'
         supplement = load(supplemental) if supplemental.exists() else {}
         # Supplement is a single evidence capture, never refresh or reuse for another period.
         if any(r.get('period') != summary['period'] for r in supplement.get('results', []) if not r['source'].endswith(':previous')):
             supplement = {}
         evidence_key = hashlib.sha256(json.dumps([summary['snapshot_ids'], summary['at'],
-                            supplement.get('observed_at'), hashlib.sha256((RUNTIME/'manifest.json').read_bytes()).hexdigest(), now.astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()], sort_keys=True).encode()).hexdigest()
+                            supplement.get('observed_at'), [f['event_id'] for f in ctx['feedback']], hashlib.sha256((RUNTIME/'manifest.json').read_bytes()).hexdigest(), now.astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()], sort_keys=True).encode()).hexdigest()
         receipt = OUTPUT / ('run-' + evidence_key + '.json')
         if receipt.exists():
             saved = load(receipt)
@@ -153,7 +167,7 @@ def run():
         fd, request_name = tempfile.mkstemp(prefix='.input-', suffix='.json', dir=scratch)
         try:
             with os.fdopen(fd, 'w') as stream:
-                json.dump({'native': native, 'supplement': supplement}, stream)
+                json.dump({'native': native, 'supplement': supplement,'context':ctx}, stream)
             manifest = run_child(RUNTIME, scratch, Path(request_name), now)
         except Exception as error:
             with failed.open('x') as stream:
@@ -181,6 +195,9 @@ def run():
         value = {'schema': 1, 'at': now.isoformat(), 'status': 'COMPLETED_INTERNAL_DRAFTS', 'manifest': manifest,
                  'evidence_ids': summary['snapshot_ids'], 'records': records, 'source_observed_at': summary['at'],
                  'provider_calls': 0, 'paid_calls': 0, 'publishing': False, 'production_changes': False}
+        from workflow.automation.manager_store import ManagerStore
+        created=sum(r['state']=='RECORDED' for r in records)
+        ManagerStore(cfg['database']).receipt('business-autopilot',evidence_key,now,{'state':'COMPLETED','origin':'AUTOMATIC_EXISTING_WORKFLOW','counters':{'registered_artifacts':created,'new_content_variations':sum(x.get('recipe') is not None and records[i]['state']=='RECORDED' for i,x in enumerate(manifest)),'external_mutations':0},'source_receipt':str(receipt),'provider_calls':0,'paid_calls':0,'feedback_events':[f['event_id'] for f in ctx['feedback']]})
         # Receipt only after all append-only asset registration succeeds. Replay deduplicates facts.
         with receipt.open('x') as stream:
             json.dump(value, stream, ensure_ascii=False, indent=2); stream.write('\n'); stream.flush(); os.fsync(stream.fileno())

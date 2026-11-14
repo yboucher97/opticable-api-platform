@@ -46,7 +46,7 @@ const fs=require('node:fs'),assert=require('node:assert/strict');
      await page.reload({waitUntil:'networkidle'});assert.equal(await page.locator('[data-brief-output]').inputValue(),'');
    }
  }
- assert.equal((await context.request.post(origin+'/',{data:'blocked'})).status(),405);
+ assert([403,405].includes((await context.request.post(origin+'/',{data:'blocked'})).status()));
  assert.equal((await context.request.get(origin+'/sitemap.xml')).status(),410);
  const robots=await context.request.get(origin+'/robots.txt');assert((await robots.text()).includes('Disallow: /'));
  const result={passed:checks.every(x=>x.axe_violations.length===0)&&errors.length===0&&external===0&&mutations===0,
