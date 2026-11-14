@@ -33,6 +33,24 @@ def load(p):
     return json.loads(p.read_text())
 
 
+def empty_cycle_cached(database, evidence_key):
+    """Zero-output completion lives in existing immutable evidence,not new files."""
+    with sqlite3.connect(Path(database).resolve().as_uri()+'?mode=ro',uri=True) as db:
+        row=db.execute("SELECT evidence_json FROM action_evidence WHERE action_id=? AND kind='business_storage_reservation' ORDER BY event_id DESC LIMIT 1",
+            ('business-storage-reservation:'+evidence_key,)).fetchone()
+    if not row:return False
+    value=json.loads(row[0]);return value.get('state')=='COMPLETED' and value.get('written_items')==0
+
+
+def record_empty_cycle(database, evidence_key, now, source_state):
+    from workflow.automation.manager_store import ManagerStore
+    ManagerStore(database).receipt('business-autopilot',evidence_key,now,{
+        'state':'COMPLETED_NO_NEW_FILES','origin':'AUTOMATIC_EXISTING_WORKFLOW',
+        'counters':{'registered_artifacts':0,'new_content_variations':0,'private_business_preparations':0,'external_mutations':0},
+        'source_receipt':'business-storage-reservation:'+evidence_key,
+        'provider_calls':source_state.get('provider_calls',0),'paid_calls':0})
+
+
 def verify_runtime(root, require_root=True):
     root = Path(root)
     for entry in (root, root / 'manifest.json'):
@@ -182,6 +200,8 @@ def run():
         evidence_key = hashlib.sha256(json.dumps([summary['snapshot_ids'], summary['at'],
                             supplement.get('observed_at'), business.get('snapshot_ids',[]), business.get('quote_revision'), [f['event_id'] for f in ctx['feedback']], hashlib.sha256((RUNTIME/'manifest.json').read_bytes()).hexdigest(), now.astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()], sort_keys=True).encode()).hexdigest()
         receipt = OUTPUT / ('run-' + evidence_key + '.json')
+        if empty_cycle_cached(cfg['database'],evidence_key):
+            print('CACHED zero-output cycle in existing journal; no new receipt or content file');return
         if receipt.exists():
             saved = load(receipt)
             with sqlite3.connect(cfg['database']) as state_db:
@@ -240,6 +260,10 @@ def run():
             budget_db.row_factory = sqlite3.Row
             budget_db.execute('BEGIN IMMEDIATE')
             storage.complete(budget_db, reservation, reservation_value, manifest, now)
+        if not manifest:
+            record_empty_cycle(cfg['database'],evidence_key,now,source_state)
+            print(json.dumps({'artifacts':0,'new_receipt_files':0,'provider_calls':source_state.get('provider_calls',0),
+                'paid_calls':0,'publishing':False,'state':'COMPLETED_NO_NEW_FILES'}));return
         value = {'schema': 1, 'at': now.isoformat(), 'status': 'COMPLETED_INTERNAL_DRAFTS', 'manifest': manifest,
                  'evidence_ids': summary['snapshot_ids'], 'records': records, 'source_observed_at': summary['at'],
                  'provider_calls': source_state.get('provider_calls',0), 'source_state':source_state, 'paid_calls': 0, 'publishing': False, 'production_changes': False}

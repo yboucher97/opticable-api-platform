@@ -117,6 +117,7 @@ def serve(root, credentials, review=None, *, port=8876, stop_event=None, session
                 path=urlsplit(self.path).path;params=parse_qs(urlsplit(self.path).query)
                 try:
                     if path=='/review/session':return self.owner_session()
+                    if path=='/review/queue.json':return self.json_response(200,review.queue())
                     if path=='/review/website-package':
                         return self.json_response(200,json.loads((root/'review/review-package.json').read_text()))
                     if path.startswith('/review/artifact/'):
@@ -126,7 +127,7 @@ def serve(root, credentials, review=None, *, port=8876, stop_event=None, session
                     else:
                         identifier=path.rsplit('/',1)[-1] if path.startswith('/review/item/') else None
                         if path not in ('/review','/review/') and not identifier:self.send_error(404);return
-                        raw=review.render(params.get('q',[''])[0][:150],params.get('category',[''])[0],identifier=identifier,urgency=params.get('urgency',[''])[0][:10],filter_status=params.get('status',[''])[0][:20]);self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8')
+                        raw=review.render(params.get('q',[''])[0][:150],params.get('category',[''])[0],identifier=identifier,urgency=params.get('urgency',[''])[0][:10],filter_status=params.get('status',[''])[0][:20],package_identifier=params.get('package',[None])[0],view=params.get('view',[''])[0]);self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8')
                     self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw);return
                 except (ValueError,OSError):return self.json_response(409,{'error':'Artifact unavailable or integrity changed'})
 
