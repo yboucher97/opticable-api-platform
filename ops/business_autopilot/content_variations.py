@@ -72,7 +72,7 @@ def generate(native, context, now):
             {'query':r['keys'][0],'page':r['keys'][1],'impressions':r['impressions'],'clicks':r['clicks']} for r in sorted(queries,key=lambda r:-r['impressions'])[:5]],
             'period':native['collection']['period'],'service_source':'https://ai.opticable.ca/' if service=='ai-loss-prevention' else 'https://opticable.ca/'}]
         for lang in ('fr','en'):
-            feedback=next((x for x in reversed(previous_feedback) if x.get('service')==service and x.get('language',lang)==lang and x.get('choice')=='REQUEST_REVISION' and x.get('rule')),None)
+            feedback=next((x for x in reversed(previous_feedback) if x.get('service')==service and x.get('language',lang)==lang and x.get('choice') in ('REJECT','REQUEST_REVISION') and x.get('rule')),None)
             title,body=copy[lang];revision_of=None
             if feedback:
                 revision_of=feedback['asset_sha256']

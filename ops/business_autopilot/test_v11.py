@@ -121,6 +121,8 @@ class ContentTests(unittest.TestCase):
   first=content.generate(self.native(),{},NOW);old=next(r for r in first if r['service']=='ai-loss-prevention' and r['language']=='en');h=hashlib.sha256(old['content'].encode()).hexdigest()
   context={'artifact_hashes':[hashlib.sha256(r['content'].encode()).hexdigest() for r in first], 'feedback':[{'service':'ai-loss-prevention','choice':'REQUEST_REVISION','rule':'SHORTER','asset_sha256':h}]}
   new=content.generate(self.native(),context,NOW);candidate=next(r for r in new if r['service']=='ai-loss-prevention' and r['language']=='en');self.assertLess(len(candidate['content']),len(old['content']));self.assertEqual(candidate['revision_of'],h)
+  context['feedback'][0]['choice']='REJECT'
+  revised=content.generate(self.native(),context,NOW);self.assertTrue(any(r['revision_of']==h and r['content']!=old['content'] for r in revised))
  def test_claim_rights_and_duplicate_quality_gate(self):
   for text in ['Save 50% with guaranteed results','A customer story: our client saved money','Review5 stars','ROI of 12','stock photo']:
    with self.subTest(text=text),self.assertRaises(ValueError):content.quality(text,['native'])
