@@ -8,12 +8,12 @@ const fs=require('node:fs'),assert=require('node:assert/strict');
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));const checks=[];
  for(const width of [375,1280]){
   await page.setViewportSize({width,height:900});await page.goto('http://127.0.0.1:8876/review/',{waitUntil:'networkidle'});
-  const count=await page.locator('article').count();assert(count>=43);assert.equal(await page.getByRole('link',{name:'Business work',exact:true}).count(),1);
+  const count=await page.locator('[data-package]').count();assert(count>0&&count<=10);assert.equal(await page.getByRole('link',{name:'Business work',exact:true}).count(),1);
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();assert.equal(axe.violations.length,0,JSON.stringify(axe.violations));
-  await page.screenshot({path:process.env.BUSINESS_QA_DIR+`/review-${width}.png`,fullPage:false});checks.push({width,registered_items:count,axe_violations:0,overflow:false});
+  await page.screenshot({path:process.env.BUSINESS_QA_DIR+`/review-${width}.png`,fullPage:false});checks.push({width,visible_packages:count,axe_violations:0,overflow:false});
  }
- const href=await page.locator('article h2 a').first().getAttribute('href');await page.goto('http://127.0.0.1:8876'+href,{waitUntil:'networkidle'});
+ const href=await page.locator('article details li a').first().getAttribute('href');await page.goto('http://127.0.0.1:8876'+href,{waitUntil:'networkidle'});
  assert.equal(await page.locator('[data-decision]').count(),3);assert(await page.locator('details').count());
  // Do not submit owner decisions for real production artifacts during testing.
  await page.goto('http://127.0.0.1:8876/experiments/inquiry-attribution/',{waitUntil:'networkidle'});
