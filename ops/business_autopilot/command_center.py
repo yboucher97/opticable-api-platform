@@ -12,6 +12,7 @@ import hmac
 import json
 import re
 import secrets
+import sqlite3
 import threading
 import time
 from urllib.parse import urlsplit
@@ -294,6 +295,32 @@ def create_app(review,config,*,key_resolver=None,clock=time.time,readiness='/run
             'generation_limits':{'daily_marketing_items':2,'rolling_seven_day_marketing_items':10,'active_pending_items':30,
                 'disposable_gib':2,'minimum_free_gib':25},'preferences_editable':False,
             'note':'Existing approved analysis continues. Preference changes require their applicable exact approval.'}
+
+    def existing_proposals():
+        # Existing immutable evidence only. No setup, drafts or action creation.
+        with sqlite3.connect(review.database.resolve().as_uri()+'?mode=ro',uri=True) as db:
+            rows=db.execute("SELECT action_id,evidence_json,event_hash FROM action_evidence WHERE kind='business_send_review_proposal' ORDER BY event_id DESC LIMIT 100").fetchall()
+        from review import digest
+        seen=set();values=[]
+        for identity,raw,proof in rows:
+            if identity in seen:continue
+            seen.add(identity);v=json.loads(raw)
+            if digest(v['payload'])!=v['payload_sha256']:raise ValueError('Stored proposal payload identity changed')
+            values.append({'id':identity,'event_hash':proof,'proposal':v})
+        return values
+
+    @app.get('/api/proposals')
+    def proposals(request:Request):
+        current(request);values=existing_proposals()
+        return {'total':len(values),'execution_available':False,'items':[{'id':v['id'],'language':v['proposal'].get('language'),
+            'subject':v['proposal']['payload'].get('subject'),'to':v['proposal']['payload'].get('to'),
+            'payload_sha256':v['proposal']['payload_sha256'],'semantic_operation_key':v['proposal'].get('semantic_operation_key')} for v in values]}
+
+    @app.get('/api/proposals/{identity}')
+    def proposal(request:Request,identity:str):
+        current(request);value=next((v for v in existing_proposals() if v['id']==identity),None)
+        if not value:return error(404,'Unknown existing proposal')
+        return {**value,'execution_available':False,'note':'Inspection only. Current conversation,contact,suppression and exact external authorization remain separate prerequisites.'}
 
     @app.get('/assets/{name}')
     def asset(name:str):

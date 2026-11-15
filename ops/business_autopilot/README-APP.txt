@@ -47,6 +47,10 @@ Review.validate_decision reuses exact existing payload/version/scope checks.
 Production decisions call Review.decision with the authenticated human actor,
 append immutable existing-journal evidence and authorize no external action.
 Staging validates choices but records nothing. No package-wide approval exists.
+The five existing customer-send proposals are available through a read-only
+inspector showing exact recipient,subject,body,payload SHA,source artifact and
+immutable receipt. Payload hashes are rechecked before display. No new proposal
+is created and no send/external execution control is exposed.
 No send,publish,spend,financial,production or general-settings write endpoint exists.
 Existing45 consequential flags and all generation/deletion restrictions remain.
 

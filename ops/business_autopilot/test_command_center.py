@@ -18,6 +18,7 @@ import jwt
 from workflow.automation.acquisition_store import AcquisitionStore
 from workflow.automation.action_evidence import ActionEvidence
 from review import Review
+from review import digest
 from command_center import Config,COOKIE,create_app
 
 KEY=rsa.generate_private_key(public_exponent=65537,key_size=2048)
@@ -154,6 +155,15 @@ class CommandCenterTests(unittest.TestCase):
         js=(HERE/'command_center_assets/app.js').read_text()
         for forbidden in ['localStorage','sessionStorage','indexedDB','caches.open','serviceWorker.register','.innerHTML','eval(']:self.assertNotIn(forbidden,js)
         self.assertIn("script-src 'self'",self.client.get('/').headers['content-security-policy'])
+
+    def test_existing_external_proposals_are_hash_verified_and_inspection_only(self):
+        payload={'to':['customer@example.test'],'subject':'Existing synthetic proposal','body':'Prepared earlier','from':EMAIL}
+        with ActionEvidence(self.db).connect() as db:ActionEvidence.append(db,'existing-proposal','business_send_review_proposal',{'payload':payload,'payload_sha256':digest(payload),'maximum_executions':1,'execution_authorized':False},datetime.now(timezone.utc))
+        self.client.headers.pop('Cf-Access-Jwt-Assertion');self.assertEqual(self.client.get('/api/proposals').status_code,401)
+        self.client.headers['Cf-Access-Jwt-Assertion']=self.token;csrf=self.login();before=self.db.read_bytes()
+        listing=self.client.get('/api/proposals').json();self.assertEqual(listing['total'],1);self.assertNotIn('body',listing['items'][0])
+        value=self.client.get('/api/proposals/existing-proposal').json();self.assertEqual(value['proposal']['payload'],payload);self.assertFalse(value['execution_available']);self.assertEqual(self.db.read_bytes(),before)
+        self.assertEqual(self.post('/api/proposals/existing-proposal',{'execute':True},csrf).status_code,405)
 
     def test_future_role_model_has_no_current_grants_and_viewer_cannot_review(self):
         self.login();self.assertFalse(self.client.get('/api/settings').json()['team_access'])

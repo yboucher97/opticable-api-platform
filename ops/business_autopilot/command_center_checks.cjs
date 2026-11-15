@@ -24,6 +24,9 @@ const AxeBuilder=require(process.env.BUSINESS_AXE).default;
   assert.equal(await page.locator('.error-page').count(),0);checks.push({route,navigation:'PASS'});
  }
  await page.goto(auth.url+'/#review',{waitUntil:'networkidle'});await page.getByRole('heading',{name:'Review existing work',exact:true}).waitFor();assert.equal(await page.locator('.work-card').count(),10);
+ assert.equal(await page.locator('a[href^="#review?proposal="]').count(),5);
+ await page.locator('a[href^="#review?proposal="]').first().click();await page.getByText('Existing immutable proposal · inspection only',{exact:true}).waitFor();assert((await page.locator('.item-content').innerText()).length>50);assert.equal(await page.locator('main button').count(),0);
+ await page.goto(auth.url+'/#review',{waitUntil:'networkidle'});await page.getByRole('heading',{name:'Review existing work',exact:true}).waitFor();
  await page.getByRole('button',{name:'Next',exact:true}).click();await page.waitForFunction(()=>location.hash.includes('page=2'));await page.waitForFunction(()=>document.querySelectorAll('.work-card').length===6);
  await page.goto(auth.url+'/#files',{waitUntil:'networkidle'});await page.getByRole('heading',{name:'Business files & reports',exact:true}).waitFor();await page.getByRole('searchbox').fill('EST-1145');await page.getByRole('button',{name:'Search',exact:true}).click();
  await page.waitForFunction(()=>location.hash.includes('EST-1145'));await page.locator('.work-card').first().waitFor();assert(await page.locator('.work-card').count()>0);
@@ -36,5 +39,5 @@ const AxeBuilder=require(process.env.BUSINESS_AXE).default;
  await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Open navigation',exact:true}).click();assert.equal(await page.locator('#open-nav').getAttribute('aria-expanded'),'true');await page.keyboard.press('Escape');assert.equal(await page.locator('#open-nav').getAttribute('aria-expanded'),'false');
  await page.getByRole('button',{name:'Sign out',exact:true}).click();await page.getByRole('heading',{name:'You are signed out'}).waitFor();assert.equal((await context.cookies()).filter(c=>c.name==='__Host-optibrain').length,0);
  assert.deepEqual(errors,[]);assert.equal(outside,0);await browser.close();
- console.log(JSON.stringify({passed:true,checks,packages:16,registered_items:91,default_packages:10,editorial_preview_only:true,storage:noStorage,logout:'PASS',mobile_menu_keyboard:'PASS',outside_requests:0,production_decisions:0,screenshots:['desktop.png','mobile.png']}));
+ console.log(JSON.stringify({passed:true,checks,packages:16,registered_items:91,default_packages:10,existing_send_proposals_inspected:5,external_execution_controls:0,editorial_preview_only:true,storage:noStorage,logout:'PASS',mobile_menu_keyboard:'PASS',outside_requests:0,production_decisions:0,screenshots:['desktop.png','mobile.png']}));
 })().catch(e=>{console.error(e);process.exit(1)});
