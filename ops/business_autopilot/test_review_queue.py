@@ -111,6 +111,19 @@ class QueueTests(unittest.TestCase):
         q=self.review.queue(NOW);self.assertEqual(q['sales_opportunities'][0]['reply_status'],'UNKNOWN')
         self.assertEqual(q['files_written'],0);self.assertEqual(q['provider_calls'],0)
 
+    def test_operational_view_rechecks_age_and_escapes_customer_text(self):
+        self.add('planning/retained.txt')
+        case={'key':'mail:exact','native_id':'exact','priority':100,'source_at':NOW.isoformat(),
+            'title':'<script>customer</script>','status':'Invitation only','next_action':'Review existing context',
+            'blocker':'Plans unknown','reply_status':'UNKNOWN'}
+        (self.root/'latest-cycle.json').write_text(json.dumps({'at':NOW.isoformat(),
+            'operational':{'cases':[case],'completed_internal':['Reconciled source IDs']}}))
+        before=sha256(self.db.read_bytes()).hexdigest();html=self.review.render(now=NOW).decode()
+        self.assertIn('&lt;script&gt;customer&lt;/script&gt;',html);self.assertNotIn('<script>customer',html)
+        q=self.review.queue(NOW+timedelta(hours=31))
+        self.assertEqual(q['operational']['cases'][0]['freshness'],'STALE_REVIEW_REQUIRED')
+        self.assertEqual(q['registered_items'],1);self.assertEqual(before,sha256(self.db.read_bytes()).hexdigest())
+
     def test_empty_cycle_reuses_journal_without_new_receipt_files(self):
         self.add('planning/existing.txt');before=set(self.root.rglob('*'))
         self.assertFalse(runner.empty_cycle_cached(self.db,'same-evidence'))

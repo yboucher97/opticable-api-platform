@@ -83,3 +83,46 @@ It never restores an old database or owner credential and grants no new access.
 The prior storage rollback must refuse a newer runtime;use this latest exact
 checkpoint before considering earlier recovery. Full-host R2/offline AGE recovery
 remains separate and unchanged.
+
+Business execution V1.3 — 2026-11-14 Toronto
+The same owner view now displays verified operational context and weekly measured
+performance. It reads one existing-journal snapshot,platform:business_execution_v13,
+with exact source IDs and source-read timestamps. Existing source read budgets
+are unchanged. The four additional bounded marketing comparison reads were
+one-time authorized reads saved in AcquisitionStore; ordinary cycles only reuse
+them when their effective periods match. They install no new provider polling.
+The weekly comparison uses equal complete seven-day windows; GSC requires seven
+distinct exact previous dates. Event counts are not unique qualified leads, CRM
+inventory is not weekly acquisition, and quote totals are not earned revenue.
+Historical missing acquisition fields remain unknown; legacy Inquiry_ID values
+are retained. No email/name/visitor-ID cross-provider project merge is performed.
+
+Eight retained operational contexts include the Nov19 noon bidder deadline for
+Elenco project2627-26 and the existing Nov18 13:00 Toronto Queleco meeting. The
+bidder deadline must not be confused with the Nov25 internal closing. Plans and
+qualifications remain unverified; no portal intention button has been clicked.
+EST-1145 was viewed in email, with a separate unset portal flag; neither proves
+acceptance or reply. Art-Systeme has active contact threads but no proven exact
+EST-1144 project link,so its generic reminder is suppressed in this view. No
+Books status is changed. Fresh source observations expire after30 hours; the
+owner view rechecks age on every read and never refreshes age by rendering.
+
+Five exact immutable send-review alternatives for four existing opportunities
+are reused,not copied or authorized. Editorial review still binds each individual
+artifact hash. All91 originals and16 packages remain,with ten packages by default.
+Current analysis replaces only latest-cycle.json,including on cached zero-output
+cycles. At zero pending slots,the sandbox does not construct any draft content.
+No new empty receipt file is created. The existing timer and databases remain.
+
+V1.3 private-runtime recovery uses the existing trusted admin_review_queue.py with
+--business-v13. It checkpoints only review.py,runner.py,business_work.py,
+business_sources.py,engine.py and manifest.json. Other runtime files,storage policy,
+credentials,expiry,provider permissions and business records are preserved.
+Evidence: /var/lib/optibrain/business-execution-v13-20261114/ . Root archive member
+and preimage hashes are verified before restore; actual isolated restoration is
+tested. To restore this exact checkpoint with trusted root administration:
+sudo python3 /var/lib/optibrain/business-execution-v13-20261114/admin_review_queue.py --business-v13 --ledger /var/lib/optibrain/business-execution-v13-20261114 --rollback
+This restores code only,never an old database or credential. Earlier queue/storage
+rollback must refuse this newer runtime. The API release ec9a8e85 and recovery/R2
+references remain unchanged. Retention A is deferred; monitor-access B is rejected
+as written. Neither is installed or re-requested by this mission.

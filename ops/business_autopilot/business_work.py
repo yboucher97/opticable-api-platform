@@ -31,6 +31,65 @@ def stable_id(value):
     return value
 
 
+def execution_result(evidence, analysis, now):
+    """A bounded current view of existing work, never tasks, drafts or authority."""
+    cases=[];seen=set()
+    for source in evidence.get('cases',[])[:100]:
+        identity=stable_id(source['native_id']);key=source['key']
+        if key in seen:raise ValueError('Duplicate operational identity')
+        seen.add(key)
+        base_priority=source.get('base_priority',source['priority'])
+        case={**source,'native_id':identity,'base_priority':base_priority,'priority':base_priority,'execution_enabled':False}
+        case['freshness']='CURRENT' if fresh(source.get('source_at'),now) else 'STALE_REVIEW_REQUIRED'
+        # An empty bounded search never proves no reply. Contact activity also
+        # cannot establish acceptance of another quote for the same customer.
+        case['reply_status']=source.get('reply_status','UNKNOWN')
+        if case['reply_status'] not in ('UNKNOWN','RELATED_CONTACT_ACTIVITY_ONLY','RSVP_NEEDS_ACTION'):
+            case['reply_status']='UNKNOWN'
+        case['acceptance_verified']=False
+        if case['freshness']!='CURRENT':
+            case['next_action']='Refresh exact source status before using the retained preparation.'
+            case['priority']-=60
+        if source.get('deadline') and datetime.fromisoformat(source['deadline'])<=now:
+            case['next_action']='Deadline passed; verify the exact current source before further action.'
+            case['deadline_passed']=True
+            case['priority']-=100
+        if source.get('project_linkage')=='UNVERIFIED':case['generic_reminder_suppressed']=True
+        if 'mail_viewed' in source:
+            case['view_evidence']='Email viewed; portal flag separately '+str(source.get('portal_viewed'))+'. Neither establishes acceptance or a reply.'
+        cases.append(case)
+    cases.sort(key=lambda c:(-c['priority'],c['key']))
+    return {'schema':1,'captured_at':evidence.get('captured_at'),'snapshot_ids':evidence.get('snapshot_ids',[]),
+        'cases':cases,'top_attention':cases[:5],'completed_internal':evidence.get('completed',[]),
+        'blocked':evidence.get('blocked',[]),'weekly':weekly_result(analysis,now),
+        'new_artifacts':0,'new_tasks':0,'new_send_proposals':0,'external_actions_completed':0,
+        'execution_authority':False}
+
+
+def weekly_result(analysis,now):
+    """Retain metric grain and unknown outcomes in the existing daily projection."""
+    ga=analysis.get('ga4',{});gsc=analysis.get('gsc',{});freshness=analysis.get('freshness')
+    try:
+        age=analysis['source_age_seconds']+(now-datetime.fromisoformat(analysis['observed_at'])).total_seconds()
+        if age>30*3600 or age < -300:freshness='STALE_REVIEW_REQUIRED'
+    except (KeyError,ValueError,TypeError):freshness='UNKNOWN'
+    return {'period':analysis.get('period'),'freshness':freshness,
+        'sessions':ga.get('sessions'),'previous_sessions':ga.get('previous_sessions'),
+        'session_change_percent':ga.get('session_change_percent'),'key_events':ga.get('key_events'),
+        'events':[{k:r.get(k) for k in ('eventName','eventCount','keyEvents')} for r in ga.get('events',[])],
+        'channels_sessions':ga.get('channels_sessions',{}),
+        'gsc_clicks':gsc.get('clicks'),'gsc_impressions':gsc.get('impressions'),
+        'gsc_previous_clicks':gsc.get('previous_clicks'),'gsc_previous_impressions':gsc.get('previous_impressions'),
+        'gsc_ctr_percent':gsc.get('ctr_percent'),'cloudflare_requests':analysis.get('cloudflare',{}).get('requests'),
+        'crm_visible_inventory':analysis.get('crm',{}).get('leads'),
+        'qualified_leads':None,'attributed_revenue':None,'roas':None,
+        'ads_returned_rows':analysis.get('ads',{}).get('daily_rows'),
+        'meaning':'GA4 events are not unique qualified leads; CRM inventory is not weekly intake; HTTP requests are not visits.',
+        'priorities':['Review existing camera and AI loss-prevention packages; no generation or publication.',
+                      'Verify canonical inquiry-to-CRM/deal identity before treating events or quote totals as revenue.'],
+        'timezones':{'ga4':'America/Toronto','gsc':'America/Los_Angeles','cloudflare':'UTC'}}
+
+
 def inquiry_copy(item):
     f=item['fields'];lang=item['language'];name=f.get('name','').replace(',', ' ').strip()
     service=f.get('service','');notes=f.get('notes','')[:4000]

@@ -66,6 +66,10 @@ def analyse(native, supplement, now):
     dates = sorted({r['keys'][0] for r in daily})
     impressions = sum(r['impressions'] for r in daily)
     clicks = sum(r['clicks'] for r in daily)
+    prior_gsc_source=extras.get('platform:business_autopilot:gsc:previous',{})
+    prior_gsc=prior_gsc_source.get('data',{}).get('rows',[]) if prior_gsc_source.get('period')=={'from':expected_start.isoformat(),'to':expected_end.isoformat()} else []
+    expected_dates={(expected_start+timedelta(days=i)).isoformat() for i in range(7)}
+    if len(prior_gsc)!=7 or {r['keys'][0] for r in prior_gsc}!=expected_dates:prior_gsc=[]
     pages = defaultdict(lambda: {'impressions': 0, 'clicks': 0, 'position_weight': 0, 'query_rows': 0})
     for r in data('gsc:query_page').get('rows', []):
         p = pages[r['keys'][1]]
@@ -87,7 +91,7 @@ def analyse(native, supplement, now):
                    'retrieved_at': s['retrieved_at'], 'effective_from': s.get('effective_from'),
                    'effective_to': s.get('effective_to')} for s in native['snapshots']]
     references += [{'snapshot_id': s.get('snapshot_id'), 'source': s['source'], 'url': s['source_url'],
-                    'retrieved_at': supplement.get('observed_at'), 'period': s.get('period')}
+                    'retrieved_at': s.get('retrieved_at',supplement.get('observed_at')), 'period': s.get('period')}
                    for s in supplement.get('results', [])]
     return {'schema': 1, 'observed_at': now.isoformat(), 'period': period,
             'freshness': 'CURRENT' if age <= 30 * 3600 else 'STALE_REVIEW_REQUIRED', 'source_age_seconds': age,
@@ -102,6 +106,8 @@ def analyse(native, supplement, now):
                     'requested_days': (datetime.fromisoformat(period['to']) - datetime.fromisoformat(period['from'])).days + 1,
                     'clicks': clicks if daily else None, 'impressions': impressions if daily else None,
                     'ctr_percent': round(clicks / impressions * 100, 3) if impressions else None,
+                    'previous_clicks':sum(r['clicks'] for r in prior_gsc) if prior_gsc else None,
+                    'previous_impressions':sum(r['impressions'] for r in prior_gsc) if prior_gsc else None,
                     'query_page_clicks': sum(p['clicks'] for p in pages.values()),
                     'page_query_slices': dict(sorted(pages.items(), key=lambda p: -p[1]['impressions']))},
             'crm': {'observed_at': crm.get('observed_at'), 'scope': 'visible live inventory; not new leads in period',

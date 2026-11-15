@@ -201,6 +201,11 @@ class Review:
         for rank,item in enumerate(ranked,1):item['queue']['rank']=rank
         latest={};projection=self.artifacts.parent/'latest-cycle.json'
         if not projection.is_symlink() and projection.is_file() and projection.stat().st_size<=1024*1024:latest=json.loads(projection.read_text())
+        from business_work import execution_result,fresh
+        evidence=latest.get('operational',{})
+        analysis=latest.get('analysis',{})
+        if not fresh(latest.get('at'),now):analysis={**analysis,'freshness':'STALE_REVIEW_REQUIRED'}
+        operational=execution_result({**evidence,'completed':evidence.get('completed_internal',[])},analysis,now)
         actual={p['key']:p for p in packages};sales=[]
         for op in latest.get('business_opportunities',[]):
             prefix={'OVERDUE_NATIVE_TASK':'task:','INQUIRY_SCOPE_REVIEW':'inquiry:','SENT_QUOTE_STATUS_REVIEW':'quote:','MEETING_PREPARATION':'meeting:'}.get(op.get('kind'))
@@ -213,7 +218,7 @@ class Review:
         return {'schema':1,'at':now.isoformat(),'registered_items':len(items),'package_count':len(packages),
             'default_package_limit':10,'default_packages':packages[:10],'packages':packages,'ranked_item_ids':[m['id'] for m in ranked],
             'top_decisions':[{'package_id':p['id'],'title':p['title'],'decision':p['decision'],'freshness':p['freshness']} for p in packages if p['status']=='PENDING_REVIEW'][:5],
-            'sales_opportunities':sales,'classification_counts':dict(Counter(c for p in packages for m in p['items'] for c in m['queue']['classifications'])),
+            'sales_opportunities':sales,'operational':operational,'classification_counts':dict(Counter(c for p in packages for m in p['items'] for c in m['queue']['classifications'])),
             'completed_summary':{'registered_artifacts_preserved':len(items),'source_analysis_at':latest.get('at'),
                 'generation_paused':latest.get('storage',{}).get('optional_paused',True),'existing_opportunities':len(sales),
                 'new_content_created_by_view':0,'decisions_changed_by_view':0},'provider_calls':0,'files_written':0}
@@ -315,6 +320,18 @@ class Review:
         else:
             queue=self.queue(now,items);summary=queue['completed_summary']
             body='<section aria-labelledby="completed"><h2 id="completed">Completed work</h2><p>'+str(len(items))+' existing artifacts organized into '+str(queue['package_count'])+' review packages. No content generated or decisions changed by this view.</p><p>Current analysis and business planning continue. '+('New review files are paused at the admission limits.' if summary['generation_paused'] else 'Existing admission limits apply.')+'</p></section>'
+            operational=queue['operational'];weekly=operational['weekly']
+            if operational['cases']:
+                body+='<section aria-labelledby="daily"><h2 id="daily">Verified internal work and next actions</h2><p>Source checks: '+escape(str(operational.get('captured_at')))+'. No customer-facing action completed.</p><ul>'
+                for done in operational['completed_internal']:body+='<li>'+escape(done)+'</li>'
+                body+='</ul><ol>'
+                for case in operational['top_attention']:
+                    body+='<li><strong>'+escape(case['title'])+'</strong> — '+escape(case['status'])+' ('+escape(case['freshness'])+'). '+escape(case['next_action'])+'<p>'+escape(case['blocker'])+'</p>'
+                    if case.get('view_evidence'):body+='<p>'+escape(case['view_evidence'])+'</p>'
+                    body+='</li>'
+                body+='</ol><details><summary>All verified operational context and exact source references</summary><pre>'+escape(json.dumps(operational['cases'],ensure_ascii=False,indent=2))+'</pre></details></section>'
+            if weekly.get('period'):
+                body+='<section aria-labelledby="weekly"><h2 id="weekly">Weekly measured performance</h2><p>'+escape(str(weekly['period']))+'; '+escape(str(weekly['freshness']))+'. GA4 sessions '+escape(str(weekly['sessions']))+' vs '+escape(str(weekly['previous_sessions']))+'; key events '+escape(str(weekly['key_events']))+'. Search clicks '+escape(str(weekly['gsc_clicks']))+' vs '+escape(str(weekly['gsc_previous_clicks']))+'; impressions '+escape(str(weekly['gsc_impressions']))+' vs '+escape(str(weekly['gsc_previous_impressions']))+'.</p><p>'+escape(weekly['meaning'])+' Qualified leads and attributed revenue remain unknown.</p></section>'
             body+='<section aria-labelledby="decisions"><h2 id="decisions">Five most valuable pending decisions</h2><ol>'
             for decision in queue['top_decisions']:
                 body+='<li><a href="/review/?package='+decision['package_id']+'">'+escape(decision['title'])+'</a>: '+escape(decision['decision'])+'</li>'

@@ -62,13 +62,38 @@ def normalize(raw):
             'blocked':raw.get('blocked',[]),'provider_writes':0,'paid_calls':0}
 
 
-def latest(database):
+def latest(database, source=SOURCE):
     with sqlite3.connect(Path(database).resolve().as_uri()+'?mode=ro',uri=True) as db:
-        row=db.execute('SELECT id,raw,raw_bytes FROM acquisition_snapshots WHERE source=? ORDER BY retrieved_at DESC,id DESC LIMIT 1',(SOURCE,)).fetchone()
+        row=db.execute('SELECT id,raw,raw_bytes,retrieved_at,effective_from,effective_to,source_url FROM acquisition_snapshots WHERE source=? ORDER BY retrieved_at DESC,id DESC LIMIT 1',(source,)).fetchone()
     if not row:return {}
     d=zlib.decompressobj();raw=d.decompress(row[1],2097153)
     if not d.eof or len(raw)!=row[2] or len(raw)>2097152:raise ValueError('Business snapshot size/integrity')
-    result=json.loads(raw);result['snapshot_ids']=[row[0]];return result
+    result=json.loads(raw);result['snapshot_ids']=[row[0]]
+    if source!=SOURCE:
+        result['_provenance']={'snapshot_id':row[0],'retrieved_at':row[3],
+            'period':{'from':row[4],'to':row[5]},'source_url':row[6]}
+    return result
+
+
+def performance_supplement(database, period, existing):
+    """Reuse bounded native reads already journaled; never call a provider here."""
+    from datetime import date
+    previous={'from':(date.fromisoformat(period['from'])-timedelta(days=7)).isoformat(),
+              'to':(date.fromisoformat(period['from'])-timedelta(days=1)).isoformat()}
+    result={**existing,'results':list(existing.get('results',[]))}
+    mapping={'ga4:previous':'ga4:530093120:previous','ga4:events':'ga4:530093120:events',
+             'ga4:landing':'ga4:530093120:pages','gsc:previous':'gsc:previous'}
+    for suffix,target in mapping.items():
+        value=latest(database,'platform:business_v13:'+suffix)
+        provenance=value.pop('_provenance',{})
+        expected=previous if suffix.endswith(':previous') else period
+        if provenance.get('period')!=expected:continue
+        value.pop('snapshot_ids',None)
+        source='platform:business_autopilot:'+target
+        result['results']=[r for r in result['results'] if r['source']!=source]
+        result['results'].append({'source':source,'state':'WORKING','data':value,
+            'period':expected,**{k:provenance[k] for k in ('snapshot_id','retrieved_at','source_url')}})
+    return result
 
 
 def with_quote_projection(source, path):

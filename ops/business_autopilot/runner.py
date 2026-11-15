@@ -111,6 +111,11 @@ def child(runtime, scratch, request, now):
     import cycle
     import storage
     value = load(request)
+    budget=value.get('context',{}).get('storage_budget',{})
+    if budget.get('pending_slots')==0 or budget.get('disk_paused') is True:
+        # Parent analysis/planning already ran. Do not even construct disposable
+        # drafts when no pending item can be admitted.
+        print('[]');return
     files = engine.make_artifacts(value['native'], value.get('supplement', {}), load(runtime / 'content_bank.json'), datetime.fromisoformat(now))
     additions=content_variations.generate(value['native'],value.get('context',{}),datetime.fromisoformat(now))
     if value.get('context',{}).get('business_v12'):
@@ -182,7 +187,7 @@ def run():
         from workflow.automation.acquisition_store import AcquisitionStore
         from workflow.config import load_settings
         store = AcquisitionStore(cfg['database']); store.initialized = True
-        from business_sources import refresh,with_quote_projection
+        from business_sources import refresh,with_quote_projection,latest,performance_supplement
         business,source_state=refresh(cfg['database'],load_settings(),now,store)
         business=with_quote_projection(business,'/run/optibrain-readiness/business.json')
         from cycle import context
@@ -197,8 +202,22 @@ def run():
         # Supplement is a single evidence capture, never refresh or reuse for another period.
         if any(r.get('period') != summary['period'] for r in supplement.get('results', []) if not r['source'].endswith(':previous')):
             supplement = {}
+        supplement=performance_supplement(cfg['database'],summary['period'],supplement)
+        execution=latest(cfg['database'],'platform:business_execution_v13')
         evidence_key = hashlib.sha256(json.dumps([summary['snapshot_ids'], summary['at'],
-                            supplement.get('observed_at'), business.get('snapshot_ids',[]), business.get('quote_revision'), [f['event_id'] for f in ctx['feedback']], hashlib.sha256((RUNTIME/'manifest.json').read_bytes()).hexdigest(), now.astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()], sort_keys=True).encode()).hexdigest()
+                            supplement.get('observed_at'), execution.get('snapshot_ids',[]), business.get('snapshot_ids',[]), business.get('quote_revision'), [f['event_id'] for f in ctx['feedback']], hashlib.sha256((RUNTIME/'manifest.json').read_bytes()).hexdigest(), now.astimezone(__import__('zoneinfo').ZoneInfo('America/Toronto')).date().isoformat()], sort_keys=True).encode()).hexdigest()
+        # Refresh one bounded derived view even on cached/paused cycles. Source
+        # timestamps remain intact; no new artifact, proposal or receipt file.
+        import engine
+        import business_work
+        _, business_report = business_work.generate(business, ctx, now)
+        analysis=engine.analyse(native,supplement,now)
+        storage.replace_report(OUTPUT / 'latest-cycle.json', {
+            'at': now.isoformat(), 'analysis': analysis,
+            'business_opportunities': business_report['opportunities'], 'blocked': business_report['blocked'],
+            'operational':business_work.execution_result(execution,analysis,now),
+            'storage': {k:v for k,v in ctx['storage_budget'].items() if k not in ('pending_semantics','protected_hashes')},
+            'derived_projection': True, 'execution_authority': False})
         receipt = OUTPUT / ('run-' + evidence_key + '.json')
         if empty_cycle_cached(cfg['database'],evidence_key):
             print('CACHED zero-output cycle in existing journal; no new receipt or content file');return
@@ -216,16 +235,6 @@ def run():
         failed = OUTPUT / ('failed-' + evidence_key + '.json')
         if failed.exists():
             print('HELD prior failed attempt for this evidence/day/runtime; no retry or business action'); return
-        # Derivable latest analysis stays useful even when optional drafting is
-        # paused; replace this bounded projection instead of making daily copies.
-        import engine
-        import business_work
-        _, business_report = business_work.generate(business, ctx, now)
-        storage.replace_report(OUTPUT / 'latest-cycle.json', {
-            'at': now.isoformat(), 'analysis': engine.analyse(native, supplement, now),
-            'business_opportunities': business_report['opportunities'], 'blocked': business_report['blocked'],
-            'storage': {k:v for k,v in ctx['storage_budget'].items() if k not in ('pending_semantics','protected_hashes')},
-            'derived_projection': True, 'execution_authority': False})
         # Global execution.lock plus a durable reservation prevents concurrent
         # admission and conservatively charges interrupted generation attempts.
         with sqlite3.connect(cfg['database']) as budget_db:
