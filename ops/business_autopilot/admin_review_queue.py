@@ -68,11 +68,16 @@ def self_test():
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--source');p.add_argument('--commit');p.add_argument('--ledger');p.add_argument('--rollback',action='store_true');p.add_argument('--self-test',action='store_true');a=p.parse_args()
+    global MODULES
+    p=argparse.ArgumentParser();p.add_argument('--source');p.add_argument('--commit');p.add_argument('--ledger');p.add_argument('--rollback',action='store_true');p.add_argument('--self-test',action='store_true');p.add_argument('--business-v13',action='store_true');a=p.parse_args()
+    expected_ledger='/var/lib/optibrain/review-queue-20261114'
+    if a.business_v13:
+        MODULES=('review.py','runner.py','business_work.py','business_sources.py','engine.py','manifest.json')
+        expected_ledger='/var/lib/optibrain/business-execution-v13-20261114'
     if a.self_test:return self_test()
     if os.geteuid()!=0 or os.uname().nodename!='vps-f8e9b20e':raise PermissionError('Trusted NEW host administration required')
     helper=admin();ledger=Path(a.ledger)
-    if ledger!=Path('/var/lib/optibrain/review-queue-20261114'):raise ValueError('Exact queue evidence path required')
+    if ledger!=Path(expected_ledger):raise ValueError('Exact queue evidence path required')
     if Path('/etc/optibrain/business-storage-approval.json').exists():raise ValueError('Cleanup approval must remain absent')
     with (OUTPUT/'execution.lock').open('r+') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
