@@ -119,6 +119,12 @@ on127.0.0.1:8877. The tunnel checks the new audience and verified origin TLS,
 forces canonical Host and ends with a404 catch-all. Core ports8876/8100/databases
 remain private. Proposed production origin certificates must be issued for app
 with a separately pinned CA; the short-lived staging certificate is not reused.
+The tunnel's ingress config and public origin CA also use systemd LoadCredential,
+so its dynamic identity needs no access to the app's private config directory.
+Production app config,origin TLS key and installation receipt are root:service0640
+under a root:service0750 directory; tunnel secret/config stay root-only0600 and
+are exposed only in the tunnel service's private credential mount. No team or
+general filesystem permission is inferred from these scoped service identities.
 Monitor origin certificate expiry and rotate through the existing operator/recovery
 procedure before expiry; do not disable certificate verification to repair it.
 

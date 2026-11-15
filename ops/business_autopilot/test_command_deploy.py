@@ -56,5 +56,10 @@ class DeployTests(unittest.TestCase):
         self.assertNotIn('/automation/** rw',profile)
         for suffix in (' rwk,','-journal rw,','-wal rw,','-shm rwk,'):self.assertIn('phase12-autonomy.db'+suffix,profile)
 
+    def test_tunnel_identity_uses_scoped_systemd_credentials_for_config_and_ca(self):
+        unit=(Path(__file__).resolve().parent/'optibrain-command-tunnel.service').read_text()
+        for field in ('DynamicUser=yes','LoadCredential=tunnel.json:','LoadCredential=ingress.json:','LoadCredential=origin-ca.pem:','--config %d/ingress.json'):self.assertIn(field,unit)
+        self.assertEqual(plan()['ingress_template']['ingress'][0]['originRequest']['caPool'],'/run/credentials/optibrain-command-tunnel.service/origin-ca.pem')
+
 
 if __name__=='__main__':unittest.main()

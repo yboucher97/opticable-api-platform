@@ -49,7 +49,7 @@
       "originRequest": {
         "httpHostHeader": "app.opticable.ca",
         "originServerName": "app.opticable.ca",
-        "caPool": "/etc/optibrain/command-center/origin-ca.pem",
+        "caPool": "/run/credentials/optibrain-command-tunnel.service/origin-ca.pem",
         "noTLSVerify": false,
         "connectTimeout": "5s",
         "access": {"required": true, "teamName": "opticable", "audTag": ["${CREATED_ACCESS_AUD}"]}
