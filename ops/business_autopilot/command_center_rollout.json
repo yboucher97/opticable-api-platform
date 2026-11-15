@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "state": "PROPOSED_NOT_APPROVED",
+  "hostname": "app.opticable.ca",
+  "account_id": "81d07d311d1b51e5e04b451d1f254850",
+  "zone_id": "ea7b4f245feb0a98fb5534e73e761970",
+  "maximum_incremental_cost": {"amount": 0, "currency": "CAD"},
+  "existing_access_application_must_remain_unchanged": "1a9617a2-01fc-46ab-8f80-c47ac9db193b",
+  "mandatory_origin_confinement": "optibrain-command-center-v1 AppArmor: existing journal plus its three exact SQLite sidecars only; no other sibling writes",
+  "access_application": {
+    "name": "OptiBrain Owner Command Center",
+    "type": "self_hosted",
+    "domain": "app.opticable.ca",
+    "session_duration": "1h",
+    "allowed_idps": ["9752fcb8-4a90-4605-bfb3-91dc144501e9"],
+    "auto_redirect_to_identity": true,
+    "app_launcher_visible": false,
+    "http_only_cookie_attribute": true,
+    "same_site_cookie_attribute": "lax",
+    "enable_binding_cookie": true,
+    "options_preflight_bypass": false,
+    "policies": [{
+      "name": "OptiBrain verified owner only",
+      "decision": "allow",
+      "precedence": 1,
+      "session_duration": "1h",
+      "include": [{"email": {"email": "info@opticable.ca"}}],
+      "require": [{"login_method": {"id": "9752fcb8-4a90-4605-bfb3-91dc144501e9"}}],
+      "exclude": []
+    }]
+  },
+  "tunnel": {
+    "name": "optibrain-command-center-new-vps",
+    "config_src": "local",
+    "secret": "GENERATE_32_RANDOM_BYTES_ON_APPROVED_HOST_ONLY",
+    "host": "vps-f8e9b20e",
+    "binary_version": "2026.11.0",
+    "binary_sha256": "51f7c68b57ed7269164075d7e789efce5b59355982f06392deeb037d982a51fd"
+  },
+  "ingress_template": {
+    "tunnel": "${CREATED_TUNNEL_UUID}",
+    "credentials-file": "/run/credentials/optibrain-command-tunnel.service/tunnel.json",
+    "no-autoupdate": true,
+    "metrics": "127.0.0.1:20277",
+    "loglevel": "warn",
+    "ingress": [{
+      "hostname": "app.opticable.ca",
+      "service": "https://127.0.0.1:8877",
+      "originRequest": {
+        "httpHostHeader": "app.opticable.ca",
+        "originServerName": "app.opticable.ca",
+        "caPool": "/etc/optibrain/command-center/origin-ca.pem",
+        "noTLSVerify": false,
+        "connectTimeout": "5s",
+        "access": {"required": true, "teamName": "opticable", "audTag": ["${CREATED_ACCESS_AUD}"]}
+      }
+    }, {"service": "http_status:404"}]
+  },
+  "dns_template": {"type": "CNAME", "name": "app.opticable.ca", "content": "${CREATED_TUNNEL_UUID}.cfargotunnel.com", "proxied": true, "ttl": 1},
+  "cache_bypass": {
+    "name": "OptiBrain private app cache",
+    "kind": "zone",
+    "phase": "http_request_cache_settings",
+    "rules": [{"ref": "optibrain_app_private_no_cache", "description": "Never cache private OptiBrain app responses", "expression": "(http.host eq \"app.opticable.ca\")", "action": "set_cache_settings", "action_parameters": {"cache": false}, "enabled": true}]
+  },
+  "https_redirect": {
+    "name": "OptiBrain app HTTPS only",
+    "kind": "zone",
+    "phase": "http_request_dynamic_redirect",
+    "rules": [{"ref": "optibrain_app_https_only", "description": "HTTPS for app hostname only", "expression": "(http.host eq \"app.opticable.ca\" and not ssl)", "action": "redirect", "action_parameters": {"from_value": {"target_url": {"expression": "concat(\"https://app.opticable.ca\", http.request.uri.path)"}, "status_code": 301, "preserve_query_string": true}}, "enabled": true}]
+  },
+  "origin_template": {
+    "application": {"origin": "https://app.opticable.ca", "team_domain": "https://opticable.cloudflareaccess.com", "audience": "${CREATED_ACCESS_AUD}", "owner_emails": ["info@opticable.ca"], "member_roles": {}, "mode": "production", "editorial_writes": true, "session_seconds": 1200, "absolute_seconds": 28800},
+    "database": "/var/lib/opticable-workflow-api/output/automation/phase12-autonomy.db",
+    "artifacts": "/var/lib/opticable-workflow-api/output/automation/business-autopilot/artifacts",
+    "tls_certificate": "/etc/optibrain/command-center/origin.pem",
+    "tls_key": "/etc/optibrain/command-center/origin-key.pem",
+    "staging_public_key": null
+  },
+  "dynamic_values": {
+    "CREATED_ACCESS_AUD": "Only the aud returned for the newly created app with exact approved owner policy; verify with independent GET before use.",
+    "CREATED_TUNNEL_UUID": "Only the id returned for the newly created named tunnel on the NEW VPS; verify with independent GET before use."
+  },
+  "ordering": [
+    "Revalidate exact source, policy hashes, absence of app DNS/tunnel, current owner identity and zero incremental cost; halt on drift.",
+    "Install exact source/runtime, pinned cloudflared binary and local origin TLS; no public route and no enabled tunnel yet.",
+    "Create the separate Access app with the exact inline owner policy; verify API readback including no bypass or service-token policy.",
+    "Render only the two provider-assigned identifiers; seal resolved files and exact owner rollout authorization. Verify production origin denies all requests without the correct signed human JWT.",
+    "Create/verify the exact hostname-only cache bypass and HTTPS redirect; leave the existing zone-wide HTTPS setting unchanged. Verify Access enforcement before any external route. If a protected edge test cannot establish enforcement, stop before DNS.",
+    "Create the named local tunnel; validate ingress and origin TLS/JWT requirements. Store its secret only through root-owned systemd credentials; start only the approved app/tunnel units.",
+    "Create only the exact proxied app CNAME after protection verification. Verify independent unauthenticated client denial, owner Google sign-in, session/logout, all app routes and unchanged production health.",
+    "On any failure remove only the exact new app route first, stop only these new units and preserve all data and approval evidence. Never weaken Access to repair login."
+  ],
+  "unchanged": ["91 registered artifacts", "16 review packages", "existing approval history", "45 consequential flags OFF", "76 protected settings", "OLD VPS isolation", "storage generation caps", "retention A deferred", "monitor access B rejected", "existing DNS/Access apps/Workers/Caddy/API", "GitHub recovery and encrypted R2 backups"],
+  "not_authorized": ["customer sends", "financial changes", "publishing", "advertising changes", "new spending", "storage deletion", "team/customer access", "general admin access", "main-branch merge", "core API deployment"]
+}

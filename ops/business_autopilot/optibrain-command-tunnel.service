@@ -1,0 +1,33 @@
+[Unit]
+Description=Cloudflare Tunnel for the protected OptiBrain app only
+After=network-online.target optibrain-command-center.service
+Wants=network-online.target
+Requires=optibrain-command-center.service
+ConditionPathExists=/etc/optibrain/command-center-rollout.json
+
+[Service]
+Type=simple
+DynamicUser=yes
+User=optibrain-command-tunnel
+LoadCredential=tunnel.json:/etc/optibrain/command-center/tunnel-credentials.json
+ExecStart=/usr/local/bin/cloudflared-optibrain-v1 tunnel --no-autoupdate --config /etc/optibrain/command-center/ingress.json run
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryMax=128M
+CPUQuota=20%
+TasksMax=32
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

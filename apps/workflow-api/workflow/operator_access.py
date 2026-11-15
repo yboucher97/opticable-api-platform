@@ -23,6 +23,7 @@ class AccessPrincipal:
     subject: str
     email: str
     actor: str
+    expires_at: int | None = None
 
 
 class AccessIdentityVerifier:
@@ -59,6 +60,7 @@ class AccessIdentityVerifier:
             domain + "/cdn-cgi/access/certs",
             cache_keys=True,
             max_cached_keys=4,
+            timeout=5,
         )
         self._key_resolver = key_resolver
 
@@ -105,4 +107,5 @@ class AccessIdentityVerifier:
         authorized = subject in self.allowed_subjects or normalized_email in self.allowed_emails
         if not authorized:
             raise PermissionError("authenticated Access identity is not an outbound operator")
-        return AccessPrincipal(subject=subject, email=normalized_email, actor="human:" + subject)
+        return AccessPrincipal(subject=subject, email=normalized_email, actor="human:" + subject,
+                               expires_at=int(claims["exp"]))

@@ -1,0 +1,36 @@
+[Unit]
+Description=OptiBrain protected owner command center
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/optibrain/command-center-rollout.json
+
+[Service]
+Type=simple
+User=opticable-workflow-api
+Group=opticable-workflow-api
+ExecStart=/opt/opticable-api-platform/apps/workflow-api/.venv/bin/python -I -B /usr/local/share/optibrain-command-center-v1/ops/business_autopilot/serve_command_center.py --config /etc/optibrain/command-center/origin.json
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+AppArmorProfile=optibrain-command-center-v1
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+InaccessiblePaths=/etc/opticable-workflow-api.env /etc/optibrain/github-app.pem /etc/optibrain/r2-uploader.env
+# Exact SQLite file/sidecars are enforced by the mandatory AppArmor profile.
+ReadWritePaths=/var/lib/opticable-workflow-api/output/automation
+ReadOnlyPaths=/var/lib/opticable-workflow-api/output/automation/business-autopilot /run/optibrain-readiness
+MemoryMax=256M
+CPUQuota=30%
+TasksMax=24
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

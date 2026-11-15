@@ -251,18 +251,24 @@ class Review:
         if last['choice']=='APPROVE' and now>=datetime.fromisoformat(last['expires_at']):return 'EXPIRED'
         return last['choice']
 
-    def decision(self, payload, identity, now):
-        from workflow.automation.action_evidence import ActionEvidence,envelope,approval_binding,validate
+    def validate_decision(self, payload, identity, now, *, trusted_actor='owner:opticable-review'):
         if set(payload)-{'id','version','choice','reason','request_id'} or not all(k in payload for k in ('id','version','choice','request_id')):
             raise ValueError('Exact review fields required; actor,scope and expiry are server-controlled')
         if payload['choice'] not in CHOICES or not re.fullmatch('[a-f0-9]{32}',payload['request_id']):raise ValueError('Invalid choice/idempotency')
         reason=payload.get('reason','')
         if not isinstance(reason,str) or len(reason)>1500:raise ValueError('Bounded feedback required')
         if payload['choice']=='REQUEST_REVISION' and not reason.strip():raise ValueError('Revision feedback required')
-        if identity.get('actor')!='owner:opticable-review' or now>=identity['expires_at']:
+        if not (trusted_actor=='owner:opticable-review' or re.fullmatch(r'human:[A-Za-z0-9][A-Za-z0-9._:-]{0,127}',trusted_actor)):
+            raise PermissionError('Trusted owner actor required')
+        if identity.get('actor')!=trusted_actor or now>=identity['expires_at']:
             raise PermissionError('Current authenticated owner identity required')
         item,_=self.item(payload['id'])
         if payload['version']!=item['sha256']:raise ValueError('Exact current artifact revision required')
+        return item
+
+    def decision(self, payload, identity, now, *, trusted_actor='owner:opticable-review'):
+        from workflow.automation.action_evidence import ActionEvidence,envelope,approval_binding,validate
+        item=self.validate_decision(payload,identity,now,trusted_actor=trusted_actor)
         expiry=min(now+timedelta(hours=2),identity['expires_at'])
         event={**payload,'actor':identity['actor'],'at':now.isoformat(),'expires_at':expiry.isoformat(),
                'scope':item['execution_scope'],'binding':digest(item['execution_scope']),'execution_authorized':False}
