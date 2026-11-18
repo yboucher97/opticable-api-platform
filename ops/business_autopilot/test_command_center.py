@@ -56,7 +56,7 @@ class CommandCenterTests(unittest.TestCase):
 
     def test_all_routes_assets_json_errors_and_alternate_paths_need_identity(self):
         self.client.headers.pop('Cf-Access-Jwt-Assertion')
-        for path in ['/','/assets/app.js','/assets/app.css','/assets/icon.svg','/assets/manifest.webmanifest','/api/overview','/api/artifacts','/api/system','/api/settings','/docs','/debug','/does-not-exist']:
+        for path in ['/','/assets/app.js','/assets/session.js','/assets/app.css','/assets/icon.svg','/assets/manifest.webmanifest','/api/overview','/api/artifacts','/api/system','/api/settings','/docs','/debug','/does-not-exist']:
             r=self.client.get(path);self.assertEqual(r.status_code,401,path);self.assertIn('no-store',r.headers['cache-control']);self.assertIn('noindex',r.headers['x-robots-tag'])
 
     def test_wrong_audience_issuer_signature_alg_expiry_and_service_id_denied(self):
@@ -80,6 +80,67 @@ class CommandCenterTests(unittest.TestCase):
 
     def test_api_requires_session_even_with_a_valid_jwt(self):
         self.assertEqual(self.client.get('/api/overview').status_code,403);self.login();self.assertEqual(self.client.get('/api/overview').status_code,200)
+
+    def test_only_signed_owner_can_return_through_cross_site_document_navigation(self):
+        headers={'Sec-Fetch-Site':'cross-site','Sec-Fetch-Mode':'navigate','Sec-Fetch-Dest':'document'}
+        r=self.client.get('/',headers=headers);self.assertEqual(r.status_code,200)
+        self.assertIn('Sec-Fetch-Site',r.headers['vary']);self.assertIn('no-store',r.headers['cache-control'])
+        self.assertIn("frame-ancestors 'none'",r.headers['content-security-policy'])
+        self.client.headers.pop('Cf-Access-Jwt-Assertion');self.assertEqual(self.client.get('/',headers=headers).status_code,401)
+        for fields in [{'email':'other@example.test'},{'aud':['other']},{'iss':'https://other.test'},
+                       {'exp':int(time.time())-120},{'type':'org'}]:
+            self.client.headers['Cf-Access-Jwt-Assertion']=self.make_token(**fields)
+            self.assertIn(self.client.get('/',headers=headers).status_code,(401,403))
+        self.client.headers['Cf-Access-Jwt-Assertion']=self.token[:-10]+'forged'
+        self.assertEqual(self.client.get('/',headers=headers).status_code,401)
+
+    def test_cross_site_exception_does_not_allow_api_mutations_or_embedding(self):
+        self.login();headers={'Sec-Fetch-Site':'cross-site','Sec-Fetch-Mode':'navigate','Sec-Fetch-Dest':'document'}
+        for path in ['/api/overview','/auth/session','/assets/session.js','/auth/renew','/api/review/decisions']:
+            self.assertEqual(self.client.get(path,headers=headers).status_code,403,path)
+            self.assertEqual(self.post(path,{},**headers).status_code,403,path)
+        self.assertEqual(self.client.head('/',headers=headers).status_code,403)
+        for mode,destination in [('cors','document'),('navigate','iframe'),('navigate','object'),('navigate','embed'),('navigate','empty')]:
+            self.assertEqual(self.client.get('/',headers={**headers,'Sec-Fetch-Mode':mode,'Sec-Fetch-Dest':destination}).status_code,403)
+        self.assertEqual(self.client.get('/',headers={**headers,'Origin':'https://evil.test'}).status_code,403)
+        self.assertEqual(self.client.get('/',headers={'Sec-Fetch-Site':'same-origin','Sec-Fetch-Dest':'iframe'}).status_code,403)
+        self.assertEqual(self.client.get('/',headers=[*headers.items(),('Sec-Fetch-Site','same-origin')]).status_code,400)
+
+    def test_cross_site_return_does_not_grant_future_viewers_owner_entry(self):
+        config=replace(self.config,member_roles={'viewer@example.test':'viewer'})
+        app=create_app(self.review,config,key_resolver=lambda token:KEY.public_key())
+        with TestClient(app,base_url=config.origin,headers={'Cf-Access-Jwt-Assertion':self.make_token(email='viewer@example.test')}) as client:
+            self.assertEqual(client.get('/',headers={'Sec-Fetch-Site':'cross-site','Sec-Fetch-Mode':'navigate','Sec-Fetch-Dest':'document'}).status_code,403)
+
+    def test_session_metadata_reports_access_and_absolute_ceiling_without_token(self):
+        expiry=int(self.now)+90;self.client.headers['Cf-Access-Jwt-Assertion']=self.make_token(exp=expiry)
+        first=self.post('/auth/login').json()
+        self.assertEqual(first['expires_at'],expiry);self.assertEqual(first['identity_expires_at'],expiry)
+        self.assertAlmostEqual(first['absolute_expires_at'],self.now+28800)
+        self.assertNotIn(self.client.headers['Cf-Access-Jwt-Assertion'],json.dumps(first))
+        renewed=self.post('/auth/renew',csrf=first['csrf']);self.assertEqual(renewed.status_code,200)
+        self.assertEqual(renewed.json()['expires_at'],first['expires_at'])
+        self.assertEqual(renewed.json()['absolute_expires_at'],first['absolute_expires_at'])
+
+    def test_logout_then_new_access_identity_can_start_a_new_session(self):
+        csrf=self.login();self.assertEqual(self.post('/auth/logout',csrf=csrf).status_code,200)
+        self.assertEqual(self.post('/auth/login').status_code,401)
+        self.client.headers['Cf-Access-Jwt-Assertion']=self.make_token(jti='new-synthetic-access-session')
+        self.assertEqual(self.post('/auth/login').status_code,200)
+        self.assertEqual(self.client.get('/api/overview').status_code,200)
+
+    def test_concurrent_renewal_consumes_predecessor_exactly_once(self):
+        from concurrent.futures import ThreadPoolExecutor
+        import threading
+        csrf=self.login();cookie=self.client.cookies.get(COOKIE);barrier=threading.Barrier(2)
+        def attempt():
+            with TestClient(self.app,base_url=self.config.origin,headers={'Cf-Access-Jwt-Assertion':self.token}) as client:
+                barrier.wait(timeout=5)
+                return client.post('/auth/renew',json={},headers={'Origin':self.config.origin,
+                    'Cookie':COOKIE+'='+cookie,'X-Optibrain-CSRF':csrf}).status_code
+        with ThreadPoolExecutor(max_workers=2) as pool:statuses=list(pool.map(lambda _:attempt(),range(2)))
+        self.assertEqual(sorted(statuses),[200,403])
+        self.assertEqual(self.client.get('/api/overview',headers={'Cookie':COOKIE+'='+cookie}).status_code,403)
 
     def test_secure_cookie_rotation_expiry_and_absolute_lifetime(self):
         r=self.post('/auth/login');cookie=r.headers['set-cookie'];csrf=r.json()['csrf'];original=self.client.cookies.get(COOKIE)
