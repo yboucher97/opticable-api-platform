@@ -82,8 +82,27 @@ async function until(predicate,label){for(let i=0;i<100;i++){if(await predicate(
   assert.equal(embed.frames().length,2);
   assert.equal(await embed.frames()[1].getByRole('heading',{name:'Today at Opticable',exact:true}).count(),0);
   await embed.close();checks.push('browser embedding blocked; CSP/frame headers enforced, origin iframe guard tested separately');
+  // route.continue above uses a real loopback TLS response: Chromium processes
+  // Clear-Site-Data here, unlike a wholly intercepted/fulfilled fake response.
+  const fixtureAccess='Fixture_Access_Authorization';
+  await f.context.addCookies([
+   {name:fixtureAccess,value:'synthetic-access-cookie',domain:'localhost',path:'/',secure:true,httpOnly:true,sameSite:'Lax'},
+   {name:'Fixture_Analytics',value:'synthetic-analytics-cookie',domain:'localhost',path:'/',secure:true,sameSite:'Lax'},
+   {name:'Fixture_Advertising',value:'synthetic-advertising-cookie',domain:'localhost',path:'/public-site/',secure:true,sameSite:'Lax'},
+   {name:'Fixture_Consent',value:'synthetic-consent-cookie',domain:'localhost',path:'/',secure:true,sameSite:'Lax'}]);
+  const retained=async()=>(await f.context.cookies()).filter(c=>c.name.startsWith('Fixture_')).sort((a,b)=>a.name.localeCompare(b.name));
+  const beforeLogout=await retained();
   await f.page.getByRole('button',{name:'Sign out',exact:true}).click();await f.page.getByRole('heading',{name:'You are signed out',exact:true}).waitFor();
   assert.equal((await f.context.cookies()).filter(c=>c.name==='__Host-optibrain').length,0);
+  assert.deepEqual(await retained(),beforeLogout,'Real TLS logout must preserve synthetic Access, analytics, advertising and consent cookies');
+  let edgeSawCookie=false;
+  await f.page.route(origin+'/cdn-cgi/access/logout',async route=>{
+   edgeSawCookie=(route.request().headers().cookie||'').split(';').some(c=>c.trim().startsWith(fixtureAccess+'='));
+   return route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><h1>Synthetic Access logout handoff</h1>'});
+  });
+  await f.page.goto(origin+'/cdn-cgi/access/logout');assert(edgeSawCookie,'Access cookie must survive until the edge logout request');
+  await f.page.unroute(origin+'/cdn-cgi/access/logout');
+  checks.push('real TLS Clear-Site-Data preserves Access handoff and unrelated marketing/consent cookies');
   await f.fresh();await f.page.goto(identityOrigin+'/');await f.page.getByRole('link',{name:'Return from identity provider'}).click();
   await f.page.getByRole('heading',{name:'Today at Opticable',exact:true}).waitFor();assert.deepEqual(f.errors,[]);
   checks.push('logout and subsequent new synthetic Access login');await f.context.close();

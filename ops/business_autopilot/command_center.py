@@ -218,7 +218,7 @@ def create_app(review,config,*,key_resolver=None,clock=time.time,readiness='/run
             sessions.revoked[request.state.token_hash]=principal(request).expires_at
         response=JSONResponse({'signed_out':True,'logout_url':config.origin+'/cdn-cgi/access/logout' if config.mode=='production' else None})
         response.delete_cookie(COOKIE,path='/',secure=True,httponly=True,samesite='strict')
-        response.headers['Clear-Site-Data']='"cache", "cookies", "storage"'
+        response.headers['Clear-Site-Data']='"cache", "storage"'
         return response
 
     @app.get('/api/overview')
