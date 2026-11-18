@@ -118,7 +118,7 @@ def create_app(review,config,*,key_resolver=None,clock=time.time,readiness='/run
     app.state.sessions=sessions;app.state.projection=projection
     canonical=urlsplit(config.origin).netloc
     csp="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; worker-src 'none'"
-    headers={'Cache-Control':'private, no-store, max-age=0','Pragma':'no-cache','Vary':'Cookie, Cf-Access-Jwt-Assertion',
+    headers={'Cache-Control':'private, no-store, max-age=0','Pragma':'no-cache','Vary':'Cookie, Cf-Access-Jwt-Assertion, Sec-Fetch-Site, Sec-Fetch-Mode, Sec-Fetch-Dest',
         'X-Robots-Tag':'noindex, nofollow, noarchive, nosnippet','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff',
         'X-Frame-Options':'DENY','Content-Security-Policy':csp,'Permissions-Policy':'camera=(), microphone=(), geolocation=(), payment=()',
         'Strict-Transport-Security':'max-age=31536000' if config.mode=='production' else 'max-age=0'}
@@ -128,17 +128,26 @@ def create_app(review,config,*,key_resolver=None,clock=time.time,readiness='/run
     @app.middleware('http')
     async def boundary(request,call_next):
         raw=request.scope.get('raw_path',b'').decode('latin1')
-        for name in (b'host',b'cf-access-jwt-assertion',b'origin',b'content-length',b'cookie'):
+        for name in (b'host',b'cf-access-jwt-assertion',b'origin',b'content-length',b'cookie',b'sec-fetch-site',b'sec-fetch-mode',b'sec-fetch-dest'):
             if sum(k.lower()==name for k,v in request.scope['headers'])>1:return error(400,'Ambiguous request headers')
         if request.headers.get('host','').lower()!=canonical or request.url.scheme!='https':return error(403,'Canonical HTTPS origin required')
         if any(x in raw.lower() for x in ('%2f','%5c','%2e','\\','//')):return error(404,'Unknown route')
         if request.headers.get('origin') not in (None,config.origin):return error(403,'Same-origin request required')
-        if request.headers.get('sec-fetch-site')=='cross-site':return error(403,'Cross-site request denied')
+        # An SSO return is a cross-site document navigation, not an API call.
+        # These headers narrow the exception; the signed owner JWT below still
+        # authenticates every request. No iframe, alternate path or mutation.
+        destination=request.headers.get('sec-fetch-dest')
+        if destination in ('iframe','frame','object','embed','fencedframe'):return error(403,'Embedded navigation denied')
+        cross_site=request.headers.get('sec-fetch-site')=='cross-site'
+        owner_entry=(request.method=='GET' and raw=='/' and
+                     request.headers.get('sec-fetch-mode')=='navigate' and destination=='document')
+        if cross_site and not owner_entry:return error(403,'Cross-site request denied')
         if request.headers.get('upgrade'):return error(403,'Protocol upgrade is not enabled')
         token=request.headers.get('cf-access-jwt-assertion','')
         try:
             principal=verifier.verify(token)
             if not principal.expires_at or principal.expires_at<=clock():return error(401,'Primary identity expired')
+            if cross_site and principal.email not in config.owner_emails:return error(403,'Owner permission required')
             request.state.principal=principal;request.state.token_hash=sha256(token.encode()).hexdigest()
             with sessions.lock:
                 sessions.prune()
@@ -165,9 +174,14 @@ def create_app(review,config,*,key_resolver=None,clock=time.time,readiness='/run
     def principal(request):return request.state.principal
     def role(email):return 'owner' if email in config.owner_emails else config.member_roles[email]
     def current(request,csrf=False):return sessions.current(request,principal(request),csrf)
-    def session_response(token,value):
-        response=JSONResponse({'csrf':value['csrf'],'expires_at':value['expires'],'email':value['email'],'role':role(value['email']),'mode':config.mode,
-            'editorial_writes':config.editorial_writes,'external_execution':False})
+    def session_view(value,identity):
+        # Expiry metadata only; never send the Access token or its binding data.
+        return {'csrf':value['csrf'],'expires_at':min(value['expires'],identity.expires_at),
+            'identity_expires_at':identity.expires_at,'absolute_expires_at':value['created']+config.absolute_seconds,
+            'email':value['email'],'role':role(value['email']),'mode':config.mode,
+            'editorial_writes':config.editorial_writes,'external_execution':False}
+    def session_response(token,value,identity):
+        response=JSONResponse(session_view(value,identity))
         response.set_cookie(COOKIE,token,max_age=max(1,int(value['expires']-clock())),secure=True,httponly=True,samesite='strict',path='/')
         return response
 
@@ -177,23 +191,23 @@ def create_app(review,config,*,key_resolver=None,clock=time.time,readiness='/run
     @app.get('/auth/session')
     def session(request:Request):
         v=current(request)
-        return {'csrf':v['csrf'],'expires_at':v['expires'],'email':v['email'],'role':role(v['email']),'mode':config.mode,
-                'editorial_writes':config.editorial_writes,'external_execution':False}
+        return session_view(v,principal(request))
 
     @app.post('/auth/login')
     def login(request:Request):
         try:
             v=current(request)
-            return {'csrf':v['csrf'],'expires_at':v['expires'],'email':v['email'],'role':role(v['email']),'mode':config.mode,
-                    'editorial_writes':config.editorial_writes,'external_execution':False}
+            return session_view(v,principal(request))
         except PermissionError:
-            token,v=sessions.issue(principal(request));return session_response(token,v)
+            token,v=sessions.issue(principal(request));return session_response(token,v,principal(request))
 
     @app.post('/auth/renew')
     def renew(request:Request):
-        old=current(request,True);token,v=sessions.issue(principal(request),old)
-        with sessions.lock:sessions.values.pop(sha256(request.cookies.get(COOKIE,'').encode()).hexdigest(),None)
-        return session_response(token,v)
+        # Rotate atomically; two callers cannot consume the same predecessor.
+        with sessions.lock:
+            old=current(request,True);token,v=sessions.issue(principal(request),old)
+            sessions.values.pop(sha256(request.cookies.get(COOKIE,'').encode()).hexdigest(),None)
+        return session_response(token,v,principal(request))
 
     @app.post('/auth/logout')
     def logout(request:Request):
@@ -324,7 +338,7 @@ def create_app(review,config,*,key_resolver=None,clock=time.time,readiness='/run
 
     @app.get('/assets/{name}')
     def asset(name:str):
-        allowed={'app.css':'text/css','app.js':'application/javascript','icon.svg':'image/svg+xml','manifest.webmanifest':'application/manifest+json'}
+        allowed={'app.css':'text/css','app.js':'application/javascript','session.js':'application/javascript','icon.svg':'image/svg+xml','manifest.webmanifest':'application/manifest+json'}
         if name not in allowed:return error(404,'Unknown asset')
         return Response((ASSETS/name).read_bytes(),media_type=allowed[name])
 

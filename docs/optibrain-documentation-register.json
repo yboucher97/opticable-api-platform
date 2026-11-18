@@ -1906,6 +1906,13 @@
       "current": false,
       "superseded_by": "docs/OPTICABLE_AUTOMATION_MASTER_RUNBOOK.md",
       "purpose": "Offline/manual diagnostic utility and integration evidence; no production scheduling or permission grant"
+    },
+    {
+      "path": "docs/OPTIBRAIN_AUTH_SESSION_RECOVERY.md",
+      "classification": "SECURITY / CONTROL",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Development-only auth/session correction, validation, exact production gates and code-only recovery."
     }
   ]
 }

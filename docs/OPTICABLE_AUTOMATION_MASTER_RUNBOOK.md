@@ -533,3 +533,19 @@ an incomplete candidate checkpoint stop recovery and persist an owner-review hol
 failed rollback health verification also holds subsequent releases. A real isolated
 newer-credential/configuration file is preserved in the regression. This helper
 improvement is not installed and does not change PR161's application source.
+
+
+### Command-center auth/session candidate — 2026-11-17
+
+Development-only repair on the exact installed command-center base3c2a777.
+Cross-site GET root document navigation still needs the signed exact owner;
+API/mutation/embedding/Host/HTTPS/Origin/CSRF restrictions remain. Session expiry
+metadata, a bounded private SSO return and in-memory request coordination remove
+the fixed-expiry renewal storm and cookie-rotation race without old-cookie grace
+or automatic mutation retry. No production source/service/Cloudflare/measurement
+change is authorized by this candidate. See OPTIBRAIN_AUTH_SESSION_RECOVERY.md for
+tests, workday-SSO limits, separate installation/test approvals and code-only
+rollback preserving the newest business journal. Keep45flagsOFF,76settings,
+91artifacts/16packages, storage/deletion gates, backups and OLD VPS isolation.
+The prior five-minute binding-cookie authorization is consumed. Real-owner
+candidate acceptance remains pending a new exact approval and live READY.
