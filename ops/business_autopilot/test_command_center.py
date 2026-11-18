@@ -158,6 +158,37 @@ class CommandCenterTests(unittest.TestCase):
         csrf=self.login();r=self.post('/auth/logout',csrf=csrf);self.assertEqual(r.status_code,200);self.assertIsNone(self.client.cookies.get(COOKIE))
         self.assertIn('"storage"',r.headers['clear-site-data']);self.assertEqual(self.client.get('/api/overview').status_code,401);self.assertEqual(self.post('/auth/login').status_code,401)
 
+    def test_logout_preserves_access_handoff_and_limits_cookie_expiration(self):
+        config=Config('https://app.opticable.ca','https://opticable.cloudflareaccess.com',AUDIENCE,(EMAIL,),mode='production')
+        app=create_app(self.review,config,key_resolver=lambda token:KEY.public_key())
+        token=self.make_token(iss=config.team_domain)
+        with TestClient(app,base_url=config.origin,headers={'Cf-Access-Jwt-Assertion':token}) as client:
+            h={'Origin':config.origin};login=client.post('/auth/login',json={},headers=h)
+            old=client.cookies.get(COOKIE);h['X-Optibrain-CSRF']=login.json()['csrf']
+            response=client.post('/auth/logout',json={},headers=h)
+            self.assertEqual(response.status_code,200)
+            self.assertEqual(response.headers['clear-site-data'],'"cache", "storage"')
+            self.assertEqual(response.json(),{'signed_out':True,'logout_url':config.origin+'/cdn-cgi/access/logout'})
+            cookies=response.headers.get_list('set-cookie');self.assertEqual(len(cookies),1)
+            self.assertTrue(cookies[0].startswith(COOKIE+'='));self.assertIn('Max-Age=0',cookies[0])
+            self.assertIn('no-store',response.headers['cache-control'])
+            self.assertEqual(client.get('/api/overview',headers={'Cookie':COOKIE+'='+old}).status_code,401)
+            client.headers['Cf-Access-Jwt-Assertion']=self.make_token(iss=config.team_domain,jti='new-after-logout')
+            self.assertEqual(client.get('/api/overview',headers={'Cookie':COOKIE+'='+old}).status_code,403)
+            self.assertEqual(client.post('/auth/login',json={},headers={'Origin':config.origin}).status_code,200)
+            self.assertEqual(client.get('/api/overview').status_code,200)
+
+    def test_logout_rejects_csrf_and_unauthorized_identity_without_revocation(self):
+        csrf=self.login()
+        for headers in [{},{'Origin':self.config.origin},{'Origin':self.config.origin,'X-Optibrain-CSRF':'wrong'},
+                        {'Origin':'https://evil.test','X-Optibrain-CSRF':csrf}]:
+            self.assertEqual(self.client.post('/auth/logout',json={},headers=headers).status_code,403)
+            self.assertEqual(self.client.get('/api/overview').status_code,200)
+        for token in [self.make_token(email='other@example.test'),self.token[:-10]+'invalid']:
+            self.assertIn(self.client.post('/auth/logout',json={},headers={'Origin':self.config.origin,
+                'X-Optibrain-CSRF':csrf,'Cf-Access-Jwt-Assertion':token}).status_code,(401,403))
+        self.assertEqual(self.post('/auth/logout',csrf=csrf).status_code,200)
+
     def test_csrf_and_request_bounds(self):
         csrf=self.login()
         for headers in [{'Origin':'https://evil.test'},{'X-Optibrain-CSRF':'wrong'}]:self.assertEqual(self.post('/auth/renew',csrf=csrf,**headers).status_code,403)

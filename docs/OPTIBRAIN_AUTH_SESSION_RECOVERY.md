@@ -44,6 +44,37 @@ session loss. Same-origin BroadcastChannel messages contain only a logout signal
 
 ## Workday access and limits
 
+### Logout and cookie scope
+
+The logout response clears only cache/storage with `Clear-Site-Data` and expires
+only `__Host-optibrain` explicitly. The origin session and current JWT hash are
+still invalidated before the browser follows the unchanged application-domain
+`/cdn-cgi/access/logout` URL. Clearing the registered domain's cookies here would
+erase Access's cookie before that handoff, and could erase unrelated website
+analytics, advertising and consent cookies. Those cookies must remain untouched
+by the application's logout response.
+
+Cloudflare documents the Access logout endpoint as revoking the user's session
+across Access applications, including global SSO; app-domain versus team-domain
+logout determines which domain's browser cookie is deleted. This repair retains
+that existing meaning. It does not promise that other Access apps stay signed in,
+log out the Google account itself, or make subsequent provider login silent.
+Provider propagation and actual owner logout require separate live acceptance.
+
+The existing loopback browser fixture supports `COMMAND_LOGOUT_ONLY=1`. It runs
+the real production-mode application with a synthetic signing key/audience over
+loopback, intercepting all browser requests before any public network access.
+Synthetic Access/SSO and marketing cookies test the handoff, targeted deletion,
+origin-token invalidation, fresh login and unrelated cookie continuity. Its
+provider/global-revocation behavior is a model, not Cloudflare acceptance.
+
+Browser prerequisites already available on the NEW VPS are the existing
+`business-browser-tools-20261114`, `business-browser-cache` and
+`business-browser-libs-20261114` directories under the development workspace.
+Reuse them; do not download dependencies to work around an incorrect cache path.
+
+Cookie scope reference: [W3C Clear-Site-Data](https://www.w3.org/TR/clear-site-data/#clear-cookies).
+
 Keep the existing origin maximum of 20 minutes and eight-hour ceiling within an
 origin renewal chain; sessions never outlive the currently verified Access JWT.
 Fifteen-minute application tokens do not inherently require Google login every
@@ -90,7 +121,14 @@ Two separate exact owner approvals are required:
 Neither approval makes binding-cookie disablement permanent. Restore binding ON
 and app/policy one-hour settings after the test even if it succeeds.
 
-Rollback stops only the command center, restores the exact previous immutable
+Use the reviewed target-only lifecycle: `systemctl --job-mode=ignore-dependencies
+stop optibrain-command-center.service` and the corresponding target-only `start`.
+First verify the current forward/reverse unit dependencies and all existing PIDs.
+A plain stop can propagate through the Tunnel's `Requires=` dependency; no Tunnel
+restart or service-unit change is included in the code-only approval. Place the
+checkpoint next to the runtime on the same verified mount, not in `/var/lib`.
+
+Rollback stops only the command center with that target-only procedure, restores the exact previous immutable
 runtime/manifest and installation receipt, then restarts that service. Preserve
 the current database, newer journal entries, files, credentials, backups and
 all Cloudflare resources. Reload open owner tabs after code rollback. No schema

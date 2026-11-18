@@ -60,14 +60,17 @@ def main():
         private.write_bytes(key.private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.PKCS8,serialization.NoEncryption()));private.chmod(0o600)
         sock=socket.socket();sock.bind(('127.0.0.1',0));sock.listen(16)
         origin='https://localhost:'+str(sock.getsockname()[1]);issuer='https://auth-fixture.cloudflareaccess.com';aud='auth-session-fixture-only'
+        logout_only=os.environ.get('COMMAND_LOGOUT_ONLY')=='1'
+        web_origin='https://app.opticable.ca' if logout_only else origin
+        if logout_only:issuer='https://opticable.cloudflareaccess.com'
         state={'offset':0,'events':[]};state_lock=threading.RLock()
         def now():return time.time()+state['offset']
         def identity(ttl=3600):
             claims={'iss':issuer,'aud':[aud],'sub':'synthetic-browser-owner','email':'owner@example.test','type':'app',
                     'iat':int(time.time())-1,'nbf':int(time.time())-1,'exp':int(now())+ttl,'jti':secrets.token_hex(8)}
             return {'jwt':jwt.encode(claims,key,algorithm='RS256',headers={'kid':'fixture'}),
-                    'identity_expires_at':claims['exp'],'now':now(),'url':origin}
-        app=create_app(Review(db,assets),Config(origin,issuer,aud,('owner@example.test',)),
+                    'identity_expires_at':claims['exp'],'now':now(),'url':web_origin}
+        app=create_app(Review(db,assets),Config(web_origin,issuer,aud,('owner@example.test',),mode='production' if logout_only else 'staging'),
                        key_resolver=lambda token:key.public_key(),clock=now,readiness=base/'missing')
         @app.middleware('http')
         async def observe(request,call_next):
@@ -105,6 +108,7 @@ def main():
         try:
             scripts=[('command_center_checks.cjs','existing-browser'),('command_center_auth_checks.cjs','auth-browser')]
             if os.environ.get('COMMAND_AUTH_ONLY')=='1':scripts=scripts[1:]
+            if logout_only:scripts=[('command_center_logout_checks.cjs','logout-browser')]
             for script,name in scripts:
                 result=subprocess.run(['node',str(HERE/script)],env=env,capture_output=True,text=True,timeout=180)
                 (evidence/(name+'.log')).write_text(result.stdout+result.stderr)
