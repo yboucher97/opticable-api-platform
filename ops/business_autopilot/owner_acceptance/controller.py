@@ -515,4 +515,3 @@ def main(package_path, expected, runner_path):
 
 if __name__ == '__main__':
     raise SystemExit('Use the sealed, approval-hash-pinned runner; this library cannot launch a test directly.')
-
