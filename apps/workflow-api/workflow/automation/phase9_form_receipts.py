@@ -513,9 +513,10 @@ class FormReceiptLedger:
                 "Leads", record_id, digest, datetime.now(timezone.utc).isoformat()))
         return "LINKED"
 
-    def list(self, limit=100):
-        self.initialize()
-        with self._connect() as db:
+    def list(self, limit=100, *, read_only=False):
+        if not read_only:
+            self.initialize()
+        with self._connect(read_only=read_only) as db:
             rows = db.execute("SELECT r.*,COALESCE(l.canonical_id,m.crm_id) AS canonical_id,"
                 "m.status AS provider_match_status,l.canonical_id AS reviewed_test_link,"
                 "COALESCE(p.evidence_json,v.evidence_json) AS projected_evidence_json,"

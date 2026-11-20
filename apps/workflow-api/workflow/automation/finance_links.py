@@ -83,9 +83,11 @@ def resolve_finance(row, kind, rows):
         if parent_id: parents.add(parent_id)
         for eid, estimate in rows['estimates'].items():
             references = estimate.get('invoice_ids') or []
-            if isinstance(references, list) and rid in {
+            if rid and isinstance(references, list) and rid in {
                 identity(v.get('invoice_id')) if isinstance(v, dict) else identity(v) for v in references}:
                 parents.add(eid)
+        if len(parents) > 1:
+            conflict = True
         for eid in parents:
             parent = rows['estimates'].get(eid)
             if not parent or identity(parent.get('customer_id')) != cid:
@@ -96,7 +98,9 @@ def resolve_finance(row, kind, rows):
                 deals.add(link['deal_id']); proof.append('Native Invoice ↔ Estimate → verified Deal')
                 if classification == 'UNLINKED': classification = 'DERIVED DETERMINISTICALLY'
         pid = identity(row.get('recurring_invoice_id')); profile = rows['profiles'].get(pid)
-        if profile and identity(profile.get('customer_id')) == cid:
+        if profile and identity(profile.get('customer_id')) != cid:
+            conflict = True
+        if profile and not conflict:
             relation = bind_profile(profile, customer, list(rows['services'].values()), rows['sites'],
                 list(rows['finance_invoices'].values()),
                 [r for r in rows['invoices'].values() if identity(r.get('recurring_invoice_id')) == pid],

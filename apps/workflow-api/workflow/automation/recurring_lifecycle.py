@@ -20,8 +20,14 @@ def identity(value):
 
 
 def synthetic(row):
-    return row.get('OptiBrain_Test') is True or row.get('test_only') is True or any(
-        'OPTIBRAIN TEST' in str(row.get(k, '')).upper() for k in ('Name', 'Account_Name', 'Deal_Name', 'Last_Name', 'customer_name', 'contact_name', 'recurrence_name'))
+    if row.get('OptiBrain_Test') is True or row.get('test_only') is True:
+        return True
+    fields = ('Name', 'Account_Name', 'Deal_Name', 'Last_Name', 'Full_Name', 'Subject',
+              'Company', 'customer_name', 'contact_name', 'recurrence_name', 'Tag')
+    values = [row.get(field) for field in fields]
+    return any(re.search(r'\bOPTIBRAIN[\s_-]+TEST\b|^TEST ONLY\b|'
+                         r'\bOPTIBRAIN PHASE \d+ CANARY\b', str(value), re.I)
+               for value in values)
 
 
 def day(value):
