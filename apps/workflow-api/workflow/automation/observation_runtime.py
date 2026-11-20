@@ -117,5 +117,21 @@ def observe(engine, *, now=None):
                          'observed_at':value['observed_at'],'snapshot':project_source(value['snapshot'])},0o600)
         os.chown(path,0,grp.getgrnam('opticable-workflow-api').gr_gid)
         os.chmod(path,0o640)
+        # One replaceable, root-private daily view on the existing observer.
+        # No provider requests, scheduler, business writes or content admission.
+        from .revenue_brief import brief
+        review_path = ROOT/'cash-first-review.json'
+        review = lc.trusted_json(review_path, 1048576) if review_path.exists() else {}
+        receipts = []
+        forms = Path('/var/lib/opticable-workflow-api/output/automation/phase9-form-receipts.db')
+        if forms.exists():
+            from .phase9_form_receipts import FormReceiptLedger
+            import sqlite3
+            try:
+                receipts = FormReceiptLedger(forms).list(limit=100, read_only=True)
+            except (sqlite3.Error, ValueError):
+                review = {**review, 'blockers': [*review.get('blockers', []),
+                          'Existing intake receipt projection unavailable; no initialization or write attempted']}
+        atomic(ROOT/'cash-first-latest.json', brief(value, review, receipts, now=now), 0o600)
     if value['collection']['state']!='COMPLETE':raise ValueError('Business observation partial; dated last-good evidence retained')
     return recurring
