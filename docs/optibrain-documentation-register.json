@@ -24,7 +24,7 @@
     "AUDIT EVIDENCE": 142,
     "AUTHORITATIVE CURRENT": 71,
     "HISTORICAL": 48,
-    "RECOVERY": 1,
+    "RECOVERY": 2,
     "SECURITY / CONTROL": 3,
     "SUPERSEDED": 10
   },
@@ -1913,6 +1913,12 @@
       "current": true,
       "superseded_by": null,
       "purpose": "Development-only auth/session correction, validation, exact production gates and code-only recovery."
+    },
+    {
+      "path": "docs/OPTIBRAIN_CASH_FIRST_RUNBOOK.md",
+      "classification": "RECOVERY",
+      "current": true,
+      "purpose": "Development-only private cash-first reporting, exact source evidence, safeguards and source-only recovery; no production installation."
     }
   ]
 }
