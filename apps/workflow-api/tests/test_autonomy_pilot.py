@@ -22,6 +22,8 @@ def sample(now=NOW):
         'flags_off': 45, 'flag_total': 45, 'protected_match': 76, 'protected_total': 76,
         'golden_local_restore': 'PASS', 'maintenance': {
             key: 'inactive' for key in ('optibrain-backup', 'optibrain-phase2a-upload', 'optibrain-resource-verify')},
+        'maintenance_results': {
+            key: 'success' for key in ('optibrain-backup', 'optibrain-phase2a-upload', 'optibrain-resource-verify')},
         'health_latency': {k: {'http': 200, 'max_ms': 20} for k in ('api', 'pdf', 'omada')},
         'core': {'caddy.service': {'ActiveState': 'active'}},
         'optional_generation_paused': True, 'scope': 'deterministic_read_only_validation',
@@ -42,6 +44,8 @@ class PolicyTests(unittest.TestCase):
             ({'memory_kib': {'MemAvailable': G // 1024}}, 'RETRY_WAIT'),
             ({'psi_some_avg10_pct': {'cpu': 0, 'memory': 1.5, 'io': 0}}, 'RETRY_WAIT'),
             ({'load': [4]}, 'RETRY_WAIT'),
+            ({'psi_some_avg10_pct': {'cpu': 15, 'memory': 0, 'io': 0}}, 'RETRY_WAIT'),
+            ({'psi_some_avg10_pct': {'cpu': 0, 'memory': 0, 'io': 3}}, 'RETRY_WAIT'),
             ({'flags_off': 44}, 'BLOCKED'),
             ({'protected_match': 75}, 'BLOCKED'),
             ({'golden_local_restore': 'UNVERIFIED'}, 'BLOCKED'),
@@ -57,6 +61,11 @@ class PolicyTests(unittest.TestCase):
         slow['maintenance']['optibrain-backup'] = 'activating'
         self.assertEqual(admission(slow, NOW), ('RETRY_WAIT', 'critical_maintenance'))
         self.assertEqual(admission(sample(), NOW + timedelta(minutes=16))[0], 'BLOCKED')
+        interrupted = sample()
+        interrupted['maintenance_results']['optibrain-backup'] = 'signal'
+        self.assertEqual(admission(interrupted, NOW), ('BLOCKED', 'backup_or_verification_result_unproven'))
+        interrupted['maintenance_results'] = {}
+        self.assertEqual(admission(interrupted, NOW)[0], 'BLOCKED')
 
     def test_server_retry_after_delta_date_backoff_and_bound(self):
         self.assertEqual(retry_after('1800', 1, NOW, jitter=3), NOW + timedelta(seconds=1803))

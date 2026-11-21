@@ -20,6 +20,11 @@ The [issue 174 development procedure](OPTIBRAIN_QUALITY_FIRST_AUTONOMY.md) uses 
 
 The [offline model rehearsal and acceptance rules](OPTIBRAIN_QUALITY_FIRST_AUTONOMY.md#phase-2-development-rehearsal) extend the existing run ledger with bounded fixture attempts, evidence review and durable cooldown checks. Live Codex and persistent operation remain held on billing, egress and recovery proof. The private recovery worksheet specifies an offline restore of the existing encrypted anchor. Production protected controls govern all later approvals.
 
+
+## Quality-first autonomy Phase 3 — 2026-11-21 Montréal
+
+The [Phase 3 readiness contract](OPTIBRAIN_QUALITY_FIRST_AUTONOMY.md#phase-3-readiness) verifies Codex JSONL only with fixtures and holds work on unknown or failed backup verification. Live execution remains gated on enforceable billing, isolated scope and a reviewed task budget. Custodian recovery attestation and exact pilot approval remain separate gates. Test and customer evidence stay in the private operator packet.
+
 ## Standing safety state
 
 Current NEW-host verification (2026-11-12): all 45 consequential runtime flag checks are OFF. Existing protection of the 123 records remains in force; this resource mission did not repeat provider-by-provider record parity. Safe hold-v1 receipt ingestion and the existing GET-only receipt collector remain active. Customer communications, financial/paid writes, broad business execution and uncertain historical replay stay disabled. The persistent development worker remains OFF, with retired units masked. Root kill, fail-closed authentication, exact ownership, immutable execution evidence and independent off-host claims remain mandatory. Current root policies and measured service state govern authority; older scope descriptions do not enable anything.

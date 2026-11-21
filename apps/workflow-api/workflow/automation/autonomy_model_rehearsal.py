@@ -5,6 +5,7 @@ import json
 import re
 
 from .autonomy_pilot import Pilot, Task, allowance, current, digest, instant, retry_after
+from .codex_fixture_protocol import fixture_reply
 
 ATTEMPTS = 3
 TURN_TOKENS = 1600
@@ -176,7 +177,22 @@ class ModelRehearsal:
         expected_receipt = {'attempt': number, 'fixture_response_sha256': digest(reply)}
         if value != expected_receipt:
             return {'passed': False, 'check': 'Exact fixture response hash'}
-        assessment = assess_reply(reply, self.evidence, cycle['reviewed_at'], attempt=number,
-                                  charged=cycle['prior_charged'])
-        return {'passed': True, 'check': 'Independent fixture receipt, timing and evidence validation',
-                'candidate_accepted': assessment['state'] == 'VERIFIED_INTERNAL', 'assessment': assessment}
+        usage = None
+        try:
+            if 'stdout_jsonl' in reply:
+                # Framing is evaluated by the independent reviewer before the
+                # body can be considered an eligible proposal.
+                if reply.get('status') != 200:
+                    raise ValueError('Terminal transport status unverified')
+                reply, usage = fixture_reply(reply)
+        except (ValueError, RecursionError):
+            assessment = {'state': 'HUMAN_ACTION_REQUIRED', 'reason': 'trace_protocol_unverified',
+                          'simulated_total_tokens': TOTAL_TOKENS}
+        else:
+            assessment = assess_reply(reply, self.evidence, cycle['reviewed_at'], attempt=number,
+                                      charged=cycle['prior_charged'])
+        checked = {'passed': True, 'check': 'Independent fixture receipt, timing and evidence validation',
+                   'candidate_accepted': assessment['state'] == 'VERIFIED_INTERNAL', 'assessment': assessment}
+        if usage is not None:
+            checked['simulated_usage_counters'] = usage
+        return checked

@@ -137,14 +137,15 @@ def refresh_resources(sample, path):
     units = list(sample['maintenance'])
     try:
         output = subprocess.check_output(
-            ['/usr/bin/systemctl', 'show', *units, '-p', 'Id', '-p', 'ActiveState'], text=True, timeout=3)
+            ['/usr/bin/systemctl', 'show', *units, '-p', 'Id', '-p', 'ActiveState', '-p', 'Result'], text=True, timeout=3)
         states = [dict(line.split('=', 1) for line in part.splitlines()) for part in output.strip().split('\n\n')]
         maintenance = {s['Id'].removesuffix('.service'): s['ActiveState'] for s in states}
+        results = {s['Id'].removesuffix('.service'): s['Result'] for s in states}
     except (subprocess.SubprocessError, KeyError, ValueError):
-        maintenance = {}
+        maintenance, results = {}, {}
     return {**sample, 'filesystem_bytes': {'free': shutil.disk_usage(path).free}, 'load': list(os.getloadavg()),
             'memory_kib': {'MemAvailable': int(next(s.split()[1] for s in ram if s.startswith('MemAvailable:')))},
-            'psi_some_avg10_pct': {k: pressure(k) for k in ('cpu', 'memory', 'io')}, 'maintenance': maintenance}
+            'psi_some_avg10_pct': {k: pressure(k) for k in ('cpu', 'memory', 'io')}, 'maintenance': maintenance, 'maintenance_results': results}
 
 
 def main():

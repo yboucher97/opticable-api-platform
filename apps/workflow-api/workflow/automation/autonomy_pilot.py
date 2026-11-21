@@ -103,6 +103,10 @@ def admission(sample, now, *, paused=False):
         return 'BLOCKED', 'maintenance_state_unknown'
     if any(state != 'inactive' for state in sample['maintenance'].values()):
         return 'RETRY_WAIT', 'critical_maintenance'
+    maintenance_results = sample.get('maintenance_results', {})
+    if maintenance_results.keys() != sample['maintenance'].keys() or any(
+            result != 'success' for result in maintenance_results.values()):
+        return 'BLOCKED', 'backup_or_verification_result_unproven'
     health = sample.get('health_latency') or {}
     if set(health) != {'api', 'pdf', 'omada'} or any(
         v.get('http') != 200 or not 0 < v.get('max_ms', 0) <= 100 for v in health.values()
