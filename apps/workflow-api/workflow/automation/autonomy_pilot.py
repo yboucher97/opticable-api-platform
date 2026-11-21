@@ -212,7 +212,7 @@ class Pilot:
             raise ValueError('One routed run per task required')
         return store, {row['event_id']: row['run_id'] for row in rows}
 
-    def run(self, sample, handlers, reviewers, *, paused=False, clock=None):
+    def run(self, sample, handlers, reviewers, *, paused=False, clock=None, task_gate=None):
         clock = clock or (lambda: datetime.now(timezone.utc))
         with self.scope.lock():
             now = clock()
@@ -233,6 +233,8 @@ class Pilot:
                         state, reason = 'BLOCKED', 'dependency_not_completed'
                     else:
                         state, reason = admission(sample(), clock(), paused=paused)
+                        if state == 'ELIGIBLE' and task_gate is not None:
+                            state, reason = task_gate(task, report['results'], clock())
                         if state == 'ELIGIBLE':
                             state = self._execute(store, run_id, task, handlers, reviewers, clock)
                             row = store.get_run(run_id)

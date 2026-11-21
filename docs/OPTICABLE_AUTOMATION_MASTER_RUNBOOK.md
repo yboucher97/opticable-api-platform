@@ -15,6 +15,11 @@ AUTHORITATIVE CURRENT. API `1.34.1`. This is the operating contract; [onboarding
 
 The [issue 174 development procedure](OPTIBRAIN_QUALITY_FIRST_AUTONOMY.md) uses the existing run ledger and source observers. The exact local backup passed isolated restoration. Off-host AGE-key custody and encrypted restoration must be verified before activation. The controlled development proof is one-shot, network-denied and zero-model. Existing protected production authority governs every proposed pilot.
 
+
+## Quality-first autonomy Phase 2 — 2026-11-21 Montréal
+
+The [offline model rehearsal and acceptance rules](OPTIBRAIN_QUALITY_FIRST_AUTONOMY.md#phase-2-development-rehearsal) extend the existing run ledger with bounded fixture attempts, evidence review and durable cooldown checks. Live Codex and persistent operation remain held on billing, egress and recovery proof. The private recovery worksheet specifies an offline restore of the existing encrypted anchor. Production protected controls govern all later approvals.
+
 ## Standing safety state
 
 Current NEW-host verification (2026-11-12): all 45 consequential runtime flag checks are OFF. Existing protection of the 123 records remains in force; this resource mission did not repeat provider-by-provider record parity. Safe hold-v1 receipt ingestion and the existing GET-only receipt collector remain active. Customer communications, financial/paid writes, broad business execution and uncertain historical replay stay disabled. The persistent development worker remains OFF, with retired units masked. Root kill, fail-closed authentication, exact ownership, immutable execution evidence and independent off-host claims remain mandatory. Current root policies and measured service state govern authority; older scope descriptions do not enable anything.
