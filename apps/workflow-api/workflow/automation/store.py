@@ -11,6 +11,7 @@ from typing import Any
 from uuid import uuid4
 
 from .models import AutomationEvent, WorkflowDefinition, utc_now_iso
+from .sqlite_connection import ClosingConnection
 
 _UTC_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
@@ -25,7 +26,7 @@ class AutomationStore:
         self._initialize()
 
     def _connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.db_path, timeout=30, check_same_thread=False)
+        conn = sqlite3.connect(self.db_path, timeout=30, check_same_thread=False, factory=ClosingConnection)
         try:
             conn.row_factory = sqlite3.Row
             # Inspect the version before WAL configuration or any schema statement.
@@ -664,6 +665,45 @@ class AutomationStore:
                 self._claim_audit(conn, action, claim["worker_id"], claim["run_id"], claim["attempt_id"],
                                   success=False)
         return result
+
+    def finalize_expired_verified_step(self, run_id, *, event_id, step_id, action, verify, now=None):
+        """Recover a single started step using local proof within the same transaction."""
+        checked = self._claim_time(now)
+        when = self._claim_iso(checked)
+        with self._lock, self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            run = conn.execute(
+                "SELECT c.attempt_id,c.worker_id FROM automation_runs r "
+                "JOIN automation_run_claims c ON c.run_id=r.run_id "
+                "WHERE r.run_id=? AND r.event_id=? AND r.status='human_action_required' "
+                "AND c.lease_expires_at<=? AND EXISTS("
+                "SELECT 1 FROM automation_run_failures f WHERE f.run_id=r.run_id "
+                "AND f.attempt_id=c.attempt_id AND f.reason_code='lease_expired_after_action')",
+                (run_id, event_id, self._claim_epoch_us(checked)),
+            ).fetchone()
+            if run is None:
+                return None
+            steps = conn.execute("SELECT * FROM automation_run_steps WHERE run_id=?", (run_id,)).fetchall()
+            if len(steps) != 1:
+                return None
+            step = steps[0]
+            if (step['status'], step['step_id'], step['action'], step['action_identity'], step['attempt']) != (
+                    'started', step_id, action, event_id, 1):
+                return None
+
+            # This callback may inspect the existing local journal only.
+            checkpoint = verify(conn, step['started_at'], checked)
+            if checkpoint is None:
+                return None
+            raw = json.dumps(checkpoint, separators=(",", ":"), allow_nan=False, ensure_ascii=False)
+            if len(raw.encode()) > 8192:
+                raise ValueError("Recovered checkpoint exceeds bound")
+            conn.execute("UPDATE automation_run_steps SET status='completed',finished_at=?,result_json=? "
+                         "WHERE id=?", (when, raw, step['id']))
+            conn.execute("UPDATE automation_runs SET status='completed',finished_at=?,error=NULL,context_json=? "
+                         "WHERE run_id=?", (when, raw, run_id))
+            self._claim_audit(conn, "expired_action_checkpoint_recovered", run["worker_id"], run_id, run["attempt_id"])
+            return checkpoint
 
     def set_run_status(self, run_id: str, status: str, *, error: str | None = None, context: dict[str, Any] | None = None) -> None:
         now = utc_now_iso()

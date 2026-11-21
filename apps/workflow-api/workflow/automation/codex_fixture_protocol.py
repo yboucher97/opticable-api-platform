@@ -10,7 +10,7 @@ MAX_EVENTS = 32
 MAX_MESSAGE_BYTES = 8 * 1024
 
 
-def _strict_object(raw):
+def strict_object(raw):
     def pairs(values):
         result = {}
         for key, value in values:
@@ -50,15 +50,15 @@ def fixture_reply(envelope):
     lines = trace.removesuffix('\n').split('\n')
     if not 4 <= len(lines) <= MAX_EVENTS:
         raise ValueError('Expected bounded single-turn transcript')
-    head = _strict_object(lines[0])
+    head = strict_object(lines[0])
     if head.get('type') != 'thread.started' or not isinstance(head.get('thread_id'), str) or not head['thread_id']:
         raise ValueError('Missing thread start')
-    if _strict_object(lines[1]).get('type') != 'turn.started':
+    if strict_object(lines[1]).get('type') != 'turn.started':
         raise ValueError('Missing turn start')
 
     proposal_text = None
     for line in lines[2:-1]:
-        event = _strict_object(line)
+        event = strict_object(line)
         item = event.get('item')
         if not isinstance(item, dict) or event.get('type') not in {'item.started', 'item.updated', 'item.completed'}:
             raise ValueError('Unexpected or failed turn event')
@@ -70,12 +70,12 @@ def fixture_reply(envelope):
             raise ValueError('Tool, duplicate message or unsupported output')
         proposal_text = item['text']
 
-    terminal = _strict_object(lines[-1])
+    terminal = strict_object(lines[-1])
     if terminal.get('type') != 'turn.completed' or proposal_text is None:
         raise ValueError('Missing complete turn evidence')
     usage = _usage(terminal.get('usage'))
     try:
-        proposal = _strict_object(proposal_text)
+        proposal = strict_object(proposal_text)
     except (ValueError, RecursionError):
         proposal = None  # Completed, charged turn. Independent review can request bounded repair.
     return ({'status': 200, 'tokens': usage['input_tokens'] + usage['output_tokens'],

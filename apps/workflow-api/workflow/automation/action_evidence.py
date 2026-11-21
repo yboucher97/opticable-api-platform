@@ -12,6 +12,7 @@ import sqlite3
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 
 from .acquisition_store import digest
+from .sqlite_connection import ClosingConnection
 
 REVERSIBILITY = {'FULLY_REVERSIBLE', 'REVERSIBLE_WITH_LIMITATIONS',
                  'COMPENSATING_ACTION_ONLY', 'IRREVERSIBLE', 'UNKNOWN'}
@@ -134,7 +135,8 @@ class ActionEvidence:
             db.execute(sql)
 
     def connect(self, *, readonly=False):
-        db = sqlite3.connect(self.path.resolve().as_uri()+'?mode=ro', uri=True, timeout=30) if readonly else sqlite3.connect(self.path, timeout=30)
+        target = self.path.resolve().as_uri() + '?mode=ro' if readonly else self.path
+        db = sqlite3.connect(target, uri=readonly, timeout=30, factory=ClosingConnection)
         db.row_factory = sqlite3.Row
         return db
 
@@ -217,11 +219,17 @@ class ActionEvidence:
                 raise ValueError('Fresh owner approval must bind exact action revision')
         elif not plan['authority_class'] or not plan['automatic_rule']: raise ValueError('Automatic authority class and rule required')
 
-    def start(self, action_id, now, *, authority_check):
+    def start(self, action_id, now, *, authority_check, expected_approval=None, clock=None):
         if not callable(authority_check): raise ValueError('Separate transport authority check required')
         authority_check()
         with self.connect() as db:
-            db.execute('BEGIN IMMEDIATE'); plan = self.current(db,action_id);self.executable(plan,now)
+            db.execute('BEGIN IMMEDIATE')
+            if clock is not None:
+                now = clock()
+            plan = self.current(db,action_id)
+            self.executable(plan,now)
+            if expected_approval is not None and plan['approval_record'] != expected_approval:
+                raise ValueError('Independently verified approval changed')
             if plan['measurable']:
                 row=db.execute("SELECT revision,payload_hash FROM optimization_records WHERE kind='optibrain.optimization_proposal' AND id=? ORDER BY revision DESC LIMIT 1",(plan['proposal_id'],)).fetchone()
                 versions=plan['exact_versions']
@@ -291,14 +299,19 @@ class ActionEvidence:
         return {'envelope':plan,'history_integrity':'PASS' if self.verify_integrity(action_id) else 'UNKNOWN',
             'evidence_bundle':json.loads(bundle['evidence_json'])['bundle'] if bundle else plan['evidence_bundle']}
 
+    @staticmethod
+    def verify_chain(db, action_id):
+        previous = ''
+        for row in db.execute('SELECT * FROM action_evidence WHERE action_id=? ORDER BY event_id', (action_id,)):
+            expected = digest([action_id, row['kind'], row['recorded_at'], row['evidence_json'], previous])
+            if row['previous_hash'] != previous or row['event_hash'] != expected:
+                raise ValueError('Action evidence hash chain invalid')
+            previous = row['event_hash']
+        return bool(previous)
+
     def verify_integrity(self, action_id):
         with self.connect(readonly=True) as db:
-            previous=''
-            for row in db.execute('SELECT * FROM action_evidence WHERE action_id=? ORDER BY event_id',(action_id,)):
-                if row['previous_hash']!=previous or row['event_hash']!=digest([action_id,row['kind'],row['recorded_at'],row['evidence_json'],previous]):
-                    raise ValueError('Action evidence hash chain invalid')
-                previous=row['event_hash']
-        return bool(previous)
+            return self.verify_chain(db, action_id)
 
 
 def local_record(db, action_id, action_type, target, now, *, before, after, reason, **values):
