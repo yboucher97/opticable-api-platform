@@ -666,10 +666,11 @@ class AutomationStore:
                                   success=False)
         return result
 
-    def finalize_expired_verified_step(self, run_id, *, event_id, step_id, action, verify, now=None):
-        """Recover a single started step using local proof within the same transaction."""
+    def finalize_expired_verified_step(self, run_id, *, event_id, step_id, action, verify, failed=False, now=None):
+        """Recover a single step from local proof, keeping failed effects on their existing hold."""
         checked = self._claim_time(now)
         when = self._claim_iso(checked)
+        audit = "expired_action_failure_checkpoint_recovered" if failed else "expired_action_checkpoint_recovered"
         with self._lock, self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
             run = conn.execute(
@@ -678,8 +679,10 @@ class AutomationStore:
                 "WHERE r.run_id=? AND r.event_id=? AND r.status='human_action_required' "
                 "AND c.lease_expires_at<=? AND EXISTS("
                 "SELECT 1 FROM automation_run_failures f WHERE f.run_id=r.run_id "
-                "AND f.attempt_id=c.attempt_id AND f.reason_code='lease_expired_after_action')",
-                (run_id, event_id, self._claim_epoch_us(checked)),
+                "AND f.attempt_id=c.attempt_id AND f.reason_code='lease_expired_after_action') "
+                "AND NOT EXISTS(SELECT 1 FROM automation_audit a WHERE a.category='run_claim' "
+                "AND a.target=r.run_id AND a.action=?)",
+                (run_id, event_id, self._claim_epoch_us(checked), audit),
             ).fetchone()
             if run is None:
                 return None
@@ -687,22 +690,33 @@ class AutomationStore:
             if len(steps) != 1:
                 return None
             step = steps[0]
-            if (step['status'], step['step_id'], step['action'], step['action_identity'], step['attempt']) != (
-                    'started', step_id, action, event_id, 1):
+            valid_status = ('started', 'failed') if failed else ('started',)
+            if step['status'] not in valid_status or (
+                    step['step_id'], step['action'], step['action_identity'], step['attempt']) != (
+                    step_id, action, event_id, 1):
                 return None
+            previous_result = None
+            if step['status'] == 'failed':
+                previous_result = json.loads(step['result_json'] or 'null')
+                if previous_result is None:
+                    return None
 
             # This callback may inspect the existing local journal only.
-            checkpoint = verify(conn, step['started_at'], checked)
+            checkpoint = verify(conn, step['started_at'], checked, previous_result)
             if checkpoint is None:
                 return None
             raw = json.dumps(checkpoint, separators=(",", ":"), allow_nan=False, ensure_ascii=False)
             if len(raw.encode()) > 8192:
                 raise ValueError("Recovered checkpoint exceeds bound")
-            conn.execute("UPDATE automation_run_steps SET status='completed',finished_at=?,result_json=? "
-                         "WHERE id=?", (when, raw, step['id']))
-            conn.execute("UPDATE automation_runs SET status='completed',finished_at=?,error=NULL,context_json=? "
-                         "WHERE run_id=?", (when, raw, run_id))
-            self._claim_audit(conn, "expired_action_checkpoint_recovered", run["worker_id"], run_id, run["attempt_id"])
+            if step['status'] == 'started':
+                conn.execute("UPDATE automation_run_steps SET status=?,finished_at=?,result_json=? WHERE id=?",
+                             ('failed' if failed else 'completed', when, raw, step['id']))
+            if failed:
+                conn.execute("UPDATE automation_runs SET context_json=? WHERE run_id=?", (raw, run_id))
+            else:
+                conn.execute("UPDATE automation_runs SET status='completed',finished_at=?,error=NULL,context_json=? "
+                             "WHERE run_id=?", (when, raw, run_id))
+            self._claim_audit(conn, audit, run["worker_id"], run_id, run["attempt_id"])
             return checkpoint
 
     def set_run_status(self, run_id: str, status: str, *, error: str | None = None, context: dict[str, Any] | None = None) -> None:

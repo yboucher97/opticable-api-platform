@@ -35,15 +35,17 @@ def run_responses_task(scope, sample, *, source, body, expected, authorize, cred
             if row['status'] == 'human_action_required' and 'receipt' not in (row['context'] or {}):
                 provider = journal.get(sender.ACTION_ID)
                 result['provider_journal_state'] = provider['status'] if provider else 'NOT_STARTED'
-                if provider and provider['status'] == 'SUCCEEDED':
+                if provider and provider['status'] in ('SUCCEEDED', 'FAILED'):
+                    failed = provider['status'] == 'FAILED'
                     try:
                         checkpoint = store.finalize_expired_verified_step(run_id, event_id=event_id,
-                            step_id=TASK.name, action='ai.responses.one', now=clock(),
-                            verify=partial(verified_checkpoint, source=source, body=body, expected=expected))
+                            step_id=TASK.name, action='ai.responses.one', now=clock(), failed=failed,
+                            verify=partial(verified_checkpoint, source=source, body=body, expected=expected, failed=failed))
                     except (ValueError, TypeError, KeyError):
                         checkpoint = None
                     if checkpoint is not None:
-                        return {'state': 'COMPLETED', 'run_id': run_id, 'checkpoint': checkpoint}
+                        return {'state': 'HUMAN_ACTION_REQUIRED' if failed else 'COMPLETED',
+                                'run_id': run_id, 'checkpoint': checkpoint}
             return result
 
         def held(state, reason):

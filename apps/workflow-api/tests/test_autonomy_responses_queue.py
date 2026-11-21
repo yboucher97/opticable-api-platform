@@ -111,6 +111,62 @@ class ResponsesQueueTests(unittest.TestCase):
         self.assertEqual(first, self.run_task())
         self.assertEqual((self.invocations, self.keys, self.step_states()), ([BODY], 1, [('failed',)]))
 
+    def interrupt_rate_limit_checkpoint(self, method):
+        self.prepare()
+        self.reply = lambda: httpx.Response(429, headers={
+            'retry-after': '190', 'x-request-id': 'req_rate_limited',
+        })
+        with patch.object(AutomationStore, method, side_effect=SystemExit(70)):
+            with self.assertRaises(SystemExit):
+                self.run_task()
+        record = self.journal.get(dispatch.ACTION_ID)
+        self.assertEqual(record['status'], 'FAILED')
+        self.assertEqual(record['provider_response']['http_status'], 429)
+
+    def assert_recovered_rate_limit(self):
+        expired = NOW + timedelta(seconds=LEASE_SECONDS + 1)
+        result = self.run_task(clock=lambda: expired,
+            sample=lambda: self.fail('Recovery must use existing evidence only'),
+            credential=lambda: self.fail('Recovery must not read the credential'))
+        self.assertEqual(result['state'], 'HUMAN_ACTION_REQUIRED')
+        self.assertIn('receipt', result['checkpoint'] or {})
+        receipt = result['checkpoint']['receipt']
+        self.assertEqual(receipt['state'], 'RECONCILE_REQUIRED')
+        self.assertEqual(receipt['http_status'], 429)
+        self.assertEqual(receipt['provider_request_id'], 'req_rate_limited')
+        self.assertEqual(receipt['cooldown_until'], (NOW + timedelta(seconds=190)).isoformat())
+        self.assertEqual(result, self.run_task(clock=lambda: expired))
+        self.assertEqual(result, self.run_task(clock=lambda: NOW + timedelta(seconds=191)))
+        self.assertEqual((self.invocations, self.keys, self.step_states()), ([BODY], 1, [('failed',)]))
+        with self.journal.connect(readonly=True) as db:
+            self.assertEqual(db.execute(
+                "SELECT count(*) FROM automation_run_failures WHERE reason_code='lease_expired_after_action'"
+            ).fetchone()[0], 1)
+            self.assertEqual(db.execute(
+                "SELECT count(*) FROM automation_audit WHERE action='expired_action_failure_checkpoint_recovered'"
+            ).fetchone()[0], 1)
+
+    def test_retry_after_survives_crash_before_step_checkpoint(self):
+        self.interrupt_rate_limit_checkpoint('complete_claimed_action')
+        self.assertEqual(self.step_states(), [('started',)])
+        self.assertEqual(self.run_task(clock=lambda: NOW + timedelta(seconds=LEASE_SECONDS - 1))['state'], 'RUNNING')
+        self.assert_recovered_rate_limit()
+
+    def test_retry_after_survives_crash_after_step_checkpoint(self):
+        self.interrupt_rate_limit_checkpoint('finish_claim')
+        self.assertEqual(self.step_states(), [('failed',)])
+        self.assert_recovered_rate_limit()
+
+    def test_rate_limit_recovery_refuses_conflicting_prior_checkpoint(self):
+        self.interrupt_rate_limit_checkpoint('finish_claim')
+        with self.journal.connect() as db:
+            db.execute("UPDATE automation_run_steps SET result_json='{}'")
+        expired = NOW + timedelta(seconds=LEASE_SECONDS + 1)
+        result = self.run_task(clock=lambda: expired)
+        self.assertEqual(result['state'], 'HUMAN_ACTION_REQUIRED')
+        self.assertNotIn('receipt', result['checkpoint'] or {})
+        self.assertEqual((self.invocations, self.keys, self.step_states()), ([BODY], 1, [('failed',)]))
+
     def test_interruption_after_egress_holds_both_ledgers_across_restart(self):
         self.prepare()
 
