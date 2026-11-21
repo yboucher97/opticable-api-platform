@@ -49,6 +49,26 @@ def message_identity(requested_id, details):
     return requested_id
 
 
+def quote_scenarios(quote_queue, scenarios):
+    """Compute mutually exclusive scenarios from exact version-matched records."""
+    quotes = {row['id']: row for row in quote_queue}
+    output = []
+    for scenario in scenarios:
+        ids = scenario['estimate_ids']
+        selected = [quotes.get(rid) for rid in ids]
+        valid = bool(ids) and len(ids) == len(set(ids)) and all(
+            row and row['current_source'] and row['review']
+            and row['status'] in OPEN_QUOTES | DRAFT_QUOTES
+            and row.get('currency') == scenario['currency'] and row['total'] is not None
+            for row in selected
+        )
+        output.append({'label': scenario['label'], 'exclusive_group': scenario.get('exclusive_group'),
+                       'estimate_ids': ids, 'currency': scenario['currency'],
+                       'gross_quote_value': str(sum((money(r['total']) for r in selected), Decimal())) if valid else None,
+                       'conditional_on_award': True})
+    return output
+
+
 def quote_groups(quotes):
     """Unknown alternatives are never added. This is face value, never revenue."""
     groups = defaultdict(list)

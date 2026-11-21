@@ -523,6 +523,13 @@
       "purpose": "Current acquisition research / SEO / content / source / cost contract"
     },
     {
+      "path": "docs/OPTIBRAIN_QUALITY_FIRST_AUTONOMY.md",
+      "classification": "RECOVERY",
+      "current": true,
+      "superseded_by": null,
+      "purpose": "Development-only autonomy architecture, exact recovery baseline and rollout gates"
+    },
+    {
       "path": "docs/OPTIBRAIN_REAL_AUTOMATION_SCOPE.md",
       "classification": "AUTHORITATIVE CURRENT",
       "current": true,
